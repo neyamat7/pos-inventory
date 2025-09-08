@@ -1,13 +1,22 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  basePath: process.env.BASEPATH,
-  redirects: async () => {
-    return [
+  // basePath: process.env.BASEPATH,
+  // redirects: async () => {
+  //   return [
+  //     {
+  //       source: '/',
+  //       destination: '/home',
+  //       permanent: true,
+  //       locale: false
+  //     }
+  //   ]
+  // }
+
+  images: {
+    remotePatterns: [
       {
-        source: '/',
-        destination: '/home',
-        permanent: true,
-        locale: false
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com'
       }
     ]
   }

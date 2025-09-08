@@ -20,6 +20,10 @@ import Divider from '@mui/material/Divider'
 import MenuItem from '@mui/material/MenuItem'
 import Button from '@mui/material/Button'
 
+import { useSession } from 'next-auth/react'
+
+import Signout from '@/components/Signout/Signout'
+
 // Hook Imports
 import { useSettings } from '@core/hooks/useSettings'
 
@@ -39,6 +43,9 @@ const UserDropdown = () => {
 
   // Refs
   const anchorRef = useRef(null)
+  const { data: session } = useSession()
+
+  console.log('session got in dropdown', session)
 
   // Hooks
   const router = useRouter()
@@ -77,7 +84,7 @@ const UserDropdown = () => {
         <Avatar
           ref={anchorRef}
           alt='John Doe'
-          src='/images/avatars/1.png'
+          src={session?.user?.image}
           onClick={handleDropdownOpen}
           className='cursor-pointer bs-[38px] is-[38px]'
         />
@@ -101,12 +108,12 @@ const UserDropdown = () => {
               <ClickAwayListener onClickAway={e => handleDropdownClose(e)}>
                 <MenuList>
                   <div className='flex items-center plb-2 pli-6 gap-2' tabIndex={-1}>
-                    <Avatar alt='John Doe' src='/images/avatars/1.png' />
+                    <Avatar alt={session?.user?.name} src={session?.user?.image} />
                     <div className='flex items-start flex-col'>
                       <Typography className='font-medium' color='text.primary'>
-                        John Doe
+                        {session?.user?.name}
                       </Typography>
-                      <Typography variant='caption'>admin@vuexy.com</Typography>
+                      <Typography variant='caption'>{session?.user?.email}</Typography>
                     </div>
                   </div>
                   <Divider className='mlb-1' />
@@ -127,7 +134,7 @@ const UserDropdown = () => {
                     <Typography color='text.primary'>FAQ</Typography>
                   </MenuItem>
                   <div className='flex items-center plb-2 pli-3'>
-                    <Button
+                    {/* <Button
                       fullWidth
                       variant='contained'
                       color='error'
@@ -137,7 +144,9 @@ const UserDropdown = () => {
                       sx={{ '& .MuiButton-endIcon': { marginInlineStart: 1.5 } }}
                     >
                       Logout
-                    </Button>
+                    </Button> */}
+
+                    <Signout />
                   </div>
                 </MenuList>
               </ClickAwayListener>

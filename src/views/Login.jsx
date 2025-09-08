@@ -17,8 +17,11 @@ import Button from '@mui/material/Button'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Divider from '@mui/material/Divider'
 
-// Third-party Imports
 import classnames from 'classnames'
+
+import { loginWithCredentials } from '@/app/actions'
+
+// Third-party Imports
 
 // Component Imports
 import Link from '@components/Link'
@@ -31,6 +34,7 @@ import themeConfig from '@configs/themeConfig'
 // Hook Imports
 import { useImageVariant } from '@core/hooks/useImageVariant'
 import { useSettings } from '@core/hooks/useSettings'
+import Signin from '@/components/Signin/Signin'
 
 // Styled Custom Components
 const LoginIllustration = styled('img')(({ theme }) => ({
@@ -85,6 +89,29 @@ const LoginV2 = ({ mode }) => {
 
   const handleClickShowPassword = () => setIsPasswordShown(show => !show)
 
+  const handleSubmitData = async e => {
+    e.preventDefault()
+
+    try {
+      const formData = new FormData(e.currentTarget)
+
+      // const data = Object.fromEntries(formData.entries())
+
+      const response = await loginWithCredentials(formData)
+
+      console.log('response', response)
+      alert('login successful')
+
+      router.push('/dashboard')
+
+      if (response?.error) {
+        console.log('error', response?.error)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <div className='flex bs-full justify-center'>
       <div
@@ -113,17 +140,16 @@ const LoginV2 = ({ mode }) => {
             <Typography variant='h4'>{`Welcome to ${themeConfig.templateName}! 👋🏻`}</Typography>
             <Typography>Please sign-in to your account and start the adventure</Typography>
           </div>
-          <form
-            noValidate
-            autoComplete='off'
-            onSubmit={e => {
-              e.preventDefault()
-              router.push('/')
-            }}
-            className='flex flex-col gap-5'
-          >
-            <CustomTextField autoFocus fullWidth label='Email or Username' placeholder='Enter your email or username' />
+          <form noValidate autoComplete='off' onSubmit={handleSubmitData} className='flex flex-col gap-5'>
             <CustomTextField
+              autoFocus
+              fullWidth
+              label='Email or Username'
+              placeholder='Enter your email or username'
+              name='email'
+            />
+            <CustomTextField
+              name='password'
               fullWidth
               label='Password'
               placeholder='············'
@@ -157,21 +183,22 @@ const LoginV2 = ({ mode }) => {
               </Typography>
             </div>
             <Divider className='gap-2 text-textPrimary'>or</Divider>
-            <div className='flex justify-center items-center gap-1.5'>
-              <IconButton className='text-facebook' size='small'>
-                <i className='tabler-brand-facebook-filled' />
-              </IconButton>
-              <IconButton className='text-twitter' size='small'>
-                <i className='tabler-brand-twitter-filled' />
-              </IconButton>
-              <IconButton className='text-textPrimary' size='small'>
-                <i className='tabler-brand-github-filled' />
-              </IconButton>
-              <IconButton className='text-error' size='small'>
-                <i className='tabler-brand-google-filled' />
-              </IconButton>
-            </div>
           </form>
+          <div className='flex justify-center items-center gap-1.5'>
+            <IconButton className='text-facebook' size='small'>
+              <i className='tabler-brand-facebook-filled' />
+            </IconButton>
+            <IconButton className='text-twitter' size='small'>
+              <i className='tabler-brand-twitter-filled' />
+            </IconButton>
+            <IconButton className='text-textPrimary' size='small'>
+              <i className='tabler-brand-github-filled' />
+            </IconButton>
+            {/* <IconButton className='text-error' size='small'>
+              <i className='tabler-brand-google-filled' />
+            </IconButton> */}
+            <Signin />
+          </div>
         </div>
       </div>
     </div>

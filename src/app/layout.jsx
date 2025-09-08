@@ -1,6 +1,8 @@
 // MUI Imports
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 
+import { SessionProvider } from 'next-auth/react'
+
 // Third-party Imports
 import 'react-perfect-scrollbar/dist/css/styles.css'
 
@@ -30,7 +32,7 @@ const RootLayout = async props => {
     <html id='__next' lang='en' dir={direction} suppressHydrationWarning>
       <body className='flex is-full min-bs-full flex-auto flex-col'>
         <InitColorSchemeScript attribute='data' defaultMode={systemMode} />
-        {children}
+        <SessionProvider>{children}</SessionProvider>
       </body>
     </html>
   )
