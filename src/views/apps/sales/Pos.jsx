@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-import { Modal, Box, TextField, IconButton } from '@mui/material'
+import { Modal, Box, TextField, IconButton, Fade, Slide } from '@mui/material'
 
 import { Search, Close } from '@mui/icons-material'
 
@@ -313,7 +313,7 @@ export default function POSSystem() {
 
         {/* Right Side - Products */}
         <div className='w-1/3'>
-          <div className='grid grid-cols-2 gap-4'>
+          <div className='grid grid-cols-2 gap-4 max-h-[calc(100vh-200px)] overflow-y-auto'>
             {filteredProducts.map(product => (
               <div
                 key={product.id}
@@ -334,86 +334,90 @@ export default function POSSystem() {
 
       {/* Category Modal */}
       <Modal open={categoryModalOpen} onClose={() => setCategoryModalOpen(false)} closeAfterTransition>
-        <Box sx={modalStyle}>
-          <div className='p-6'>
-            <div className='flex items-center justify-between mb-4'>
-              <h2 className='text-xl font-semibold'>Categories</h2>
-              <IconButton onClick={() => setCategoryModalOpen(false)}>
-                <Close />
-              </IconButton>
-            </div>
+        <Slide direction='left' in={categoryModalOpen} timeout={500}>
+          <Box sx={modalStyle}>
+            <div className='p-6'>
+              <div className='flex items-center justify-between mb-4'>
+                <h2 className='text-xl font-semibold'>Categories</h2>
+                <IconButton onClick={() => setCategoryModalOpen(false)}>
+                  <Close />
+                </IconButton>
+              </div>
 
-            <div className='mb-4'>
-              <TextField
-                fullWidth
-                placeholder='Search categories...'
-                value={categorySearch}
-                onChange={e => setCategorySearch(e.target.value)}
-                InputProps={{
-                  startAdornment: <Search className='mr-2 text-gray-400' />
-                }}
-              />
-            </div>
+              <div className='mb-4'>
+                <TextField
+                  fullWidth
+                  placeholder='Search categories...'
+                  value={categorySearch}
+                  onChange={e => setCategorySearch(e.target.value)}
+                  InputProps={{
+                    startAdornment: <Search className='mr-2 text-gray-400' />
+                  }}
+                />
+              </div>
 
-            <div className='grid grid-cols-2 gap-3'>
-              {filteredCategories.map(category => (
-                <div
-                  key={category.id}
-                  className='bg-gray-50 rounded-lg p-4 hover:bg-gray-100 cursor-pointer transition-colors'
-                >
-                  <img
-                    src={category.image || '/placeholder.svg'}
-                    alt={category.name}
-                    className='w-12 h-12 object-cover rounded mb-2 mx-auto'
-                  />
-                  <p className='text-center text-sm font-medium'>{category.name}</p>
-                </div>
-              ))}
+              <div className='grid grid-cols-2 gap-3'>
+                {filteredCategories.map(category => (
+                  <div
+                    key={category.id}
+                    className='bg-gray-50 rounded-lg p-4 hover:bg-gray-100 cursor-pointer transition-colors'
+                  >
+                    <img
+                      src={category.image || '/placeholder.svg'}
+                      alt={category.name}
+                      className='w-12 h-12 object-cover rounded mb-2 mx-auto'
+                    />
+                    <p className='text-center text-sm font-medium'>{category.name}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        </Box>
+          </Box>
+        </Slide>
       </Modal>
 
       {/* Brand Modal */}
       <Modal open={brandModalOpen} onClose={() => setBrandModalOpen(false)} closeAfterTransition>
-        <Box sx={modalStyle}>
-          <div className='p-6'>
-            <div className='flex items-center justify-between mb-4'>
-              <h2 className='text-xl font-semibold'>Brands</h2>
-              <IconButton onClick={() => setBrandModalOpen(false)}>
-                <Close />
-              </IconButton>
-            </div>
+        <Slide direction='left' in={brandModalOpen} timeout={500}>
+          <Box sx={modalStyle}>
+            <div className='p-6'>
+              <div className='flex items-center justify-between mb-4'>
+                <h2 className='text-xl font-semibold'>Brands</h2>
+                <IconButton onClick={() => setBrandModalOpen(false)}>
+                  <Close />
+                </IconButton>
+              </div>
 
-            <div className='mb-4'>
-              <TextField
-                fullWidth
-                placeholder='Search brands...'
-                value={brandSearch}
-                onChange={e => setBrandSearch(e.target.value)}
-                InputProps={{
-                  startAdornment: <Search className='mr-2 text-gray-400' />
-                }}
-              />
-            </div>
+              <div className='mb-4'>
+                <TextField
+                  fullWidth
+                  placeholder='Search brands...'
+                  value={brandSearch}
+                  onChange={e => setBrandSearch(e.target.value)}
+                  InputProps={{
+                    startAdornment: <Search className='mr-2 text-gray-400' />
+                  }}
+                />
+              </div>
 
-            <div className='grid grid-cols-2 gap-3'>
-              {filteredBrands.map(brand => (
-                <div
-                  key={brand.id}
-                  className='bg-gray-50 rounded-lg p-4 hover:bg-gray-100 cursor-pointer transition-colors'
-                >
-                  <img
-                    src={brand.image || '/placeholder.svg'}
-                    alt={brand.name}
-                    className='w-12 h-12 object-cover rounded mb-2 mx-auto'
-                  />
-                  <p className='text-center text-sm font-medium'>{brand.name}</p>
-                </div>
-              ))}
+              <div className='grid grid-cols-2 gap-3'>
+                {filteredBrands.map(brand => (
+                  <div
+                    key={brand.id}
+                    className='bg-gray-50 rounded-lg p-4 hover:bg-gray-100 cursor-pointer transition-colors'
+                  >
+                    <img
+                      src={brand.image || '/placeholder.svg'}
+                      alt={brand.name}
+                      className='w-12 h-12 object-cover rounded mb-2 mx-auto'
+                    />
+                    <p className='text-center text-sm font-medium'>{brand.name}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        </Box>
+          </Box>
+        </Slide>
       </Modal>
     </div>
   )

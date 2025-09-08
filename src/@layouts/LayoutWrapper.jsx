@@ -4,7 +4,7 @@
 import { useSettings } from '@core/hooks/useSettings'
 import useLayoutInit from '@core/hooks/useLayoutInit'
 
-const LayoutWrapper = props => {
+const  LayoutWrapper = props => {
   // Props
   const { systemMode, verticalLayout, horizontalLayout } = props
 

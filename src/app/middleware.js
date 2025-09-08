@@ -1,15 +1,15 @@
-// src/middleware.js
 import { NextResponse } from 'next/server'
 
-import { auth } from './src/auth' // Adjust this path if necessary
+import { auth } from '../auth'
 
-// Ensure the middleware is using Node.js runtime
 export const config = {
-  runtime: 'nodejs', // Force Node.js runtime instead of Edge runtime
-  matcher: ['/dashboard', '/'] // Protect these routes
+  runtime: 'nodejs',
+  matcher: ['/dashboard', '/']
 }
 
 export async function middleware(req) {
+  console.log('Middleware:', req.nextUrl.pathname)
+
   const session = await auth()
 
   console.log('Session:', session)

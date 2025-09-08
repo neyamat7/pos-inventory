@@ -17,8 +17,10 @@ export const {
   signIn,
   signOut
 } = NextAuth({
-  adapter: MongoDBAdapter(clientPromise),
-  sessions: {
+  adapter: MongoDBAdapter(clientPromise, {
+    databaseName: process.env.MONGODB_DATABASE_NAME
+  }),
+  session: {
     strategy: 'jwt'
   },
   providers: [
@@ -37,11 +39,13 @@ export const {
         try {
           const user = await userModel.findOne({ email: credentials.email })
 
+          console.log('user in auth.js', user)
+
           if (user) {
             const isMatch = user?.password === credentials.password
 
             if (isMatch) {
-              return { id: user.id, email: user.email }
+              return { id: user._id.toString(), email: user.email }
             } else {
               throw new Error('Invalid credentials')
             }
@@ -75,11 +79,14 @@ export const {
     // Called whenever the session is fetched
     async session({ session, token }) {
       if (token) {
-        session.user.id = token.id
-        session.user.email = token.email
+        session.user = {
+          id: token.id,
+          email: token.email
+        }
       }
 
       return session
     }
-  }
+  },
+  secret: process.env.AUTH_SECRET
 })

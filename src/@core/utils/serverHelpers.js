@@ -29,7 +29,7 @@ export const getSystemMode = async () => {
   const colorPrefCookie = cookieStore.get('colorPref')?.value || 'light'
 
   return (mode === 'system' ? colorPrefCookie : mode) || 'light'
-}
+ }
 
 export const getServerMode = async () => {
   const mode = await getMode()

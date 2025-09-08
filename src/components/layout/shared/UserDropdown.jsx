@@ -43,9 +43,13 @@ const UserDropdown = () => {
 
   // Refs
   const anchorRef = useRef(null)
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
 
-  console.log('session got in dropdown', session)
+  if (status !== 'loading') {
+    console.log(session)
+  }
+
+  console.log('session got in dropdown', session, status)
 
   // Hooks
   const router = useRouter()
