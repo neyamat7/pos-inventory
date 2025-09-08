@@ -30,6 +30,8 @@ export const {
       async authorize(credentials) {
         if (credentials === null) return null
 
+        console.log('credentials login, line 33 in auth.js', credentials)
+
         await connectToMongoDB()
 
         try {

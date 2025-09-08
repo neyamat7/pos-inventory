@@ -1,5 +1,4 @@
 import Image from 'next/image'
- 
 
 import { auth } from '@/auth'
 import Signin from '@/components/Signin/Signin'
@@ -7,6 +6,8 @@ import Signout from '@/components/Signout/Signout'
 
 const HomePage = async () => {
   const session = await auth()
+
+  console.log('session', session)
 
   return (
     <div>
@@ -18,10 +19,6 @@ const HomePage = async () => {
       ) : (
         <p>Not logged in</p>
       )}
-      <div className='flex gap-20'>
-        <Signin />
-        <Signout />
-      </div>
     </div>
   )
 }

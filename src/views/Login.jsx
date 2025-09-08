@@ -3,8 +3,11 @@
 // React Imports
 import { useState } from 'react'
 
-// Next Imports
 import { useRouter } from 'next/navigation'
+
+import { signIn } from 'next-auth/react'
+
+// Next Imports
 
 // MUI Imports
 import useMediaQuery from '@mui/material/useMediaQuery'

@@ -5,7 +5,7 @@ import { useState } from 'react'
 
 // Next Imports
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 
 // MUI Imports
 import useMediaQuery from '@mui/material/useMediaQuery'
@@ -57,6 +57,8 @@ const MaskImg = styled('img')({
 })
 
 const Register = ({ mode }) => {
+  const router = useRouter()
+
   // States
   const [isPasswordShown, setIsPasswordShown] = useState(false)
 
@@ -85,6 +87,46 @@ const Register = ({ mode }) => {
 
   const handleClickShowPassword = () => setIsPasswordShown(show => !show)
 
+  const handleSubmitData = async e => {
+    e.preventDefault()
+
+    try {
+      const formData = new FormData(e.currentTarget)
+
+      const data = {
+        name: formData.get('username'),
+        email: formData.get('email'),
+        password: formData.get('password')
+      }
+
+      // console.log('form data', data)
+
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          imageUrl: data.imageUrl
+        })
+      })
+
+      if (response.ok) {
+        alert('Registration successful')
+        router.push('/login')
+      } else {
+        const errorData = await response.json()
+
+        console.log('error data', errorData)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <div className='flex bs-full justify-center'>
       <div
@@ -110,10 +152,11 @@ const Register = ({ mode }) => {
             <Typography variant='h4'>Adventure starts here 🚀</Typography>
             <Typography>Make your app management easy and fun!</Typography>
           </div>
-          <form noValidate autoComplete='off' onSubmit={e => e.preventDefault()} className='flex flex-col gap-6'>
-            <CustomTextField autoFocus fullWidth label='Username' placeholder='Enter your username' />
-            <CustomTextField fullWidth label='Email' placeholder='Enter your email' />
+          <form noValidate autoComplete='off' onSubmit={handleSubmitData} className='flex flex-col gap-6'>
+            <CustomTextField name='username' autoFocus fullWidth label='Username' placeholder='Enter your username' />
+            <CustomTextField name='email' fullWidth label='Email' placeholder='Enter your email' />
             <CustomTextField
+              name='password'
               fullWidth
               label='Password'
               placeholder='············'
@@ -146,7 +189,7 @@ const Register = ({ mode }) => {
             </Button>
             <div className='flex justify-center items-center flex-wrap gap-2'>
               <Typography>Already have an account?</Typography>
-              <Typography component={Link} href={getLocalizedUrl('/login', "en")} color='primary.main'>
+              <Typography component={Link} href={getLocalizedUrl('/login', 'en')} color='primary.main'>
                 Sign in instead
               </Typography>
             </div>
