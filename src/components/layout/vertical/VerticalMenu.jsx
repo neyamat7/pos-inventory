@@ -77,6 +77,10 @@ const VerticalMenu = ({ scrollMenu }) => {
           </MenuItem>
         </SubMenu>
 
+        <MenuItem href='/apps/suppliers/list' icon={<i className='tabler-smart-home' />}>
+          Suppliers
+        </MenuItem>
+
         <SubMenu label='Purchase' icon={<i className='tabler-smart-home' />}>
           <MenuItem href='/apps/purchase/add'>Add Purchase</MenuItem>
           <MenuItem href='/apps/purchase/list'>Purchase List</MenuItem>

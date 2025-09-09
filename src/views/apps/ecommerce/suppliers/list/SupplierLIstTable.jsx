@@ -33,7 +33,6 @@ import {
 } from '@tanstack/react-table'
 
 // Component Imports
-import AddCustomerDrawer from './AddCustomerDrawer'
 import CustomAvatar from '@core/components/mui/Avatar'
 import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
@@ -44,6 +43,7 @@ import { getLocalizedUrl } from '@/utils/i18n'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
+import AddSupplierDrawer from './AddSupplierDrawer'
 
 export const paymentStatus = {
   1: { text: 'Paid', color: 'success' },
@@ -93,7 +93,7 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const CustomerListTable = ({ customerData }) => {
+const SupplierListTable = ({ customerData }) => {
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
@@ -128,7 +128,7 @@ const CustomerListTable = ({ customerData }) => {
         )
       },
       columnHelper.accessor('customer', {
-        header: 'Customers',
+        header: 'Suppliers',
         cell: ({ row }) => (
           <div className='flex items-center gap-3'>
             {getAvatar({ avatar: row.original.avatar, customer: row.original.customer })}
@@ -147,7 +147,7 @@ const CustomerListTable = ({ customerData }) => {
         )
       }),
       columnHelper.accessor('customerId', {
-        header: 'Customer Id',
+        header: 'Supplier Id',
         cell: ({ row }) => <Typography color='text.primary'>#{row.original.customerId}</Typography>
       }),
       columnHelper.accessor('country', {
@@ -241,14 +241,7 @@ const CustomerListTable = ({ customerData }) => {
               <MenuItem value='50'>50</MenuItem>
               <MenuItem value='100'>100</MenuItem>
             </CustomTextField>
-            <Button
-              variant='tonal'
-              className='max-sm:is-full'
-              color='secondary'
-              startIcon={<i className='tabler-upload' />}
-            >
-              Export
-            </Button>
+
             <Button
               variant='contained'
               color='primary'
@@ -256,7 +249,7 @@ const CustomerListTable = ({ customerData }) => {
               startIcon={<i className='tabler-plus' />}
               onClick={() => setCustomerUserOpen(!customerUserOpen)}
             >
-              Add Customer
+              Add Supplier
             </Button>
           </div>
         </CardContent>
@@ -325,7 +318,7 @@ const CustomerListTable = ({ customerData }) => {
           }}
         />
       </Card>
-      <AddCustomerDrawer
+      <AddSupplierDrawer
         open={customerUserOpen}
         handleClose={() => setCustomerUserOpen(!customerUserOpen)}
         setData={setData}
@@ -335,4 +328,4 @@ const CustomerListTable = ({ customerData }) => {
   )
 }
 
-export default CustomerListTable
+export default SupplierListTable
