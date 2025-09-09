@@ -33,7 +33,7 @@ import {
 } from '@tanstack/react-table'
 
 // Component Imports
-import AddCustomerDrawer from './AddCustomerDrawer'
+import AddExpenseDrawer from './AddExpenseDrawer'
 import CustomAvatar from '@core/components/mui/Avatar'
 import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
@@ -287,11 +287,11 @@ const ExpenseListTable = ({ expenseData }) => {
           }}
         />
       </Card>
-      <AddCustomerDrawer
+      <AddExpenseDrawer
         open={customerUserOpen}
         handleClose={() => setCustomerUserOpen(!customerUserOpen)}
         setData={setData}
-        customerData={data}
+        expenseData={data}
       />
     </>
   )
