@@ -1,12 +1,11 @@
-import CustomerListTable from '@views/apps/ecommerce/customers/list/CustomerListTable'
-
 // Data Imports
 import { getEcommerceData } from '@/app/server/actions'
+import ExpenseListTable from '@/views/apps/expenses/list/ExpenseListTable'
 
 const ExpensesList = async () => {
   const data = await getEcommerceData()
 
-  return <CustomerListTable customerData={data?.customerData} />
+  return <ExpenseListTable expenseData={data?.expenseData} />
 }
 
 export default ExpensesList

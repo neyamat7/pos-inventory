@@ -5768,5 +5768,187 @@ export const db = {
       totalSpent: 2838.35,
       avatar: '/images/avatars/7.png'
     }
+  ],
+  expenseData: [
+    {
+      sl: 1,
+      amount: 2500,
+      category: 'Purchase',
+      expenseFor: 'Raw Materials',
+      paymentType: 'Cash',
+      referenceNumber: 'REF-1001',
+      expenseDate: '2025-09-01'
+    },
+    {
+      sl: 2,
+      amount: 1200,
+      category: 'Utility',
+      expenseFor: 'Electricity Bill',
+      paymentType: 'Bank Transfer',
+      referenceNumber: 'REF-1002',
+      expenseDate: '2025-09-02'
+    },
+    {
+      sl: 3,
+      amount: 800,
+      category: 'Maintenance',
+      expenseFor: 'Machine Repair',
+      paymentType: 'Cash',
+      referenceNumber: 'REF-1003',
+      expenseDate: '2025-09-03'
+    },
+    {
+      sl: 4,
+      amount: 500,
+      category: 'Office',
+      expenseFor: 'Stationery',
+      paymentType: 'Card',
+      referenceNumber: 'REF-1004',
+      expenseDate: '2025-09-03'
+    },
+    {
+      sl: 5,
+      amount: 3500,
+      category: 'Purchase',
+      expenseFor: 'Packaging Materials',
+      paymentType: 'Bank Transfer',
+      referenceNumber: 'REF-1005',
+      expenseDate: '2025-09-04'
+    },
+    {
+      sl: 6,
+      amount: 2200,
+      category: 'Transport',
+      expenseFor: 'Delivery Charges',
+      paymentType: 'Cash',
+      referenceNumber: 'REF-1006',
+      expenseDate: '2025-09-05'
+    },
+    {
+      sl: 7,
+      amount: 1500,
+      category: 'Utility',
+      expenseFor: 'Water Bill',
+      paymentType: 'Cash',
+      referenceNumber: 'REF-1007',
+      expenseDate: '2025-09-06'
+    },
+    {
+      sl: 8,
+      amount: 4200,
+      category: 'Purchase',
+      expenseFor: 'Spare Parts',
+      paymentType: 'Card',
+      referenceNumber: 'REF-1008',
+      expenseDate: '2025-09-06'
+    },
+    {
+      sl: 9,
+      amount: 950,
+      category: 'Office',
+      expenseFor: 'Printer Ink',
+      paymentType: 'Cash',
+      referenceNumber: 'REF-1009',
+      expenseDate: '2025-09-07'
+    },
+    {
+      sl: 10,
+      amount: 2750,
+      category: 'Transport',
+      expenseFor: 'Fuel',
+      paymentType: 'Cash',
+      referenceNumber: 'REF-1010',
+      expenseDate: '2025-09-07'
+    },
+    {
+      sl: 11,
+      amount: 1800,
+      category: 'Maintenance',
+      expenseFor: 'AC Servicing',
+      paymentType: 'Bank Transfer',
+      referenceNumber: 'REF-1011',
+      expenseDate: '2025-09-08'
+    },
+    {
+      sl: 12,
+      amount: 600,
+      category: 'Office',
+      expenseFor: 'Snacks & Refreshments',
+      paymentType: 'Cash',
+      referenceNumber: 'REF-1012',
+      expenseDate: '2025-09-08'
+    },
+    {
+      sl: 13,
+      amount: 5000,
+      category: 'Purchase',
+      expenseFor: 'Electronics',
+      paymentType: 'Card',
+      referenceNumber: 'REF-1013',
+      expenseDate: '2025-09-09'
+    },
+    {
+      sl: 14,
+      amount: 3100,
+      category: 'Utility',
+      expenseFor: 'Internet Bill',
+      paymentType: 'Bank Transfer',
+      referenceNumber: 'REF-1014',
+      expenseDate: '2025-09-09'
+    },
+    {
+      sl: 15,
+      amount: 700,
+      category: 'Office',
+      expenseFor: 'Cleaning Supplies',
+      paymentType: 'Cash',
+      referenceNumber: 'REF-1015',
+      expenseDate: '2025-09-10'
+    },
+    {
+      sl: 16,
+      amount: 2900,
+      category: 'Transport',
+      expenseFor: 'Logistics Partner Fees',
+      paymentType: 'Bank Transfer',
+      referenceNumber: 'REF-1016',
+      expenseDate: '2025-09-10'
+    },
+    {
+      sl: 17,
+      amount: 1400,
+      category: 'Maintenance',
+      expenseFor: 'Computer Servicing',
+      paymentType: 'Cash',
+      referenceNumber: 'REF-1017',
+      expenseDate: '2025-09-11'
+    },
+    {
+      sl: 18,
+      amount: 2100,
+      category: 'Office',
+      expenseFor: 'Furniture Repair',
+      paymentType: 'Card',
+      referenceNumber: 'REF-1018',
+      expenseDate: '2025-09-11'
+    },
+    {
+      sl: 19,
+      amount: 1600,
+      category: 'Utility',
+      expenseFor: 'Gas Bill',
+      paymentType: 'Cash',
+      referenceNumber: 'REF-1019',
+      expenseDate: '2025-09-12'
+    },
+    {
+      sl: 20,
+      amount: 4500,
+      category: 'Purchase',
+      expenseFor: 'Bulk Stock',
+      paymentType: 'Bank Transfer',
+      referenceNumber: 'REF-1020',
+      expenseDate: '2025-09-12'
+    }
   ]
 }
