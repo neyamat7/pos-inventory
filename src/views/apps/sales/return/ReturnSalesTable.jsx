@@ -92,7 +92,7 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const ReturnSalesTable = ({ salesReturnData }) => {
+const ReturnSalesTable = ({ salesReturnData = [] }) => {
   // States
   const [rowSelection, setRowSelection] = useState({})
   const [data, setData] = useState(...[salesReturnData])

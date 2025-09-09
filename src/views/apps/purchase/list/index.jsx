@@ -8,7 +8,7 @@ import Grid from '@mui/material/Grid2'
 import PurchaseCard from './PurchaseCard'
 import PurchaseListTable from './PurchaseListTable'
 
-const SalesList = ({ purchaseData }) => {
+const PurchaseList = ({ purchaseData }) => {
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12 }}>
@@ -21,4 +21,4 @@ const SalesList = ({ purchaseData }) => {
   )
 }
 
-export default SalesList
+export default PurchaseList

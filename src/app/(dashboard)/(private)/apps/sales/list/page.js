@@ -1,8 +1,8 @@
 // Component Imports
-import SalesList from '@/views/apps/purchase/list'
 
 // Data Imports
 import { getEcommerceData } from '@/app/server/actions'
+import SalesList from '@/views/apps/sales/list'
 
 const SalesListPage = async () => {
   // Vars

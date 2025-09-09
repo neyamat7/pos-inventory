@@ -1,4 +1,4 @@
-import purchaseListPage from "@/app/(dashboard)/(private)/apps/purchase/list/page";
+import purchaseListPage from '@/app/(dashboard)/(private)/apps/purchase/list/page'
 
 export const db = {
   products: [
@@ -4344,6 +4344,118 @@ export const db = {
     }
   ],
   salesReturnData: [
+    {
+      sl: 1,
+      invoiceNumber: 'INV-1001',
+      date: '2025-09-01',
+      name: 'Alpha Traders',
+      total: 1500,
+      paid: 1200,
+      of: 'Cash',
+      returnAmount: 300
+    },
+    {
+      sl: 2,
+      invoiceNumber: 'INV-1002',
+      date: '2025-09-02',
+      name: 'Beta Traders',
+      total: 2000,
+      paid: 1500,
+      of: 'Card',
+      returnAmount: 500
+    },
+    {
+      sl: 3,
+      invoiceNumber: 'INV-1003',
+      date: '2025-09-03',
+      name: 'Gamma Traders',
+      total: 1800,
+      paid: 1800,
+      of: 'Cash',
+      returnAmount: 0
+    },
+    {
+      sl: 4,
+      invoiceNumber: 'INV-1004',
+      date: '2025-09-04',
+      name: 'Delta Traders',
+      total: 2500,
+      paid: 2000,
+      of: 'Cheque',
+      returnAmount: 500
+    },
+    {
+      sl: 5,
+      invoiceNumber: 'INV-1005',
+      date: '2025-09-05',
+      name: 'Epsilon Traders',
+      total: 3000,
+      paid: 3000,
+      of: 'Card',
+      returnAmount: 0
+    },
+    {
+      sl: 6,
+      invoiceNumber: 'INV-1006',
+      date: '2025-09-06',
+      name: 'Zeta Traders',
+      total: 1200,
+      paid: 1000,
+      of: 'Cash',
+      returnAmount: 200
+    },
+    {
+      sl: 7,
+      invoiceNumber: 'INV-1007',
+      date: '2025-09-07',
+      name: 'Eta Traders',
+      total: 1600,
+      paid: 1600,
+      of: 'Card',
+      returnAmount: 0
+    },
+    {
+      sl: 8,
+      invoiceNumber: 'INV-1008',
+      date: '2025-09-08',
+      name: 'Theta Traders',
+      total: 2200,
+      paid: 2000,
+      of: 'Cheque',
+      returnAmount: 200
+    },
+    {
+      sl: 9,
+      invoiceNumber: 'INV-1009',
+      date: '2025-09-09',
+      name: 'Iota Traders',
+      total: 1400,
+      paid: 1200,
+      of: 'Cash',
+      returnAmount: 200
+    },
+    {
+      sl: 10,
+      invoiceNumber: 'INV-1010',
+      date: '2025-09-10',
+      name: 'Kappa Traders',
+      total: 2600,
+      paid: 2600,
+      of: 'Card',
+      returnAmount: 0
+    },
+    {
+      sl: 11,
+      invoiceNumber: 'INV-1011',
+      date: '2025-09-11',
+      name: 'Lambda Traders',
+      total: 1900,
+      paid: 1500,
+      of: 'Cash',
+      returnAmount: 400
+    }
+  ],
+  purchaseReturnData: [
     {
       sl: 1,
       invoiceNumber: 'INV-1001',

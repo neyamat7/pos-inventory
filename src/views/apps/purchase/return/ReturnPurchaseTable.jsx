@@ -92,10 +92,10 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const PurchaseListTable = ({ purchaseData = []}) => {
+const ReturnPurchaseTable = ({ purchaseReturnData = [] }) => {
   // States
   const [rowSelection, setRowSelection] = useState({})
-  const [data, setData] = useState(...[purchaseData])
+  const [data, setData] = useState(...[purchaseReturnData])
   const [globalFilter, setGlobalFilter] = useState('')
 
   // Hooks
@@ -107,43 +107,39 @@ const PurchaseListTable = ({ purchaseData = []}) => {
 
   const columns = [
     { accessorKey: 'sl', header: 'SL' },
+    { accessorKey: 'invoiceNumber', header: 'Invoice Number' },
     { accessorKey: 'date', header: 'Date' },
-    { accessorKey: 'invoiceNo', header: 'Invoice No' },
-    { accessorKey: 'partyName', header: 'Party Name' },
+    { accessorKey: 'name', header: 'Name' },
     { accessorKey: 'total', header: 'Total' },
-    { accessorKey: 'discount', header: 'Discount' },
     { accessorKey: 'paid', header: 'Paid' },
-    { accessorKey: 'due', header: 'Due' },
-    { accessorKey: 'payment', header: 'Payment' },
-    { accessorKey: 'status', header: 'Status' },
+    { accessorKey: 'of', header: 'Of' },
+    { accessorKey: 'returnAmount', header: 'Return Amount' },
 
-    // Action column using your existing OptionMenu
+    // Optional: Action column
     {
       id: 'action',
       header: 'Action',
       cell: ({ row }) => (
-        <div className='flex items-center'>
-          <OptionMenu
-            iconButtonProps={{ size: 'medium' }}
-            iconClassName='text-textSecondary'
-            options={[
-              {
-                text: 'View',
-                icon: 'tabler-eye',
-                href: `/invoices/${row.original.invoiceNo}`, // link to view invoice
-                linkProps: { className: 'flex items-center gap-2 w-full px-2 py-1' }
-              },
-              {
-                text: 'Delete',
-                icon: 'tabler-trash',
-                menuItemProps: {
-                  onClick: () => setData(prev => prev.filter(item => item.sl !== row.original.sl)),
-                  className: 'flex items-center'
-                }
+        <OptionMenu
+          iconButtonProps={{ size: 'medium' }}
+          iconClassName='text-textSecondary'
+          options={[
+            {
+              text: 'View',
+              icon: 'tabler-eye',
+              href: `/invoices/${row.original.invoiceNumber}`,
+              linkProps: { className: 'flex items-center gap-2 w-full px-2 py-1' }
+            },
+            {
+              text: 'Delete',
+              icon: 'tabler-trash',
+              menuItemProps: {
+                onClick: () => setData(prev => prev.filter(item => item.sl !== row.original.sl)),
+                className: 'flex items-center'
               }
-            ]}
-          />
-        </div>
+            }
+          ]}
+        />
       ),
       enableSorting: false
     }
@@ -284,4 +280,4 @@ const PurchaseListTable = ({ purchaseData = []}) => {
   )
 }
 
-export default PurchaseListTable
+export default ReturnPurchaseTable
