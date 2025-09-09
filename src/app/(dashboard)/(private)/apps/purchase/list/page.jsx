@@ -1,7 +1,14 @@
-const purchaselist = () => {
-  return (
-    <h1>purchase list</h1>
-  )
+// Component Imports
+import PurchaseList from '@/views/apps/purchase/list'
+
+// Data Imports
+import { getEcommerceData } from '@/app/server/actions'
+
+const purchaseListPage = async () => {
+  // Vars
+  const data = await getEcommerceData()
+
+  return <PurchaseList purchaseData={data?.purchaseData} />
 }
 
-export default purchaselist
+export default purchaseListPage
