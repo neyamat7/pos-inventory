@@ -92,10 +92,10 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const OrderListTable = ({ orderData }) => {
+const SalesListTable = ({ salesData }) => {
   // States
   const [rowSelection, setRowSelection] = useState({})
-  const [data, setData] = useState(...[orderData])
+  const [data, setData] = useState(...[salesData])
   const [globalFilter, setGlobalFilter] = useState('')
 
   // Hooks
@@ -105,140 +105,49 @@ const OrderListTable = ({ orderData }) => {
   const paypal = '/images/apps/ecommerce/paypal.png'
   const mastercard = '/images/apps/ecommerce/mastercard.png'
 
-  const columns = useMemo(
-    () => [
-      {
-        id: 'select',
-        header: ({ table }) => (
-          <Checkbox
-            {...{
-              checked: table.getIsAllRowsSelected(),
-              indeterminate: table.getIsSomeRowsSelected(),
-              onChange: table.getToggleAllRowsSelectedHandler()
-            }}
-          />
-        ),
-        cell: ({ row }) => (
-          <Checkbox
-            {...{
-              checked: row.getIsSelected(),
-              disabled: !row.getCanSelect(),
-              indeterminate: row.getIsSomeSelected(),
-              onChange: row.getToggleSelectedHandler()
-            }}
-          />
-        )
-      },
-      columnHelper.accessor('order', {
-        header: 'Order',
-        cell: ({ row }) => (
-          <Typography
-            component={Link}
-            href={getLocalizedUrl(`/apps/ecommerce/orders/details/${row.original.order}`, "en")}
-            color='primary.main'
-          >{`#${row.original.order}`}</Typography>
-        )
-      }),
-      columnHelper.accessor('date', {
-        header: 'Date',
-        cell: ({ row }) => (
-          <Typography>{`${new Date(row.original.date).toDateString()}, ${row.original.time}`}</Typography>
-        )
-      }),
-      columnHelper.accessor('customer', {
-        header: 'Customers',
-        cell: ({ row }) => (
-          <div className='flex items-center gap-3'>
-            {getAvatar({ avatar: row.original.avatar, customer: row.original.customer })}
-            <div className='flex flex-col'>
-              <Typography
-                component={Link}
-                href={getLocalizedUrl('/apps/ecommerce/customers/details/879861', "en")}
-                color='text.primary'
-                className='font-medium hover:text-primary'
-              >
-                {row.original.customer}
-              </Typography>
-              <Typography variant='body2'>{row.original.email}</Typography>
-            </div>
-          </div>
-        )
-      }),
-      columnHelper.accessor('payment', {
-        header: 'Payment',
-        cell: ({ row }) => (
-          <div className='flex items-center gap-1'>
-            <i
-              className={classnames(
-                'tabler-circle-filled bs-2.5 is-2.5',
-                paymentStatus[row.original.payment].colorClassName
-              )}
-            />
-            <Typography color={`${paymentStatus[row.original.payment].color}.main`} className='font-medium'>
-              {paymentStatus[row.original.payment].text}
-            </Typography>
-          </div>
-        )
-      }),
-      columnHelper.accessor('status', {
-        header: 'Status',
-        cell: ({ row }) => (
-          <Chip
-            label={row.original.status}
-            color={statusChipColor[row.original.status].color}
-            variant='tonal'
-            size='small'
-          />
-        )
-      }),
-      columnHelper.accessor('method', {
-        header: 'Method',
-        cell: ({ row }) => (
-          <div className='flex items-center'>
-            <div className='flex justify-center items-center bg-[#F6F8FA] rounded-sm is-[29px] bs-[18px]'>
-              <img
-                src={row.original.method === 'mastercard' ? mastercard : paypal}
-                height={row.original.method === 'mastercard' ? 11 : 14}
-              />
-            </div>
-            <Typography>
-              {`...${row.original.method === 'mastercard' ? row.original.methodNumber : '@gmail.com'}`}
-            </Typography>
-          </div>
-        )
-      }),
-      columnHelper.accessor('action', {
-        header: 'Action',
-        cell: ({ row }) => (
-          <div className='flex items-center'>
-            <OptionMenu
-              iconButtonProps={{ size: 'medium' }}
-              iconClassName='text-textSecondary'
-              options={[
-                {
-                  text: 'View',
-                  icon: 'tabler-eye',
-                  href: getLocalizedUrl(`/apps/ecommerce/orders/details/${row.original.order}`, "en"),
-                  linkProps: { className: 'flex items-center gap-2 is-full plb-2 pli-4' }
-                },
-                {
-                  text: 'Delete',
-                  icon: 'tabler-trash',
-                  menuItemProps: {
-                    onClick: () => setData(data?.filter(order => order.id !== row.original.id)),
-                    className: 'flex items-center'
-                  }
+  const columns = [
+    { accessorKey: 'sl', header: 'SL' },
+    { accessorKey: 'date', header: 'Date' },
+    { accessorKey: 'invoiceNo', header: 'Invoice No' },
+    { accessorKey: 'partyName', header: 'Party Name' },
+    { accessorKey: 'total', header: 'Total' },
+    { accessorKey: 'discount', header: 'Discount' },
+    { accessorKey: 'paid', header: 'Paid' },
+    { accessorKey: 'due', header: 'Due' },
+    { accessorKey: 'payment', header: 'Payment' },
+    { accessorKey: 'status', header: 'Status' },
+
+    // Action column using your existing OptionMenu
+    {
+      id: 'action',
+      header: 'Action',
+      cell: ({ row }) => (
+        <div className='flex items-center'>
+          <OptionMenu
+            iconButtonProps={{ size: 'medium' }}
+            iconClassName='text-textSecondary'
+            options={[
+              {
+                text: 'View',
+                icon: 'tabler-eye',
+                href: `/invoices/${row.original.invoiceNo}`, // link to view invoice
+                linkProps: { className: 'flex items-center gap-2 w-full px-2 py-1' }
+              },
+              {
+                text: 'Delete',
+                icon: 'tabler-trash',
+                menuItemProps: {
+                  onClick: () => setData(prev => prev.filter(item => item.sl !== row.original.sl)),
+                  className: 'flex items-center'
                 }
-              ]}
-            />
-          </div>
-        ),
-        enableSorting: false
-      })
-    ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data]
-  )
+              }
+            ]}
+          />
+        </div>
+      ),
+      enableSorting: false
+    }
+  ]
 
   const table = useReactTable({
     data: data,
@@ -304,14 +213,6 @@ const OrderListTable = ({ orderData }) => {
             <MenuItem value='50'>50</MenuItem>
             <MenuItem value='100'>100</MenuItem>
           </CustomTextField>
-          <Button
-            variant='tonal'
-            color='secondary'
-            startIcon={<i className='tabler-upload' />}
-            className='max-sm:is-full is-auto'
-          >
-            Export
-          </Button>
         </div>
       </CardContent>
       <div className='overflow-x-auto'>
@@ -343,6 +244,7 @@ const OrderListTable = ({ orderData }) => {
               </tr>
             ))}
           </thead>
+
           {table.getFilteredRowModel().rows.length === 0 ? (
             <tbody>
               <tr>
@@ -382,4 +284,4 @@ const OrderListTable = ({ orderData }) => {
   )
 }
 
-export default OrderListTable
+export default SalesListTable
