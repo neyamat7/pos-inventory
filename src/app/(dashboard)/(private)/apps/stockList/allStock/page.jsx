@@ -1,6 +1,6 @@
 // Data Imports
 import { getEcommerceData } from '@/app/server/actions'
-import AllStockList from '@/views/apps/ecommerce/allStock/list'
+import AllStockList from '@/views/apps/ecommerce/stockList/allStock/list'
 
 const AllStockPage = async () => {
   // Vars

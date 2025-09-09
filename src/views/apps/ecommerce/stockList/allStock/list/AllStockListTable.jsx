@@ -92,7 +92,7 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const PurchaseListTable = ({ stockProductsData = [] }) => {
+const AllStockListTable = ({ stockProductsData = [] }) => {
   // States
   const [rowSelection, setRowSelection] = useState({})
   const [data, setData] = useState(...[stockProductsData])
@@ -292,4 +292,4 @@ const PurchaseListTable = ({ stockProductsData = [] }) => {
   )
 }
 
-export default PurchaseListTable
+export default AllStockListTable

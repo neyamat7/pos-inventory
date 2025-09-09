@@ -12,10 +12,10 @@ import classnames from 'classnames'
 // Component Imports
 import CustomAvatar from '@core/components/mui/Avatar'
 
-const PurchaseCard = ({ stockProductsData }) => {
-  const totalQty = stockProductsData.reduce((acc, item) => acc + item.qty, 0)
+const LowStockCard = ({ lowStockData }) => {
+  const totalQty = lowStockData.reduce((acc, item) => acc + item.qty, 0)
 
-  const totalStockValue = stockProductsData.reduce((acc, item) => acc + item.cost * item.qty, 0)
+  const totalStockValue = lowStockData.reduce((acc, item) => acc + item.cost * item.qty, 0)
 
   // Vars
   const data = [
@@ -74,4 +74,4 @@ const PurchaseCard = ({ stockProductsData }) => {
   )
 }
 
-export default PurchaseCard
+export default LowStockCard

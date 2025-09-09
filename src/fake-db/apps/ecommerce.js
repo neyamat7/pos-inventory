@@ -4525,6 +4525,143 @@ export const db = {
       sale: 450
     }
   ],
+  lowStockData: [
+    {
+      sl: 1,
+      product: 'Wireless Mouse',
+      code: 'LP1001',
+      category: 'Electronics',
+      cost: 850,
+      qty: 15,
+      sale: 1200
+    },
+    {
+      sl: 2,
+      product: 'Wired Mouse',
+      code: 'WM1002',
+      category: 'Accessories',
+      cost: 15,
+      qty: 120,
+      sale: 25
+    },
+    {
+      sl: 3,
+      product: 'Smartphone X',
+      code: 'MK1003',
+      category: 'Accessories',
+      cost: 45,
+      qty: 80,
+      sale: 70
+    },
+    {
+      sl: 4,
+      product: 'Smartphone Pro',
+      code: 'SP1004',
+      category: 'Electronics',
+      cost: 500,
+      qty: 50,
+      sale: 750
+    },
+    {
+      sl: 5,
+      product: 'Bluetooth Speaker',
+      code: 'BS1005',
+      category: 'Audio',
+      cost: 30,
+      qty: 100,
+      sale: 55
+    },
+    {
+      sl: 6,
+      product: 'LED Monitor 24"',
+      code: 'MN1006',
+      category: 'Electronics',
+      cost: 120,
+      qty: 35,
+      sale: 180
+    },
+    {
+      sl: 7,
+      product: 'Gaming Chair',
+      code: 'GC1007',
+      category: 'Furniture',
+      cost: 150,
+      qty: 20,
+      sale: 250
+    },
+    {
+      sl: 8,
+      product: 'External Hard Drive 1TB',
+      code: 'HD1008',
+      category: 'Storage',
+      cost: 45,
+      qty: 70,
+      sale: 80
+    },
+    {
+      sl: 9,
+      product: 'USB-C Cable',
+      code: 'UC1009',
+      category: 'Accessories',
+      cost: 3,
+      qty: 300,
+      sale: 8
+    },
+    {
+      sl: 10,
+      product: 'Smartwatch Z',
+      code: 'SW1010',
+      category: 'Wearables',
+      cost: 100,
+      qty: 40,
+      sale: 160
+    },
+    {
+      sl: 11,
+      product: 'Air Conditioner 1.5 Ton',
+      code: 'AC1011',
+      category: 'Appliances',
+      cost: 400,
+      qty: 10,
+      sale: 650
+    },
+    {
+      sl: 12,
+      product: 'Refrigerator 300L',
+      code: 'RF1012',
+      category: 'Appliances',
+      cost: 380,
+      qty: 12,
+      sale: 600
+    },
+    {
+      sl: 13,
+      product: 'Microwave Oven',
+      code: 'MW1013',
+      category: 'Appliances',
+      cost: 120,
+      qty: 18,
+      sale: 200
+    },
+    {
+      sl: 14,
+      product: 'Office Desk',
+      code: 'OD1014',
+      category: 'Furniture',
+      cost: 90,
+      qty: 25,
+      sale: 150
+    },
+    {
+      sl: 15,
+      product: 'Printer Ink Cartridge',
+      code: 'IC1015',
+      category: 'Office Supplies',
+      cost: 12,
+      qty: 200,
+      sale: 25
+    }
+  ],
   salesReturnData: [
     {
       sl: 1,

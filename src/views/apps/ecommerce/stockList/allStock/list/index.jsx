@@ -4,18 +4,17 @@
 import Grid from '@mui/material/Grid2'
 
 // Component Imports
-
-import PurchaseCard from './PurchaseCard'
-import PurchaseListTable from './PurchaseListTable'
+import AllStockCard from './AllStockCard'
+import AllStockListTable from './AllStockListTable'
 
 const AllStockList = ({ stockProductsData }) => {
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12 }}>
-        <PurchaseCard stockProductsData={stockProductsData} />
+        <AllStockCard stockProductsData={stockProductsData} />
       </Grid>
       <Grid size={{ xs: 12 }}>
-        <PurchaseListTable stockProductsData={stockProductsData} />
+        <AllStockListTable stockProductsData={stockProductsData} />
       </Grid>
     </Grid>
   )
