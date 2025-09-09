@@ -4,18 +4,17 @@
 import Grid from '@mui/material/Grid2'
 
 // Component Imports
+import ReturnSalesTable from './ReturnSalesTable'
+import ReturnSalesCard from './ReturnSalesCard'
 
-import SalesCard from './SalesCard'
-import SalesListTable from './SalesListTable'
-
-const ReturnList = ({ salesData }) => {
+const ReturnList = ({ salesReturnData }) => {
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12 }}>
-        <SalesCard />
+        <ReturnSalesCard />
       </Grid>
       <Grid size={{ xs: 12 }}>
-        <SalesListTable salesData={salesData} />
+        <ReturnSalesTable salesReturnData={salesReturnData} />
       </Grid>
     </Grid>
   )

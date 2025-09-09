@@ -36,7 +36,7 @@ const data = [
   }
 ]
 
-const SalesCard = () => {
+const ReturnSalesCard = () => {
   // Hooks
   const isBelowMdScreen = useMediaQuery(theme => theme.breakpoints.down('md'))
   const isBelowSmScreen = useMediaQuery(theme => theme.breakpoints.down('sm'))
@@ -80,4 +80,4 @@ const SalesCard = () => {
   )
 }
 
-export default SalesCard
+export default ReturnSalesCard

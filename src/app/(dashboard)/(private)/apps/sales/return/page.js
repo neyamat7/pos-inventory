@@ -6,7 +6,7 @@ const SalesReturnPage = async () => {
   // Vars
   const data = await getEcommerceData()
 
-  return <ReturnList salesData={data?.salesData} />
+  return <ReturnList salesReturnData={data?.salesReturnData} />
 }
 
 export default SalesReturnPage
