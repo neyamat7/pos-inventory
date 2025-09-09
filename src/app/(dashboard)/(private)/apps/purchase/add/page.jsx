@@ -1,7 +1,7 @@
+import AddPurchase from '@/views/apps/purchase/add/AddPurchase'
+
 const add = () => {
-  return (
-    <h1>add purchase</h1>
-  )
+  return <AddPurchase />
 }
 
 export default add

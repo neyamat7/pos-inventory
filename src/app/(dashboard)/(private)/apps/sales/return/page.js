@@ -1,6 +1,6 @@
 // Data Imports
 import { getEcommerceData } from '@/app/server/actions'
-import ReturnList from '@/views/apps/pos/sales/return'
+import ReturnList from '@/views/apps/sales/return'
 
 const SalesReturnPage = async () => {
   // Vars

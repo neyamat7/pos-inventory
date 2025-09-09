@@ -1,9 +1,7 @@
-import Pos from "@/views/apps/sales/Pos"
+import Pos from '@/views/apps/sales/pos/Pos'
 
 const posPage = () => {
-  return (
-    <Pos />
-  )
+  return <Pos />
 }
 
 export default posPage
