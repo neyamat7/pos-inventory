@@ -93,11 +93,11 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const SupplierListTable = ({ customerData }) => {
+const SupplierListTable = ({ supplierData }) => {
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
-  const [data, setData] = useState(...[customerData])
+  const [data, setData] = useState(...[supplierData])
   const [globalFilter, setGlobalFilter] = useState('')
 
   // Hooks
@@ -322,7 +322,7 @@ const SupplierListTable = ({ customerData }) => {
         open={customerUserOpen}
         handleClose={() => setCustomerUserOpen(!customerUserOpen)}
         setData={setData}
-        customerData={data}
+        supplierData={data}
       />
     </>
   )

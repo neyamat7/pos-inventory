@@ -70,6 +70,12 @@ const VerticalMenu = ({ scrollMenu }) => {
           <MenuItem href='/apps/products/category'>Category</MenuItem>
         </SubMenu>
 
+        <SubMenu label='Stock List' icon={<i className='tabler-smart-home' />}>
+          <MenuItem href='/apps/stockList/allStock'>All Stock</MenuItem>
+          <MenuItem href='/apps/stockList/lowStock'>Low Stock</MenuItem>
+          <MenuItem href='/apps/stockList/expiredProducts'>Expired Products</MenuItem>
+        </SubMenu>
+
         <SubMenu label='Customers' icon={<i className='tabler-smart-home' />}>
           <MenuItem href='/apps/customers/list'>All Customers</MenuItem>
           <MenuItem href={`/apps/customers/details/${'879861'}`} exactMatch={false} activeUrl='/apps/customers/details'>

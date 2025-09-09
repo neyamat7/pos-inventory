@@ -6,7 +6,7 @@ const SupplierListTablePage = async () => {
   // Vars
   const data = await getEcommerceData()
 
-  return <SupplierListTable customerData={data?.customerData} />
+  return <SupplierListTable supplierData={data?.supplierData} />
 }
 
 export default SupplierListTablePage

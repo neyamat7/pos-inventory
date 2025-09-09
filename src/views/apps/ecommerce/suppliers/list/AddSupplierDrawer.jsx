@@ -38,7 +38,7 @@ const initialData = {
 
 const AddSupplierDrawer = props => {
   // Props
-  const { open, handleClose, setData, customerData } = props
+  const { open, handleClose, setData, supplierData } = props
 
   // States
   const [formData, setFormData] = useState(initialData)
@@ -59,9 +59,9 @@ const AddSupplierDrawer = props => {
 
   const onSubmit = data => {
     const newData = {
-      id: (customerData?.length && customerData?.length + 1) || 1,
+      id: (supplierData?.length && supplierData?.length + 1) || 1,
       customer: data.fullName,
-      customerId: customerData?.[Math.floor(Math.random() * 100) + 1].customerId ?? '1',
+      customerId: supplierData?.[Math.floor(Math.random() * 100) + 1].customerId ?? '1',
       email: data.email,
       country: `${country[data.country].country}`,
       countryCode: 'st',
@@ -71,7 +71,7 @@ const AddSupplierDrawer = props => {
       avatar: `/images/avatars/${Math.floor(Math.random() * 8) + 1}.png`
     }
 
-    setData([...(customerData ?? []), newData])
+    setData([...(supplierData ?? []), newData])
     resetForm({ fullName: '', email: '', country: '' })
     setFormData(initialData)
     handleClose()
