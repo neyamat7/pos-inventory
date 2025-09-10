@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 
+import { FaTimes, FaPlus, FaMinus } from 'react-icons/fa'
+
 import { Modal, Box, TextField, IconButton, Fade, Slide } from '@mui/material'
 
 import { Search, Close } from '@mui/icons-material'
@@ -13,11 +15,11 @@ import SearchProduct from './SearchProduct'
 const products = [
   {
     id: 1,
-    name: 'Nike Structure 25',
+    name: 'Mango',
     price: 40,
-    image: 'https://i.postimg.cc/6qMdKHgs/image-1.png',
-    category: 'Footwear',
-    brand: 'Nike'
+    image: 'https://i.postimg.cc/2yhsJDLj/Mangoes.jpg',
+    category: 'Fruits',
+    brand: 'Fresh'
   },
   {
     id: 2,
@@ -93,16 +95,24 @@ const brands = [
   { id: 5, name: 'Leather Co', image: 'https://i.postimg.cc/764hqV0C/optimize-website-seo-conversions-6-768x512.jpg' }
 ]
 
+const suppliers = [
+  { id: 103, name: 'Abdullah Suad' },
+  { id: 203, name: 'Tonmoy Sarkar' },
+  { id: 302, name: 'Rahim Traders' }
+]
+
 export default function AddPurchase() {
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryModalOpen, setCategoryModalOpen] = useState(false)
   const [brandModalOpen, setBrandModalOpen] = useState(false)
   const [categorySearch, setCategorySearch] = useState('')
   const [brandSearch, setBrandSearch] = useState('')
-  const [selectedCustomer, setSelectedCustomer] = useState('')
   const [paymentType, setPaymentType] = useState('Cash')
   const [vatType, setVatType] = useState('Select')
   const [discountType, setDiscountType] = useState('Flat (₹)')
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+  const [selectedSupplier, setSelectedSupplier] = useState({})
+  const [cartProducts, setCartProducts] = useState([])
 
   const filteredProducts = products.filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
@@ -124,6 +134,71 @@ export default function AddPurchase() {
     transition: 'transform 0.3s ease-in-out',
     overflowY: 'auto'
   }
+
+  // Function to remove item from cart
+  const handleRemoveCartItem = (productId, supplierId) => {
+    setCartProducts(prevCart =>
+      prevCart.filter(item => !(item.product_id === productId && item.supplier_id === supplierId))
+    )
+  }
+
+  const handleBoxChange = (productId, supplierId, increment = true) => {
+    setCartProducts(prevCart =>
+      prevCart.map(item => {
+        // Update only the item with the matching product AND supplier
+        if (item.product_id === productId && item.supplier_id === supplierId) {
+          const newBox = increment ? item.box + 1 : Math.max(0, item.box - 1)
+
+          return { ...item, box: newBox }
+        }
+
+        return item
+      })
+    )
+  }
+
+  const handleCartProductClick = product => {
+    if (!selectedSupplier?.id) {
+      alert('Please select a supplier first.')
+
+      return
+    }
+
+    const isAlreadyAdded = cartProducts.some(
+      item => item.product_id === product.id && item.supplier_id === selectedSupplier.id
+    )
+
+    if (isAlreadyAdded) {
+      alert('This product is already in the cart.')
+
+      return
+    }
+
+    setCartProducts(prevCart => {
+      // Add product with additional properties
+      const newCartItem = {
+        ...product,
+        product_id: product.id,
+        product_name: product.name,
+        supplier_id: selectedSupplier.id,
+        supplier_name: selectedSupplier.name,
+        box: 0,
+        transportation: '',
+        moshjid: 0,
+        van_vara: 0,
+        total: 0,
+        cost: product.price,
+        discount: 0,
+        received_date: date,
+        expiry_date: ''
+      }
+
+      return [...prevCart, newCartItem]
+    })
+  }
+
+  console.log('selected customer', selectedSupplier)
+  console.log('cart products', cartProducts)
 
   return (
     <div className='min-h-[calc(100vh-54px] bg-gray-50 p-4'>
@@ -149,7 +224,7 @@ export default function AddPurchase() {
 
       <div className='flex gap-6'>
         {/* Left Side - Form */}
-        <div className='w-2/3 bg-white rounded-lg p-6'>
+        <div className='w-2/3 bg-white rounded-lg p-6 flex flex-col'>
           {/* Order Details */}
           <div className='grid grid-cols-3 gap-4 mb-6'>
             <input
@@ -160,18 +235,26 @@ export default function AddPurchase() {
             />
             <input
               type='date'
-              defaultValue='2025-09-08'
+              defaultValue={date}
               className='px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500'
+              onChange={e => setDate(e.target.value)}
             />
             <div className='flex'>
               <select
-                value={selectedCustomer}
-                onChange={e => setSelectedCustomer(e.target.value)}
-                className='flex-1 px-3 py-2 border border-gray-300 rounded-l focus:outline-none '
+                value={selectedSupplier.id || ''}
+                onChange={e => {
+                  const supplier = suppliers.find(s => s.id === parseInt(e.target.value))
+
+                  setSelectedSupplier(supplier || {})
+                }}
+                className='flex-1 px-3 py-2 border border-gray-300 rounded-l focus:outline-none'
               >
                 <option value=''>Select Customer</option>
-                <option value='customer1'>Abdullah Suad</option>
-                <option value='customer2'>Tonmoy Sarkar</option>
+                {suppliers.map(supplier => (
+                  <option key={supplier.id} value={supplier.id}>
+                    {supplier.name}
+                  </option>
+                ))}
               </select>
               <button className='px-3 py-2 bg-[#7367f0] text-white rounded-r'>
                 <span className='text-sm'>+</span>
@@ -184,35 +267,68 @@ export default function AddPurchase() {
             <table className='w-full border-collapse'>
               <thead>
                 <tr className='bg-gray-50'>
-                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Image</th>
-                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Items</th>
-                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Code</th>
-                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Batch</th>
-                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Unit</th>
-                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Sale Price</th>
-                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Qty</th>
-                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Sub Total</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>SL</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Supplier</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Product</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Box</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Cost(unit)</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Transportation</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Moshjid</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Van Vara</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Total</th>
                   <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Action</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td className='border border-gray-200 px-3 py-8'></td>
-                  <td className='border border-gray-200 px-3 py-8'></td>
-                  <td className='border border-gray-200 px-3 py-8'></td>
-                  <td className='border border-gray-200 px-3 py-8'></td>
-                  <td className='border border-gray-200 px-3 py-8'></td>
-                  <td className='border border-gray-200 px-3 py-8'></td>
-                  <td className='border border-gray-200 px-3 py-8'></td>
-                  <td className='border border-gray-200 px-3 py-8'></td>
-                  <td className='border border-gray-200 px-3 py-8'></td>
-                </tr>
-              </tbody>
+
+              {cartProducts.length > 0 && (
+                <tbody>
+                  {cartProducts.map((product, index) => (
+                    <tr key={product.product_id}>
+                      <td className='border border-gray-200 px-3 py-2'>{product.supplier_id}</td>
+                      <td className='border border-gray-200 px-3 py-2'>{product.supplier_name}</td>
+                      <td className='border border-gray-200 px-3 py-2'>{product.product_name}</td>
+
+                      {/* Box with plus/minus */}
+                      <td className='border border-gray-200 px-3 py-2 flex items-center gap-2'>
+                        <button
+                          onClick={() => handleBoxChange(product.product_id, product.supplier_id, false)}
+                          className='text-red-500'
+                        >
+                          <FaMinus />
+                        </button>
+                        <span>{product.box}</span>
+                        <button
+                          onClick={() => handleBoxChange(product.product_id, product.supplier_id, true)}
+                          className='text-green-500'
+                        >
+                          <FaPlus />
+                        </button>
+                      </td>
+
+                      <td className='border border-gray-200 px-3 py-2'>{product.cost}</td>
+                      <td className='border border-gray-200 px-3 py-2'>{product.transportation}</td>
+                      <td className='border border-gray-200 px-3 py-2'>{product.moshjid}</td>
+                      <td className='border border-gray-200 px-3 py-2'>{product.van_vara}</td>
+                      <td className='border border-gray-200 px-3 py-2'>{product.total}</td>
+
+                      {/* Remove button */}
+                      <td className='border border-gray-200 px-3 py-2'>
+                        <button
+                          onClick={() => handleRemoveCartItem(product.product_id, product.supplier_id)}
+                          className='text-red-500'
+                        >
+                          <FaTimes />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              )}
             </table>
           </div>
 
           {/* Payment Details */}
-          <div className='grid grid-cols-2 gap-8'>
+          <div className='grid grid-cols-2 gap-8 mt-auto'>
             <div className='space-y-4'>
               <div className='flex items-center'>
                 <label className='w-32 text-sm'>Receive Amount</label>
@@ -316,6 +432,7 @@ export default function AddPurchase() {
           <div className='grid grid-cols-2 gap-4 max-h-[calc(100vh-200px)] overflow-y-auto'>
             {filteredProducts.map(product => (
               <div
+                onClick={() => handleCartProductClick(product)}
                 key={product.id}
                 className='bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer'
               >

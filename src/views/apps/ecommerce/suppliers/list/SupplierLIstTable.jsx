@@ -165,7 +165,7 @@ const SupplierListTable = ({ supplierData = [] }) => {
       }),
       columnHelper.accessor('due', {
         header: 'Due',
-        cell: ({ row }) => <Typography>{row.original.due}</Typography>
+        cell: ({ row }) => <Typography>৳{row.original.due}</Typography>
       }),
 
       {

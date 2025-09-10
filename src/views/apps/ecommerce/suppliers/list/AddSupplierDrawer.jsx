@@ -7,7 +7,6 @@ import Drawer from '@mui/material/Drawer'
 import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
 import MenuItem from '@mui/material/MenuItem'
-import Switch from '@mui/material/Switch'
 import Typography from '@mui/material/Typography'
 
 // Third-party Imports
@@ -17,23 +16,11 @@ import { useForm, Controller } from 'react-hook-form'
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
 
-export const country = {
-  india: { country: 'India' },
-  australia: { country: 'Australia' },
-  france: { country: 'France' },
-  brazil: { country: 'Brazil' },
-  us: { country: 'United States' },
-  china: { country: 'China' }
-}
-
 // Vars
 const initialData = {
-  contact: '',
-  address1: '',
-  address2: '',
-  town: '',
-  state: '',
-  postcode: ''
+  phone: '',
+  due: '',
+  image: ''
 }
 
 const AddSupplierDrawer = props => {
@@ -51,35 +38,36 @@ const AddSupplierDrawer = props => {
     formState: { errors }
   } = useForm({
     defaultValues: {
-      fullName: '',
+      name: '',
       email: '',
-      country: ''
+      type: ''
     }
   })
 
   const onSubmit = data => {
+    console.log('data', data)
+
     const newData = {
-      id: (supplierData?.length && supplierData?.length + 1) || 1,
-      customer: data.fullName,
-      customerId: supplierData?.[Math.floor(Math.random() * 100) + 1].customerId ?? '1',
+      sl: (supplierData?.length && supplierData?.length + 1) || 1,
+      image: formData.image || `/images/avatars/${Math.floor(Math.random() * 8) + 1}.png`, // use user input OR fallback
+      name: data.name,
       email: data.email,
-      country: `${country[data.country].country}`,
-      countryCode: 'st',
-      countryFlag: `/images/cards/${data.country}.png`,
-      order: Math.floor(Math.random() * 1000) + 1,
-      totalSpent: Math.floor(Math.random() * (1000000 - 100) + 100) / 100,
-      avatar: `/images/avatars/${Math.floor(Math.random() * 8) + 1}.png`
+      type: data.type,
+      phone: formData.phone,
+      due: formData.due
     }
 
+    console.log('newData', newData)
+
     setData([...(supplierData ?? []), newData])
-    resetForm({ fullName: '', email: '', country: '' })
+    resetForm({ name: '', email: '', type: '' })
     setFormData(initialData)
     handleClose()
   }
 
   const handleReset = () => {
     handleClose()
-    resetForm({ fullName: '', email: '', country: '' })
+    resetForm({ name: '', email: '', type: '' })
     setFormData(initialData)
   }
 
@@ -101,12 +89,14 @@ const AddSupplierDrawer = props => {
       <Divider />
       <PerfectScrollbar options={{ wheelPropagation: false, suppressScrollX: true }}>
         <div className='p-6'>
-          <form onSubmit={handleSubmit(data => onSubmit(data))} className='flex flex-col gap-5'>
+          <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-5'>
             <Typography color='text.primary' className='font-medium'>
-              Basic Information
+              Supplier Information
             </Typography>
+
+            {/* Name */}
             <Controller
-              name='fullName'
+              name='name'
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
@@ -114,11 +104,13 @@ const AddSupplierDrawer = props => {
                   {...field}
                   fullWidth
                   label='Name'
-                  placeholder='John Doe'
-                  {...(errors.fullName && { error: true, helperText: 'This field is required.' })}
+                  placeholder='Supplier Name'
+                  {...(errors.name && { error: true, helperText: 'This field is required.' })}
                 />
               )}
             />
+
+            {/* Email */}
             <Controller
               name='email'
               control={control}
@@ -129,93 +121,63 @@ const AddSupplierDrawer = props => {
                   fullWidth
                   type='email'
                   label='Email'
-                  placeholder='johndoe@gmail.com'
+                  placeholder='supplier@email.com'
                   {...(errors.email && { error: true, helperText: 'This field is required.' })}
                 />
               )}
             />
+
+            {/* Type dropdown */}
             <Controller
-              name='country'
+              name='type'
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
                 <CustomTextField
                   select
                   fullWidth
-                  id='country'
-                  label='Country'
+                  label='Type'
                   {...field}
-                  {...(errors.country && { error: true, helperText: 'This field is required.' })}
+                  {...(errors.type && { error: true, helperText: 'This field is required.' })}
                 >
-                  <MenuItem value='india'>India</MenuItem>
-                  <MenuItem value='australia'>Australia</MenuItem>
-                  <MenuItem value='france'>France</MenuItem>
-                  <MenuItem value='brazil'>Brazil</MenuItem>
-                  <MenuItem value='us'>USA</MenuItem>
-                  <MenuItem value='china'>China</MenuItem>
+                  <MenuItem value='Supplier'>Supplier</MenuItem>
+                  <MenuItem value='Distributor'>Distributor</MenuItem>
+                  <MenuItem value='Wholesaler'>Wholesaler</MenuItem>
+                  <MenuItem value='Retailer'>Retailer</MenuItem>
                 </CustomTextField>
               )}
             />
-            <Typography color='text.primary' className='font-medium'>
-              Shipping Information
-            </Typography>
+
+            {/* Phone */}
             <CustomTextField
-              fullWidth
-              label='Address Line 1'
-              name='address1'
-              placeholder='45 Roker Terrace'
-              value={formData.address1}
-              onChange={e => setFormData({ ...formData, address1: e.target.value })}
-            />
-            <CustomTextField
-              fullWidth
-              label='Address Line 2'
-              name='address2'
-              placeholder='Street 69'
-              value={formData.address2}
-              onChange={e => setFormData({ ...formData, address2: e.target.value })}
-            />
-            <CustomTextField
-              fullWidth
-              label='Town'
-              name='town'
-              placeholder='New York'
-              value={formData.town}
-              onChange={e => setFormData({ ...formData, town: e.target.value })}
-            />
-            <CustomTextField
-              fullWidth
-              label='State/Province'
-              name='state'
-              placeholder='Southern tip'
-              value={formData.state}
-              onChange={e => setFormData({ ...formData, state: e.target.value })}
-            />
-            <CustomTextField
-              fullWidth
-              label='Post Code'
-              name='postcode'
-              placeholder='734990'
-              value={formData.postcode}
-              onChange={e => setFormData({ ...formData, postcode: e.target.value })}
-            />
-            <CustomTextField
-              label='Mobile'
+              label='Phone'
               type='number'
               fullWidth
               placeholder='+(123) 456-7890'
-              value={formData.contact}
-              onChange={e => setFormData({ ...formData, contact: e.target.value })}
+              value={formData.phone}
+              onChange={e => setFormData({ ...formData, phone: e.target.value })}
             />
-            <div className='flex justify-between'>
-              <div className='flex flex-col items-start gap-1'>
-                <Typography color='text.primary' className='font-medium'>
-                  Use as a billing address?
-                </Typography>
-                <Typography variant='body2'>Please check budget for more info.</Typography>
-              </div>
-              <Switch defaultChecked />
-            </div>
+
+            {/* Due */}
+            <CustomTextField
+              label='Due Amount'
+              type='number'
+              fullWidth
+              placeholder='1000'
+              value={formData.due}
+              onChange={e => setFormData({ ...formData, due: e.target.value })}
+            />
+
+            {/* Image URL */}
+            <CustomTextField
+              label='Image URL'
+              type='text'
+              fullWidth
+              placeholder='https://example.com/supplier.png'
+              value={formData.image}
+              onChange={e => setFormData({ ...formData, image: e.target.value })}
+            />
+
             <div className='flex items-center gap-4'>
               <Button variant='contained' type='submit'>
                 Add
