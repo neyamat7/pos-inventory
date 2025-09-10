@@ -214,8 +214,8 @@ export default function AddPurchase() {
     handleDistributionExpense(data, cartProducts, setCartProducts)
   }
 
-  console.log('selected customer', selectedSupplier)
-  console.log('cart products', cartProducts)
+  // console.log('selected customer', selectedSupplier)
+  // console.log('cart products', cartProducts)
 
   return (
     <div className='min-h-[calc(100vh-54px] bg-gray-50 p-4'>
@@ -301,7 +301,7 @@ export default function AddPurchase() {
               {cartProducts.length > 0 && (
                 <tbody>
                   {cartProducts.map((product, index) => (
-                    <tr key={product.product_id}>
+                    <tr key={product.product_id + product.supplier_id + index}>
                       <td className='border border-gray-200 px-3 py-2'>{product.supplier_id}</td>
                       <td className='border border-gray-200 px-3 py-2'>{product.supplier_name}</td>
                       <td className='border border-gray-200 px-3 py-2'>{product.product_name}</td>
@@ -332,7 +332,10 @@ export default function AddPurchase() {
                       <td className='border border-gray-200 px-3 py-2'>{product.van_vara}</td>
                       <td className='border border-gray-200 px-3 py-2'>{product.expenses}</td>
                       <td className='border border-gray-200 px-3 py-2'>
-                        {product.cost * product.box + product.expenses}
+                        {(product.product_name === 'Mango' || product.product_name === 'Pineapple'
+                          ? (product.cost * product.box + product.expenses) * 0.9
+                          : product.cost * product.box + product.expenses
+                        ).toFixed(2)}
                       </td>
 
                       {/* Remove button */}
