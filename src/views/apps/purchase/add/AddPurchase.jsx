@@ -118,12 +118,6 @@ export default function AddPurchase() {
   const [cartProducts, setCartProducts] = useState([])
   const { register, handleSubmit } = useForm()
 
-  const [districutionType, setDistricutionType] = useState({
-    transportation: '',
-    moshjid: '',
-    van_vara: ''
-  })
-
   const filteredProducts = products.filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
   const filteredCategories = categories.filter(category =>
@@ -159,7 +153,12 @@ export default function AddPurchase() {
         if (item.product_id === productId && item.supplier_id === supplierId) {
           const newBox = increment ? item.box + 1 : Math.max(0, item.box - 1)
 
-          return { ...item, box: newBox }
+          const newAddedAmount =
+            item.product_name === 'Mango' || item.product_name === 'Pineapple'
+              ? (item.cost * 0.9).toFixed(2)
+              : item.cost
+
+          return { ...item, box: newBox, total: Number(item.total) + Number(newAddedAmount) }
         }
 
         return item
@@ -331,12 +330,7 @@ export default function AddPurchase() {
                       <td className='border border-gray-200 px-3 py-2'>{product.moshjid}</td>
                       <td className='border border-gray-200 px-3 py-2'>{product.van_vara}</td>
                       <td className='border border-gray-200 px-3 py-2'>{product.expenses}</td>
-                      <td className='border border-gray-200 px-3 py-2'>
-                        {(product.product_name === 'Mango' || product.product_name === 'Pineapple'
-                          ? (product.cost * product.box + product.expenses) * 0.9
-                          : product.cost * product.box + product.expenses
-                        ).toFixed(2)}
-                      </td>
+                      <td className='border border-gray-200 px-3 py-2'>{product.total}</td>
 
                       {/* Remove button */}
                       <td className='border border-gray-200 px-3 py-2'>
