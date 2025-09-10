@@ -44,6 +44,7 @@ import { getLocalizedUrl } from '@/utils/i18n'
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
 import AddSupplierDrawer from './AddSupplierDrawer'
+import OptionMenu from '@/@core/components/option-menu'
 
 export const paymentStatus = {
   1: { text: 'Paid', color: 'success' },
@@ -93,7 +94,7 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const SupplierListTable = ({ supplierData }) => {
+const SupplierListTable = ({ supplierData = [] }) => {
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
@@ -127,50 +128,75 @@ const SupplierListTable = ({ supplierData }) => {
           />
         )
       },
-      columnHelper.accessor('customer', {
-        header: 'Suppliers',
+      columnHelper.accessor('sl', {
+        header: 'SL',
+        cell: ({ row }) => <Typography color='text.primary'>{row.original.sl}</Typography>
+      }),
+      columnHelper.accessor('name', {
+        header: 'name',
         cell: ({ row }) => (
           <div className='flex items-center gap-3'>
-            {getAvatar({ avatar: row.original.avatar, customer: row.original.customer })}
+            {getAvatar({ avatar: row.original.image, customer: row.original.name })}
             <div className='flex flex-col items-start'>
               <Typography
                 component={Link}
                 color='text.primary'
-                href={`/apps/customers/details/${row.original.customerId}`}
+                href={`/apps/customers/details/${row.original.sl}`}
                 className='font-medium hover:text-primary'
               >
-                {row.original.customer}
+                {row.original.name}
               </Typography>
               <Typography variant='body2'>{row.original.email}</Typography>
             </div>
           </div>
         )
       }),
-      columnHelper.accessor('customerId', {
-        header: 'Supplier Id',
-        cell: ({ row }) => <Typography color='text.primary'>#{row.original.customerId}</Typography>
+      columnHelper.accessor('type', {
+        header: 'Type',
+        cell: ({ row }) => <Typography color='text.primary'>{row.original.type}</Typography>
       }),
-      columnHelper.accessor('country', {
-        header: 'Country',
+      columnHelper.accessor('phone', {
+        header: 'Phone',
         cell: ({ row }) => (
           <div className='flex items-center gap-2'>
-            <img src={row.original.countryFlag} height={22} />
-            <Typography>{row.original.country}</Typography>
+            <Typography>{row.original.phone}</Typography>
           </div>
         )
       }),
-      columnHelper.accessor('order', {
-        header: 'Orders',
-        cell: ({ row }) => <Typography>{row.original.order}</Typography>
+      columnHelper.accessor('due', {
+        header: 'Due',
+        cell: ({ row }) => <Typography>{row.original.due}</Typography>
       }),
-      columnHelper.accessor('totalSpent', {
-        header: 'Total Spent',
+
+      {
+        id: 'action',
+        header: 'Action',
         cell: ({ row }) => (
-          <Typography className='font-medium' color='text.primary'>
-            ${row.original.totalSpent.toLocaleString()}
-          </Typography>
-        )
-      })
+          <div className='flex items-center'>
+            <OptionMenu
+              iconButtonProps={{ size: 'medium' }}
+              iconClassName='text-textSecondary'
+              options={[
+                {
+                  text: 'View',
+                  icon: 'tabler-eye',
+                  href: `/products/${row.original.code}`, // link to view product
+                  linkProps: { className: 'flex items-center gap-2 w-full px-2 py-1' }
+                },
+                {
+                  text: 'Delete',
+                  icon: 'tabler-trash',
+                  menuItemProps: {
+                    onClick: () => setData(prev => prev.filter(item => item.sl !== row.original.sl)),
+                    className: 'flex items-center'
+                  }
+                }
+              ]}
+            />
+          </div>
+        ),
+        enableSorting: false
+      }
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
