@@ -1,13 +1,13 @@
 const calculateExpenseValue = (amount, type, totalItems) => {
   if (type === 'divided') {
-    return Number(amount) / totalItems
+    return Number((Number(amount) / totalItems).toFixed(2))
   }
 
-  return Number(amount)
+  return Number(Number(amount).toFixed(2))
 }
 
 export const handleSalesDistributionExpense = (data, cartProducts, setCartProducts) => {
-  console.log('Form data:', data)
+  // console.log('Form data:', data)
 
   // calculate expense values
   const transportationValue = calculateExpenseValue(

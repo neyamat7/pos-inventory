@@ -10,11 +10,16 @@ import PosHeader from './PosHeader'
 import SearchProduct from './SearchProduct'
 
 import { handleSalesDistributionExpense } from '@/utils/handleSalesDistribution'
-import CategoryModal from '@/utils/CategoryModal'
-import BrandModal from '@/utils/BrandModal'
+import CategoryModal from '@/components/layout/shared/CategoryModal'
+import BrandModal from '@/components/layout/shared/BrandModal'
 import { categories, brands } from '@/data/productsCategory/productsCategory'
 import { customers } from '@/data/customerData/customerData'
 import { filteredProductsData } from '@/utils/filteredProductsData'
+import { handleBoxCount } from '@/utils/handleBoxCount'
+import { calculateTotalDue } from '@/utils/calculateTotalDue'
+import { usePaymentCalculation } from '@/utils/usePaymentCalculation'
+import { showAlert } from '@/utils/showAlert'
+import ShowProductList from '@/components/layout/shared/ShowProductList'
 
 export default function POSSystem({ productsData = [] }) {
   const [searchTerm, setSearchTerm] = useState('')
@@ -47,31 +52,14 @@ export default function POSSystem({ productsData = [] }) {
     )
   }
 
-  const handleBoxChange = (productId, supplierId, increment = true) => {
-    setCartProducts(prevCart =>
-      prevCart.map(item => {
-        if (item.product_id === productId && item.customer_id === supplierId) {
-          const newBox = increment ? item.box + 1 : Math.max(0, item.box - 1)
-
-          const expenses = item.expenses || 0 // keep current expenses
-          const baseTotal = item.cost * newBox + expenses
-
-          const total =
-            item.product_name.toLowerCase().includes('mango') || item.product_name.toLowerCase().includes('pineapple')
-              ? (baseTotal * 1.1).toFixed(2)
-              : baseTotal.toFixed(2)
-
-          return { ...item, box: newBox, total }
-        }
-
-        return item
-      })
-    )
+  // Function to remove category
+  const handleRemoveCategory = categoryToRemove => {
+    setSelectedCategory(prev => prev.filter(category => category !== categoryToRemove))
   }
 
   const handleCartProductClick = product => {
     if (!selectedCustomer?.id) {
-      alert('Please select a customer first.')
+      showAlert('Please select a customer first.', 'warning')
 
       return
     }
@@ -81,7 +69,7 @@ export default function POSSystem({ productsData = [] }) {
     )
 
     if (isAlreadyAdded) {
-      alert('This product is already in the cart.')
+      showAlert('This product is already added to the cart.', 'warning')
 
       return
     }
@@ -112,16 +100,13 @@ export default function POSSystem({ productsData = [] }) {
     })
   }
 
+  // Function to handle distribute form submission
   const handleDistributeSubmit = data => {
     handleSalesDistributionExpense(data, cartProducts, setCartProducts)
   }
 
-  // console.log('selected customer', selectedCustomer)
-  // console.log('cart productsData', cartProducts)
-
-  const totalDueAmount = cartProducts.reduce((acc, item) => {
-    return acc + parseFloat(item.total || 0)
-  }, 0)
+  // calculate total due amount
+  const totalDueAmount = calculateTotalDue(cartProducts)
 
   const {
     register: registerPayment,
@@ -144,26 +129,10 @@ export default function POSSystem({ productsData = [] }) {
   const receiveAmount = watchPayment('receiveAmount')
 
   // Auto calculate due and change amounts
-  useEffect(() => {
-    const receive = parseFloat(receiveAmount) || 0
-    const total = parseFloat(totalDueAmount) || 0
-
-    if (receive < total) {
-      setPaymentValue('dueAmount', total - receive)
-      setPaymentValue('changeAmount', 0)
-    } else {
-      setPaymentValue('dueAmount', 0)
-      setPaymentValue('changeAmount', receive - total)
-    }
-  }, [receiveAmount, totalDueAmount, setPaymentValue])
+  usePaymentCalculation(receiveAmount, totalDueAmount, setPaymentValue)
 
   const onSubmitPayment = data => {
     console.log('Payment form data:', data)
-  }
-
-  // Function to remove category
-  const handleRemoveCategory = categoryToRemove => {
-    setSelectedCategory(prev => prev.filter(category => category !== categoryToRemove))
   }
 
   return (
@@ -259,7 +228,9 @@ export default function POSSystem({ productsData = [] }) {
                       <td className='border border-gray-200 px-3 py-2'>
                         <div className='flex justify-between gap-2 items-center'>
                           <button
-                            onClick={() => handleBoxChange(product.product_id, product.customer_id, false)}
+                            onClick={() =>
+                              handleBoxCount(setCartProducts, product.product_id, product.customer_id, false)
+                            }
                             className='text-red-500 bg-transparent border-none outline-none h-full w-full flex items-center justify-center'
                           >
                             <FaMinus />
@@ -267,7 +238,9 @@ export default function POSSystem({ productsData = [] }) {
 
                           <span>{product.box}</span>
                           <button
-                            onClick={() => handleBoxChange(product.product_id, product.customer_id, true)}
+                            onClick={() =>
+                              handleBoxCount(setCartProducts, product.product_id, product.customer_id, true)
+                            }
                             className='text-green-500 bg-transparent border-none outline-none w-full h-full flex items-center justify-center'
                           >
                             <FaPlus />
@@ -543,87 +516,15 @@ export default function POSSystem({ productsData = [] }) {
         </div>
 
         {/* Right Side - Products */}
-        <div className='w-1/5'>
-          {/* Selected Categories */}
-          {selectedCategory.length > 0 && (
-            <div className='flex flex-wrap gap-2 mb-4'>
-              {selectedCategory.map(category => (
-                <div key={category} className='flex items-center gap-2 bg-gray-200 px-3 py-1 rounded-full text-sm'>
-                  <span className='capitalize'>{category}</span>
-                  <button onClick={() => handleRemoveCategory(category)} className='text-red-500 hover:text-red-700'>
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          <div className='grid grid-cols-1 gap-4 h-[calc(100vh-100px)] sticky top-0 overflow-y-auto'>
-            {filteredProducts.map(product => (
-              <div
-                onClick={() => handleCartProductClick(product)}
-                key={product.id}
-                className='bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer'
-              >
-                <img
-                  src={product.image || '/placeholder.svg'}
-                  alt={product.name}
-                  className='w-full h-24 object-cover rounded mb-2'
-                />
-                <h3 className='font-medium text-sm mb-1'>{product.name}</h3>
-                <p className='text-lg font-bold'>৳{product.price}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <ShowProductList
+          selectedCategory={selectedCategory}
+          handleRemoveCategory={handleRemoveCategory}
+          filteredProducts={filteredProducts}
+          handleCartProductClick={handleCartProductClick}
+        />
       </div>
 
       {/* Category Modal */}
-      {/* <Modal open={categoryModalOpen} onClose={() => setCategoryModalOpen(false)} closeAfterTransition>
-        <Slide direction='left' in={categoryModalOpen} timeout={500}>
-          <Box sx={modalStyle}>
-            <div className='p-6'>
-              <div className='flex items-center justify-between mb-4'>
-                <h2 className='text-xl font-semibold'>Categories</h2>
-                <IconButton onClick={() => setCategoryModalOpen(false)}>
-                  <Close />
-                </IconButton>
-              </div>
-
-              <div className='mb-4'>
-                <TextField
-                  fullWidth
-                  placeholder='Search categories...'
-                  value={categorySearch}
-                  onChange={e => setCategorySearch(e.target.value)}
-                  InputProps={{
-                    startAdornment: <Search className='mr-2 text-gray-400' />
-                  }}
-                />
-              </div>
-
-              <div className='grid grid-cols-1 gap-3'>
-                {filteredCategories.map(category => (
-                  <div
-                    onClick={() =>
-                      setSelectedCategory(prev => (prev.includes(category.name) ? prev : [...prev, category.name]))
-                    }
-                    key={category.id + category.name}
-                    className='bg-gray-50 rounded-lg p-4 hover:bg-gray-100 cursor-pointer transition-colors'
-                  >
-                    <img
-                      src={category.image || '/placeholder.svg'}
-                      alt={category.name}
-                      className='w-12 h-12 object-cover rounded mb-2 mx-auto'
-                    />
-                    <p className='text-center text-sm font-medium'>{category.name}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Box>
-        </Slide>
-      </Modal> */}
-
       <CategoryModal
         open={categoryModalOpen}
         onClose={() => setCategoryModalOpen(false)}
@@ -635,49 +536,6 @@ export default function POSSystem({ productsData = [] }) {
       />
 
       {/* Brand Modal */}
-      {/* <Modal open={brandModalOpen} onClose={() => setBrandModalOpen(false)} closeAfterTransition>
-        <Slide direction='left' in={brandModalOpen} timeout={500}>
-          <Box sx={modalStyle}>
-            <div className='p-6'>
-              <div className='flex items-center justify-between mb-4'>
-                <h2 className='text-xl font-semibold'>Brands</h2>
-                <IconButton onClick={() => setBrandModalOpen(false)}>
-                  <Close />
-                </IconButton>
-              </div>
-
-              <div className='mb-4'>
-                <TextField
-                  fullWidth
-                  placeholder='Search brands...'
-                  value={brandSearch}
-                  onChange={e => setBrandSearch(e.target.value)}
-                  InputProps={{
-                    startAdornment: <Search className='mr-2 text-gray-400' />
-                  }}
-                />
-              </div>
-
-              <div className='grid grid-cols-1 gap-3'>
-                {filteredBrands.map(brand => (
-                  <div
-                    key={brand.id}
-                    className='bg-gray-50 rounded-lg p-4 hover:bg-gray-100 cursor-pointer transition-colors'
-                  >
-                    <img
-                      src={brand.image || '/placeholder.svg'}
-                      alt={brand.name}
-                      className='w-12 h-12 object-cover rounded mb-2 mx-auto'
-                    />
-                    <p className='text-center text-sm font-medium'>{brand.name}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Box>
-        </Slide>
-      </Modal> */}
-
       <BrandModal
         open={brandModalOpen}
         onClose={() => setBrandModalOpen(false)}
