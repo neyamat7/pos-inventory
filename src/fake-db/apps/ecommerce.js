@@ -603,6 +603,421 @@ export const db = {
       productBrand: 'Hoeger-Powlowski'
     }
   ],
+  productsData: [
+    // Fruits
+    {
+      id: 1,
+      name: 'Mango',
+      price: 120,
+      image: 'https://i.postimg.cc/2yhsJDLj/Mangoes.jpg',
+      category: 'Fruits',
+      brand: 'Fresh Farm'
+    },
+    {
+      id: 2,
+      name: 'Pineapple',
+      price: 90,
+      image: 'https://images.unsplash.com/photo-1600891964599-f61ba0e24092',
+      category: 'Fruits',
+      brand: 'Tropical Fresh'
+    },
+    {
+      id: 3,
+      name: 'Banana',
+      price: 60,
+      image: 'https://images.unsplash.com/photo-1574226516831-e1dff420e43e',
+      category: 'Fruits',
+      brand: 'Nature Organic'
+    },
+    {
+      id: 4,
+      name: 'Apple',
+      price: 150,
+      image: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce',
+      category: 'Fruits',
+      brand: 'Fresh Orchard'
+    },
+    {
+      id: 5,
+      name: 'Orange',
+      price: 100,
+      image: 'https://images.unsplash.com/photo-1582515073490-dc9a8c1f7bda',
+      category: 'Fruits',
+      brand: 'Citrus Co'
+    },
+    {
+      id: 6,
+      name: 'Papaya',
+      price: 80,
+      image: 'https://images.unsplash.com/photo-1615485297995-bbd2c4e4d823',
+      category: 'Fruits',
+      brand: 'Fresh Valley'
+    },
+    {
+      id: 7,
+      name: 'Grapes',
+      price: 140,
+      image: 'https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2',
+      category: 'Fruits',
+      brand: 'Vineyard Fresh'
+    },
+    {
+      id: 8,
+      name: 'Watermelon',
+      price: 200,
+      image: 'https://images.unsplash.com/photo-1627308595120-376e3e6f72f2',
+      category: 'Fruits',
+      brand: 'Green Fields'
+    },
+    {
+      id: 9,
+      name: 'Mango (Langra)',
+      price: 130,
+      image: 'https://images.unsplash.com/photo-1627308595187-4bfb9f5e4f79',
+      category: 'Fruits',
+      brand: 'Bangla Fresh'
+    },
+    {
+      id: 10,
+      name: 'Pineapple (Honey Gold)',
+      price: 110,
+      image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994',
+      category: 'Fruits',
+      brand: 'Golden Farm'
+    },
+
+    // Vegetables
+    {
+      id: 11,
+      name: 'Tomato',
+      price: 50,
+      image: 'https://images.unsplash.com/photo-1587049352846-4a222eac4f2a',
+      category: 'Vegetables',
+      brand: 'Green Fresh'
+    },
+    {
+      id: 12,
+      name: 'Potato',
+      price: 40,
+      image: 'https://images.unsplash.com/photo-1607305387299-238c3f2e7c56',
+      category: 'Vegetables',
+      brand: 'Farm Fresh'
+    },
+    {
+      id: 13,
+      name: 'Onion',
+      price: 60,
+      image: 'https://images.unsplash.com/photo-1603052875971-024e6a0e0efb',
+      category: 'Vegetables',
+      brand: 'Daily Harvest'
+    },
+    {
+      id: 14,
+      name: 'Cucumber',
+      price: 45,
+      image: 'https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2',
+      category: 'Vegetables',
+      brand: 'Cool Fresh'
+    },
+    {
+      id: 15,
+      name: 'Carrot',
+      price: 55,
+      image: 'https://images.unsplash.com/photo-1606756792951-3f8b8b67d3cf',
+      category: 'Vegetables',
+      brand: 'Organic Garden'
+    },
+    {
+      id: 16,
+      name: 'Spinach',
+      price: 35,
+      image: 'https://images.unsplash.com/photo-1584270354949-1b8fa6e1c2d0',
+      category: 'Vegetables',
+      brand: 'Leafy Fresh'
+    },
+    {
+      id: 17,
+      name: 'Broccoli',
+      price: 90,
+      image: 'https://images.unsplash.com/photo-1582515073305-f27a5a39b9b8',
+      category: 'Vegetables',
+      brand: 'Green Basket'
+    },
+    {
+      id: 18,
+      name: 'Cauliflower',
+      price: 85,
+      image: 'https://images.unsplash.com/photo-1575936123452-b67c3203c357',
+      category: 'Vegetables',
+      brand: 'Farm Choice'
+    },
+    {
+      id: 19,
+      name: 'Capsicum',
+      price: 70,
+      image: 'https://images.unsplash.com/photo-1567303315732-95eb1280c76b',
+      category: 'Vegetables',
+      brand: 'Daily Fresh'
+    },
+    {
+      id: 20,
+      name: 'Brinjal',
+      price: 65,
+      image: 'https://images.unsplash.com/photo-1603052875473-9c9230e650ba',
+      category: 'Vegetables',
+      brand: 'Veggie World'
+    },
+
+    // Snacks
+    {
+      id: 21,
+      name: 'Potato Chips',
+      price: 30,
+      image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc',
+      category: 'Snacks',
+      brand: 'Crispy Co'
+    },
+    {
+      id: 22,
+      name: 'Biscuits',
+      price: 40,
+      image: 'https://images.unsplash.com/photo-1611078489939-7a0a49bfae87',
+      category: 'Snacks',
+      brand: 'Cookie Jar'
+    },
+    {
+      id: 23,
+      name: 'Chocolate Bar',
+      price: 70,
+      image: 'https://images.unsplash.com/photo-1611078489939-7a0a49bfae87',
+      category: 'Snacks',
+      brand: 'Sweet Treats'
+    },
+    {
+      id: 24,
+      name: 'Popcorn',
+      price: 50,
+      image: 'https://images.unsplash.com/photo-1586796679724-b25dc6c22f8d',
+      category: 'Snacks',
+      brand: 'Movie Time'
+    },
+    {
+      id: 25,
+      name: 'Instant Noodles',
+      price: 60,
+      image: 'https://images.unsplash.com/photo-1627308595192-f7c21fdeb00e',
+      category: 'Snacks',
+      brand: 'Quick Meal'
+    },
+
+    // Poultry & Meat
+    {
+      id: 26,
+      name: 'Chicken Breast',
+      price: 220,
+      image: 'https://images.unsplash.com/photo-1617196039163-fd8c4f3fbb67',
+      category: 'Poultry',
+      brand: 'Farm Raised'
+    },
+    {
+      id: 27,
+      name: 'Eggs (Dozen)',
+      price: 120,
+      image: 'https://images.unsplash.com/photo-1608571423904-4e622bea6509',
+      category: 'Poultry',
+      brand: 'Daily Fresh'
+    },
+    {
+      id: 28,
+      name: 'Duck Meat',
+      price: 350,
+      image: 'https://images.unsplash.com/photo-1598515213699-28fdaa1d61e2',
+      category: 'Poultry',
+      brand: 'Organic Farm'
+    },
+    {
+      id: 29,
+      name: 'Beef',
+      price: 600,
+      image: 'https://images.unsplash.com/photo-1606756792951-3f8b8b67d3cf',
+      category: 'Meat',
+      brand: 'Premium Cuts'
+    },
+    {
+      id: 30,
+      name: 'Mutton',
+      price: 750,
+      image: 'https://images.unsplash.com/photo-1598514982103-3c51f9e246d9',
+      category: 'Meat',
+      brand: 'Mountain Farm'
+    },
+
+    // Dairy
+    {
+      id: 31,
+      name: 'Milk (1L)',
+      price: 70,
+      image: 'https://images.unsplash.com/photo-1611078489939-7a0a49bfae87',
+      category: 'Dairy',
+      brand: 'DairyBest'
+    },
+    {
+      id: 32,
+      name: 'Cheese',
+      price: 250,
+      image: 'https://images.unsplash.com/photo-1603052875971-024e6a0e0efb',
+      category: 'Dairy',
+      brand: 'Cheddar Co'
+    },
+    {
+      id: 33,
+      name: 'Butter',
+      price: 180,
+      image: 'https://images.unsplash.com/photo-1627308595120-376e3e6f72f2',
+      category: 'Dairy',
+      brand: 'Golden Spread'
+    },
+    {
+      id: 34,
+      name: 'Yogurt',
+      price: 90,
+      image: 'https://images.unsplash.com/photo-1584270354949-1b8fa6e1c2d0',
+      category: 'Dairy',
+      brand: 'Fresh Dairy'
+    },
+    {
+      id: 35,
+      name: 'Cream',
+      price: 220,
+      image: 'https://images.unsplash.com/photo-1611078489939-7a0a49bfae87',
+      category: 'Dairy',
+      brand: 'Creamy Delight'
+    },
+
+    // Beverages
+    {
+      id: 36,
+      name: 'Orange Juice',
+      price: 110,
+      image: 'https://images.unsplash.com/photo-1577801596887-6b9dfd4a94a0',
+      category: 'Beverages',
+      brand: 'Citrus Fresh'
+    },
+    {
+      id: 37,
+      name: 'Mango Juice',
+      price: 130,
+      image: 'https://images.unsplash.com/photo-1592928304832-9853d5e6f2d1',
+      category: 'Beverages',
+      brand: 'Juice Time'
+    },
+    {
+      id: 38,
+      name: 'Cola Drink',
+      price: 60,
+      image: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62',
+      category: 'Beverages',
+      brand: 'Cool Cola'
+    },
+    {
+      id: 39,
+      name: 'Green Tea',
+      price: 90,
+      image: 'https://images.unsplash.com/photo-1510626176961-4b37d6af1e96',
+      category: 'Beverages',
+      brand: 'Tea Garden'
+    },
+    {
+      id: 40,
+      name: 'Coffee',
+      price: 180,
+      image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93',
+      category: 'Beverages',
+      brand: 'Brewed Fresh'
+    },
+
+    // Grains & Spices
+    {
+      id: 41,
+      name: 'Rice (5kg)',
+      price: 450,
+      image: 'https://images.unsplash.com/photo-1584270354949-1b8fa6e1c2d0',
+      category: 'Grains',
+      brand: 'Rice Valley'
+    },
+    {
+      id: 42,
+      name: 'Wheat Flour (5kg)',
+      price: 400,
+      image: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0',
+      category: 'Grains',
+      brand: 'Healthy Grain'
+    },
+    {
+      id: 43,
+      name: 'Lentils',
+      price: 150,
+      image: 'https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2',
+      category: 'Grains',
+      brand: 'Pulse Fresh'
+    },
+    {
+      id: 44,
+      name: 'Salt',
+      price: 40,
+      image: 'https://images.unsplash.com/photo-1617196039163-fd8c4f3fbb67',
+      category: 'Spices',
+      brand: 'Pure Salt'
+    },
+    {
+      id: 45,
+      name: 'Sugar',
+      price: 80,
+      image: 'https://images.unsplash.com/photo-1584270354949-1b8fa6e1c2d0',
+      category: 'Spices',
+      brand: 'Sweet House'
+    },
+    {
+      id: 46,
+      name: 'Turmeric Powder',
+      price: 90,
+      image: 'https://images.unsplash.com/photo-1592928304832-9853d5e6f2d1',
+      category: 'Spices',
+      brand: 'Spice King'
+    },
+    {
+      id: 47,
+      name: 'Chili Powder',
+      price: 100,
+      image: 'https://images.unsplash.com/photo-1603052875473-9c9230e650ba',
+      category: 'Spices',
+      brand: 'Hot Spice'
+    },
+    {
+      id: 48,
+      name: 'Cinnamon',
+      price: 120,
+      image: 'https://images.unsplash.com/photo-1603052875971-024e6a0e0efb',
+      category: 'Spices',
+      brand: 'Aroma Fresh'
+    },
+    {
+      id: 49,
+      name: 'Black Pepper',
+      price: 150,
+      image: 'https://images.unsplash.com/photo-1603052875473-9c9230e650ba',
+      category: 'Spices',
+      brand: 'Spice Valley'
+    },
+    {
+      id: 50,
+      name: 'Cumin Seeds',
+      price: 140,
+      image: 'https://images.unsplash.com/photo-1603052875971-024e6a0e0efb',
+      category: 'Spices',
+      brand: 'Flavor House'
+    }
+  ],
   reviews: [
     {
       id: 1,

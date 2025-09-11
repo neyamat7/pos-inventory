@@ -30,7 +30,7 @@ export const handleSalesDistributionExpense = (data, cartProducts, setCartProduc
       const expenses = transportationValue + moshjidValue + vanVaraValue + tradingPostValue + labourValue
 
       const total = (
-        item.product_name === 'Mango' || item.product_name === 'Pineapple'
+        item.product_name.toLowerCase().includes('mango') || item.product_name.toLowerCase().includes('pineapple')
           ? (item.cost * item.box + expenses) * 1.1
           : item.cost * item.box + expenses
       ).toFixed(2)

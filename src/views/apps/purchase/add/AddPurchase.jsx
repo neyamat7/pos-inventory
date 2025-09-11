@@ -15,79 +15,14 @@ import SearchProduct from './SearchProduct'
 import { handleDistributionExpense } from '@/utils/handleDistribution'
 
 // Dummy data
-const products = [
-  {
-    id: 1,
-    name: 'Mango',
-    price: 40,
-    image: 'https://i.postimg.cc/2yhsJDLj/Mangoes.jpg',
-    category: 'Fruits',
-    brand: 'Fresh'
-  },
-  {
-    id: 2,
-    name: 'T-shirt',
-    price: 30,
-    image: 'https://i.postimg.cc/6qMdKHgs/image-1.png',
-    category: 'Clothing',
-    brand: 'Generic'
-  },
-  {
-    id: 3,
-    name: 'Watch',
-    price: 120,
-    image: 'https://i.postimg.cc/6qMdKHgs/image-1.png',
-    category: 'Electronics',
-    brand: 'Samsung'
-  },
-  {
-    id: 4,
-    name: 'Ladies Bag',
-    price: 30,
-    image: 'https://i.postimg.cc/6qMdKHgs/image-1.png',
-    category: 'Accessories',
-    brand: 'Fashion'
-  },
-  {
-    id: 5,
-    name: 'Banana',
-    price: 233.2,
-    image: 'https://i.postimg.cc/6qMdKHgs/image-1.png',
-    category: 'Food',
-    brand: 'Fresh'
-  },
-  {
-    id: 6,
-    name: 'Shoe',
-    price: 100,
-    image: 'https://i.postimg.cc/6qMdKHgs/image-1.png',
-    category: 'Footwear',
-    brand: 'Leather Co'
-  },
-  {
-    id: 7,
-    name: 'Laptop',
-    price: 300,
-    image: 'https://i.postimg.cc/6qMdKHgs/image-1.png',
-    category: 'Electronics',
-    brand: 'Apple'
-  },
-  {
-    id: 8,
-    name: 'iPhone',
-    price: 1000,
-    image: 'https://i.postimg.cc/6qMdKHgs/image-1.png',
-    category: 'Electronics',
-    brand: 'Apple'
-  }
-]
-
 const categories = [
-  { id: 1, name: 'Footwear', image: 'https://i.postimg.cc/Zq9dp3Hr/078a6ff06185c0b984bce2877e9d2d691fbf6d5c.png' },
-  { id: 2, name: 'Clothing', image: 'https://i.postimg.cc/Zq9dp3Hr/078a6ff06185c0b984bce2877e9d2d691fbf6d5c.png' },
-  { id: 3, name: 'Electronics', image: 'https://i.postimg.cc/Zq9dp3Hr/078a6ff06185c0b984bce2877e9d2d691fbf6d5c.png' },
-  { id: 4, name: 'Accessories', image: 'https://i.postimg.cc/Zq9dp3Hr/078a6ff06185c0b984bce2877e9d2d691fbf6d5c.png' },
-  { id: 5, name: 'Food', image: 'https://i.postimg.cc/Zq9dp3Hr/078a6ff06185c0b984bce2877e9d2d691fbf6d5c.png' }
+  { id: 1, name: 'Fruits', image: 'https://images.unsplash.com/photo-1574226516831-e1dff420e43e?w=300' },
+  { id: 2, name: 'Vegetables', image: 'https://images.unsplash.com/photo-1607305387299-238c3f2e7c56?w=300' },
+  { id: 3, name: 'Snacks', image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=300' },
+  { id: 4, name: 'Poultry', image: 'https://images.unsplash.com/photo-1617196039163-fd8c4f3fbb67?w=300' },
+  { id: 6, name: 'Beverages', image: 'https://images.unsplash.com/photo-1577801596887-6b9dfd4a94a0?w=300' },
+  { id: 7, name: 'Grains', image: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300' },
+  { id: 8, name: 'Spices', image: 'https://images.unsplash.com/photo-1603052875473-9c9230e650ba?w=300' }
 ]
 
 const brands = [
@@ -104,7 +39,7 @@ const suppliers = [
   { id: 302, name: 'Rahim Traders' }
 ]
 
-export default function AddPurchase() {
+export default function AddPurchase({ productsData = [] }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryModalOpen, setCategoryModalOpen] = useState(false)
   const [brandModalOpen, setBrandModalOpen] = useState(false)
@@ -117,8 +52,17 @@ export default function AddPurchase() {
   const [selectedSupplier, setSelectedSupplier] = useState({})
   const [cartProducts, setCartProducts] = useState([])
   const { register, handleSubmit } = useForm()
+  const [selectedCategory, setSelectedCategory] = useState([])
 
-  const filteredProducts = products.filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredProducts = productsData.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesCategory =
+      selectedCategory.length === 0 ||
+      selectedCategory.some(category => category.toLowerCase() === product.category.toLowerCase())
+
+    return matchesSearch && matchesCategory
+  })
 
   const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(categorySearch.toLowerCase())
@@ -130,7 +74,7 @@ export default function AddPurchase() {
     position: 'fixed',
     top: 0,
     right: 0,
-    width: '500px',
+    width: '250px',
     height: '100vh',
     bgcolor: 'white',
     boxShadow: 24,
@@ -156,7 +100,7 @@ export default function AddPurchase() {
           const baseTotal = item.cost * newBox + expenses
 
           const total =
-            item.product_name === 'Mango' || item.product_name === 'Pineapple'
+            item.product_name.toLowerCase().includes('mango') || item.product_name.toLowerCase().includes('pineapple')
               ? (baseTotal * 0.9).toFixed(2)
               : baseTotal.toFixed(2)
 
@@ -216,7 +160,7 @@ export default function AddPurchase() {
   }
 
   // console.log('selected customer', selectedSupplier)
-  // console.log('cart products', cartProducts)
+  // console.log('cart productsData', cartProducts)
 
   const totalDueAmount = cartProducts.reduce((acc, item) => {
     return acc + parseFloat(item.total || 0)
@@ -258,6 +202,11 @@ export default function AddPurchase() {
 
   const onSubmitPayment = data => {
     console.log('Payment form data:', data)
+  }
+
+  // Function to remove category
+  const handleRemoveCategory = categoryToRemove => {
+    setSelectedCategory(prev => prev.filter(category => category !== categoryToRemove))
   }
 
   return (
@@ -638,6 +587,19 @@ export default function AddPurchase() {
 
         {/* Right Side - Products */}
         <div className='w-1/5'>
+          {selectedCategory.length > 0 && (
+            <div className='flex flex-wrap gap-2 mb-4'>
+              {selectedCategory.map(category => (
+                <div key={category} className='flex items-center gap-2 bg-gray-200 px-3 py-1 rounded-full text-sm'>
+                  <span className='capitalize'>{category}</span>
+                  <button onClick={() => handleRemoveCategory(category)} className='text-red-500 hover:text-red-700'>
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className='grid grid-cols-1 gap-4 h-[calc(100vh-100px)] sticky top-0 overflow-y-auto'>
             {filteredProducts.map(product => (
               <div
@@ -682,10 +644,13 @@ export default function AddPurchase() {
                 />
               </div>
 
-              <div className='grid grid-cols-2 gap-3'>
+              <div className='grid grid-cols-1 gap-3'>
                 {filteredCategories.map(category => (
                   <div
-                    key={category.id}
+                    onClick={() =>
+                      setSelectedCategory(prev => (prev.includes(category.name) ? prev : [...prev, category.name]))
+                    }
+                    key={category.id + category.name}
                     className='bg-gray-50 rounded-lg p-4 hover:bg-gray-100 cursor-pointer transition-colors'
                   >
                     <img
@@ -726,7 +691,7 @@ export default function AddPurchase() {
                 />
               </div>
 
-              <div className='grid grid-cols-2 gap-3'>
+              <div className='grid grid-cols-1 gap-3'>
                 {filteredBrands.map(brand => (
                   <div
                     key={brand.id}
