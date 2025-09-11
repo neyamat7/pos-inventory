@@ -6,38 +6,15 @@ import { useForm } from 'react-hook-form'
 
 import { FaTimes, FaPlus, FaMinus } from 'react-icons/fa'
 
-import { Modal, Box, TextField, IconButton, Fade, Slide } from '@mui/material'
-
-import { Search, Close } from '@mui/icons-material'
-
 import PurchaseHeader from './PurchaseHeader'
 import SearchProduct from './SearchProduct'
 import { handleDistributionExpense } from '@/utils/handleDistribution'
-
-// Dummy data
-const categories = [
-  { id: 1, name: 'Fruits', image: 'https://images.unsplash.com/photo-1574226516831-e1dff420e43e?w=300' },
-  { id: 2, name: 'Vegetables', image: 'https://images.unsplash.com/photo-1607305387299-238c3f2e7c56?w=300' },
-  { id: 3, name: 'Snacks', image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=300' },
-  { id: 4, name: 'Poultry', image: 'https://images.unsplash.com/photo-1617196039163-fd8c4f3fbb67?w=300' },
-  { id: 6, name: 'Beverages', image: 'https://images.unsplash.com/photo-1577801596887-6b9dfd4a94a0?w=300' },
-  { id: 7, name: 'Grains', image: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=300' },
-  { id: 8, name: 'Spices', image: 'https://images.unsplash.com/photo-1603052875473-9c9230e650ba?w=300' }
-]
-
-const brands = [
-  { id: 1, name: 'Nike', image: 'https://i.postimg.cc/764hqV0C/optimize-website-seo-conversions-6-768x512.jpg' },
-  { id: 2, name: 'Apple', image: 'https://i.postimg.cc/764hqV0C/optimize-website-seo-conversions-6-768x512.jpg' },
-  { id: 3, name: 'Samsung', image: 'https://i.postimg.cc/764hqV0C/optimize-website-seo-conversions-6-768x512.jpg' },
-  { id: 4, name: 'Fashion', image: 'https://i.postimg.cc/764hqV0C/optimize-website-seo-conversions-6-768x512.jpg' },
-  { id: 5, name: 'Leather Co', image: 'https://i.postimg.cc/764hqV0C/optimize-website-seo-conversions-6-768x512.jpg' }
-]
-
-const suppliers = [
-  { id: 103, name: 'Abdullah Suad' },
-  { id: 203, name: 'Tonmoy Sarkar' },
-  { id: 302, name: 'Rahim Traders' }
-]
+import CategoryModal from '@/utils/CategoryModal'
+import BrandModal from '@/utils/BrandModal'
+import { categories, brands } from '@/data/productsCategory/productsCategory'
+import { suppliers } from '@/data/supplierData/supplierData'
+import { filteredProductsData } from '@/utils/filteredProductsData'
+import { removeCartItem } from '@/utils/removeCartItem'
 
 export default function AddPurchase({ productsData = [] }) {
   const [searchTerm, setSearchTerm] = useState('')
@@ -53,35 +30,15 @@ export default function AddPurchase({ productsData = [] }) {
   const [cartProducts, setCartProducts] = useState([])
   const { register, handleSubmit } = useForm()
   const [selectedCategory, setSelectedCategory] = useState([])
+  const [selectedBrand, setSelectedBrand] = useState([])
 
-  const filteredProducts = productsData.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
-
-    const matchesCategory =
-      selectedCategory.length === 0 ||
-      selectedCategory.some(category => category.toLowerCase() === product.category.toLowerCase())
-
-    return matchesSearch && matchesCategory
-  })
+  const filteredProducts = filteredProductsData(productsData, searchTerm, selectedCategory)
 
   const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(categorySearch.toLowerCase())
   )
 
   const filteredBrands = brands.filter(brand => brand.name.toLowerCase().includes(brandSearch.toLowerCase()))
-
-  const modalStyle = {
-    position: 'fixed',
-    top: 0,
-    right: 0,
-    width: '250px',
-    height: '100vh',
-    bgcolor: 'white',
-    boxShadow: 24,
-    transform: 'translateX(0)',
-    transition: 'transform 0.3s ease-in-out',
-    overflowY: 'auto'
-  }
 
   // Function to remove item from cart
   const handleRemoveCartItem = (productId, supplierId) => {
@@ -621,95 +578,26 @@ export default function AddPurchase({ productsData = [] }) {
       </div>
 
       {/* Category Modal */}
-      <Modal open={categoryModalOpen} onClose={() => setCategoryModalOpen(false)} closeAfterTransition>
-        <Slide direction='left' in={categoryModalOpen} timeout={500}>
-          <Box sx={modalStyle}>
-            <div className='p-6'>
-              <div className='flex items-center justify-between mb-4'>
-                <h2 className='text-xl font-semibold'>Categories</h2>
-                <IconButton onClick={() => setCategoryModalOpen(false)}>
-                  <Close />
-                </IconButton>
-              </div>
 
-              <div className='mb-4'>
-                <TextField
-                  fullWidth
-                  placeholder='Search categories...'
-                  value={categorySearch}
-                  onChange={e => setCategorySearch(e.target.value)}
-                  InputProps={{
-                    startAdornment: <Search className='mr-2 text-gray-400' />
-                  }}
-                />
-              </div>
-
-              <div className='grid grid-cols-1 gap-3'>
-                {filteredCategories.map(category => (
-                  <div
-                    onClick={() =>
-                      setSelectedCategory(prev => (prev.includes(category.name) ? prev : [...prev, category.name]))
-                    }
-                    key={category.id + category.name}
-                    className='bg-gray-50 rounded-lg p-4 hover:bg-gray-100 cursor-pointer transition-colors'
-                  >
-                    <img
-                      src={category.image || '/placeholder.svg'}
-                      alt={category.name}
-                      className='w-12 h-12 object-cover rounded mb-2 mx-auto'
-                    />
-                    <p className='text-center text-sm font-medium'>{category.name}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Box>
-        </Slide>
-      </Modal>
+      <CategoryModal
+        open={categoryModalOpen}
+        onClose={() => setCategoryModalOpen(false)}
+        categorySearch={categorySearch}
+        setCategorySearch={setCategorySearch}
+        filteredCategories={filteredCategories}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+      />
 
       {/* Brand Modal */}
-      <Modal open={brandModalOpen} onClose={() => setBrandModalOpen(false)} closeAfterTransition>
-        <Slide direction='left' in={brandModalOpen} timeout={500}>
-          <Box sx={modalStyle}>
-            <div className='p-6'>
-              <div className='flex items-center justify-between mb-4'>
-                <h2 className='text-xl font-semibold'>Brands</h2>
-                <IconButton onClick={() => setBrandModalOpen(false)}>
-                  <Close />
-                </IconButton>
-              </div>
-
-              <div className='mb-4'>
-                <TextField
-                  fullWidth
-                  placeholder='Search brands...'
-                  value={brandSearch}
-                  onChange={e => setBrandSearch(e.target.value)}
-                  InputProps={{
-                    startAdornment: <Search className='mr-2 text-gray-400' />
-                  }}
-                />
-              </div>
-
-              <div className='grid grid-cols-1 gap-3'>
-                {filteredBrands.map(brand => (
-                  <div
-                    key={brand.id}
-                    className='bg-gray-50 rounded-lg p-4 hover:bg-gray-100 cursor-pointer transition-colors'
-                  >
-                    <img
-                      src={brand.image || '/placeholder.svg'}
-                      alt={brand.name}
-                      className='w-12 h-12 object-cover rounded mb-2 mx-auto'
-                    />
-                    <p className='text-center text-sm font-medium'>{brand.name}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Box>
-        </Slide>
-      </Modal>
+      <BrandModal
+        open={brandModalOpen}
+        onClose={() => setBrandModalOpen(false)}
+        searchValue={brandSearch}
+        onSearchChange={e => setBrandSearch(e.target.value)}
+        items={filteredBrands}
+        setSelectedBrand={setSelectedBrand}
+      />
     </div>
   )
 }
