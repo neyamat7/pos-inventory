@@ -1,3 +1,5 @@
 export const calculateTotalDue = cartProducts => {
-  return cartProducts.reduce((acc, item) => acc + parseFloat(item.total || 0), 0)
+  const total = cartProducts.reduce((acc, item) => acc + parseFloat(item.total || 0), 0)
+
+  return parseFloat(total.toFixed(2))
 }

@@ -1,12 +1,10 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useForm } from 'react-hook-form'
 
 import { FaTimes, FaPlus, FaMinus } from 'react-icons/fa'
-
-import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table'
 
 import PurchaseHeader from './PurchaseHeader'
 import SearchProduct from './SearchProduct'
@@ -23,7 +21,7 @@ import { usePaymentCalculation } from '@/utils/usePaymentCalculation'
 import { showAlert } from '@/utils/showAlert'
 import ShowProductList from '@/components/layout/shared/ShowProductList'
 
-export default function AddPurchase({ productsData = [] }) {
+export default function AddPurchaseCopy({ productsData = [] }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryModalOpen, setCategoryModalOpen] = useState(false)
   const [brandModalOpen, setBrandModalOpen] = useState(false)
@@ -133,102 +131,6 @@ export default function AddPurchase({ productsData = [] }) {
   // Auto calculate due and change amounts
   usePaymentCalculation(receiveAmount, totalDueAmount, setPaymentValue)
 
-  const columns = useMemo(
-    () => [
-      {
-        accessorKey: 'supplier_id',
-        header: 'SL'
-      },
-      {
-        accessorKey: 'supplier_name',
-        header: 'Supplier'
-      },
-      {
-        accessorKey: 'product_name',
-        header: 'Product'
-      },
-      {
-        accessorKey: 'box',
-        header: 'Box',
-        cell: ({ row }) => {
-          const product = row.original
-
-          return (
-            <div className='flex justify-between gap-2 items-center'>
-              <button
-                onClick={() => handleBoxCount(setCartProducts, product.product_id, product.supplier_id, false)}
-                className='text-red-500 bg-transparent border-none outline-none h-full w-full flex items-center justify-center'
-              >
-                <FaMinus />
-              </button>
-              <span>{product.box}</span>
-              <button
-                onClick={() => handleBoxCount(setCartProducts, product.product_id, product.supplier_id, true)}
-                className='text-green-500 bg-transparent border-none outline-none w-full h-full flex items-center justify-center'
-              >
-                <FaPlus />
-              </button>
-            </div>
-          )
-        }
-      },
-      {
-        accessorKey: 'cost',
-        header: 'Cost(unit)'
-      },
-      {
-        accessorKey: 'transportation',
-        header: 'Transportation'
-      },
-      {
-        accessorKey: 'moshjid',
-        header: 'Moshjid'
-      },
-      {
-        accessorKey: 'van_vara',
-        header: 'Van Vara'
-      },
-      {
-        accessorKey: 'expenses',
-        header: 'Expenses'
-      },
-      {
-        accessorKey: 'total',
-        header: 'Total',
-        cell: ({ row }) => {
-          const product = row.original
-
-          return (parseFloat(product.total) || 0).toFixed(2)
-        }
-      },
-      {
-        id: 'actions',
-        header: 'Action',
-        cell: ({ row }) => {
-          const product = row.original
-
-          return (
-            <button
-              onClick={() => handleRemoveCartItem(product.product_id, product.supplier_id)}
-              className='text-red-500 bg-transparent border-none outline-none w-full h-full'
-            >
-              <FaTimes />
-            </button>
-          )
-        }
-      }
-    ],
-    []
-  )
-
-  const tableData = useMemo(() => cartProducts, [cartProducts])
-
-  const table = useReactTable({
-    data: tableData,
-    columns,
-    getCoreRowModel: getCoreRowModel()
-  })
-
   const onSubmitPayment = data => {
     console.log('Payment form data:', data)
   }
@@ -299,27 +201,73 @@ export default function AddPurchase({ productsData = [] }) {
           <div className='mb-6'>
             <table className='w-full border-collapse'>
               <thead>
-                {table.getHeaderGroups().map(headerGroup => (
-                  <tr key={headerGroup.id} className='bg-gray-50'>
-                    {headerGroup.headers.map(header => (
-                      <th key={header.id} className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
+                <tr className='bg-gray-50'>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>SL</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Supplier</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Product</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Box</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Cost(unit)</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Transportation</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Moshjid</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Van Vara</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Expenses</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Total</th>
+                  <th className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>Action</th>
+                </tr>
               </thead>
-              <tbody>
-                {table.getRowModel().rows.map(row => (
-                  <tr key={row.id}>
-                    {row.getVisibleCells().map(cell => (
-                      <td key={cell.id} className='border border-gray-200 px-3 py-2'>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+
+              {cartProducts.length > 0 && (
+                <tbody>
+                  {cartProducts.map((product, index) => (
+                    <tr key={product.product_id + product.supplier_id + index}>
+                      <td className='border border-gray-200 px-3 py-2'>{product.supplier_id}</td>
+                      <td className='border border-gray-200 px-3 py-2'>{product.supplier_name}</td>
+                      <td className='border border-gray-200 px-3 py-2'>{product.product_name}</td>
+
+                      {/* Box with plus/minus */}
+                      <td className='border border-gray-200 px-3 py-2'>
+                        <div className='flex justify-between gap-2 items-center'>
+                          <button
+                            onClick={() =>
+                              handleBoxCount(setCartProducts, product.product_id, product.supplier_id, false)
+                            }
+                            className='text-red-500 bg-transparent border-none outline-none h-full w-full flex items-center justify-center'
+                          >
+                            <FaMinus />
+                          </button>
+
+                          <span>{product.box}</span>
+                          <button
+                            onClick={() =>
+                              handleBoxCount(setCartProducts, product.product_id, product.supplier_id, true)
+                            }
+                            className='text-green-500 bg-transparent border-none outline-none w-full h-full flex items-center justify-center'
+                          >
+                            <FaPlus />
+                          </button>
+                        </div>
                       </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
+
+                      <td className='border border-gray-200 px-3 py-2'>{product.cost}</td>
+                      <td className='border border-gray-200 px-3 py-2'>{product.transportation}</td>
+                      <td className='border border-gray-200 px-3 py-2'>{product.moshjid}</td>
+                      <td className='border border-gray-200 px-3 py-2'>{product.van_vara}</td>
+                      <td className='border border-gray-200 px-3 py-2'>{product.expenses}</td>
+                      <td className='border border-gray-200 px-3 py-2'>{product.total}</td>
+
+                      {/* Remove button */}
+                      <td className='border border-gray-200 px-3 py-2'>
+                        <button
+                          onClick={() => handleRemoveCartItem(product.product_id, product.supplier_id)}
+                          className='text-red-500 bg-transparent border-none outline-none w-full h-full'
+                        >
+                          <FaTimes />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              )}
             </table>
           </div>
 

@@ -4,6 +4,7 @@ import AddPurchase from '@/views/apps/purchase/add/AddPurchase'
 const add = async () => {
   const data = await getEcommerceData()
 
+  // return <AddPurchase productsData={data?.productsData} />
   return <AddPurchase productsData={data?.productsData} />
 }
 
