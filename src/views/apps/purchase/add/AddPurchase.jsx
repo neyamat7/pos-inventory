@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useForm } from 'react-hook-form'
 
@@ -149,16 +149,18 @@ export default function AddPurchase() {
   const handleBoxChange = (productId, supplierId, increment = true) => {
     setCartProducts(prevCart =>
       prevCart.map(item => {
-        // Update only the item with the matching product AND supplier
         if (item.product_id === productId && item.supplier_id === supplierId) {
           const newBox = increment ? item.box + 1 : Math.max(0, item.box - 1)
 
-          const newAddedAmount =
-            item.product_name === 'Mango' || item.product_name === 'Pineapple'
-              ? (item.cost * 0.9).toFixed(2)
-              : item.cost
+          const expenses = item.expenses || 0 // keep current expenses
+          const baseTotal = item.cost * newBox + expenses
 
-          return { ...item, box: newBox, total: Number(item.total) + Number(newAddedAmount) }
+          const total =
+            item.product_name === 'Mango' || item.product_name === 'Pineapple'
+              ? (baseTotal * 0.9).toFixed(2)
+              : baseTotal.toFixed(2)
+
+          return { ...item, box: newBox, total }
         }
 
         return item
@@ -216,6 +218,48 @@ export default function AddPurchase() {
   // console.log('selected customer', selectedSupplier)
   // console.log('cart products', cartProducts)
 
+  const totalDueAmount = cartProducts.reduce((acc, item) => {
+    return acc + parseFloat(item.total || 0)
+  }, 0)
+
+  const {
+    register: registerPayment,
+    handleSubmit: handleSubmitPayment,
+    watch: watchPayment,
+    setValue: setPaymentValue,
+    formState: { errors: paymentErrors }
+  } = useForm({
+    defaultValues: {
+      receiveAmount: 0,
+      changeAmount: 0,
+      dueAmount: totalDueAmount,
+      paymentType: 'cash',
+      note: '',
+      vatType: 'Select',
+      discountType: 'Flat (৳)'
+    }
+  })
+
+  const receiveAmount = watchPayment('receiveAmount')
+
+  // Auto calculate due and change amounts
+  useEffect(() => {
+    const receive = parseFloat(receiveAmount) || 0
+    const total = parseFloat(totalDueAmount) || 0
+
+    if (receive < total) {
+      setPaymentValue('dueAmount', total - receive)
+      setPaymentValue('changeAmount', 0)
+    } else {
+      setPaymentValue('dueAmount', 0)
+      setPaymentValue('changeAmount', receive - total)
+    }
+  }, [receiveAmount, totalDueAmount, setPaymentValue])
+
+  const onSubmitPayment = data => {
+    console.log('Payment form data:', data)
+  }
+
   return (
     <div className='min-h-[calc(100vh-54px] bg-gray-50 p-4'>
       {/* Header */}
@@ -265,7 +309,7 @@ export default function AddPurchase() {
                 }}
                 className='flex-1 px-3 py-2 border border-gray-300 rounded-l focus:outline-none'
               >
-                <option value=''>Select Customer</option>
+                <option value=''>Select Supplier</option>
                 {suppliers.map(supplier => (
                   <option key={supplier.id} value={supplier.id}>
                     {supplier.name}
@@ -472,28 +516,42 @@ export default function AddPurchase() {
           )}
 
           {/* Payment Details */}
-          <div className='mt-auto'>
+          <form onSubmit={handleSubmitPayment(onSubmitPayment)} className='mt-auto'>
             <h1 className='mb-4'>Payment Details</h1>
 
             <div className='grid grid-cols-2 gap-8'>
+              {/* Left Side */}
               <div className='space-y-4'>
                 <div className='flex items-center'>
                   <label className='w-32 text-sm'>Receive Amount</label>
-                  <input type='text' defaultValue='0' className='flex-1 px-3 py-2 border border-gray-300 rounded' />
+                  <input
+                    type='number'
+                    {...registerPayment('receiveAmount')}
+                    className='flex-1 px-3 py-2 border border-gray-300 rounded'
+                  />
                 </div>
                 <div className='flex items-center'>
                   <label className='w-32 text-sm'>Change Amount</label>
-                  <input type='text' defaultValue='0' className='flex-1 px-3 py-2 border border-gray-300 rounded' />
+                  <input
+                    type='number'
+                    {...registerPayment('changeAmount')}
+                    disabled
+                    className='flex-1 px-3 py-2 border border-gray-300 rounded bg-gray-100'
+                  />
                 </div>
                 <div className='flex items-center'>
                   <label className='w-32 text-sm'>Due Amount</label>
-                  <input type='text' defaultValue='0' className='flex-1 px-3 py-2 border border-gray-300 rounded' />
+                  <input
+                    type='number'
+                    {...registerPayment('dueAmount')}
+                    disabled
+                    className='flex-1 px-3 py-2 border border-gray-300 rounded bg-gray-100'
+                  />
                 </div>
                 <div className='flex items-center'>
                   <label className='w-32 text-sm'>Payment Type</label>
                   <select
-                    value={paymentType}
-                    onChange={e => setPaymentType(e.target.value)}
+                    {...registerPayment('paymentType')}
                     className='flex-1 px-3 py-2 border border-gray-300 rounded'
                   >
                     <option value='cash'>Cash</option>
@@ -504,12 +562,14 @@ export default function AddPurchase() {
                 <div className='flex items-start'>
                   <label className='w-32 text-sm pt-2'>Note</label>
                   <textarea
+                    {...registerPayment('note')}
                     placeholder='Type note...'
                     className='flex-1 px-3 py-2 border border-gray-300 rounded h-20 resize-none'
                   />
                 </div>
               </div>
 
+              {/* Right Side */}
               <div className='space-y-4'>
                 <div className='flex items-center justify-between'>
                   <span className='text-sm'>Sub Total</span>
@@ -519,8 +579,7 @@ export default function AddPurchase() {
                   <span className='text-sm'>Vat</span>
                   <div className='flex items-center space-x-2'>
                     <select
-                      value={vatType}
-                      onChange={e => setVatType(e.target.value)}
+                      {...registerPayment('vatType')}
                       className='px-2 py-1 border border-gray-300 rounded text-sm'
                     >
                       <option value='Select'>Select</option>
@@ -534,11 +593,10 @@ export default function AddPurchase() {
                   <span className='text-sm'>Discount</span>
                   <div className='flex items-center space-x-2'>
                     <select
-                      value={discountType}
-                      onChange={e => setDiscountType(e.target.value)}
+                      {...registerPayment('discountType')}
                       className='px-2 py-1 border border-gray-300 rounded text-sm'
                     >
-                      <option value='Flat (₹)'>Flat (৳)</option>
+                      <option value='Flat (৳)'>Flat (৳)</option>
                       <option value='Percentage (%)'>Percentage (%)</option>
                     </select>
                     <span className='text-sm'>0</span>
@@ -550,7 +608,7 @@ export default function AddPurchase() {
                 </div>
                 <div className='flex items-center justify-between font-medium'>
                   <span className='text-sm'>Total Amount</span>
-                  <span>৳ 0</span>
+                  <span>৳ {totalDueAmount}</span>
                 </div>
                 <div className='flex items-center justify-between'>
                   <span className='text-sm'>Rounding(+/-)</span>
@@ -558,21 +616,24 @@ export default function AddPurchase() {
                 </div>
                 <div className='flex items-center justify-between font-bold text-lg'>
                   <span>Payable Amount</span>
-                  <span>৳ 0</span>
+                  <span>৳ {totalDueAmount}</span>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div className='flex space-x-4 mt-8'>
-            <button className='flex-1 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium'>
-              Cancel
-            </button>
-            <button className='flex-1 py-3 bg-[#7367f0] text-white rounded-lg hover:bg-[#4e43c5] font-medium'>
-              Save
-            </button>
-          </div>
+            {/* Action Buttons */}
+            <div className='flex space-x-4 mt-8'>
+              <button className='flex-1 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium'>
+                Cancel
+              </button>
+              <button
+                type='submit'
+                className='flex-1 py-3 bg-[#7367f0] text-white rounded-lg hover:bg-[#4e43c5] font-medium'
+              >
+                Save
+              </button>
+            </div>
+          </form>
         </div>
 
         {/* Right Side - Products */}

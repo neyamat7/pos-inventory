@@ -6,7 +6,7 @@ const calculateExpenseValue = (amount, type, totalItems) => {
   return Number(amount)
 }
 
-export const handleDistributionExpense = (data, cartProducts, setCartProducts) => {
+export const handleSalesDistributionExpense = (data, cartProducts, setCartProducts) => {
   console.log('Form data:', data)
 
   // calculate expense values
@@ -31,7 +31,7 @@ export const handleDistributionExpense = (data, cartProducts, setCartProducts) =
 
       const total = (
         item.product_name === 'Mango' || item.product_name === 'Pineapple'
-          ? (item.cost * item.box + expenses) * 0.9
+          ? (item.cost * item.box + expenses) * 1.1
           : item.cost * item.box + expenses
       ).toFixed(2)
 
