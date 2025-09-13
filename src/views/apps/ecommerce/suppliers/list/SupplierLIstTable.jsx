@@ -168,7 +168,7 @@ const SupplierListTable = ({ supplierData = [] }) => {
       columnHelper.accessor('crate', {
         header: 'Crate',
         cell: ({ row }) => {
-          const crate = row.original.crate
+          const crate = row?.original?.crate ?? {}
           const total = Object.values(crate).reduce((sum, c) => sum + c.qty, 0)
 
           return <Typography color='text.primary'>{total}</Typography>
@@ -195,7 +195,7 @@ const SupplierListTable = ({ supplierData = [] }) => {
                 {
                   text: 'View',
                   icon: 'tabler-eye',
-                  href: `/suppliers/details/${row.original.sl}`,
+                  href: `/apps/suppliers/details/${row.original.sl}`,
                   linkProps: { className: 'flex items-center gap-2 w-full px-2 py-1' }
                 },
                 {

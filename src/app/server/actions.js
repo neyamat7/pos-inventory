@@ -62,3 +62,19 @@ export async function getSupplierById(id) {
 
   return supplier || null
 }
+
+export async function updateSupplierById(sl, updatedData) {
+  const index = eCommerceData.supplierData.findIndex(item => item.sl === Number(sl))
+
+  if (index === -1) return null
+
+  // Update the supplier
+  eCommerceData.supplierData[index] = {
+    ...updatedData,
+
+    sl: eCommerceData.supplierData[index].sl
+  }
+  console.log('updated data')
+
+  return eCommerceData.supplierData[index]
+}

@@ -4,6 +4,8 @@
 import { useState } from 'react'
 
 // MUI Imports
+import { useRouter } from 'next/navigation'
+
 import Grid from '@mui/material/Grid2'
 import Dialog from '@mui/material/Dialog'
 import Button from '@mui/material/Button'
@@ -17,8 +19,11 @@ import Switch from '@mui/material/Switch'
 import { FormControlLabel } from '@mui/material'
 
 // Component Imports
+import { useForm } from 'react-hook-form'
+
 import DialogCloseButton from '../DialogCloseButton'
 import CustomTextField from '@core/components/mui/TextField'
+import { updateSupplierById } from '@/app/server/actions'
 
 const initialData = {
   firstName: 'Oliver',
@@ -37,13 +42,63 @@ const status = ['Status', 'Active', 'Inactive', 'Suspended']
 const languages = ['English', 'Spanish', 'French', 'German', 'Hindi']
 const countries = ['Select Country', 'France', 'Russia', 'China', 'UK', 'US']
 
-const EditUserInfo = ({ open, setOpen, data }) => {
+const EditUserInfo = ({ open, setOpen, supplierData }) => {
   // States
-  const [userData, setUserData] = useState(data || initialData)
+  const [userData, setUserData] = useState(supplierData || [])
+  const router = useRouter()
+
+  // console.log('in edit popup', supplierData)
+  const [crate, setCrate] = useState(userData.crate)
+
+  const { register, handleSubmit, reset } = useForm({
+    defaultValues: {
+      name: supplierData?.name || '',
+      email: supplierData?.email || '',
+      image: supplierData?.image || '',
+      balance: supplierData?.balance || '',
+      location: supplierData?.location || '',
+      crate: {
+        type1: {
+          qty: supplierData?.crate?.type1?.qty || 0,
+          price: supplierData?.crate?.type1?.price || 0
+        },
+        type2: {
+          qty: supplierData?.crate?.type2?.qty || 0,
+          price: supplierData?.crate?.type2?.price || 0
+        }
+      }
+    }
+  })
+
+  const handleChange = (type, value) => {
+    const updatedCrate = {
+      ...crate,
+      [type]: { ...crate[type], qty: Number(value) }
+    }
+
+    setCrate(updatedCrate)
+
+    console.log('updatedCrate', updatedCrate)
+  }
 
   const handleClose = () => {
     setOpen(false)
-    setUserData(data || initialData)
+    setUserData(supplierData || [])
+  }
+
+  const handleSave = async formData => {
+    const updatedSupplier = {
+      ...supplierData,
+      ...formData,
+      crate: {
+        ...supplierData.crate,
+        ...formData.crate
+      }
+    }
+
+    console.log(updatedSupplier)
+    await updateSupplierById(supplierData.sl, updatedSupplier)
+    router.refresh()
   }
 
   return (
@@ -65,125 +120,53 @@ const EditUserInfo = ({ open, setOpen, data }) => {
           Updating user details will receive a privacy audit.
         </Typography>
       </DialogTitle>
-      <form onSubmit={e => e.preventDefault()}>
+      <form onSubmit={handleSubmit(handleSave)}>
         <DialogContent className='overflow-visible pbs-0 sm:pli-16'>
           <Grid container spacing={5}>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <CustomTextField
-                fullWidth
-                label='First Name'
-                placeholder='John'
-                value={userData?.firstName}
-                onChange={e => setUserData({ ...userData, firstName: e.target.value })}
-              />
+              <CustomTextField fullWidth label='Supplier Name' placeholder='Supplier Name' {...register('name')} />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <CustomTextField
-                fullWidth
-                label='Last Name'
-                placeholder='Doe'
-                value={userData?.lastName}
-                onChange={e => setUserData({ ...userData, lastName: e.target.value })}
-              />
+              <CustomTextField fullWidth label='Email' placeholder='Supplier Email' {...register('email')} />
             </Grid>
-            <Grid size={{ xs: 12 }}>
-              <CustomTextField
-                fullWidth
-                label='User Name'
-                placeholder='JohnDoe'
-                value={userData?.userName}
-                onChange={e => setUserData({ ...userData, userName: e.target.value })}
-              />
+
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <CustomTextField fullWidth label='Image Url' placeholder='Supplier image url' {...register('image')} />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <CustomTextField
-                fullWidth
-                label='Billing Email'
-                placeholder='johnDoe@email.com'
-                value={userData?.billingEmail}
-                onChange={e => setUserData({ ...userData, billingEmail: e.target.value })}
-              />
+              <CustomTextField fullWidth label='Balance' placeholder='Balance' {...register('balance')} />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <CustomTextField
-                select
-                fullWidth
-                label='Status'
-                value={userData?.status}
-                onChange={e => setUserData({ ...userData, status: e.target.value })}
-              >
-                {status.map((status, index) => (
-                  <MenuItem key={index} value={index === 0 ? '' : status.toLowerCase().replace(/\s+/g, '-')}>
-                    {status}
-                  </MenuItem>
-                ))}
-              </CustomTextField>
+              <p>Crates</p>
+              <div className='flex flex-col justify-between gap-3'>
+                <div className='flex justify-between gap-4'>
+                  <CustomTextField
+                    label='Type 1 Qty'
+                    type='number'
+                    {...register('crate.type1.qty', { valueAsNumber: true })}
+                  />
+                  <CustomTextField
+                    label='Type 1 Price'
+                    type='number'
+                    {...register('crate.type1.price', { valueAsNumber: true })}
+                  />
+                </div>
+                <div className='flex justify-between gap-4'>
+                  <CustomTextField
+                    label='Type 2 Qty'
+                    type='number'
+                    {...register('crate.type2.qty', { valueAsNumber: true })}
+                  />
+                  <CustomTextField
+                    label='Type 2 Price'
+                    type='number'
+                    {...register('crate.type2.price', { valueAsNumber: true })}
+                  />
+                </div>
+              </div>
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <CustomTextField
-                fullWidth
-                label='Tax ID'
-                placeholder='Tax-7490'
-                value={userData?.taxId}
-                onChange={e => setUserData({ ...userData, taxId: e.target.value })}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <CustomTextField
-                fullWidth
-                label='Contact'
-                placeholder='+ 123 456 7890'
-                value={userData?.contact}
-                onChange={e => setUserData({ ...userData, contact: e.target.value })}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <CustomTextField
-                select
-                fullWidth
-                label='Language'
-                value={userData?.language?.map(lang => lang.toLowerCase().replace(/\s+/g, '-')) || []}
-                slotProps={{
-                  select: {
-                    multiple: true,
-                    onChange: e => setUserData({ ...userData, language: e.target.value }),
-                    renderValue: selected => (
-                      <div className='flex items-center gap-2'>
-                        {selected.map(value => (
-                          <Chip key={value} label={value} className='capitalize' size='small' />
-                        ))}
-                      </div>
-                    )
-                  }
-                }}
-              >
-                {languages.map((language, index) => (
-                  <MenuItem key={index} value={language.toLowerCase().replace(/\s+/g, '-')}>
-                    {language}
-                  </MenuItem>
-                ))}
-              </CustomTextField>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <CustomTextField
-                select
-                fullWidth
-                label='Country'
-                value={userData?.country?.toLowerCase().replace(/\s+/g, '-')}
-                onChange={e => setUserData({ ...userData, country: e.target.value })}
-              >
-                {countries.map((country, index) => (
-                  <MenuItem key={index} value={index === 0 ? '' : country.toLowerCase().replace(/\s+/g, '-')}>
-                    {country}
-                  </MenuItem>
-                ))}
-              </CustomTextField>
-            </Grid>
-            <Grid size={{ xs: 12 }}>
-              <FormControlLabel
-                control={<Switch defaultChecked={userData?.useAsBillingAddress} />}
-                label='Use as a billing address?'
-              />
+              <CustomTextField fullWidth label='Location' placeholder='Location' {...register('location')} />
             </Grid>
           </Grid>
         </DialogContent>

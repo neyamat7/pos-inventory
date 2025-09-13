@@ -86,7 +86,12 @@ const SupplierDetails = ({ supplierData }) => {
             </div>
           </div>
         </div>
-        <OpenDialogOnElementClick element={Button} elementProps={buttonProps} dialog={EditUserInfo} />
+        <OpenDialogOnElementClick
+          supplierData={supplierData}
+          element={Button}
+          elementProps={buttonProps}
+          dialog={EditUserInfo}
+        />
       </CardContent>
     </Card>
   )
