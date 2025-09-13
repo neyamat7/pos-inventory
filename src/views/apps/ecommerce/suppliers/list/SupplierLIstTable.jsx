@@ -95,6 +95,8 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 const columnHelper = createColumnHelper()
 
 const SupplierListTable = ({ supplierData = [] }) => {
+  console.log('supplierData', supplierData)
+
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
@@ -141,7 +143,7 @@ const SupplierListTable = ({ supplierData = [] }) => {
               <Typography
                 component={Link}
                 color='text.primary'
-                href={`/apps/customers/details/${row.original.sl}`}
+                href={`/apps/suppliers/details/${row.original.sl}`}
                 className='font-medium hover:text-primary'
               >
                 {row.original.name}
@@ -151,10 +153,6 @@ const SupplierListTable = ({ supplierData = [] }) => {
           </div>
         )
       }),
-      columnHelper.accessor('type', {
-        header: 'Type',
-        cell: ({ row }) => <Typography color='text.primary'>{row.original.type}</Typography>
-      }),
       columnHelper.accessor('phone', {
         header: 'Phone',
         cell: ({ row }) => (
@@ -162,6 +160,23 @@ const SupplierListTable = ({ supplierData = [] }) => {
             <Typography>{row.original.phone}</Typography>
           </div>
         )
+      }),
+      columnHelper.accessor('balance', {
+        header: 'Balance',
+        cell: ({ row }) => <Typography color='text.primary'>৳{row.original.balance}</Typography>
+      }),
+      columnHelper.accessor('crate', {
+        header: 'Crate',
+        cell: ({ row }) => {
+          const crate = row.original.crate
+          const total = Object.values(crate).reduce((sum, c) => sum + c.qty, 0)
+
+          return <Typography color='text.primary'>{total}</Typography>
+        }
+      }),
+      columnHelper.accessor('cost', {
+        header: 'Cost',
+        cell: ({ row }) => <Typography color='text.primary'>৳{row.original.cost}</Typography>
       }),
       columnHelper.accessor('due', {
         header: 'Due',
@@ -180,7 +195,7 @@ const SupplierListTable = ({ supplierData = [] }) => {
                 {
                   text: 'View',
                   icon: 'tabler-eye',
-                  href: `/products/${row.original.code}`, // link to view product
+                  href: `/suppliers/details/${row.original.sl}`,
                   linkProps: { className: 'flex items-center gap-2 w-full px-2 py-1' }
                 },
                 {

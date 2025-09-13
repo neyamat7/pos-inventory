@@ -6746,6 +6746,7 @@ export const db = {
       avatar: '/images/avatars/7.png'
     }
   ],
+
   supplierData: [
     {
       sl: 1,
@@ -6754,7 +6755,10 @@ export const db = {
       email: 'rahimtraders@gmail.com',
       type: 'Supplier',
       phone: '+8801711000001',
-      due: 12000
+      balance: 5000,
+      due: 0,
+      crate: { type1: { qty: 10, price: 120 }, type2: { qty: 5, price: 150 } },
+      cost: 0
     },
     {
       sl: 2,
@@ -6763,7 +6767,10 @@ export const db = {
       email: 'karimdist@example.com',
       type: 'Supplier',
       phone: '+8801711000002',
-      due: 8500
+      balance: 2000,
+      due: 0,
+      crate: { type1: { qty: 8, price: 100 }, type2: { qty: 4, price: 140 } },
+      cost: 0
     },
     {
       sl: 3,
@@ -6772,7 +6779,10 @@ export const db = {
       email: 'contact@globalsupply.com',
       type: 'Supplier',
       phone: '+8801711000003',
-      due: 20000
+      balance: 7500,
+      due: 0,
+      crate: { type1: { qty: 15, price: 130 }, type2: { qty: 10, price: 160 } },
+      cost: 0
     },
     {
       sl: 4,
@@ -6781,7 +6791,10 @@ export const db = {
       email: 'support@freshmart.com',
       type: 'Supplier',
       phone: '+8801711000004',
-      due: 5400
+      balance: 1200,
+      due: 0,
+      crate: { type1: { qty: 6, price: 110 }, type2: { qty: 2, price: 135 } },
+      cost: 0
     },
     {
       sl: 5,
@@ -6790,7 +6803,10 @@ export const db = {
       email: 'unityimporters@gmail.com',
       type: 'Supplier',
       phone: '+8801711000005',
-      due: 15000
+      balance: 4000,
+      due: 0,
+      crate: { type1: { qty: 12, price: 125 }, type2: { qty: 7, price: 140 } },
+      cost: 0
     }
   ],
   expenseData: [
