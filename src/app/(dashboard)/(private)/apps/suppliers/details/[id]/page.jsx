@@ -2,10 +2,10 @@
 import { redirect } from 'next/navigation'
 
 // Component Imports
-import CustomerDetails from '@/views/apps/ecommerce/customers/details'
 
 // Data Imports
 import { getEcommerceData } from '@/app/server/actions'
+import SupplierDetaiils from '@/views/apps/ecommerce/suppliers/details'
 
 const CustomerDetailsPage = async props => {
   const params = await props.params
@@ -20,13 +20,13 @@ const CustomerDetailsPage = async props => {
 
   const filteredData = data?.filter(item => item.sl === Number(params.id))[0]
 
-  console.log('filteredData', filteredData)
+  // console.log('filteredData', filteredData)
 
   if (!filteredData) {
     redirect('/not-found')
   }
 
-  return filteredData ? <CustomerDetails customerData={filteredData} customerId={params.id} /> : null
+  return filteredData ? <SupplierDetaiils supplierData={filteredData} supplierId={params.id} /> : null
 }
 
 export default CustomerDetailsPage

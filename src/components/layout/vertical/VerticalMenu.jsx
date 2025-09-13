@@ -25,6 +25,8 @@ const RenderExpandIcon = ({ open, transitionDuration }) => (
 )
 
 const VerticalMenu = ({ scrollMenu }) => {
+  const id = undefined
+
   // Hooks
   const theme = useTheme()
   const verticalNavOptions = useVerticalNav()
@@ -83,9 +85,21 @@ const VerticalMenu = ({ scrollMenu }) => {
           </MenuItem>
         </SubMenu>
 
-        <MenuItem href='/apps/suppliers/list' icon={<i className='tabler-smart-home' />}>
-          Suppliers
-        </MenuItem>
+        <SubMenu label='Suppliers' icon={<i className='tabler-smart-home' />}>
+          <MenuItem href='/apps/suppliers/list' icon={<i className='tabler-smart-home' />}>
+            All Suppliers
+          </MenuItem>
+
+          <MenuItem
+            href={`/apps/suppliers/details/${id}`}
+            disabled={!id}
+            icon={<i className='tabler-smart-home' />}
+            exactMatch={false}
+            activeUrl='/apps/suppliers/details'
+          >
+            Details
+          </MenuItem>
+        </SubMenu>
 
         <SubMenu label='Purchase' icon={<i className='tabler-smart-home' />}>
           <MenuItem href='/apps/purchase/add'>Add Purchase</MenuItem>

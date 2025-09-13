@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography'
 import ConfirmationDialog from '@components/dialogs/confirmation-dialog'
 import OpenDialogOnElementClick from '@components/dialogs/OpenDialogOnElementClick'
 
-const CustomerDetailHeader = ({ customerId }) => {
+const SupplierDetailHeader = ({ supplierId }) => {
   // Vars
   const buttonProps = (children, color, variant) => ({
     children,
@@ -17,7 +17,7 @@ const CustomerDetailHeader = ({ customerId }) => {
   return (
     <div className='flex flex-wrap justify-between max-sm:flex-col sm:items-center gap-x-6 gap-y-4'>
       <div className='flex flex-col items-start gap-1'>
-        <Typography variant='h4'>{`Customer ID #${customerId}`}</Typography>
+        <Typography variant='h4'>{`Customer ID #${supplierId}`}</Typography>
         <Typography>Aug 17, 2020, 5:48 (ET)</Typography>
       </div>
       <OpenDialogOnElementClick
@@ -30,4 +30,4 @@ const CustomerDetailHeader = ({ customerId }) => {
   )
 }
 
-export default CustomerDetailHeader
+export default SupplierDetailHeader

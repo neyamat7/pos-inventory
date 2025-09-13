@@ -4,14 +4,12 @@ import Grid from '@mui/material/Grid2'
 // Component Imports
 import CustomerStats from '@components/card-statistics/CustomerStats'
 
-const CustomerStatisticsCard = ({ customerStatData }) => {
+const CustomerStatisticsCard = ({ supplierData }) => {
   return (
     <Grid container spacing={6}>
-      {customerStatData?.map((item, index) => (
-        <Grid size={{ xs: 12, md: 6 }} key={index}>
-          <CustomerStats {...item} />
-        </Grid>
-      ))}
+      <Grid size={{ xs: 12, md: 6 }} key={Math.random()}>
+        <CustomerStats {...supplierData} />
+      </Grid>
     </Grid>
   )
 }

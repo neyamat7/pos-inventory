@@ -55,3 +55,10 @@ export const getPricingData = async () => {
 export const getStatisticsData = async () => {
   return statisticsData
 }
+
+export async function getSupplierById(id) {
+  // Fetch supplier data
+  const supplier = eCommerceData.supplierData.find(item => item.sl === Number(id))
+
+  return supplier || null
+}

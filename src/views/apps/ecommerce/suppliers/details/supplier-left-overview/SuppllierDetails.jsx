@@ -11,7 +11,7 @@ import CustomAvatar from '@core/components/mui/Avatar'
 import EditUserInfo from '@components/dialogs/edit-user-info'
 import OpenDialogOnElementClick from '@components/dialogs/OpenDialogOnElementClick'
 
-const CustomerDetails = ({ customerData }) => {
+const SupplierDetails = ({ supplierData }) => {
   // Vars
   const buttonProps = {
     variant: 'contained',
@@ -23,10 +23,10 @@ const CustomerDetails = ({ customerData }) => {
       <CardContent className='flex flex-col pbs-12 gap-6'>
         <div className='flex flex-col justify-self-center items-center gap-6'>
           <div className='flex flex-col items-center gap-4'>
-            <CustomAvatar src={customerData?.avatar} variant='rounded' alt='Customer Avatar' size={120} />
+            <CustomAvatar src={supplierData?.image} variant='rounded' alt='Customer Avatar' size={120} />
             <div className='flex flex-col items-center text-center'>
-              <Typography variant='h5'>{customerData?.customer}</Typography>
-              <Typography>Customer ID #{customerData?.customerId}</Typography>
+              <Typography variant='h5'>{supplierData?.name}</Typography>
+              <Typography>Customer ID #{supplierData?.sl}</Typography>
             </div>
           </div>
           <div className='flex items-center justify-around gap-4 flex-wrap is-full'>
@@ -35,7 +35,7 @@ const CustomerDetails = ({ customerData }) => {
                 <i className='tabler-shopping-cart' />
               </CustomAvatar>
               <div>
-                <Typography variant='h5'>{customerData?.order}</Typography>
+                <Typography variant='h5'>{supplierData?.orders}</Typography>
                 <Typography>Orders</Typography>
               </div>
             </div>
@@ -44,7 +44,7 @@ const CustomerDetails = ({ customerData }) => {
                 <i className='tabler-currency-dollar' />
               </CustomAvatar>
               <div>
-                <Typography variant='h5'>${customerData?.totalSpent}</Typography>
+                <Typography variant='h5'>৳{supplierData?.totalSpent}</Typography>
                 <Typography>Spent</Typography>
               </div>
             </div>
@@ -58,13 +58,13 @@ const CustomerDetails = ({ customerData }) => {
               <Typography color='text.primary' className='font-medium'>
                 Username:
               </Typography>
-              <Typography>{customerData?.customer}</Typography>
+              <Typography>{supplierData?.name}</Typography>
             </div>
             <div className='flex items-center gap-1'>
               <Typography color='text.primary' className='font-medium'>
                 Billing Email:
               </Typography>
-              <Typography>{customerData?.email}</Typography>
+              <Typography>{supplierData?.email}</Typography>
             </div>
             <div className='flex items-center gap-1'>
               <Typography color='text.primary' className='font-medium'>
@@ -76,13 +76,13 @@ const CustomerDetails = ({ customerData }) => {
               <Typography color='text.primary' className='font-medium'>
                 Contact:
               </Typography>
-              <Typography>+1 (234) 464-0600</Typography>
+              <Typography>{supplierData?.phone}</Typography>
             </div>
             <div className='flex items-center gap-1'>
               <Typography color='text.primary' className='font-medium'>
-                Country:
+                Location:
               </Typography>
-              <Typography>{customerData?.country}</Typography>
+              <Typography>{supplierData?.location}</Typography>
             </div>
           </div>
         </div>
@@ -92,4 +92,4 @@ const CustomerDetails = ({ customerData }) => {
   )
 }
 
-export default CustomerDetails
+export default SupplierDetails

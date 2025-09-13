@@ -6758,7 +6758,10 @@ export const db = {
       balance: 5000,
       due: 0,
       crate: { type1: { qty: 10, price: 120 }, type2: { qty: 5, price: 150 } },
-      cost: 0
+      cost: 0,
+      orders: 23,
+      totalSpent: 22040,
+      location: 'Chandpur'
     },
     {
       sl: 2,
@@ -6770,7 +6773,10 @@ export const db = {
       balance: 2000,
       due: 0,
       crate: { type1: { qty: 8, price: 100 }, type2: { qty: 4, price: 140 } },
-      cost: 0
+      cost: 0,
+      orders: 23,
+      totalSpent: 22040,
+      location: 'Chandpur'
     },
     {
       sl: 3,
@@ -6782,7 +6788,10 @@ export const db = {
       balance: 7500,
       due: 0,
       crate: { type1: { qty: 15, price: 130 }, type2: { qty: 10, price: 160 } },
-      cost: 0
+      cost: 0,
+      orders: 23,
+      totalSpent: 22040,
+      location: 'Chandpur'
     },
     {
       sl: 4,
@@ -6794,7 +6803,10 @@ export const db = {
       balance: 1200,
       due: 0,
       crate: { type1: { qty: 6, price: 110 }, type2: { qty: 2, price: 135 } },
-      cost: 0
+      cost: 0,
+      orders: 23,
+      totalSpent: 22040,
+      location: 'Chandpur'
     },
     {
       sl: 5,
@@ -6806,7 +6818,10 @@ export const db = {
       balance: 4000,
       due: 0,
       crate: { type1: { qty: 12, price: 125 }, type2: { qty: 7, price: 140 } },
-      cost: 0
+      cost: 0,
+      orders: 23,
+      totalSpent: 22040,
+      location: 'Chandpur'
     }
   ],
   expenseData: [

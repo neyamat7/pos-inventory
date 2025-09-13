@@ -5,11 +5,11 @@ import dynamic from 'next/dynamic'
 import Grid from '@mui/material/Grid2'
 
 // Component Imports
-import CustomerDetailsHeader from './CustomerDetailsHeader'
-import CustomerLeftOverview from './customer-left-overview'
-import CustomerRight from './customer-right'
+import SupplierLeftOverview from './supplier-left-overview'
+import SupplierRight from './supplier-right'
+import SupplierDetailHeader from './SupplierDetailsHeader'
 
-const OverViewTab = dynamic(() => import('@views/apps/ecommerce/customers/details/customer-right/overview'))
+const OverViewTab = dynamic(() => import('@views/apps/ecommerce/suppliers/details/supplier-right/overview'))
 const SecurityTab = dynamic(() => import('@views/apps/ecommerce/customers/details/customer-right/security'))
 const NotificationsTab = dynamic(() => import('@views/apps/ecommerce/customers/details/customer-right/notification'))
 
@@ -18,27 +18,27 @@ const AddressBillingTab = dynamic(
 )
 
 // Vars
-const tabContentList = () => ({
-  overview: <OverViewTab />,
+const tabContentList = (supplierId) => ({
+  overview: <OverViewTab supplierId={supplierId} />,
   security: <SecurityTab />,
   addressBilling: <AddressBillingTab />,
   notifications: <NotificationsTab />
 })
 
-const CustomerDetails = ({ customerData, customerId }) => {
+const SupplierDetaiils = ({ supplierData, supplierId }) => {
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12 }}>
-        <CustomerDetailsHeader customerId={customerId} />
+        <SupplierDetailHeader supplierId={supplierId} />
       </Grid>
       <Grid size={{ xs: 12, md: 4 }}>
-        <CustomerLeftOverview customerData={customerData} />
+        <SupplierLeftOverview supplierData={supplierData} />
       </Grid>
       <Grid size={{ xs: 12, md: 8 }}>
-        <CustomerRight tabContentList={tabContentList()} />
+        <SupplierRight tabContentList={tabContentList(supplierId)} />
       </Grid>
     </Grid>
   )
 }
 
-export default CustomerDetails
+export default SupplierDetaiils
