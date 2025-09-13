@@ -7,30 +7,44 @@ import Typography from '@mui/material/Typography'
 // Component Imports
 import CustomAvatar from '@core/components/mui/Avatar'
 
-const CustomerStats = props => {
-  // Props
-  const { image, balance, due, crate } = props
-
-  console.log('props in stats', props)
+const CustomerStats = ({ heading = '', value = '', subHeading = '', description = '', Icon, crate = {} }) => {
+  const totalQty = Object.values(crate).reduce((sum, c) => sum + c.qty, 0)
 
   return (
     <Card>
       <CardContent className='flex flex-col gap-2'>
-        <CustomAvatar variant='rounded' skin='light' color="">
-          {image}
+        <CustomAvatar variant='rounded' skin='light' color=''>
+          <Icon size={24} />
         </CustomAvatar>
         <Typography variant='h5' className='capitalize'>
-          Account Balance
+          {heading}
         </Typography>
 
         <div className='flex flex-col items-start'>
           <div className='flex items-center gap-1'>
-            <Typography variant='h5' color={``}>
-              {balance}
-            </Typography>
-            <Typography>Total Remaining Balance</Typography>
+            {totalQty > 0 ? (
+              <div>
+                <div className='flex items-center gap-1'>
+                  <Typography variant='h5' color='#675cd8'>
+                    {totalQty}
+                  </Typography>
+                  <Typography>{subHeading}</Typography>
+                </div>
+                <div className='flex items-center gap-1'>
+                  <Typography color='#675cd8'>Type One: {crate.type1.qty},</Typography>
+                  <Typography color='#675cd8'>Type Two: {crate.type2.qty}</Typography>
+                </div>
+              </div>
+            ) : (
+              <>
+                <Typography variant='h5' color='#675cd8'>
+                  {value}
+                </Typography>
+                <Typography>{subHeading}</Typography>
+              </>
+            )}
           </div>
-          <Typography>Description to add</Typography>
+          <Typography>{description}</Typography>
         </div>
       </CardContent>
     </Card>
