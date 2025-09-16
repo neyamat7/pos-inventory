@@ -3,6 +3,8 @@
 // React Imports
 import { useState, useEffect, useMemo } from 'react'
 
+import { unstable_noStore as noStore } from 'next/cache'
+
 // Next Imports
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
@@ -95,7 +97,8 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 const columnHelper = createColumnHelper()
 
 const SupplierListTable = ({ supplierData = [] }) => {
-  console.log('supplierData', supplierData)
+  // console.log('supplierData', supplierData)
+  noStore()
 
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)

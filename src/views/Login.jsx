@@ -102,7 +102,7 @@ const LoginV2 = ({ mode }) => {
 
       const response = await loginWithCredentials(formData)
 
-      console.log('response', response)
+      // console.log('response', response)
       alert('login successful')
 
       router.push('/dashboard')

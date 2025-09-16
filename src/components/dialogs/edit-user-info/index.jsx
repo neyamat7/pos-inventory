@@ -3,6 +3,8 @@
 // React Imports
 import { useState } from 'react'
 
+import { unstable_noStore as noStore } from 'next/cache'
+
 // MUI Imports
 import { useRouter } from 'next/navigation'
 
@@ -43,6 +45,8 @@ const languages = ['English', 'Spanish', 'French', 'German', 'Hindi']
 const countries = ['Select Country', 'France', 'Russia', 'China', 'UK', 'US']
 
 const EditUserInfo = ({ open, setOpen, supplierData }) => {
+  noStore()
+
   // States
   const [userData, setUserData] = useState(supplierData || [])
   const router = useRouter()
@@ -78,7 +82,7 @@ const EditUserInfo = ({ open, setOpen, supplierData }) => {
 
     setCrate(updatedCrate)
 
-    console.log('updatedCrate', updatedCrate)
+    // console.log('updatedCrate', updatedCrate)
   }
 
   const handleClose = () => {
@@ -96,9 +100,8 @@ const EditUserInfo = ({ open, setOpen, supplierData }) => {
       }
     }
 
-    console.log(updatedSupplier)
+    // console.log(updatedSupplier)
     await updateSupplierById(supplierData.sl, updatedSupplier)
-    router.refresh()
   }
 
   return (

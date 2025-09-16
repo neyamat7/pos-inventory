@@ -12,6 +12,8 @@ const Overview = async ({ supplierId }) => {
   // Vars
   // const data = await getStatisticsData()
   const supplierData = await getSupplierById(supplierId)
+
+  // console.log('supplierData', supplierData)
   const tableData = await getEcommerceData()
 
   return (

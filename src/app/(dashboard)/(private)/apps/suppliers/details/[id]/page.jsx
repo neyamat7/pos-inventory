@@ -10,7 +10,7 @@ import SupplierDetaiils from '@/views/apps/ecommerce/suppliers/details'
 const CustomerDetailsPage = async props => {
   const params = await props.params
 
-  console.log('typeof params', typeof params.id)
+  // console.log('typeof params', typeof params.id)
 
   const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/business/suppliers`, {
     cache: 'no-store'

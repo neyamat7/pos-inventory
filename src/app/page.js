@@ -7,7 +7,7 @@ import Signout from '@/components/Signout/Signout'
 const HomePage = async () => {
   const session = await auth()
 
-  console.log(session)
+  // console.log(session)
 
   if (!session) {
     return <h1>You are not logged in</h1>

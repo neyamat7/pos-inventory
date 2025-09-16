@@ -32,14 +32,14 @@ export const {
       async authorize(credentials) {
         if (credentials === null) return null
 
-        console.log('credentials login, line 33 in auth.js', credentials)
+        // console.log('credentials login, line 33 in auth.js', credentials)
 
         await connectToMongoDB()
 
         try {
           const user = await userModel.findOne({ email: credentials.email })
 
-          console.log('user in auth.js', user)
+          // console.log('user in auth.js', user)
 
           if (user) {
             const isMatch = user?.password === credentials.password

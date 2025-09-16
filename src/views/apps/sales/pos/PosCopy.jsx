@@ -132,7 +132,7 @@ export default function PosCopy({ productsData = [] }) {
   usePaymentCalculation(receiveAmount, totalDueAmount, setPaymentValue)
 
   const onSubmitPayment = data => {
-    console.log('Payment form data:', data)
+    // console.log('Payment form data:', data)
   }
 
   return (

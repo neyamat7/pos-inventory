@@ -5,6 +5,8 @@
 'use server'
 
 // Data Imports
+import { revalidatePath } from 'next/cache'
+
 import { db as eCommerceData } from '@/fake-db/apps/ecommerce'
 import { db as academyData } from '@/fake-db/apps/academy'
 import { db as vehicleData } from '@/fake-db/apps/logistics'
@@ -56,9 +58,15 @@ export const getStatisticsData = async () => {
   return statisticsData
 }
 
+export async function getAllSuppliers() {
+  return eCommerceData && eCommerceData.supplierData ? [...eCommerceData.supplierData] : []
+}
+
 export async function getSupplierById(id) {
   // Fetch supplier data
   const supplier = eCommerceData.supplierData.find(item => item.sl === Number(id))
+
+  // console.log('supplier', supplier)
 
   return supplier || null
 }
@@ -74,7 +82,11 @@ export async function updateSupplierById(sl, updatedData) {
 
     sl: eCommerceData.supplierData[index].sl
   }
-  console.log('updated data')
+
+  // console.log('updated data', updatedData)
+
+  revalidatePath('/apps/suppliers/list')
+  revalidatePath(`/apps/suppliers/details/${sl}`)
 
   return eCommerceData.supplierData[index]
 }

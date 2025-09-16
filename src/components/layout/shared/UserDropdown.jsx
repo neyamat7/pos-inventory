@@ -46,10 +46,10 @@ const UserDropdown = () => {
   const { data: session, status } = useSession()
 
   if (status !== 'loading') {
-    console.log(session)
+    // console.log(session)
   }
 
-  console.log('session got in dropdown', session, status)
+  // console.log('session got in dropdown', session, status)
 
   // Hooks
   const router = useRouter()

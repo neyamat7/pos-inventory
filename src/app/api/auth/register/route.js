@@ -48,7 +48,7 @@ export async function POST(request) {
       image: imageUrl || null
     })
 
-    console.log('new user', user)
+    // console.log('new user', user)
 
     // Save the new user to the database
     try {

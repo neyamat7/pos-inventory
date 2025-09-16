@@ -8,11 +8,11 @@ export const config = {
 }
 
 export async function middleware(req) {
-  console.log('Middleware:', req.nextUrl.pathname)
+  // console.log('Middleware:', req.nextUrl.pathname)
 
   const session = await auth()
 
-  console.log('Session:', session)
+  // console.log('Session:', session)
 
   // If no session, redirect to login page
   if (!session) {

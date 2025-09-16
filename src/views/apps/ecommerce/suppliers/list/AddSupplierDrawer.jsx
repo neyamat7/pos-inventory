@@ -45,7 +45,7 @@ const AddSupplierDrawer = props => {
   })
 
   const onSubmit = data => {
-    console.log('data', data)
+    // console.log('data', data)
 
     const newData = {
       sl: (supplierData?.length && supplierData?.length + 1) || 1,
@@ -57,7 +57,7 @@ const AddSupplierDrawer = props => {
       due: formData.due
     }
 
-    console.log('newData', newData)
+    // console.log('newData', newData)
 
     setData([...(supplierData ?? []), newData])
     resetForm({ name: '', email: '', type: '' })

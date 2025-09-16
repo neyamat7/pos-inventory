@@ -231,7 +231,7 @@ export default function POSSystem({ productsData = [] }) {
   })
 
   const onSubmitPayment = data => {
-    console.log('Payment form data:', data)
+    // console.log('Payment form data:', data)
   }
 
   return (
