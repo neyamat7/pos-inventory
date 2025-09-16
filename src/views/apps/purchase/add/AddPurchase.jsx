@@ -14,7 +14,6 @@ import { handleDistributionExpense } from '@/utils/handleDistribution'
 import CategoryModal from '@/components/layout/shared/CategoryModal'
 import BrandModal from '@/components/layout/shared/BrandModal'
 import { categories, brands } from '@/data/productsCategory/productsCategory'
-import { suppliers } from '@/data/supplierData/supplierData'
 import { filteredProductsData } from '@/utils/filteredProductsData'
 import { removeCartItem } from '@/utils/removeCartItem'
 import { handleBoxCount } from '@/utils/handleBoxCount'
@@ -23,7 +22,7 @@ import { usePaymentCalculation } from '@/utils/usePaymentCalculation'
 import { showAlert } from '@/utils/showAlert'
 import ShowProductList from '@/components/layout/shared/ShowProductList'
 
-export default function AddPurchase({ productsData = [] }) {
+export default function AddPurchase({ productsData = [], suppliersData = [] }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryModalOpen, setCategoryModalOpen] = useState(false)
   const [brandModalOpen, setBrandModalOpen] = useState(false)
@@ -60,14 +59,14 @@ export default function AddPurchase({ productsData = [] }) {
   }
 
   const handleCartProductClick = product => {
-    if (!selectedSupplier?.id) {
+    if (!selectedSupplier?.sl) {
       showAlert('Please select a supplier first.', 'warning')
 
       return
     }
 
     const isAlreadyAdded = cartProducts.some(
-      item => item.product_id === product.id && item.supplier_id === selectedSupplier.id
+      item => item.product_id === product.id && item.supplier_id === selectedSupplier.sl
     )
 
     if (isAlreadyAdded) {
@@ -82,15 +81,17 @@ export default function AddPurchase({ productsData = [] }) {
         ...product,
         product_id: product.id,
         product_name: product.name,
-        supplier_id: selectedSupplier.id,
+        supplier_id: selectedSupplier.sl,
         supplier_name: selectedSupplier.name,
-        box: 1,
+        crate: 1,
+        crateType: 'type1',
+        cratePrice: 0,
         transportation: 0,
         moshjid: 0,
         van_vara: 0,
         total: 0,
         cost: product.price,
-        discount: 0,
+        commission: 0,
         trading_post: 0,
         labour: 0,
         expenses: 0,
@@ -104,7 +105,7 @@ export default function AddPurchase({ productsData = [] }) {
 
   // Function to handle distribute form submission
   const handleDistributeSubmit = data => {
-    handleDistributionExpense(data, cartProducts, setCartProducts)
+    handleDistributionExpense(data, cartProducts, setCartProducts, suppliersData)
   }
 
   // calculate total due amount
@@ -148,10 +149,12 @@ export default function AddPurchase({ productsData = [] }) {
         header: 'Product'
       },
       {
-        accessorKey: 'box',
-        header: 'Box',
+        accessorKey: 'crate',
+        header: 'Crate',
         cell: ({ row }) => {
           const product = row.original
+
+          // console.log('product', product)
 
           return (
             <div className='flex justify-between gap-2 items-center'>
@@ -161,7 +164,7 @@ export default function AddPurchase({ productsData = [] }) {
               >
                 <FaMinus />
               </button>
-              <span>{product.box}</span>
+              <span>{product.crate}</span>
               <button
                 onClick={() => handleBoxCount(setCartProducts, product.product_id, product.supplier_id, true)}
                 className='text-green-500 bg-transparent border-none outline-none w-full h-full flex items-center justify-center'
@@ -172,6 +175,38 @@ export default function AddPurchase({ productsData = [] }) {
           )
         }
       },
+      {
+        accessorKey: 'crateType',
+        header: 'Crate Type',
+        cell: ({ row }) => {
+          const product = row.original
+
+          return (
+            <select
+              value={product.crateType}
+              onChange={e => {
+                const value = e.target.value
+
+                console.log('value', value)
+
+                // update cartProducts state
+                setCartProducts(prev =>
+                  prev.map(item =>
+                    item.product_id === product.product_id && item.supplier_id === product.supplier_id
+                      ? { ...item, crateType: value }
+                      : item
+                  )
+                )
+              }}
+              className='px-2 py-1 border border-gray-300 rounded text-sm outline-none'
+            >
+              <option value='type1'>One</option>
+              <option value='type2'>Two</option>
+            </select>
+          )
+        }
+      },
+
       {
         accessorKey: 'cost',
         header: 'Cost(unit)'
@@ -187,10 +222,6 @@ export default function AddPurchase({ productsData = [] }) {
       {
         accessorKey: 'van_vara',
         header: 'Van Vara'
-      },
-      {
-        accessorKey: 'expenses',
-        header: 'Expenses'
       },
       {
         accessorKey: 'total',
@@ -230,11 +261,11 @@ export default function AddPurchase({ productsData = [] }) {
   })
 
   const onSubmitPayment = data => {
-    // console.log('Payment form data:', data)
+    console.log('Payment form data:', data)
   }
 
   return (
-    <div className='min-h-[calc(100vh-54px] bg-gray-50 p-4'>
+    <div className='min-h-[calc(100vh-54px] bg-gray-50 p-4 ml-0'>
       {/* Header */}
       <div className='mb-6'>
         <div className='flex items-center justify-between'>
@@ -274,17 +305,17 @@ export default function AddPurchase({ productsData = [] }) {
             />
             <div className='flex'>
               <select
-                value={selectedSupplier.id || ''}
+                value={selectedSupplier.sl || ''}
                 onChange={e => {
-                  const supplier = suppliers.find(s => s.id === parseInt(e.target.value))
+                  const supplier = suppliersData.find(s => s.sl === parseInt(e.target.value))
 
                   setSelectedSupplier(supplier || {})
                 }}
                 className='flex-1 px-3 py-2 border border-gray-300 rounded-l focus:outline-none'
               >
                 <option value=''>Select Supplier</option>
-                {suppliers.map(supplier => (
-                  <option key={supplier.id} value={supplier.id}>
+                {suppliersData.map(supplier => (
+                  <option key={supplier.sl} value={supplier.sl}>
                     {supplier.name}
                   </option>
                 ))}

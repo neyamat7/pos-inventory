@@ -13,7 +13,7 @@ const SupplierListTablePage = async () => {
   const suppliers = await getAllSuppliers()
 
   // console.log('suppliers by actions', suppliers)
-  const data = suppliers
+  const data = suppliers || []
 
   return <SupplierListTable supplierData={data} />
 }
