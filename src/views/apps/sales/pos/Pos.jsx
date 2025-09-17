@@ -60,14 +60,14 @@ export default function POSSystem({ productsData = [] }) {
   }
 
   const handleCartProductClick = product => {
-    if (!selectedCustomer?.id) {
+    if (!selectedCustomer?.sl) {
       showAlert('Please select a customer first.', 'warning')
 
       return
     }
 
     const isAlreadyAdded = cartProducts.some(
-      item => item.product_id === product.id && item.customer_id === selectedCustomer.id
+      item => item.product_id === product.id && item.customer_id === selectedCustomer.sl
     )
 
     if (isAlreadyAdded) {
@@ -82,15 +82,18 @@ export default function POSSystem({ productsData = [] }) {
         ...product,
         product_id: product.id,
         product_name: product.name,
-        customer_id: selectedCustomer.id,
+        customer_id: selectedCustomer.sl,
         customer_name: selectedCustomer.name,
-        box: 1,
+        crate: 1,
+        crateType: 'type1',
+        cratePrice: 0,
         transportation: 0,
         moshjid: 0,
         van_vara: 0,
         total: 0,
         cost: product.price,
-        discount: 0,
+        commission: 0,
+        commission_rate: null,
         trading_post: 0,
         labour: 0,
         expenses: 0,
@@ -104,7 +107,7 @@ export default function POSSystem({ productsData = [] }) {
 
   // Function to handle distribute form submission
   const handleDistributeSubmit = data => {
-    handleSalesDistributionExpense(data, cartProducts, setCartProducts)
+    handleSalesDistributionExpense(data, cartProducts, setCartProducts, customers)
   }
 
   // calculate total due amount
@@ -148,8 +151,8 @@ export default function POSSystem({ productsData = [] }) {
         header: 'Product'
       },
       {
-        accessorKey: 'box',
-        header: 'Box',
+        accessorKey: 'crate',
+        header: 'Crate',
         cell: ({ row }) => {
           const product = row.original
 
@@ -162,7 +165,7 @@ export default function POSSystem({ productsData = [] }) {
                 <FaMinus />
               </button>
 
-              <span>{product.box}</span>
+              <span>{product.crate}</span>
               <button
                 onClick={() => handleBoxCount(setCartProducts, product.product_id, product.customer_id, true)}
                 className='text-green-500 bg-transparent border-none outline-none w-full h-full flex items-center justify-center'
@@ -170,6 +173,37 @@ export default function POSSystem({ productsData = [] }) {
                 <FaPlus />
               </button>
             </div>
+          )
+        }
+      },
+      {
+        accessorKey: 'crateType',
+        header: 'Crate Type',
+        cell: ({ row }) => {
+          const product = row.original
+
+          return (
+            <select
+              value={product.crateType}
+              onChange={e => {
+                const value = e.target.value
+
+                console.log('value', value)
+
+                // update cartProducts state
+                setCartProducts(prev =>
+                  prev.map(item =>
+                    item.product_id === product.product_id && item.customer_id === product.customer_id
+                      ? { ...item, crateType: value }
+                      : item
+                  )
+                )
+              }}
+              className='px-2 py-1 border border-gray-300 rounded text-sm outline-none'
+            >
+              <option value='type1'>One</option>
+              <option value='type2'>Two</option>
+            </select>
           )
         }
       },
@@ -230,8 +264,59 @@ export default function POSSystem({ productsData = [] }) {
     getCoreRowModel: getCoreRowModel()
   })
 
+  // submit payment
   const onSubmitPayment = data => {
-    // console.log('Payment form data:', data)
+    const payment = {
+      receiveAmount: Number(data.receiveAmount) || 0,
+      changeAmount: Number(data.changeAmount) || 0,
+      dueAmount: Number(data.dueAmount) || 0,
+      paymentType: data.paymentType,
+      note: data.note || '',
+      vatType: data.vatType || '',
+      discountType: data.discountType || ''
+    }
+
+    // Group by supplier with only IDs + totals
+    const customersMap = cartProducts.reduce((acc, item) => {
+      const key = item.customer_id ?? 'unknown'
+
+      if (!acc[key]) {
+        acc[key] = {
+          customer_id: item.customer_id,
+          items: [],
+          sub_total: 0,
+          commission_total: 0
+        }
+      }
+
+      acc[key].items.push({
+        product_id: item.product_id,
+        customer_id: item.customer_id
+      })
+
+      acc[key].sub_total += Number(item.total) || 0
+      acc[key].commission_total += Number(item.commission) || 0
+
+      return acc
+    }, {})
+
+    const customers = Object.values(customersMap)
+
+    // Grand totals
+    const grandSubTotal = customers.reduce((s, sup) => s + sup.sub_total, 0)
+    const grandCommission = customers.reduce((s, sup) => s + sup.commission_total, 0)
+
+    const payload = {
+      summary: {
+        date,
+        sub_total: grandSubTotal,
+        commission_total: grandCommission
+      },
+      payment,
+      customers
+    }
+
+    console.log('Customer sell payload (multi-customer):', payload)
   }
 
   return (
@@ -275,9 +360,9 @@ export default function POSSystem({ productsData = [] }) {
             />
             <div className='flex'>
               <select
-                value={selectedCustomer.id || ''}
+                value={selectedCustomer.sl || ''}
                 onChange={e => {
-                  const customer = customers.find(s => s.id === parseInt(e.target.value))
+                  const customer = customers.find(s => s.sl === parseInt(e.target.value))
 
                   setSelectedCustomer(customer || {})
                 }}
@@ -285,7 +370,7 @@ export default function POSSystem({ productsData = [] }) {
               >
                 <option value=''>Select Customer</option>
                 {customers.map(customer => (
-                  <option key={customer.id} value={customer.id}>
+                  <option key={customer.sl} value={customer.sl}>
                     {customer.name}
                   </option>
                 ))}
@@ -505,7 +590,7 @@ export default function POSSystem({ productsData = [] }) {
               <div className='space-y-4'>
                 <div className='flex items-center justify-between'>
                   <span className='text-sm'>Sub Total</span>
-                  <span className='font-medium'>৳ 0</span>
+                  <span className='font-medium'>৳ {totalDueAmount}</span>
                 </div>
                 <div className='flex items-center justify-between'>
                   <span className='text-sm'>Vat</span>

@@ -1,55 +1,3 @@
-// const calculateExpenseValue = (amount, type, totalItems) => {
-//   if (type === 'divided') {
-//     return Number((Number(amount) / totalItems).toFixed(2))
-//   }
-
-//   return Number(Number(amount).toFixed(2))
-// }
-
-// export const handleDistributionExpense = (data, cartProducts, setCartProducts, suppliersData) => {
-//   console.log('supplier data in handleDistributionExpense', suppliersData)
-//   console.log('cartProducts in handleDistributionExpense', cartProducts)
-
-//   // calculate expense values
-//   const transportationValue = calculateExpenseValue(
-//     data.transportationAmount,
-//     data.transportationType,
-//     cartProducts.length
-//   )
-
-//   const moshjidValue = calculateExpenseValue(data.moshjidAmount, data.moshjidType, cartProducts.length)
-
-//   const vanVaraValue = calculateExpenseValue(data.vanVaraAmount, data.vanVaraType, cartProducts.length)
-
-//   const tradingPostValue = calculateExpenseValue(data.tradingPostAmount, data.tradingPostType, cartProducts.length)
-
-//   const labourValue = calculateExpenseValue(data.labourAmount, data.labourType, cartProducts.length)
-
-//   // ✅ update cartProducts with distributed expenses
-//   setCartProducts(prevCart =>
-//     prevCart.map(item => {
-//       const expenses = transportationValue + moshjidValue + vanVaraValue + tradingPostValue + labourValue
-
-//       const total = (
-//         item.product_name.toLowerCase().includes('mango') || item.product_name.toLowerCase().includes('pineapple')
-//           ? (item.cost * item.crate + expenses) * 0.9
-//           : item.cost * item.crate + expenses
-//       ).toFixed(2)
-
-//       return {
-//         ...item,
-//         transportation: transportationValue,
-//         moshjid: moshjidValue,
-//         van_vara: vanVaraValue,
-//         trading_post: tradingPostValue,
-//         labour: labourValue,
-//         expenses: expenses,
-//         total: total
-//       }
-//     })
-//   )
-// }
-
 const calculateExpenseValue = (amount, type, totalItems) => {
   if (type === 'divided') {
     return Number((Number(amount) / totalItems).toFixed(2))
@@ -100,7 +48,7 @@ export const handleDistributionExpense = (data, cartProducts, setCartProducts, s
       const commissionRate = isCommissioned ? 0.1 : 0
       const commissionAmount = Number((productBase * commissionRate).toFixed(2))
 
-      console.log('commissionAmount', commissionAmount);
+      console.log('commissionAmount', commissionAmount)
 
       console.log('producbase', productBase)
 
