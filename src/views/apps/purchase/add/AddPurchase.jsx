@@ -229,7 +229,9 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
         cell: ({ row }) => {
           const product = row.original
 
-          return (parseFloat(product.total) || 0).toFixed(2)
+          return (
+            <span title={`Commission: ${product.commission ?? 0}`}>{(parseFloat(product.total) || 0).toFixed(2)}</span>
+          )
         }
       },
       {
@@ -261,7 +263,57 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
   })
 
   const onSubmitPayment = data => {
-    console.log('Payment form data:', data)
+    const payment = {
+      receiveAmount: Number(data.receiveAmount) || 0,
+      changeAmount: Number(data.changeAmount) || 0,
+      dueAmount: Number(data.dueAmount) || 0,
+      paymentType: data.paymentType,
+      note: data.note || '',
+      vatType: data.vatType || '',
+      discountType: data.discountType || ''
+    }
+
+    // Group by supplier with only IDs + totals
+    const suppliersMap = cartProducts.reduce((acc, item) => {
+      const key = item.supplier_id ?? 'unknown'
+
+      if (!acc[key]) {
+        acc[key] = {
+          supplier_id: item.supplier_id,
+          items: [],
+          sub_total: 0,
+          commission_total: 0
+        }
+      }
+
+      acc[key].items.push({
+        product_id: item.product_id,
+        supplier_id: item.supplier_id
+      })
+
+      acc[key].sub_total += Number(item.total) || 0
+      acc[key].commission_total += Number(item.commission) || 0
+
+      return acc
+    }, {})
+
+    const suppliers = Object.values(suppliersMap)
+
+    // Grand totals
+    const grandSubTotal = suppliers.reduce((s, sup) => s + sup.sub_total, 0)
+    const grandCommission = suppliers.reduce((s, sup) => s + sup.commission_total, 0)
+
+    const payload = {
+      summary: {
+        date,
+        sub_total: grandSubTotal,
+        commission_total: grandCommission
+      },
+      payment,
+      suppliers
+    }
+
+    console.log('Purchase payload (multi-supplier):', payload)
   }
 
   return (
@@ -536,7 +588,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
               <div className='space-y-4'>
                 <div className='flex items-center justify-between'>
                   <span className='text-sm'>Sub Total</span>
-                  <span className='font-medium'>৳ 0</span>
+                  <span className='font-medium'>৳ {totalDueAmount}</span>
                 </div>
                 <div className='flex items-center justify-between'>
                   <span className='text-sm'>Vat</span>

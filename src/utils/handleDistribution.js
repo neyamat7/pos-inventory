@@ -100,6 +100,8 @@ export const handleDistributionExpense = (data, cartProducts, setCartProducts, s
       const commissionRate = isCommissioned ? 0.1 : 0
       const commissionAmount = Number((productBase * commissionRate).toFixed(2))
 
+      console.log('commissionAmount', commissionAmount);
+
       console.log('producbase', productBase)
 
       // Apply commission (10%) to productBase ONLY, then add cratePrice without commission
