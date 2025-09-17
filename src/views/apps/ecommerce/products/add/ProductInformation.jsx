@@ -123,7 +123,7 @@ const ProductInformation = () => {
     ],
     content: '',
     onUpdate: ({ editor }) => {
-      setValue('description', editor.getHTML(), { shouldDirty: true })
+      setValue('description', editor.getText(), { shouldDirty: true })
     },
     immediatelyRender: false
   })

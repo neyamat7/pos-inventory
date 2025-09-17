@@ -15,7 +15,7 @@ import ProductFormProvider from '@/views/apps/ecommerce/products/add/ProductForm
 import { products } from '@/fake-db/apps/products'
 
 const eCommerceProductsAdd = () => {
-  const handleAddProduct = async (values, methods) => {
+  const handleAddProduct = async values => {
     // const form = new FormData()
 
     // form.append('name', values.name ?? '')
@@ -31,12 +31,10 @@ const eCommerceProductsAdd = () => {
 
     products.push(values)
     console.log('products', products)
-
-    methods.reset()
   }
 
   return (
-    <ProductFormProvider onSubmit={handleAddProduct}>
+    <ProductFormProvider onSubmit={handleAddProduct} resetOnSubmit>
       <Grid container spacing={6}>
         <Grid size={{ xs: 12 }}>
           <ProductAddHeader />

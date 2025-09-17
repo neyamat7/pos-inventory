@@ -2,7 +2,7 @@
 
 import { FormProvider, useForm } from 'react-hook-form'
 
-export default function ProductFormProvider({ children, onSubmit }) {
+export default function ProductFormProvider({ children, onSubmit, resetOnSubmit = true }) {
   const methods = useForm({
     defaultValues: {
       id: '',
@@ -20,7 +20,13 @@ export default function ProductFormProvider({ children, onSubmit }) {
     mode: 'onSubmit'
   })
 
-  const handleSubmit = (values, e) => onSubmit?.(values, methods, e)
+  const handleSubmit = async (values, e) => {
+    try {
+      await onSubmit?.(values, e)
+    } finally {
+      if (resetOnSubmit) methods.reset()
+    }
+  }
 
   return (
     <FormProvider {...methods}>
