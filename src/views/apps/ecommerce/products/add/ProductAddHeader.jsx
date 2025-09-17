@@ -16,7 +16,9 @@ const ProductAddHeader = () => {
           Discard
         </Button>
         <Button variant='tonal'>Save Draft</Button>
-        <Button variant='contained'>Publish Product</Button>
+        <Button variant='contained' type='submit'>
+          Publish Product
+        </Button>
       </div>
     </div>
   )

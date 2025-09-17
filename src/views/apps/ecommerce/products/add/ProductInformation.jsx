@@ -1,6 +1,5 @@
 'use client'
 
-// MUI Imports
 import Divider from '@mui/material/Divider'
 import Grid from '@mui/material/Grid2'
 import Card from '@mui/material/Card'
@@ -8,17 +7,17 @@ import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
 
-// Third-party Imports
 import classnames from 'classnames'
+
+import { useFormContext, Controller } from 'react-hook-form'
 import { useEditor, EditorContent } from '@tiptap/react'
 import { StarterKit } from '@tiptap/starter-kit'
 import { Underline } from '@tiptap/extension-underline'
 import { Placeholder } from '@tiptap/extension-placeholder'
 import { TextAlign } from '@tiptap/extension-text-align'
 
-// Components Imports
-import CustomIconButton from '@core/components/mui/IconButton'
 import CustomTextField from '@core/components/mui/TextField'
+import CustomIconButton from '@/@core/components/mui/IconButton'
 
 // Style Imports
 import '@/libs/styles/tiptapEditor.css'
@@ -113,23 +112,20 @@ const EditorToolbar = ({ editor }) => {
 }
 
 const ProductInformation = () => {
+  const { control, setValue } = useFormContext()
+
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Placeholder.configure({
-        placeholder: 'Write something here...'
-      }),
-      TextAlign.configure({
-        types: ['heading', 'paragraph']
-      }),
-      Underline
+      Underline,
+      Placeholder.configure({ placeholder: 'Write something here...' }),
+      TextAlign.configure({ types: ['heading', 'paragraph'] })
     ],
-    immediatelyRender: false,
-    content: `
-      <p>
-        Keep your account secure with authentication step.
-      </p>
-    `
+    content: '',
+    onUpdate: ({ editor }) => {
+      setValue('description', editor.getHTML(), { shouldDirty: true })
+    },
+    immediatelyRender: false
   })
 
   return (
@@ -137,22 +133,65 @@ const ProductInformation = () => {
       <CardHeader title='Product Information' />
       <CardContent>
         <Grid container spacing={6} className='mbe-6'>
-          <Grid size={{ xs: 12 }}>
-            <CustomTextField fullWidth label='Product Name' placeholder='iPhone 14' />
-          </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <CustomTextField fullWidth label='SKU' placeholder='FXSK123U' />
+            <Controller
+              name='id'
+              control={control}
+              rules={{ required: 'Name is required' }}
+              render={({ field, fieldState }) => (
+                <CustomTextField
+                  fullWidth
+                  label='ID'
+                  placeholder='p1001'
+                  {...field}
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
           </Grid>
+
           <Grid size={{ xs: 12, sm: 6 }}>
-            <CustomTextField fullWidth label='Barcode' placeholder='0123-4567' />
+            <Controller
+              name='name'
+              control={control}
+              rules={{ required: 'Name is required' }}
+              render={({ field, fieldState }) => (
+                <CustomTextField
+                  fullWidth
+                  label='Product Name'
+                  placeholder='iPhone 14'
+                  {...field}
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Controller
+              name='sku'
+              control={control}
+              render={({ field }) => <CustomTextField fullWidth label='SKU' placeholder='FXSK123U' {...field} />}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Controller
+              name='barcode'
+              control={control}
+              render={({ field }) => <CustomTextField fullWidth label='Barcode' placeholder='0123-4567' {...field} />}
+            />
           </Grid>
         </Grid>
+
         <Typography className='mbe-1'>Description (Optional)</Typography>
         <Card className='p-0 border shadow-none'>
           <CardContent className='p-0'>
             <EditorToolbar editor={editor} />
             <Divider className='mli-6' />
-            <EditorContent editor={editor} className='bs-[135px] overflow-y-auto flex ' />
+            <EditorContent editor={editor} className='bs-[135px] overflow-y-auto flex' />
           </CardContent>
         </Card>
       </CardContent>

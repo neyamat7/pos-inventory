@@ -1,9 +1,8 @@
 'use client'
 
-// React Imports
-import { useState } from 'react'
-
 // MUI Imports
+import { useEffect } from 'react'
+
 import Grid from '@mui/material/Grid2'
 import Card from '@mui/material/Card'
 import CardHeader from '@mui/material/CardHeader'
@@ -12,18 +11,40 @@ import Button from '@mui/material/Button'
 import MenuItem from '@mui/material/MenuItem'
 
 // Components Imports
+import { useFormContext, useFieldArray, Controller } from 'react-hook-form'
+
 import CustomIconButton from '@core/components/mui/IconButton'
 import CustomTextField from '@core/components/mui/TextField'
 
+// RHF
+
+const OPTION_CHOICES = ['Size', 'Color', 'Weight', 'Smell']
+
 const ProductVariants = () => {
-  // States
-  const [count, setCount] = useState(1)
+  const { control, setValue, getValues } = useFormContext()
 
-  const deleteForm = e => {
-    e.preventDefault()
+  // Manage the variants array via RHF
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'variants'
+  })
 
-    // @ts-ignore
-    e.target.closest('.repeater-item').remove()
+  // Ensure at least one row on first mount (mirrors your original "count = 1")
+  useEffect(() => {
+    const current = getValues('variants')
+
+    if (!current || current.length === 0) {
+      append({ option: 'Size', value: '' })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleAddVariant = () => {
+    append({ option: 'Size', value: '' })
+  }
+
+  const handleRemoveVariant = index => {
+    remove(index)
   }
 
   return (
@@ -31,21 +52,48 @@ const ProductVariants = () => {
       <CardHeader title='Product Variants' />
       <CardContent>
         <Grid container spacing={6}>
-          {Array.from(Array(count).keys()).map((item, index) => (
-            <Grid key={index} size={{ xs: 12 }} className='repeater-item'>
+          {fields.map((field, index) => (
+            <Grid key={field.id} size={{ xs: 12 }} className='repeater-item'>
               <Grid container spacing={6}>
                 <Grid size={{ xs: 12, sm: 4 }}>
-                  <CustomTextField select fullWidth label='Options' defaultValue='Size'>
-                    <MenuItem value='Size'>Size</MenuItem>
-                    <MenuItem value='Color'>Color</MenuItem>
-                    <MenuItem value='Weight'>Weight</MenuItem>
-                    <MenuItem value='Smell'>Smell</MenuItem>
-                  </CustomTextField>
+                  <Controller
+                    name={`variants.${index}.option`}
+                    control={control}
+                    defaultValue={field.option ?? 'Size'}
+                    render={({ field: ctrl }) => (
+                      <CustomTextField select fullWidth label='Options' {...ctrl}>
+                        {OPTION_CHOICES.map(opt => (
+                          <MenuItem key={opt} value={opt}>
+                            {opt}
+                          </MenuItem>
+                        ))}
+                      </CustomTextField>
+                    )}
+                  />
                 </Grid>
+
                 <Grid size={{ xs: 12, sm: 8 }} alignSelf='end'>
                   <div className='flex items-center gap-6'>
-                    <CustomTextField fullWidth placeholder='Enter Variant Value' />
-                    <CustomIconButton onClick={deleteForm} className='min-is-fit'>
+                    <Controller
+                      name={`variants.${index}.value`}
+                      control={control}
+                      defaultValue={field.value ?? ''}
+                      render={({ field: ctrl, fieldState }) => (
+                        <CustomTextField
+                          fullWidth
+                          placeholder='Enter Variant Value'
+                          {...ctrl}
+                          error={!!fieldState.error}
+                          helperText={fieldState.error?.message}
+                        />
+                      )}
+                    />
+
+                    <CustomIconButton
+                      onClick={() => handleRemoveVariant(index)}
+                      className='min-is-fit'
+                      aria-label='Remove variant'
+                    >
                       <i className='tabler-x' />
                     </CustomIconButton>
                   </div>
@@ -53,8 +101,9 @@ const ProductVariants = () => {
               </Grid>
             </Grid>
           ))}
+
           <Grid size={{ xs: 12 }}>
-            <Button variant='contained' onClick={() => setCount(count + 1)} startIcon={<i className='tabler-plus' />}>
+            <Button variant='contained' onClick={handleAddVariant} startIcon={<i className='tabler-plus' />}>
               Add Another Option
             </Button>
           </Grid>

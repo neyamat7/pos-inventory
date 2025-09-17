@@ -1,7 +1,7 @@
 'use client'
 
 // React Imports
-import { useState } from 'react'
+import { useEffect, useMemo } from 'react'
 
 // MUI Imports
 import Card from '@mui/material/Card'
@@ -18,8 +18,12 @@ import { styled } from '@mui/material/styles'
 import { useDropzone } from 'react-dropzone'
 
 // Component Imports
+import { useFormContext } from 'react-hook-form'
+
 import Link from '@components/Link'
 import CustomAvatar from '@core/components/mui/Avatar'
+
+// RHF
 
 // Styled Component Imports
 import AppReactDropzone from '@/libs/styles/AppReactDropzone'
@@ -35,59 +39,128 @@ const Dropzone = styled(AppReactDropzone)(({ theme }) => ({
     '&+.MuiList-root .MuiListItem-root .file-name': {
       fontWeight: theme.typography.body1.fontWeight
     }
+  },
+  '& .buttons': {
+    display: 'flex',
+    gap: theme.spacing(2),
+    marginTop: theme.spacing(2)
   }
 }))
 
 const ProductImage = () => {
-  // States
-  const [files, setFiles] = useState([])
+  const {
+    register,
+    watch,
+    setValue,
+    formState: { errors }
+  } = useFormContext()
 
-  // Hooks
+  // Ensure the field is registered so it submits even if not touched.
+  useEffect(() => {
+    register('images')
+  }, [register])
+
+  // Read images array from form state
+  const images = watch('images') || []
+
+  // Dropzone: push new files into RHF state
   const { getRootProps, getInputProps } = useDropzone({
+    accept: { 'image/*': [] },
+    multiple: true,
     onDrop: acceptedFiles => {
-      setFiles(acceptedFiles.map(file => Object.assign(file)))
+      const next = [...images, ...acceptedFiles]
+
+      setValue('images', next, { shouldDirty: true, shouldValidate: true })
     }
   })
 
-  const renderFilePreview = file => {
-    if (file.type.startsWith('image')) {
-      return <img width={38} height={38} alt={file.name} src={URL.createObjectURL(file)} />
-    } else {
-      return <i className='tabler-file-description' />
+  // Generate preview URLs for File objects (revoke on unmount/change)
+  const previews = useMemo(
+    () =>
+      images.map(item => {
+        if (typeof item === 'string')
+          return { key: item, url: item, isBlob: false, name: item.split('/').pop() || 'image' }
+
+        // File/Blob
+        const url = URL.createObjectURL(item)
+
+        return {
+          key: `${item.name}-${item.size}-${item.lastModified}`,
+          url,
+          isBlob: true,
+          name: item.name,
+          size: item.size
+        }
+      }),
+    [images]
+  )
+
+  useEffect(() => {
+    return () => {
+      // revoke all blob urls on unmount
+      previews.forEach(p => {
+        if (p.isBlob) URL.revokeObjectURL(p.url)
+      })
     }
+  }, [previews])
+
+  const handleRemoveAt = index => {
+    const next = images.filter((_, i) => i !== index)
+
+    setValue('images', next, { shouldDirty: true, shouldValidate: true })
   }
 
-  const handleRemoveFile = file => {
-    const uploadedFiles = files
-    const filtered = uploadedFiles.filter(i => i.name !== file.name)
-
-    setFiles([...filtered])
+  const handleRemoveAll = () => {
+    setValue('images', [], { shouldDirty: true, shouldValidate: true })
   }
 
-  const fileList = files.map(file => (
-    <ListItem key={file.name} className='pis-4 plb-3'>
-      <div className='file-details'>
-        <div className='file-preview'>{renderFilePreview(file)}</div>
-        <div>
-          <Typography className='file-name font-medium' color='text.primary'>
-            {file.name}
-          </Typography>
-          <Typography className='file-size' variant='body2'>
-            {Math.round(file.size / 100) / 10 > 1000
-              ? `${(Math.round(file.size / 100) / 10000).toFixed(1)} mb`
-              : `${(Math.round(file.size / 100) / 10).toFixed(1)} kb`}
-          </Typography>
+  const fileList = previews.map((p, index) => {
+    // compute size if available (only for File-based entries)
+    const file = images[index]
+    const size = typeof file === 'object' && file?.size ? file.size : undefined
+
+    const sizeLabel =
+      typeof size === 'number'
+        ? Math.round(size / 100) / 10 > 1000
+          ? `${(Math.round(size / 100) / 10000).toFixed(1)} mb`
+          : `${(Math.round(size / 100) / 10).toFixed(1)} kb`
+        : ''
+
+    return (
+      <ListItem key={p.key} className='pis-4 plb-3'>
+        <div className='file-details flex items-center gap-3'>
+          <div className='file-preview'>
+            {p.url ? (
+              <img
+                width={38}
+                height={38}
+                alt={p.name}
+                src={p.url}
+                onLoad={() => {
+                  if (p.isBlob) URL.revokeObjectURL(p.url)
+                }}
+              />
+            ) : (
+              <i className='tabler-file-description' />
+            )}
+          </div>
+          <div>
+            <Typography className='file-name font-medium' color='text.primary'>
+              {p.name}
+            </Typography>
+            {sizeLabel ? (
+              <Typography className='file-size' variant='body2'>
+                {sizeLabel}
+              </Typography>
+            ) : null}
+          </div>
         </div>
-      </div>
-      <IconButton onClick={() => handleRemoveFile(file)}>
-        <i className='tabler-x text-xl' />
-      </IconButton>
-    </ListItem>
-  ))
-
-  const handleRemoveAllFiles = () => {
-    setFiles([])
-  }
+        <IconButton onClick={() => handleRemoveAt(index)}>
+          <i className='tabler-x text-xl' />
+        </IconButton>
+      </ListItem>
+    )
+  })
 
   return (
     <Dropzone>
@@ -103,6 +176,7 @@ const ProductImage = () => {
         />
         <CardContent>
           <div {...getRootProps({ className: 'dropzone' })}>
+            {/* Hidden input: browse fallback */}
             <input {...getInputProps()} />
             <div className='flex items-center flex-col gap-2 text-center'>
               <CustomAvatar variant='rounded' skin='light' color='secondary'>
@@ -115,13 +189,22 @@ const ProductImage = () => {
               </Button>
             </div>
           </div>
-          {files.length ? (
+
+          {/* Validation error (if you add rules in parent resolver) */}
+          {errors?.images ? (
+            <Typography color='error.main' variant='body2' sx={{ mt: 2 }}>
+              {errors.images.message}
+            </Typography>
+          ) : null}
+
+          {images.length ? (
             <>
               <List>{fileList}</List>
               <div className='buttons'>
-                <Button color='error' variant='tonal' onClick={handleRemoveAllFiles}>
+                <Button color='error' variant='tonal' onClick={handleRemoveAll}>
                   Remove All
                 </Button>
+                {/* This button is UI only — actual upload should happen on form submit or in your onSubmit handler */}
                 <Button variant='contained'>Upload Files</Button>
               </div>
             </>
