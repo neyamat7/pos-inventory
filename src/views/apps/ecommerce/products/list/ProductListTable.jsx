@@ -107,107 +107,121 @@ const ProductListTable = ({ productData }) => {
   const [filteredData, setFilteredData] = useState(data)
   const [globalFilter, setGlobalFilter] = useState('')
 
-  // Hooks
-  // const { lang: locale } = useParams()
-  const { lang: locale } = 'en'
-
   const columns = useMemo(
     () => [
+      // ✅ Row selection checkbox
       {
         id: 'select',
         header: ({ table }) => (
           <Checkbox
-            {...{
-              checked: table.getIsAllRowsSelected(),
-              indeterminate: table.getIsSomeRowsSelected(),
-              onChange: table.getToggleAllRowsSelectedHandler()
-            }}
+            checked={table.getIsAllRowsSelected()}
+            indeterminate={table.getIsSomeRowsSelected()}
+            onChange={table.getToggleAllRowsSelectedHandler()}
           />
         ),
         cell: ({ row }) => (
           <Checkbox
-            {...{
-              checked: row.getIsSelected(),
-              disabled: !row.getCanSelect(),
-              indeterminate: row.getIsSomeSelected(),
-              onChange: row.getToggleSelectedHandler()
-            }}
+            checked={row.getIsSelected()}
+            disabled={!row.getCanSelect()}
+            indeterminate={row.getIsSomeSelected()}
+            onChange={row.getToggleSelectedHandler()}
           />
         )
       },
-      columnHelper.accessor('productName', {
+
+      // ✅ Product (Image + Name)
+      columnHelper.accessor('name', {
         header: 'Product',
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
-            <img src={row.original.image} width={38} height={38} className='rounded bg-actionHover' />
+            <img
+              src={row.original.images || row.original.image}
+              width={38}
+              height={38}
+              className='rounded bg-actionHover object-cover'
+              alt={row.original.name}
+            />
             <div className='flex flex-col'>
               <Typography className='font-medium' color='text.primary'>
-                {row.original.productName}
+                {row.original.name}
               </Typography>
-              <Typography variant='body2'>{row.original.productBrand}</Typography>
+              {/* optional brand/extra info — left empty if not needed */}
+              <Typography variant='body2'>{row.original.sku}</Typography>
             </div>
           </div>
         )
       }),
-      columnHelper.accessor('category', {
-        header: 'Category',
-        cell: ({ row }) => (
-          <div className='flex items-center gap-4'>
-            <CustomAvatar skin='light' color={productCategoryObj[row.original.category].color} size={30}>
-              <i className={classnames(productCategoryObj[row.original.category].icon, 'text-lg')} />
-            </CustomAvatar>
-            <Typography color='text.primary'>{row.original.category}</Typography>
-          </div>
-        )
-      }),
-      columnHelper.accessor('stock', {
-        header: 'Stock',
-        cell: ({ row }) => <Switch defaultChecked={row.original.stock} />,
-        enableSorting: false
-      }),
+
+      // ✅ SKU
       columnHelper.accessor('sku', {
         header: 'SKU',
-        cell: ({ row }) => <Typography>{row.original.sku}</Typography>
+        cell: ({ row }) => <Typography>{row.original.sku || '-'}</Typography>
       }),
+
+      // ✅ Variant
+      columnHelper.accessor('variants', {
+        id: 'variant',
+        header: 'Variant',
+        cell: ({ row }) => {
+          const v = Array.isArray(row.original.variants) && row.original.variants[0]
+          const text = v ? `${v.option ?? ''}${v.value ? `: ${v.value}` : ''}`.trim() : '-'
+
+          return <Typography>{text || '-'}</Typography>
+        },
+        enableSorting: false
+      }),
+
+      // ✅ Price
       columnHelper.accessor('price', {
         header: 'Price',
-        cell: ({ row }) => <Typography>{row.original.price}</Typography>
+        cell: ({ row }) => <Typography>{row.original.price ?? '-'}</Typography>
       }),
-      columnHelper.accessor('qty', {
-        header: 'QTY',
-        cell: ({ row }) => <Typography>{row.original.qty}</Typography>
+
+      // ✅ Commission Rate
+      columnHelper.accessor('commision_rate', {
+        header: 'Commission',
+        cell: ({ row }) => {
+          const c = row.original.commision_rate
+
+          return <Typography>{c !== undefined && c !== null ? `${c}%` : '-'}</Typography>
+        }
       }),
+
+      // ✅ Category
+      columnHelper.accessor('category', {
+        header: 'Category',
+        cell: ({ row }) => <Typography>{row.original.category || '-'}</Typography>
+      }),
+
+      // ✅ Status
       columnHelper.accessor('status', {
         header: 'Status',
-        cell: ({ row }) => (
-          <Chip
-            label={productStatusObj[row.original.status].title}
-            variant='tonal'
-            color={productStatusObj[row.original.status].color}
-            size='small'
-          />
-        )
+        cell: ({ row }) => {
+          const statusKey = row.original.status || 'unknown'
+          const map = productStatusObj?.[statusKey]
+
+          return map ? (
+            <Chip label={map.title} variant='tonal' color={map.color} size='small' />
+          ) : (
+            <Chip label={String(statusKey)} variant='tonal' size='small' />
+          )
+        }
       }),
+
+      // ✅ Actions
       columnHelper.accessor('actions', {
         header: 'Actions',
         cell: ({ row }) => (
           <div className='flex items-center'>
-            <IconButton>
+            <IconButton aria-label='Edit' onClick={() => onEdit?.(row.original)}>
               <i className='tabler-edit text-textSecondary' />
             </IconButton>
-            <OptionMenu
-              iconButtonProps={{ size: 'medium' }}
-              iconClassName='text-textSecondary'
-              options={[
-                { text: 'Download', icon: 'tabler-download' },
-                {
-                  text: 'Delete',
-                  icon: 'tabler-trash',
-                  menuItemProps: { onClick: () => setData(data?.filter(product => product.id !== row.original.id)) }
-                },
-                { text: 'Duplicate', icon: 'tabler-copy' }
-              ]}
-            />
+            <IconButton
+              aria-label='Delete'
+              onClick={() => setData(prev => prev?.filter(p => p.id !== row.original.id))}
+            >
+              <i className='tabler-trash text-textSecondary' />
+            </IconButton>
           </div>
         ),
         enableSorting: false
