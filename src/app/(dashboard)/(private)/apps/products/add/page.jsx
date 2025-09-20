@@ -34,16 +34,16 @@ const eCommerceProductsAdd = () => {
   }
 
   return (
-    <ProductFormProvider onSubmit={handleAddProduct} resetOnSubmit>
+    <ProductFormProvider mode='create' onSubmit={handleAddProduct} resetOnSubmit>
       <Grid container spacing={6}>
         <Grid size={{ xs: 12 }}>
-          <ProductAddHeader />
+          <ProductAddHeader mode='create' />
         </Grid>
 
         <Grid size={{ xs: 12, md: 8 }}>
           <Grid container spacing={6}>
             <Grid size={{ xs: 12 }}>
-              <ProductInformation />
+              <ProductInformation mode='create' />
             </Grid>
             <Grid size={{ xs: 12 }}>
               <ProductImage />

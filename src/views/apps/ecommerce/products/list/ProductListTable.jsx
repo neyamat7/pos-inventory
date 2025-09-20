@@ -213,9 +213,11 @@ const ProductListTable = ({ productData }) => {
         header: 'Actions',
         cell: ({ row }) => (
           <div className='flex items-center'>
-            <IconButton aria-label='Edit' onClick={() => onEdit?.(row.original)}>
-              <i className='tabler-edit text-textSecondary' />
-            </IconButton>
+            <Link href={`/apps/products/edit/${row.original.id}`}>
+              <IconButton aria-label='Edit'>
+                <i className='tabler-edit text-textSecondary' />
+              </IconButton>
+            </Link>
             <IconButton
               aria-label='Delete'
               onClick={() => setData(prev => prev?.filter(p => p.id !== row.original.id))}

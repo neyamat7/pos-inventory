@@ -1,7 +1,7 @@
 'use client'
 
 // React Imports
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 // MUI Imports
 import Card from '@mui/material/Card'
@@ -47,7 +47,9 @@ const Dropzone = styled(AppReactDropzone)(({ theme }) => ({
   }
 }))
 
-const ProductImage = () => {
+const ProductImage = ({ mode = 'create' }) => {
+  const isEdit = mode === 'edit'
+
   const {
     register,
     watch,
@@ -59,6 +61,16 @@ const ProductImage = () => {
   useEffect(() => {
     register('images')
   }, [register])
+
+  // Add URL handler (lets you paste an image URL, useful in edit)
+  const handleAddUrl = useCallback(() => {
+    const url = prompt('Paste image URL')
+
+    if (!url) return
+    const next = [...(watch('images') || []), url]
+
+    setValue('images', next, { shouldDirty: true, shouldValidate: true })
+  }, [setValue, watch])
 
   // Read images array from form state
   const images = watch('images') || []

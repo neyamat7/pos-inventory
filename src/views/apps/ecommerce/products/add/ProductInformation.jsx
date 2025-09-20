@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect } from 'react'
+
 import Divider from '@mui/material/Divider'
 import Grid from '@mui/material/Grid2'
 import Card from '@mui/material/Card'
@@ -9,7 +11,7 @@ import Typography from '@mui/material/Typography'
 
 import classnames from 'classnames'
 
-import { useFormContext, Controller } from 'react-hook-form'
+import { useFormContext, Controller, useWatch } from 'react-hook-form'
 import { useEditor, EditorContent } from '@tiptap/react'
 import { StarterKit } from '@tiptap/starter-kit'
 import { Underline } from '@tiptap/extension-underline'
@@ -111,8 +113,9 @@ const EditorToolbar = ({ editor }) => {
   )
 }
 
-const ProductInformation = () => {
-  const { control, setValue } = useFormContext()
+const ProductInformation = (mode = 'create') => {
+  const { control, setValue, getValues, formMode } = useFormContext()
+  const isEdit = mode === 'edit'
 
   const editor = useEditor({
     extensions: [
@@ -121,12 +124,22 @@ const ProductInformation = () => {
       Placeholder.configure({ placeholder: 'Write something here...' }),
       TextAlign.configure({ types: ['heading', 'paragraph'] })
     ],
-    content: '',
+    content: getValues('description') || '',
     onUpdate: ({ editor }) => {
       setValue('description', editor.getText(), { shouldDirty: true })
     },
     immediatelyRender: false
   })
+
+  const description = useWatch({ control, name: 'description' })
+
+  //  update editor if defaultValues change (navigating between products)
+
+  useEffect(() => {
+    if (editor && typeof description === 'string' && description !== editor.getText()) {
+      editor.commands.setContent(description)
+    }
+  }, [editor, description])
 
   return (
     <Card>
@@ -137,7 +150,7 @@ const ProductInformation = () => {
             <Controller
               name='id'
               control={control}
-              rules={{ required: 'Name is required' }}
+              rules={{ required: 'ID is required' }}
               render={({ field, fieldState }) => (
                 <CustomTextField
                   fullWidth
@@ -146,6 +159,7 @@ const ProductInformation = () => {
                   {...field}
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message}
+                  disabled={isEdit}
                 />
               )}
             />
@@ -173,7 +187,9 @@ const ProductInformation = () => {
             <Controller
               name='sku'
               control={control}
-              render={({ field }) => <CustomTextField fullWidth label='SKU' placeholder='FXSK123U' {...field} />}
+              render={({ field }) => (
+                <CustomTextField fullWidth label='SKU' placeholder='FXSK123U' {...field} disabled={isEdit} />
+              )}
             />
           </Grid>
 
@@ -181,7 +197,9 @@ const ProductInformation = () => {
             <Controller
               name='barcode'
               control={control}
-              render={({ field }) => <CustomTextField fullWidth label='Barcode' placeholder='0123-4567' {...field} />}
+              render={({ field }) => (
+                <CustomTextField fullWidth label='Barcode' placeholder='0123-4567' {...field} disabled={isEdit} />
+              )}
             />
           </Grid>
         </Grid>

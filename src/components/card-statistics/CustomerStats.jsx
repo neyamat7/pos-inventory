@@ -1,4 +1,6 @@
 // MUI Imports
+import Image from 'next/image'
+
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Chip from '@mui/material/Chip'
@@ -7,14 +9,19 @@ import Typography from '@mui/material/Typography'
 // Component Imports
 import CustomAvatar from '@core/components/mui/Avatar'
 
-const CustomerStats = ({ heading = '', value = '', subHeading = '', description = '', Icon, crate = {} }) => {
+const CustomerStats = ({ heading = '', value = '', subHeading = '', description = '', crate = {} }) => {
   const totalQty = Object.values(crate).reduce((sum, c) => sum + c.qty, 0)
 
   return (
     <Card>
       <CardContent className='flex flex-col gap-2'>
         <CustomAvatar variant='rounded' skin='light' color=''>
-          <Icon size={24} />
+          <Image
+            src='https://i.postimg.cc/NfvBPvQv/istockphoto-1185358397-612x612.jpg'
+            alt={heading}
+            width={40}
+            height={40}
+          />
         </CustomAvatar>
         <Typography variant='h5' className='capitalize'>
           {heading}

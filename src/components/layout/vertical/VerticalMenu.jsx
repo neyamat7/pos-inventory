@@ -80,7 +80,12 @@ const VerticalMenu = ({ scrollMenu }) => {
 
         <SubMenu label='Customers' icon={<i className='tabler-smart-home' />}>
           <MenuItem href='/apps/customers/list'>All Customers</MenuItem>
-          <MenuItem href={`/apps/customers/details/${'879861'}`} exactMatch={false} activeUrl='/apps/customers/details'>
+          <MenuItem
+            href={`/apps/customers/details/${id}`}
+            disabled={!id}
+            exactMatch={false}
+            activeUrl='/apps/customers/details'
+          >
             Details
           </MenuItem>
         </SubMenu>
