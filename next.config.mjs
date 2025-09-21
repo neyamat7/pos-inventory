@@ -12,6 +12,18 @@ const nextConfig = {
   //   ]
   // }
   eslint: { ignoreDuringBuilds: true },
+  webpack: config => {
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      '@': path.resolve(__dirname, 'src'),
+      '@components': path.resolve(__dirname, 'src/components'),
+      '@core': path.resolve(__dirname, 'src/@core'),
+      '@assets': path.resolve(__dirname, 'src/assets'),
+      '@redux-store': path.resolve(__dirname, 'src/redux-store')
+    }
+
+    return config
+  },
 
   images: {
     remotePatterns: [

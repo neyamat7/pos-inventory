@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "target": "ESNext",
     "downlevelIteration": true,
     "lib": [
@@ -36,6 +37,9 @@
       ],
       "@components/*": [
         "./src/components/*"
+      ],
+      "@redux-store/*": [
+        "src/redux-store/*"
       ],
       "@configs/*": [
         "./src/configs/*"
