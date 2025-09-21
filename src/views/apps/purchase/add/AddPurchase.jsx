@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useMemo } from 'react'
 
+import Link from 'next/link'
+
 import { useForm } from 'react-hook-form'
 
 import { FaTimes, FaPlus, FaMinus, FaEdit } from 'react-icons/fa'
@@ -194,7 +196,16 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
       },
       {
         accessorKey: 'product_name',
-        header: 'Product'
+        header: 'Product',
+        cell: ({ row }) => {
+          const product = row.original
+
+          return (
+            <Link href={`/apps/products/edit/p001`} className='hover:text-blue-600 hover:underline'>
+              {product.product_name}
+            </Link>
+          )
+        }
       },
       {
         accessorKey: 'crate',

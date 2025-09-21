@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react'
 
+import Link from 'next/link'
+
 import { useForm } from 'react-hook-form'
 
 import { FaTimes, FaPlus, FaMinus, FaEdit } from 'react-icons/fa'
@@ -193,7 +195,16 @@ export default function POSSystem({ productsData = [] }) {
       },
       {
         accessorKey: 'product_name',
-        header: 'Product'
+        header: 'Product',
+        cell: ({ row }) => {
+          const product = row.original
+
+          return (
+            <Link href={`/apps/products/edit/p001`} className='hover:text-blue-600 hover:underline'>
+              {product.product_name}
+            </Link>
+          )
+        }
       },
       {
         accessorKey: 'crate',
@@ -345,11 +356,10 @@ export default function POSSystem({ productsData = [] }) {
       dueAmount: Number(data.dueAmount) || 0,
       paymentType: data.paymentType,
       note: data.note || '',
-      vatType: data.vatType || '',
-      discountType: data.discountType || ''
+      vatType: data.vatType || ''
     }
 
-    // Group by supplier with only IDs + totals
+    // Group by customer with only IDs + totals
     const customersMap = cartProducts.reduce((acc, item) => {
       const key = item.customer_id ?? 'unknown'
 

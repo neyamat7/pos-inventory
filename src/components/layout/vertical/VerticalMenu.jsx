@@ -117,10 +117,16 @@ const VerticalMenu = ({ scrollMenu }) => {
           <MenuItem href='/apps/sales/list'>Sales List</MenuItem>
           <MenuItem href='/apps/sales/return'>Sales Return</MenuItem>
         </SubMenu>
+
+        <MenuItem href='/apps/dueList' icon={<i className='tabler-smart-home' />}>
+          Due List
+        </MenuItem>
+
         <MenuItem href='/apps/expenses/list' icon={<i className='tabler-smart-home' />}>
           Expenses
         </MenuItem>
       </Menu>
+
       {/* <Menu
           popoutMenuOffset={{ mainAxis: 23 }}
           menuItemStyles={menuItemStyles(verticalNavOptions, theme)}
