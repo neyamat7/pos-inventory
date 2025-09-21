@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 const PosHeader = () => {
   return (
-    <div className='flex items-center justify-between space-x-4 px-6 pr-12 w-2/3'>
+    <div className='flex flex-col gap-3 lg:flex-row items-center justify-between space-x-4 px-6 pr-12 w-2/3'>
       <h1 className='text-lg font-medium'>Quick Action</h1>
       <div className='flex space-x-2'>
         <button className='flex items-center space-x-1 px-3 py-1 bg-green-100 text-green-700 rounded text-sm'>

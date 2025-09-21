@@ -403,10 +403,10 @@ export default function POSSystem({ productsData = [] }) {
   }
 
   return (
-    <div className='min-h-[calc(100vh-54px] bg-gray-50 p-4'>
+    <div className='min-h-[calc(100vh-54px] bg-gray-50 p-1'>
       {/* Header */}
       <div className='mb-6'>
-        <div className='flex items-center justify-between'>
+        <div className='flex flex-col lg:flex-row items-center justify-between'>
           <PosHeader />
 
           <SearchProduct
@@ -424,11 +424,11 @@ export default function POSSystem({ productsData = [] }) {
         </div>
       </div>
 
-      <div className='flex gap-6'>
+      <div className='flex flex-col lg:flex-row gap-6'>
         {/* Left Side - Form */}
-        <div className='w-4/5 bg-white rounded-lg p-6 flex flex-col'>
+        <div className='w-full lg:w-4/5 bg-white rounded-lg lg:p-6 flex flex-col'>
           {/* Order Details */}
-          <div className='grid grid-cols-3 gap-4 mb-6'>
+          <div className='grid w-full grid-cols-1 lg:grid-cols-3 gap-2 lg:gap-4 mb-6'>
             <input
               type='text'
               value='S-00428'
@@ -458,14 +458,11 @@ export default function POSSystem({ productsData = [] }) {
                   </option>
                 ))}
               </select>
-              <button className='px-3 py-2 bg-[#7367f0] text-white rounded-r'>
-                <span className='text-sm'>+</span>
-              </button>
             </div>
           </div>
 
           {/* Items Table */}
-          <div className='mb-6'>
+          <div className='mb-6 overflow-x-auto'>
             <table className='w-full border-collapse'>
               <thead>
                 {table.getHeaderGroups().map(headerGroup => (
@@ -492,204 +489,211 @@ export default function POSSystem({ productsData = [] }) {
             </table>
           </div>
 
-          {cartProducts.length > 0 && (
-            <form className='space-y-4 mb-6' onSubmit={handleSubmit(handleDistributeSubmit)}>
-              <h1>Expense Distribution</h1>
+          <div className=''>
+            {/* Expense Distribution */}
+            {cartProducts.length > 0 && (
+              <form className='space-y-4 mb-6' onSubmit={handleSubmit(handleDistributeSubmit)}>
+                <h1 className='text-2xl font-medium'>Expense Distribution</h1>
 
-              {/* Transportation */}
-              <div className='flex gap-5'>
-                <div className='flex items-center flex-1'>
+                {/* Transportation */}
+
+                <div className='flex flex-col lg:flex-row gap-2 lg:gap-5'>
                   <label className='w-32 text-sm'>Transportation</label>
-                  <input
-                    type='number'
-                    defaultValue='0'
-                    {...register('transportationAmount')}
-                    className='flex-1 px-3 py-2 border border-gray-300 rounded'
-                  />
-                </div>
-                <div className='w-1/4'>
-                  <select
-                    {...register('transportationType')}
-                    className='flex-1 px-3 py-2 border border-gray-300 focus:outline-none rounded w-full'
-                  >
-                    <option value='divided'>Divided</option>
-                    <option value='each'>Each</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Moshjid */}
-              <div className='flex gap-5'>
-                <div className='flex items-center flex-1'>
-                  <label className='w-32 text-sm'>Moshjid</label>
-                  <input
-                    type='number'
-                    defaultValue='0'
-                    {...register('moshjidAmount')}
-                    className='flex-1 px-3 py-2 border border-gray-300 rounded'
-                  />
-                </div>
-                <div className='w-1/4'>
-                  <select
-                    {...register('moshjidType')}
-                    className='flex-1 px-3 py-2 border border-gray-300 focus:outline-none rounded w-full'
-                  >
-                    <option value='divided'>Divided</option>
-                    <option value='each'>Each</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Van Vara */}
-              <div className='flex gap-5'>
-                <div className='flex items-center flex-1'>
-                  <label className='w-32 text-sm'>Van Vara</label>
-                  <input
-                    type='number'
-                    defaultValue='0'
-                    {...register('vanVaraAmount')}
-                    className='flex-1 px-3 py-2 border border-gray-300 rounded'
-                  />
-                </div>
-                <div className='w-1/4'>
-                  <select
-                    {...register('vanVaraType')}
-                    className='flex-1 px-3 py-2 border border-gray-300 focus:outline-none rounded w-full'
-                  >
-                    <option value='divided'>Divided</option>
-                    <option value='each'>Each</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Trading Post */}
-              <div className='flex gap-5'>
-                <div className='flex items-center flex-1'>
-                  <label className='w-32 text-sm'>Trading Post</label>
-                  <input
-                    type='number'
-                    defaultValue='0'
-                    {...register('tradingPostAmount')}
-                    className='flex-1 px-3 py-2 border border-gray-300 rounded'
-                  />
-                </div>
-                <div className='w-1/4'>
-                  <select
-                    {...register('tradingPostType')}
-                    className='flex-1 px-3 py-2 border border-gray-300 focus:outline-none rounded w-full'
-                  >
-                    <option value='divided'>Divided</option>
-                    <option value='each'>Each</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Labour */}
-              <div className='flex gap-5'>
-                <div className='flex items-center flex-1'>
-                  <label className='w-32 text-sm'>Labour</label>
-                  <input
-                    type='number'
-                    defaultValue='0'
-                    {...register('labourAmount')}
-                    className='flex-1 px-3 py-2 border border-gray-300 rounded'
-                  />
-                </div>
-                <div className='w-1/4'>
-                  <select
-                    {...register('labourType')}
-                    className='flex-1 px-3 py-2 border border-gray-300 focus:outline-none rounded w-full'
-                  >
-                    <option value='divided'>Divided</option>
-                    <option value='each'>Each</option>
-                  </select>
-                </div>
-              </div>
-
-              <button
-                type='submit'
-                className='w-52 py-3 bg-[#7367f0] text-white rounded-lg hover:bg-[#4e43c5] font-medium'
-              >
-                Distribute Expenses
-              </button>
-            </form>
-          )}
-
-          {/* Payment Details */}
-          <form onSubmit={handleSubmitPayment(onSubmitPayment)} className='mt-auto'>
-            <h1 className='mb-4'>Payment Details</h1>
-
-            <div className='grid grid-cols-2 gap-8'>
-              {/* Left Side */}
-              <div className='space-y-4'>
-                <div className='flex items-center'>
-                  <label className='w-32 text-sm'>Receive Amount</label>
-                  <input
-                    type='number'
-                    {...registerPayment('receiveAmount')}
-                    className='flex-1 px-3 py-2 border border-gray-300 rounded'
-                  />
-                </div>
-                <div className='flex items-center'>
-                  <label className='w-32 text-sm'>Change Amount</label>
-                  <input
-                    type='number'
-                    {...registerPayment('changeAmount')}
-                    disabled
-                    className='flex-1 px-3 py-2 border border-gray-300 rounded bg-gray-100'
-                  />
-                </div>
-                <div className='flex items-center'>
-                  <label className='w-32 text-sm'>Due Amount</label>
-                  <input
-                    type='number'
-                    {...registerPayment('dueAmount')}
-                    disabled
-                    className='flex-1 px-3 py-2 border border-gray-300 rounded bg-gray-100'
-                  />
-                </div>
-                <div className='flex items-center'>
-                  <label className='w-32 text-sm'>Payment Type</label>
-                  <select
-                    {...registerPayment('paymentType')}
-                    className='flex-1 px-3 py-2 border border-gray-300 rounded'
-                  >
-                    <option value='cash'>Cash</option>
-                    <option value='card'>Card</option>
-                    <option value='bkash'>Bkash</option>
-                  </select>
-                </div>
-                <div className='flex items-start'>
-                  <label className='w-32 text-sm pt-2'>Note</label>
-                  <textarea
-                    {...registerPayment('note')}
-                    placeholder='Type note...'
-                    className='flex-1 px-3 py-2 border border-gray-300 rounded h-20 resize-none'
-                  />
-                </div>
-              </div>
-
-              {/* Right Side */}
-              <div className='space-y-4'>
-                <div className='flex items-center justify-between'>
-                  <span className='text-sm'>Sub Total</span>
-                  <span className='font-medium'>৳ {totalDueAmount}</span>
-                </div>
-                <div className='flex items-center justify-between'>
-                  <span className='text-sm'>Vat</span>
-                  <div className='flex items-center space-x-2'>
-                    <select
-                      {...registerPayment('vatType')}
-                      className='px-2 py-1 border border-gray-300 rounded text-sm'
-                    >
-                      <option value='Select'>Select</option>
-                      <option value='5%'>5%</option>
-                      <option value='10%'>10%</option>
-                    </select>
-                    <span className='text-sm'>{vatAmount}</span>
+                  <div className='flex gap-1 lg:gap-5 w-full'>
+                    <input
+                      type='number'
+                      defaultValue='0'
+                      {...register('transportationAmount')}
+                      className='lg:flex-1 px-3 py-2 border border-gray-300 rounded w-1/2'
+                    />
+                    <div className='w-1/2 lg:w-1/4'>
+                      <select
+                        {...register('transportationType')}
+                        className='flex-1 px-3 py-2 border border-gray-300 focus:outline-none rounded w-full'
+                      >
+                        <option value='divided'>Divided</option>
+                        <option value='each'>Each</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
-                {/* <div className='flex items-center justify-between'>
+
+                {/* Moshjid */}
+                <div className='flex flex-col lg:flex-row gap-2 lg:gap-5'>
+                  <label className='w-32 text-sm'>Moshjid</label>
+                  <div className='flex gap-1 lg:gap-5 w-full'>
+                    <input
+                      type='number'
+                      defaultValue='0'
+                      {...register('moshjidAmount')}
+                      className='flex-1 px-3 py-2 border border-gray-300 rounded w-1/2'
+                    />
+
+                    <div className='w-1/2 lg:w-1/4'>
+                      <select
+                        {...register('moshjidType')}
+                        className='flex-1 px-3 py-2 border border-gray-300 focus:outline-none rounded w-full'
+                      >
+                        <option value='divided'>Divided</option>
+                        <option value='each'>Each</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Van Vara */}
+                <div className='flex flex-col lg:flex-row gap-2 lg:gap-5'>
+                  <label className='w-32 text-sm'>Van Vara</label>
+                  <div className='flex gap-1 lg:gap-5 w-full'>
+                    <input
+                      type='number'
+                      defaultValue='0'
+                      {...register('vanVaraAmount')}
+                      className='flex-1 px-3 py-2 border border-gray-300 rounded w-1/2'
+                    />
+
+                    <div className='w-1/2 lg:w-1/4'>
+                      <select
+                        {...register('vanVaraType')}
+                        className='flex-1 px-3 py-2 border border-gray-300 focus:outline-none rounded w-full'
+                      >
+                        <option value='divided'>Divided</option>
+                        <option value='each'>Each</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Trading Post */}
+                <div className='flex flex-col lg:flex-row gap-2 lg:gap-5'>
+                  <label className='w-32 text-sm'>Trading Post</label>
+                  <div className='flex gap-1 lg:gap-5 w-full'>
+                    <input
+                      type='number'
+                      defaultValue='0'
+                      {...register('tradingPostAmount')}
+                      className='flex-1 px-3 py-2 border border-gray-300 rounded w-1/2'
+                    />
+
+                    <div className='w-1/2 lg:w-1/4'>
+                      <select
+                        {...register('tradingPostType')}
+                        className='flex-1 px-3 py-2 border border-gray-300 focus:outline-none rounded w-full'
+                      >
+                        <option value='divided'>Divided</option>
+                        <option value='each'>Each</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Labour */}
+                <div className='flex flex-col lg:flex-row gap-2 lg:gap-5'>
+                  <label className='w-32 text-sm'>Labour</label>
+                  <div className='flex gap-1 lg:gap-5 w-full'>
+                    <input
+                      type='number'
+                      defaultValue='0'
+                      {...register('labourAmount')}
+                      className='flex-1 px-3 py-2 border border-gray-300 rounded w-1/2'
+                    />
+
+                    <div className='w-1/2 lg:w-1/4'>
+                      <select
+                        {...register('labourType')}
+                        className='flex-1 px-3 py-2 border border-gray-300 focus:outline-none rounded w-full'
+                      >
+                        <option value='divided'>Divided</option>
+                        <option value='each'>Each</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type='submit'
+                  className='w-52 py-3 bg-[#7367f0] text-white rounded-lg hover:bg-[#4e43c5] font-medium'
+                >
+                  Distribute Expenses
+                </button>
+              </form>
+            )}
+
+            {/* Payment Details */}
+            <form onSubmit={handleSubmitPayment(onSubmitPayment)} className='mt-auto'>
+              <h1 className='mb-4'>Payment Details</h1>
+
+              <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
+                {/* Left Side */}
+                <div className='space-y-4'>
+                  <div className='flex items-center'>
+                    <label className='w-32 text-sm'>Receive Amount</label>
+                    <input
+                      type='number'
+                      {...registerPayment('receiveAmount')}
+                      className='flex-1 px-3 py-2 border border-gray-300 rounded'
+                    />
+                  </div>
+                  <div className='flex items-center'>
+                    <label className='w-32 text-sm'>Change Amount</label>
+                    <input
+                      type='number'
+                      {...registerPayment('changeAmount')}
+                      disabled
+                      className='flex-1 px-3 py-2 border border-gray-300 rounded bg-gray-100'
+                    />
+                  </div>
+                  <div className='flex items-center'>
+                    <label className='w-32 text-sm'>Due Amount</label>
+                    <input
+                      type='number'
+                      {...registerPayment('dueAmount')}
+                      disabled
+                      className='flex-1 px-3 py-2 border border-gray-300 rounded bg-gray-100'
+                    />
+                  </div>
+                  <div className='flex items-center'>
+                    <label className='w-32 text-sm'>Payment Type</label>
+                    <select
+                      {...registerPayment('paymentType')}
+                      className='flex-1 px-3 py-2 border border-gray-300 rounded'
+                    >
+                      <option value='cash'>Cash</option>
+                      <option value='card'>Card</option>
+                      <option value='bkash'>Bkash</option>
+                    </select>
+                  </div>
+                  <div className='flex items-start'>
+                    <label className='w-32 text-sm pt-2'>Note</label>
+                    <textarea
+                      {...registerPayment('note')}
+                      placeholder='Type note...'
+                      className='flex-1 px-3 py-2 border border-gray-300 rounded h-20 resize-none'
+                    />
+                  </div>
+                </div>
+
+                {/* Right Side */}
+                <div className='space-y-4'>
+                  <div className='flex items-center justify-between'>
+                    <span className='text-sm'>Sub Total</span>
+                    <span className='font-medium'>৳ {totalDueAmount}</span>
+                  </div>
+                  <div className='flex items-center justify-between'>
+                    <span className='text-sm'>Vat</span>
+                    <div className='flex items-center space-x-2'>
+                      <select
+                        {...registerPayment('vatType')}
+                        className='px-2 py-1 border border-gray-300 rounded text-sm'
+                      >
+                        <option value='Select'>Select</option>
+                        <option value='5%'>5%</option>
+                        <option value='10%'>10%</option>
+                      </select>
+                      <span className='text-sm'>{vatAmount}</span>
+                    </div>
+                  </div>
+                  {/* <div className='flex items-center justify-between'>
                   <span className='text-sm'>Discount</span>
                   <div className='flex items-center space-x-2'>
                     <select
@@ -702,38 +706,39 @@ export default function POSSystem({ productsData = [] }) {
                     <span className='text-sm'>0</span>
                   </div>
                 </div> */}
-                <div className='flex items-center justify-between'>
-                  <span className='text-sm'>Shipping Charge</span>
-                  <span className='text-sm'>0</span>
-                </div>
-                <div className='flex items-center justify-between font-medium'>
-                  <span className='text-sm'>Total Amount</span>
-                  <span>৳ {totalDueAmount}</span>
-                </div>
-                {/* <div className='flex items-center justify-between'>
+                  <div className='flex items-center justify-between'>
+                    <span className='text-sm'>Shipping Charge</span>
+                    <span className='text-sm'>0</span>
+                  </div>
+                  <div className='flex items-center justify-between font-medium'>
+                    <span className='text-sm'>Total Amount</span>
+                    <span>৳ {totalDueAmount}</span>
+                  </div>
+                  {/* <div className='flex items-center justify-between'>
                   <span className='text-sm'>Rounding(+/-)</span>
                   <span className='text-sm'>৳ 0</span>
                 </div> */}
-                <div className='flex items-center justify-between font-bold text-lg'>
-                  <span>Payable Amount</span>
-                  <span>৳ {payableAmount}</span>
+                  <div className='flex items-center justify-between font-bold text-lg'>
+                    <span>Payable Amount</span>
+                    <span>৳ {payableAmount}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className='flex space-x-4 mt-8'>
-              <button className='flex-1 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium'>
-                Cancel
-              </button>
-              <button
-                type='submit'
-                className='flex-1 py-3 bg-[#7367f0] text-white rounded-lg hover:bg-[#4e43c5] font-medium'
-              >
-                Save
-              </button>
-            </div>
-          </form>
+              {/* Action Buttons */}
+              <div className='flex space-x-4 mt-8'>
+                <button className='flex-1 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium'>
+                  Cancel
+                </button>
+                <button
+                  type='submit'
+                  className='flex-1 py-3 bg-[#7367f0] text-white rounded-lg hover:bg-[#4e43c5] font-medium'
+                >
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
 
         {/* Right Side - Products */}
@@ -757,14 +762,14 @@ export default function POSSystem({ productsData = [] }) {
       />
 
       {/* Brand Modal */}
-      <BrandModal
+      {/* <BrandModal
         open={brandModalOpen}
         onClose={() => setBrandModalOpen(false)}
         searchValue={brandSearch}
         onSearchChange={e => setBrandSearch(e.target.value)}
         items={filteredBrands}
         setSelectedBrand={setSelectedBrand}
-      />
+      /> */}
 
       {/* Commission Edit Modal */}
       {commissionModal.open && (

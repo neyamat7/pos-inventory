@@ -9,7 +9,7 @@ const ShowProductList = ({
   handleCartProductClick
 }) => {
   return (
-    <div className='w-1/5'>
+    <div className='lg:w-1/5'>
       {selectedCategory.length > 0 && (
         <div className='flex flex-wrap gap-2 mb-4'>
           {selectedCategory.map(category => (
