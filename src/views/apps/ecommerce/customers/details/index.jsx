@@ -18,14 +18,16 @@ const AddressBillingTab = dynamic(
 )
 
 // Vars
-const tabContentList = () => ({
-  overview: <OverViewTab />,
+const tabContentList = (customerId) => ({
+  overview: <OverViewTab customerId={customerId} />,
   security: <SecurityTab />,
   addressBilling: <AddressBillingTab />,
   notifications: <NotificationsTab />
 })
 
 const CustomerDetails = ({ customerData, customerId }) => {
+  console.log('cus id', customerId)
+
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12 }}>
@@ -35,7 +37,7 @@ const CustomerDetails = ({ customerData, customerId }) => {
         <CustomerLeftOverview customerData={customerData} />
       </Grid>
       <Grid size={{ xs: 12, md: 8 }}>
-        <CustomerRight tabContentList={tabContentList()} />
+        <CustomerRight tabContentList={tabContentList(customerId)} />
       </Grid>
     </Grid>
   )

@@ -1,4 +1,8 @@
+'use client'
+
 // MUI Imports
+import { useState } from 'react'
+
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Chip from '@mui/material/Chip'
@@ -9,13 +13,22 @@ import Button from '@mui/material/Button'
 // Component Imports
 import CustomAvatar from '@core/components/mui/Avatar'
 import EditUserInfo from '@components/dialogs/edit-user-info'
-import OpenDialogOnElementClick from '@components/dialogs/OpenDialogOnElementClick'
+import OpenDialogOnElementClick from '@/components/dialogs/OpenDialogOnElementClick'
+import EditCustomerInfo from '../EditCustomerInfo'
+
+// import OpenDialogOnElementClick from '@components/dialogs/OpenDialogOnElementClick'
 
 const CustomerDetails = ({ customerData }) => {
+  const [open, setOpen] = useState(false)
+
   // Vars
   const buttonProps = {
     variant: 'contained',
     children: 'Edit Details'
+  }
+
+  const handleUpdateCustomer = () => {
+    console.log('update customer')
   }
 
   return (
@@ -23,10 +36,10 @@ const CustomerDetails = ({ customerData }) => {
       <CardContent className='flex flex-col pbs-12 gap-6'>
         <div className='flex flex-col justify-self-center items-center gap-6'>
           <div className='flex flex-col items-center gap-4'>
-            <CustomAvatar src={customerData?.avatar} variant='rounded' alt='Customer Avatar' size={120} />
+            <CustomAvatar src={customerData?.image} variant='rounded' alt='Customer Avatar' size={120} />
             <div className='flex flex-col items-center text-center'>
-              <Typography variant='h5'>{customerData?.customer}</Typography>
-              <Typography>Customer ID #{customerData?.customerId}</Typography>
+              <Typography variant='h5'>{customerData?.name}</Typography>
+              <Typography>Customer ID #{customerData?.sl}</Typography>
             </div>
           </div>
           <div className='flex items-center justify-around gap-4 flex-wrap is-full'>
@@ -35,7 +48,7 @@ const CustomerDetails = ({ customerData }) => {
                 <i className='tabler-shopping-cart' />
               </CustomAvatar>
               <div>
-                <Typography variant='h5'>{customerData?.order}</Typography>
+                <Typography variant='h5'>{customerData?.orders}</Typography>
                 <Typography>Orders</Typography>
               </div>
             </div>
@@ -58,7 +71,7 @@ const CustomerDetails = ({ customerData }) => {
               <Typography color='text.primary' className='font-medium'>
                 Username:
               </Typography>
-              <Typography>{customerData?.customer}</Typography>
+              <Typography>{customerData?.name}</Typography>
             </div>
             <div className='flex items-center gap-1'>
               <Typography color='text.primary' className='font-medium'>
@@ -76,17 +89,25 @@ const CustomerDetails = ({ customerData }) => {
               <Typography color='text.primary' className='font-medium'>
                 Contact:
               </Typography>
-              <Typography>+1 (234) 464-0600</Typography>
+              <Typography>{customerData.phone}</Typography>
             </div>
             <div className='flex items-center gap-1'>
               <Typography color='text.primary' className='font-medium'>
                 Country:
               </Typography>
-              <Typography>{customerData?.country}</Typography>
+              <Typography>{customerData?.location}</Typography>
             </div>
           </div>
         </div>
-        <OpenDialogOnElementClick element={Button} elementProps={buttonProps} dialog={EditUserInfo} />
+
+        <Button {...buttonProps} onClick={() => setOpen(true)} />
+
+        <EditCustomerInfo
+          open={open}
+          handleClose={() => setOpen(false)}
+          customerData={customerData}
+          onSave={handleUpdateCustomer}
+        />
       </CardContent>
     </Card>
   )

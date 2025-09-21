@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 
 // Component Imports
 import CustomerDetails from '@/views/apps/ecommerce/customers/details'
+import { customers } from '@/data/customerData/customerData'
 
 // Data Imports
 import { getEcommerceData } from '@/app/server/actions'
@@ -13,8 +14,8 @@ const CustomerDetailsPage = async props => {
   console.log('params in customer page', params.id)
 
   // Vars
-  const data = await getEcommerceData()
-  const filteredData = data?.customerData.filter(item => item.customerId === params.id)[0]
+  // const data = await getEcommerceData()
+  const filteredData = customers.filter(item => item.sl === Number(params.id))[0]
 
   console.log('filteredData', filteredData)
 

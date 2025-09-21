@@ -6,7 +6,6 @@ import Button from '@mui/material/Button'
 import Drawer from '@mui/material/Drawer'
 import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
-import MenuItem from '@mui/material/MenuItem'
 import Typography from '@mui/material/Typography'
 
 // Third-party Imports
@@ -16,59 +15,88 @@ import { useForm, Controller } from 'react-hook-form'
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
 
-// Vars
-const initialData = {
-  phone: '',
-  due: '',
-  image: ''
-}
+// Helper for crate rows
+const newCrateRow = () => ({
+  id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+  type: '',
+  qty: '',
+  price: ''
+})
 
 const AddSupplierDrawer = props => {
-  // Props
   const { open, handleClose, setData, supplierData } = props
 
-  // States
-  const [formData, setFormData] = useState(initialData)
+  // Dynamic crate editor rows
+  const [crateRows, setCrateRows] = useState([newCrateRow()])
 
-  // Hooks
   const {
     control,
-    reset: resetForm,
+    reset,
     handleSubmit,
     formState: { errors }
   } = useForm({
     defaultValues: {
+      sl: '',
       name: '',
       email: '',
-      type: ''
+      image: '',
+      phone: '',
+      balance: '',
+      due: '',
+      cost: '',
+      location: ''
     }
   })
 
-  const onSubmit = data => {
-    // console.log('data', data)
+  const addCrateRow = () => setCrateRows(prev => [...prev, newCrateRow()])
+  const removeCrateRow = id => setCrateRows(prev => prev.filter(r => r.id !== id))
 
-    const newData = {
-      sl: (supplierData?.length && supplierData?.length + 1) || 1,
-      image: formData.image || `/images/avatars/${Math.floor(Math.random() * 8) + 1}.png`, // use user input OR fallback
-      name: data.name,
-      email: data.email,
-      type: data.type,
-      phone: formData.phone,
-      due: formData.due
+  const updateCrateRow = (id, field, value) =>
+    setCrateRows(prev => prev.map(r => (r.id === id ? { ...r, [field]: value } : r)))
+
+  const buildCrateObject = () => {
+    const crate = {}
+
+    crateRows.forEach(r => {
+      const key = (r.type || '').trim()
+
+      if (!key) return
+      crate[key] = {
+        qty: Number(r.qty || 0),
+        price: Number(r.price || 0)
+      }
+    })
+
+    return crate
+  }
+
+  const onSubmit = data => {
+    const newSupplier = {
+      sl: Number(data.sl),
+      image: data.image?.trim() || '',
+      name: data.name?.trim(),
+      email: data.email?.trim(),
+      type: 'Supplier',
+      phone: data.phone?.trim(),
+      balance: Number(data.balance || 0),
+      due: Number(data.due || 0),
+      crate: buildCrateObject(),
+      cost: Number(data.cost || 0),
+      orders: 0,
+      totalSpent: 0,
+      location: data.location?.trim() || ''
     }
 
-    // console.log('newData', newData)
-
-    setData([...(supplierData ?? []), newData])
-    resetForm({ name: '', email: '', type: '' })
-    setFormData(initialData)
+    setData([...(supplierData ?? []), newSupplier])
+    reset()
+    setCrateRows([newCrateRow()])
     handleClose()
   }
 
   const handleReset = () => {
+    reset()
+    setCrateRows([newCrateRow()])
     handleClose()
-    resetForm({ name: '', email: '', type: '' })
-    setFormData(initialData)
   }
 
   return (
@@ -78,23 +106,39 @@ const AddSupplierDrawer = props => {
       variant='temporary'
       onClose={handleReset}
       ModalProps={{ keepMounted: true }}
-      sx={{ '& .MuiDrawer-paper': { width: { xs: 300, sm: 400 } } }}
+      sx={{ '& .MuiDrawer-paper': { width: { xs: 300, sm: 420 } } }}
     >
       <div className='flex items-center justify-between pli-6 plb-5'>
-        <Typography variant='h5'>Add a Supplier</Typography>
+        <Typography variant='h5'>Add Supplier</Typography>
         <IconButton size='small' onClick={handleReset}>
           <i className='tabler-x text-2xl' />
         </IconButton>
       </div>
       <Divider />
+
       <PerfectScrollbar options={{ wheelPropagation: false, suppressScrollX: true }}>
         <div className='p-6'>
           <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-5'>
             <Typography color='text.primary' className='font-medium'>
-              Supplier Information
+              Basic Info
             </Typography>
 
-            {/* Name */}
+            <Controller
+              name='sl'
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <CustomTextField
+                  {...field}
+                  type='number'
+                  label='SL'
+                  placeholder='1'
+                  fullWidth
+                  {...(errors.sl && { error: true, helperText: 'Required' })}
+                />
+              )}
+            />
+
             <Controller
               name='name'
               control={control}
@@ -102,15 +146,14 @@ const AddSupplierDrawer = props => {
               render={({ field }) => (
                 <CustomTextField
                   {...field}
-                  fullWidth
                   label='Name'
-                  placeholder='Supplier Name'
-                  {...(errors.name && { error: true, helperText: 'This field is required.' })}
+                  placeholder='Rahim Traders'
+                  fullWidth
+                  {...(errors.name && { error: true, helperText: 'Required' })}
                 />
               )}
             />
 
-            {/* Email */}
             <Controller
               name='email'
               control={control}
@@ -118,71 +161,128 @@ const AddSupplierDrawer = props => {
               render={({ field }) => (
                 <CustomTextField
                   {...field}
-                  fullWidth
                   type='email'
                   label='Email'
-                  placeholder='supplier@email.com'
-                  {...(errors.email && { error: true, helperText: 'This field is required.' })}
+                  placeholder='rahimtraders@gmail.com'
+                  fullWidth
+                  {...(errors.email && { error: true, helperText: 'Required' })}
                 />
               )}
             />
 
-            {/* Type dropdown */}
             <Controller
-              name='type'
+              name='image'
+              control={control}
+              render={({ field }) => (
+                <CustomTextField
+                  {...field}
+                  label='Image URL'
+                  placeholder='https://i.postimg.cc/GpXVckNg/images-3.jpg'
+                  fullWidth
+                />
+              )}
+            />
+
+            <Controller
+              name='phone'
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
                 <CustomTextField
-                  select
-                  fullWidth
-                  label='Type'
                   {...field}
-                  {...(errors.type && { error: true, helperText: 'This field is required.' })}
-                >
-                  <MenuItem value='Supplier'>Supplier</MenuItem>
-                  <MenuItem value='Distributor'>Distributor</MenuItem>
-                  <MenuItem value='Wholesaler'>Wholesaler</MenuItem>
-                  <MenuItem value='Retailer'>Retailer</MenuItem>
-                </CustomTextField>
+                  label='Phone'
+                  placeholder='+8801711000001'
+                  fullWidth
+                  {...(errors.phone && { error: true, helperText: 'Required' })}
+                />
               )}
             />
 
-            {/* Phone */}
-            <CustomTextField
-              label='Phone'
-              type='number'
-              fullWidth
-              placeholder='+(123) 456-7890'
-              value={formData.phone}
-              onChange={e => setFormData({ ...formData, phone: e.target.value })}
+            <div className='grid grid-cols-2 gap-4'>
+              <Controller
+                name='balance'
+                control={control}
+                render={({ field }) => (
+                  <CustomTextField {...field} type='number' label='Balance' placeholder='5000' fullWidth />
+                )}
+              />
+              <Controller
+                name='due'
+                control={control}
+                render={({ field }) => (
+                  <CustomTextField {...field} type='number' label='Due' placeholder='3875' fullWidth />
+                )}
+              />
+            </div>
+
+            <Controller
+              name='cost'
+              control={control}
+              render={({ field }) => (
+                <CustomTextField {...field} type='number' label='Cost' placeholder='0' fullWidth />
+              )}
             />
 
-            {/* Due */}
-            <CustomTextField
-              label='Due Amount'
-              type='number'
-              fullWidth
-              placeholder='1000'
-              value={formData.due}
-              onChange={e => setFormData({ ...formData, due: e.target.value })}
+            <Controller
+              name='location'
+              control={control}
+              render={({ field }) => <CustomTextField {...field} label='Location' placeholder='Chandpur' fullWidth />}
             />
 
-            {/* Image URL */}
-            <CustomTextField
-              label='Image URL'
-              type='text'
-              fullWidth
-              placeholder='https://example.com/supplier.png'
-              value={formData.image}
-              onChange={e => setFormData({ ...formData, image: e.target.value })}
-            />
+            {/* Crate Editor */}
+            <div className='flex items-center justify-between'>
+              <Typography color='text.primary' className='font-medium'>
+                Crate
+              </Typography>
+              <Button size='small' variant='tonal' onClick={addCrateRow} startIcon={<i className='tabler-plus' />}>
+                Add Type
+              </Button>
+            </div>
 
-            <div className='flex items-center gap-4'>
+            <div className='flex flex-col gap-3'>
+              {crateRows.map((row, idx) => (
+                <div key={row.id} className='grid grid-cols-12 gap-3 items-end'>
+                  <CustomTextField
+                    className='col-span-5'
+                    label='Type'
+                    placeholder={`type${idx + 1}`}
+                    value={row.type}
+                    onChange={e => updateCrateRow(row.id, 'type', e.target.value)}
+                  />
+                  <CustomTextField
+                    className='col-span-3'
+                    type='number'
+                    label='Qty'
+                    placeholder='0'
+                    value={row.qty}
+                    onChange={e => updateCrateRow(row.id, 'qty', e.target.value)}
+                  />
+                  <CustomTextField
+                    className='col-span-3'
+                    type='number'
+                    label='Price'
+                    placeholder='0'
+                    value={row.price}
+                    onChange={e => updateCrateRow(row.id, 'price', e.target.value)}
+                  />
+                  <Button
+                    className='col-span-1'
+                    color='error'
+                    variant='tonal'
+                    onClick={() => removeCrateRow(row.id)}
+                    disabled={crateRows.length === 1}
+                  >
+                    <i className='tabler-trash' />
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            <div className='flex items-center gap-4 mt-2'>
               <Button variant='contained' type='submit'>
                 Add
               </Button>
-              <Button variant='tonal' color='error' type='reset' onClick={handleReset}>
+              <Button variant='tonal' color='error' type='button' onClick={handleReset}>
                 Discard
               </Button>
             </div>

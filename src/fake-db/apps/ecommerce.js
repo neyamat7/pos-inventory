@@ -5357,7 +5357,7 @@ export const db = {
       image: 'https://i.postimg.cc/GpXVckNg/images-3.jpg',
       name: 'Global Supply Ltd.',
       email: 'contact@globalsupply.com',
-      type: 'Supplier',
+      type: 'Supplier',      
       phone: '+8801711000003',
       balance: 7500,
       due: 9387,

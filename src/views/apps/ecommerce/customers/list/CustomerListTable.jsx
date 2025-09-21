@@ -4,17 +4,18 @@
 import { useState, useEffect, useMemo } from 'react'
 
 // Next Imports
-import Link from 'next/link'
 import { useParams } from 'next/navigation'
 
 // MUI Imports
+import Link from 'next/link'
+
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
+import TablePagination from '@mui/material/TablePagination'
+import MenuItem from '@mui/material/MenuItem'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import Checkbox from '@mui/material/Checkbox'
-import TablePagination from '@mui/material/TablePagination'
-import MenuItem from '@mui/material/MenuItem'
 
 // Third-party Imports
 import classnames from 'classnames'
@@ -37,51 +38,30 @@ import AddCustomerDrawer from './AddCustomerDrawer'
 import CustomAvatar from '@core/components/mui/Avatar'
 import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
+import OptionMenu from '@core/components/option-menu'
 
 // Util Imports
 import { getInitials } from '@/utils/getInitials'
-import { getLocalizedUrl } from '@/utils/i18n'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
 
-export const paymentStatus = {
-  1: { text: 'Paid', color: 'success' },
-  2: { text: 'Pending', color: 'warning' },
-  3: { text: 'Cancelled', color: 'secondary' },
-  4: { text: 'Failed', color: 'error' }
-}
-export const statusChipColor = {
-  Delivered: { color: 'success' },
-  'Out for Delivery': { color: 'primary' },
-  'Ready to Pickup': { color: 'info' },
-  Dispatched: { color: 'warning' }
-}
-
+// -------------------- utils --------------------
 const fuzzyFilter = (row, columnId, value, addMeta) => {
-  // Rank the item
   const itemRank = rankItem(row.getValue(columnId), value)
 
-  // Store the itemRank info
-  addMeta({
-    itemRank
-  })
+  addMeta({ itemRank })
 
-  // Return if the item should be filtered in/out
   return itemRank.passed
 }
 
 const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...props }) => {
-  // States
   const [value, setValue] = useState(initialValue)
 
+  useEffect(() => setValue(initialValue), [initialValue])
+
   useEffect(() => {
-    setValue(initialValue)
-  }, [initialValue])
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      onChange(value)
-    }, debounce)
+    const timeout = setTimeout(() => onChange(value), debounce)
 
     return () => clearTimeout(timeout)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -90,19 +70,45 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
   return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
 }
 
-// Column Definitions
 const columnHelper = createColumnHelper()
 
+// -------------------- component --------------------
 const CustomerListTable = ({ customerData }) => {
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
-  const [data, setData] = useState(...[customerData])
+  const [data, setData] = useState(...[customerData]) // keep your pattern
   const [globalFilter, setGlobalFilter] = useState('')
 
   // Hooks
   const { lang: locale } = useParams()
 
+  // Re-sync data if prop changes
+  useEffect(() => {
+    setData(customerData || [])
+  }, [customerData])
+
+  // Helpers
+  const getAvatar = ({ image, name }) => {
+    if (image) return <CustomAvatar src={image} skin='light' size={34} />
+
+    return (
+      <CustomAvatar skin='light' size={34}>
+        {getInitials(name || '')}
+      </CustomAvatar>
+    )
+  }
+
+  const getCrateSummary = crate => {
+    if (!crate) return '—'
+    const entries = Object.values(crate)
+    const totalQty = entries.reduce((sum, c) => sum + Number(c?.qty || 0), 0)
+    const totalValue = entries.reduce((sum, c) => sum + Number(c?.qty || 0) * Number(c?.price || 0), 0)
+
+    return `Qty: ${totalQty} | Value: ${totalValue.toLocaleString()}`
+  }
+
+  // Columns
   const columns = useMemo(
     () => [
       {
@@ -127,76 +133,108 @@ const CustomerListTable = ({ customerData }) => {
           />
         )
       },
-      columnHelper.accessor('customer', {
-        header: 'Customers',
-        cell: ({ row }) => (
-          <div className='flex items-center gap-3'>
-            {getAvatar({ avatar: row.original.avatar, customer: row.original.customer })}
-            <div className='flex flex-col items-start'>
-              <Typography
-                component={Link}
-                color='text.primary'
-                href={`/apps/customers/details/${row.original.customerId}`}
-                className='font-medium hover:text-primary'
-              >
-                {row.original.customer}
-              </Typography>
-              <Typography variant='body2'>{row.original.email}</Typography>
+
+      columnHelper.accessor('sl', {
+        header: 'SL',
+        cell: ({ row }) => <Typography color='text.primary'>{row.original.sl}</Typography>
+      }),
+
+      columnHelper.accessor('name', {
+        header: 'NAME',
+        cell: ({ row, getValue }) => {
+          const name = getValue()
+          const { image, email } = row.original
+
+          return (
+            <div className='flex items-center gap-3'>
+              {getAvatar({ image, name })}
+              <div className='flex flex-col'>
+                <Link href={`/apps/customers/details/${row.original.sl}`}>
+                  <Typography className='font-medium hover:text-blue-500 hover:underline' color='text.primary'>
+                    {name}
+                  </Typography>
+                </Link>
+                {email ? <Typography variant='body2'>{email}</Typography> : null}
+              </div>
             </div>
-          </div>
-        )
+          )
+        }
       }),
-      columnHelper.accessor('customerId', {
-        header: 'Customer Id',
-        cell: ({ row }) => <Typography color='text.primary'>#{row.original.customerId}</Typography>
+
+      columnHelper.accessor('phone', {
+        header: 'PHONE',
+        cell: info => <Typography>{info.getValue()}</Typography>
       }),
-      columnHelper.accessor('country', {
-        header: 'Country',
+
+      columnHelper.accessor('balance', {
+        header: 'BALANCE',
+        cell: info => <Typography>{Number(info.getValue() || 0).toLocaleString()}</Typography>
+      }),
+
+      columnHelper.accessor('crate', {
+        header: 'CRATE',
+        cell: ({ row }) => <Typography>{getCrateSummary(row.original.crate)}</Typography>
+      }),
+
+      columnHelper.accessor('cost', {
+        header: 'COST',
+        cell: info => <Typography>{Number(info.getValue() || 0).toLocaleString()}</Typography>
+      }),
+
+      columnHelper.accessor('due', {
+        header: 'DUE',
+        cell: info => {
+          const val = Number(info.getValue() || 0)
+
+          return <Typography className={val > 0 ? 'text-error font-medium' : ''}>{val.toLocaleString()}</Typography>
+        }
+      }),
+
+      columnHelper.display({
+        id: 'action',
+        header: 'ACTION',
         cell: ({ row }) => (
-          <div className='flex items-center gap-2'>
-            <img src={row.original.countryFlag} height={22} />
-            <Typography>{row.original.country}</Typography>
+          <div className='flex items-center'>
+            <OptionMenu
+              iconButtonProps={{ size: 'medium' }}
+              iconClassName='text-textSecondary'
+              options={[
+                {
+                  text: 'View',
+                  icon: 'tabler-eye',
+                  href: `/people/customers/${row.original.sl}`,
+                  linkProps: { className: 'flex items-center gap-2 w-full px-2 py-1' }
+                },
+                {
+                  text: 'Delete',
+                  icon: 'tabler-trash',
+                  menuItemProps: {
+                    onClick: () => setData(prev => prev.filter(item => item.sl !== row.original.sl)),
+                    className: 'flex items-center'
+                  }
+                }
+              ]}
+            />
           </div>
-        )
-      }),
-      columnHelper.accessor('order', {
-        header: 'Orders',
-        cell: ({ row }) => <Typography>{row.original.order}</Typography>
-      }),
-      columnHelper.accessor('totalSpent', {
-        header: 'Total Spent',
-        cell: ({ row }) => (
-          <Typography className='font-medium' color='text.primary'>
-            ${row.original.totalSpent.toLocaleString()}
-          </Typography>
-        )
+        ),
+        enableSorting: false
       })
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [] // static columns for this table
   )
 
+  // Table
   const table = useReactTable({
-    data: data,
+    data,
     columns,
-    filterFns: {
-      fuzzy: fuzzyFilter
-    },
-    state: {
-      rowSelection,
-      globalFilter
-    },
-    initialState: {
-      pagination: {
-        pageSize: 10
-      }
-    },
-    enableRowSelection: true, //enable row selection for all rows
-    // enableRowSelection: row => row.original.age > 18, // or enable row selection conditionally per row
+    filterFns: { fuzzy: fuzzyFilter },
+    state: { rowSelection, globalFilter },
+    initialState: { pagination: { pageSize: 10 } },
+    enableRowSelection: true,
     globalFilterFn: fuzzyFilter,
     onRowSelectionChange: setRowSelection,
-    getCoreRowModel: getCoreRowModel(),
     onGlobalFilterChange: setGlobalFilter,
+    getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -205,20 +243,6 @@ const CustomerListTable = ({ customerData }) => {
     getFacetedMinMaxValues: getFacetedMinMaxValues()
   })
 
-  const getAvatar = params => {
-    const { avatar, customer } = params
-
-    if (avatar) {
-      return <CustomAvatar src={avatar} skin='light' size={34} />
-    } else {
-      return (
-        <CustomAvatar skin='light' size={34}>
-          {getInitials(customer)}
-        </CustomAvatar>
-      )
-    }
-  }
-
   return (
     <>
       <Card>
@@ -226,7 +250,7 @@ const CustomerListTable = ({ customerData }) => {
           <DebouncedInput
             value={globalFilter ?? ''}
             onChange={value => setGlobalFilter(String(value))}
-            placeholder='Search'
+            placeholder='Search name, phone, email'
             className='max-sm:is-full'
           />
           <div className='flex max-sm:flex-col items-start sm:items-center gap-4 max-sm:is-full'>
@@ -241,14 +265,7 @@ const CustomerListTable = ({ customerData }) => {
               <MenuItem value='50'>50</MenuItem>
               <MenuItem value='100'>100</MenuItem>
             </CustomTextField>
-            <Button
-              variant='tonal'
-              className='max-sm:is-full'
-              color='secondary'
-              startIcon={<i className='tabler-upload' />}
-            >
-              Export
-            </Button>
+
             <Button
               variant='contained'
               color='primary'
@@ -260,6 +277,7 @@ const CustomerListTable = ({ customerData }) => {
             </Button>
           </div>
         </CardContent>
+
         <div className='overflow-x-auto'>
           <table className={tableStyles.table}>
             <thead>
@@ -268,27 +286,26 @@ const CustomerListTable = ({ customerData }) => {
                   {headerGroup.headers.map(header => (
                     <th key={header.id}>
                       {header.isPlaceholder ? null : (
-                        <>
-                          <div
-                            className={classnames({
-                              'flex items-center': header.column.getIsSorted(),
-                              'cursor-pointer select-none': header.column.getCanSort()
-                            })}
-                            onClick={header.column.getToggleSortingHandler()}
-                          >
-                            {flexRender(header.column.columnDef.header, header.getContext())}
-                            {{
-                              asc: <i className='tabler-chevron-up text-xl' />,
-                              desc: <i className='tabler-chevron-down text-xl' />
-                            }[header.column.getIsSorted()] ?? null}
-                          </div>
-                        </>
+                        <div
+                          className={classnames({
+                            'flex items-center': header.column.getIsSorted(),
+                            'cursor-pointer select-none': header.column.getCanSort()
+                          })}
+                          onClick={header.column.getToggleSortingHandler()}
+                        >
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                          {{
+                            asc: <i className='tabler-chevron-up text-xl' />,
+                            desc: <i className='tabler-chevron-down text-xl' />
+                          }[header.column.getIsSorted()] ?? null}
+                        </div>
                       )}
                     </th>
                   ))}
                 </tr>
               ))}
             </thead>
+
             {table.getFilteredRowModel().rows.length === 0 ? (
               <tbody>
                 <tr>
@@ -302,29 +319,27 @@ const CustomerListTable = ({ customerData }) => {
                 {table
                   .getRowModel()
                   .rows.slice(0, table.getState().pagination.pageSize)
-                  .map(row => {
-                    return (
-                      <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
-                        {row.getVisibleCells().map(cell => (
-                          <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
-                        ))}
-                      </tr>
-                    )
-                  })}
+                  .map(row => (
+                    <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
+                      {row.getVisibleCells().map(cell => (
+                        <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                      ))}
+                    </tr>
+                  ))}
               </tbody>
             )}
           </table>
         </div>
+
         <TablePagination
           component={() => <TablePaginationComponent table={table} />}
           count={table.getFilteredRowModel().rows.length}
           rowsPerPage={table.getState().pagination.pageSize}
           page={table.getState().pagination.pageIndex}
-          onPageChange={(_, page) => {
-            table.setPageIndex(page)
-          }}
+          onPageChange={(_, page) => table.setPageIndex(page)}
         />
       </Card>
+
       <AddCustomerDrawer
         open={customerUserOpen}
         handleClose={() => setCustomerUserOpen(!customerUserOpen)}

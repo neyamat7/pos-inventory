@@ -11,9 +11,9 @@ const CustomerLeftOverview = ({ customerData }) => {
       <Grid size={{ xs: 12 }}>
         <CustomerDetails customerData={customerData} />
       </Grid>
-      <Grid size={{ xs: 12 }}>
+      {/* <Grid size={{ xs: 12 }}>
         <CustomerPlan />
-      </Grid>
+      </Grid> */}
     </Grid>
   )
 }

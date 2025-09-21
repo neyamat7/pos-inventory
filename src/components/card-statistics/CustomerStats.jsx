@@ -47,7 +47,7 @@ const CustomerStats = ({ heading = '', value = '', subHeading = '', description 
                 <Typography variant='h5' color='#675cd8'>
                   {value}
                 </Typography>
-                <Typography>{subHeading}</Typography>
+                <Typography>{value > 0 && subHeading}</Typography>
               </>
             )}
           </div>
