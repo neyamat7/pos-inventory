@@ -1,4 +1,6 @@
 // MUI Imports
+import { redirect } from 'next/navigation'
+
 import Grid from '@mui/material/Grid2'
 
 // Component Imports
@@ -16,8 +18,15 @@ import ActivityTimeline from '@views/dashboards/crm/ActivityTimeline'
 
 // Server Action Imports
 import { getServerMode } from '@core/utils/serverHelpers'
+import { auth } from '@/auth'
 
 const DashboardCRM = async () => {
+  const session = await auth()
+
+  if (!session) {
+    redirect('/login')
+  }
+
   // Vars
   const serverMode = await getServerMode()
 

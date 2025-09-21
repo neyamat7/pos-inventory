@@ -28,7 +28,7 @@ const CustomerDetails = ({ customerData }) => {
   }
 
   const handleUpdateCustomer = () => {
-    console.log('update customer')
+    console.log('updated customer')
   }
 
   return (
