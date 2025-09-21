@@ -1,5 +1,7 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
+
 import Grid from '@mui/material/Grid2'
 
 import { getEcommerceData } from '@/app/server/actions'
@@ -10,9 +12,11 @@ import ProductImage from '../add/ProductImage'
 import ProductVariants from '../add/ProductVariants'
 import ProductPricing from '../add/ProductPricing'
 import ProductOrganize from '../add/ProductOrganize'
+import { showAlert } from '@/utils/showAlert'
 
 export default function EditProduct({ id, productData }) {
   const product = productData.find(p => String(p.id) === String(id))
+  const router = useRouter()
 
   console.log('product in edit page', product)
 
@@ -21,17 +25,21 @@ export default function EditProduct({ id, productData }) {
   const handleUpdateProduct = values => {
     const idx = productData.findIndex(p => String(p.id) === String(id))
 
+    console.log('value', values)
+
     if (idx !== -1) productData[idx] = { ...productData[idx], ...values }
     console.log('updated product', productData[idx])
+    router.push('/apps/products/list')
+    showAlert('Product data has been updated successfully.', 'success')
   }
 
   return (
     <ProductFormProvider
-      mode='edit'
-      defaultValues={product}
+      mode={product ? 'edit' : 'create'}
+      defaultValues={product || {}}
       onSubmit={handleUpdateProduct}
       resetOnSubmit={false}
-      key={id}
+      key={product.id || 'create'}
     >
       <Grid container spacing={6}>
         <Grid size={{ xs: 12 }}>
@@ -45,13 +53,19 @@ export default function EditProduct({ id, productData }) {
             <Grid size={{ xs: 12 }}>
               <ProductImage mode='edit' />
             </Grid>
-            <Grid size={{ xs: 12 }}>{/* <ProductVariants /> */}</Grid>
+            <Grid size={{ xs: 12 }}>
+              <ProductVariants mode='edit' />
+            </Grid>
           </Grid>
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
           <Grid container spacing={6}>
-            <Grid size={{ xs: 12 }}>{/* <ProductPricing /> */}</Grid>
-            <Grid size={{ xs: 12 }}>{/* <ProductOrganize /> */}</Grid>
+            <Grid size={{ xs: 12 }}>
+              <ProductPricing mode='edit' />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <ProductOrganize mode='edit' />
+            </Grid>
           </Grid>
         </Grid>
       </Grid>

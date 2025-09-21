@@ -54,7 +54,7 @@ export const handleSalesDistributionExpense = (data, cartProducts, setCartProduc
         (item.product_name || '').toLowerCase().includes('mango') ||
         (item.product_name || '').toLowerCase().includes('pineapple')
 
-      const commissionRate = isCommissioned ? item.commission_rate || 0.1 : 0
+      const commissionRate = isCommissioned ? item.commission_rate / 100 || 0.1 : 0
       const commissionAmount = Number((productBase * commissionRate).toFixed(2))
 
       console.log('producbase', productBase)

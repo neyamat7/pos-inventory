@@ -13,7 +13,7 @@ const SearchProduct = ({
   setBrandSearch
 }) => {
   return (
-    <div className='flex items-center space-x-2 w-1/3'>
+    <div className='flex flex-col lg:flex-row items-center space-x-2 w-1/3'>
       <div className='flex'>
         <input
           type='text'

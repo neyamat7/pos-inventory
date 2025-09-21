@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 
 import { useForm } from 'react-hook-form'
 
-import { FaTimes, FaPlus, FaMinus } from 'react-icons/fa'
+import { FaTimes, FaPlus, FaMinus, FaEdit } from 'react-icons/fa'
 
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table'
 
@@ -29,7 +29,8 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
   const [categorySearch, setCategorySearch] = useState('')
   const [brandSearch, setBrandSearch] = useState('')
   const [paymentType, setPaymentType] = useState('Cash')
-  const [vatType, setVatType] = useState('Select')
+
+  // const [vatType, setVatType] = useState('Select')
   const [discountType, setDiscountType] = useState('Flat (₹)')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [selectedSupplier, setSelectedSupplier] = useState({})
@@ -37,6 +38,13 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
   const { register, handleSubmit } = useForm()
   const [selectedCategory, setSelectedCategory] = useState([])
   const [selectedBrand, setSelectedBrand] = useState([])
+
+  const [commissionModal, setCommissionModal] = useState({
+    open: false,
+    productId: null,
+    supplierId: null,
+    value: 0
+  })
 
   const filteredProducts = filteredProductsData(productsData, searchTerm, selectedCategory)
 
@@ -92,6 +100,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
         total: 0,
         cost: product.price,
         commission: 0,
+        commission_rate: product?.commission_rate || 0,
         trading_post: 0,
         labour: 0,
         expenses: 0,
@@ -130,9 +139,48 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
   })
 
   const receiveAmount = watchPayment('receiveAmount')
+  const vatType = watchPayment('vatType')
+
+  const parsePercent = v => {
+    if (!v || v === 'Select') return 0
+    const n = Number(String(v).replace('%', ''))
+
+    return Number.isFinite(n) ? n / 100 : 0
+  }
+
+  const vatRate = parsePercent(vatType)
+  const vatAmount = +(totalDueAmount * vatRate).toFixed(2)
+  const payableAmount = +(totalDueAmount + vatAmount).toFixed(2)
+
+  // Open the commission editor for a row
+  const openCommissionEditor = item => {
+    setCommissionModal({
+      open: true,
+      productId: item.product_id,
+      supplierId: item.supplier_id,
+      value: Number(item.commission_rate) || 0
+    })
+  }
+
+  // Save only the commission value
+  const updateCommissionForProduct = () => {
+    const { productId, supplierId, value } = commissionModal
+
+    setCartProducts(prev =>
+      prev.map(item =>
+        item.product_id === productId && item.supplier_id === supplierId
+          ? { ...item, commission_rate: Number(value) || 0 }
+          : item
+      )
+    )
+
+    setCommissionModal({ open: false, productId: null, supplierId: null, value: 0 })
+  }
 
   // Auto calculate due and change amounts
   usePaymentCalculation(receiveAmount, totalDueAmount, setPaymentValue)
+
+  console.log('cartProducts', cartProducts)
 
   const columns = useMemo(
     () => [
@@ -223,6 +271,34 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
         accessorKey: 'van_vara',
         header: 'Van Vara'
       },
+
+      {
+        accessorKey: 'commission_rate',
+        header: 'Commission',
+        cell: ({ row }) => {
+          const product = row.original
+          const pct = Number(product?.commission_rate) || 0
+
+          console.log('product', product)
+
+          return (
+            <div className='flex items-center gap-2'>
+              <span>{pct > 0 ? `${pct}%` : 'N/A'}</span>
+              {pct > 0 && (
+                <button
+                  type='button'
+                  onClick={() => openCommissionEditor(product)}
+                  className='text-blue-600 hover:text-blue-800'
+                  title='Edit commission'
+                >
+                  <FaEdit />
+                </button>
+              )}
+            </div>
+          )
+        }
+      },
+
       {
         accessorKey: 'total',
         header: 'Total',
@@ -320,7 +396,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
     <div className='min-h-[calc(100vh-54px] bg-gray-50 p-4 ml-0'>
       {/* Header */}
       <div className='mb-6'>
-        <div className='flex items-center justify-between'>
+        <div className='flex flex-col lg:flex-row items-center justify-between'>
           <PurchaseHeader />
 
           <SearchProduct
@@ -338,11 +414,11 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
         </div>
       </div>
 
-      <div className='flex gap-6'>
+      <div className='flex flex-col lg:flex-row gap-6'>
         {/* Left Side - Form */}
         <div className='w-4/5 bg-white rounded-lg p-6 flex flex-col'>
           {/* Order Details */}
-          <div className='grid grid-cols-3 gap-4 mb-6'>
+          <div className='grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6'>
             <input
               type='text'
               value='S-00428'
@@ -379,7 +455,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
           </div>
 
           {/* Items Table */}
-          <div className='mb-6'>
+          <div className='mb-6 overflow-x-auto'>
             <table className='w-full border-collapse'>
               <thead>
                 {table.getHeaderGroups().map(headerGroup => (
@@ -601,22 +677,22 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
                       <option value='5%'>5%</option>
                       <option value='10%'>10%</option>
                     </select>
-                    <span className='text-sm'>0.00</span>
+                    <span className='text-sm'>{vatAmount}</span>
                   </div>
                 </div>
-                <div className='flex items-center justify-between'>
-                  <span className='text-sm'>Discount</span>
-                  <div className='flex items-center space-x-2'>
-                    <select
-                      {...registerPayment('discountType')}
-                      className='px-2 py-1 border border-gray-300 rounded text-sm'
-                    >
-                      <option value='Flat (৳)'>Flat (৳)</option>
-                      <option value='Percentage (%)'>Percentage (%)</option>
-                    </select>
-                    <span className='text-sm'>0</span>
-                  </div>
-                </div>
+                {/* <div className='flex items-center justify-between'>
+                    <span className='text-sm'>Discount</span>
+                    <div className='flex items-center space-x-2'>
+                      <select
+                        {...registerPayment('discountType')}
+                        className='px-2 py-1 border border-gray-300 rounded text-sm'
+                      >
+                        <option value='Flat (৳)'>Flat (৳)</option>
+                        <option value='Percentage (%)'>Percentage (%)</option>
+                      </select>
+                      <span className='text-sm'>0</span>
+                    </div>
+                  </div> */}
                 <div className='flex items-center justify-between'>
                   <span className='text-sm'>Shipping Charge</span>
                   <span className='text-sm'>0</span>
@@ -625,13 +701,13 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
                   <span className='text-sm'>Total Amount</span>
                   <span>৳ {totalDueAmount}</span>
                 </div>
-                <div className='flex items-center justify-between'>
+                {/* <div className='flex items-center justify-between'>
                   <span className='text-sm'>Rounding(+/-)</span>
                   <span className='text-sm'>৳ 0</span>
-                </div>
+                </div> */}
                 <div className='flex items-center justify-between font-bold text-lg'>
                   <span>Payable Amount</span>
-                  <span>৳ {totalDueAmount}</span>
+                  <span>৳ {payableAmount}</span>
                 </div>
               </div>
             </div>
@@ -670,6 +746,51 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
       />
+
+      {/* Commission Edit Modal */}
+      {commissionModal.open && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/30'>
+          <div className='bg-white rounded-lg shadow-lg p-4 w-full max-w-xs'>
+            <div className='flex items-center justify-between mb-3'>
+              <h3 className='text-base font-medium'>Edit Commission (%)</h3>
+              <button
+                type='button'
+                onClick={() => setCommissionModal({ open: false, productId: null, supplierId: null, value: 0 })}
+                className='text-gray-500 hover:text-gray-700'
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <input
+              type='number'
+              min='0'
+              step='0.01'
+              value={commissionModal.value}
+              onChange={e => setCommissionModal(m => ({ ...m, value: e.target.value }))}
+              className='w-full px-3 py-2 border border-gray-300 rounded mb-3'
+              placeholder='e.g., 2.5'
+            />
+
+            <div className='flex gap-2'>
+              <button
+                type='button'
+                onClick={updateCommissionForProduct}
+                className='flex-1 py-2 bg-[#7367f0] text-white rounded hover:bg-[#4e43c5]'
+              >
+                Save
+              </button>
+              <button
+                type='button'
+                onClick={() => setCommissionModal({ open: false, productId: null, supplierId: null, value: 0 })}
+                className='flex-1 py-2 bg-gray-200 rounded hover:bg-gray-300'
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Brand Modal */}
       <BrandModal

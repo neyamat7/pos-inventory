@@ -27,7 +27,8 @@ const STATUSES = [
   { value: 'scheduled', label: 'Scheduled' }
 ]
 
-const ProductOrganize = () => {
+const ProductOrganize = ({ mode = 'create' }) => {
+  const isEdit = mode === 'edit'
   const { control } = useFormContext()
 
   return (
@@ -39,7 +40,6 @@ const ProductOrganize = () => {
             <Controller
               name='category'
               control={control}
-              defaultValue=''
               render={({ field }) => (
                 <CustomTextField select fullWidth label='Category' {...field} value={field.value ?? ''}>
                   {CATEGORIES.map(opt => (
@@ -58,7 +58,6 @@ const ProductOrganize = () => {
           <Controller
             name='status'
             control={control}
-            defaultValue=''
             render={({ field }) => (
               <CustomTextField select fullWidth label='Status' {...field} value={field.value ?? ''}>
                 {STATUSES.map(s => (

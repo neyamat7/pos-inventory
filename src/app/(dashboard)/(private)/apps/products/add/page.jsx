@@ -46,10 +46,10 @@ const eCommerceProductsAdd = () => {
               <ProductInformation mode='create' />
             </Grid>
             <Grid size={{ xs: 12 }}>
-              <ProductImage />
+              <ProductImage mode='create' />
             </Grid>
             <Grid size={{ xs: 12 }}>
-              <ProductVariants />
+              <ProductVariants mode='create' />
             </Grid>
             {/* <Grid size={{ xs: 12 }}>
             <ProductInventory />
@@ -60,11 +60,11 @@ const eCommerceProductsAdd = () => {
         <Grid size={{ xs: 12, md: 4 }}>
           <Grid container spacing={6}>
             <Grid size={{ xs: 12 }}>
-              <ProductPricing />
+              <ProductPricing mode='create' />
             </Grid>
 
             <Grid size={{ xs: 12 }}>
-              <ProductOrganize />
+              <ProductOrganize mode='create' />
             </Grid>
           </Grid>
         </Grid>

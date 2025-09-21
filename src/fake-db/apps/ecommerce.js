@@ -12,7 +12,7 @@ export const db = {
       price: 150,
       commision_rate: 8,
       category: 'fruits',
-      images: 'https://i.postimg.cc/Y2k0vMZL/apple.jpg',
+      images: 'https://i.postimg.cc/DfsDFWyh/images.jpg',
       status: 'active'
     },
     {
@@ -167,7 +167,8 @@ export const db = {
       price: 120,
       image: 'https://i.postimg.cc/2yhsJDLj/Mangoes.jpg',
       category: 'Fruits',
-      brand: 'Fresh Farm'
+      brand: 'Fresh Farm',
+      commission_rate: 10
     },
     {
       id: 2,
@@ -175,7 +176,8 @@ export const db = {
       price: 90,
       image: 'https://images.unsplash.com/photo-1600891964599-f61ba0e24092',
       category: 'Fruits',
-      brand: 'Tropical Fresh'
+      brand: 'Tropical Fresh',
+      commission_rate: 20
     },
     {
       id: 3,
@@ -5329,7 +5331,7 @@ export const db = {
       phone: '+8801711000001',
       balance: 5000,
       due: 0,
-      crate: { type1: { qty: 10, price: 120 }, type2: { qty: 5, price: 150 } },
+      crate: { type1: { qty: 10, price: 100 }, type2: { qty: 5, price: 150 } },
       cost: 0,
       orders: 23,
       totalSpent: 22040,
@@ -5344,7 +5346,7 @@ export const db = {
       phone: '+8801711000002',
       balance: 2000,
       due: 0,
-      crate: { type1: { qty: 8, price: 100 }, type2: { qty: 4, price: 140 } },
+      crate: { type1: { qty: 8, price: 100 }, type2: { qty: 4, price: 150 } },
       cost: 0,
       orders: 23,
       totalSpent: 22040,
@@ -5359,7 +5361,7 @@ export const db = {
       phone: '+8801711000003',
       balance: 7500,
       due: 0,
-      crate: { type1: { qty: 15, price: 130 }, type2: { qty: 10, price: 160 } },
+      crate: { type1: { qty: 15, price: 100 }, type2: { qty: 10, price: 150 } },
       cost: 0,
       orders: 23,
       totalSpent: 22040,
@@ -5374,7 +5376,7 @@ export const db = {
       phone: '+8801711000004',
       balance: 1200,
       due: 0,
-      crate: { type1: { qty: 6, price: 110 }, type2: { qty: 2, price: 135 } },
+      crate: { type1: { qty: 6, price: 100 }, type2: { qty: 2, price: 150 } },
       cost: 0,
       orders: 23,
       totalSpent: 22040,
@@ -5389,7 +5391,7 @@ export const db = {
       phone: '+8801711000005',
       balance: 4000,
       due: 0,
-      crate: { type1: { qty: 12, price: 125 }, type2: { qty: 7, price: 140 } },
+      crate: { type1: { qty: 12, price: 100 }, type2: { qty: 7, price: 150 } },
       cost: 0,
       orders: 23,
       totalSpent: 22040,

@@ -18,6 +18,26 @@ const BASE_DEFAULTS = {
   status: ''
 }
 
+const normalizeImages = val => {
+  if (!val) return []
+
+  if (Array.isArray(val)) {
+    return val
+      .map(v => {
+        if (typeof v === 'string') return v
+        if (v && typeof v === 'object') return v.url || v.src || v.href || ''
+
+        return ''
+      })
+      .filter(Boolean)
+  }
+
+  if (typeof val === 'string') return [val]
+  if (typeof val === 'object') return [val.url || val.src || val.href].filter(Boolean)
+
+  return []
+}
+
 export default function ProductFormProvider({
   children,
   onSubmit,
@@ -25,7 +45,15 @@ export default function ProductFormProvider({
   defaultValues = {}, // pass product when editing
   resetOnSubmit = false
 }) {
-  const mergedDefaults = useMemo(() => ({ ...BASE_DEFAULTS, ...defaultValues }), [defaultValues])
+  const mergedDefaults = useMemo(() => {
+    const img = defaultValues.images ?? defaultValues.image ?? defaultValues.image_url ?? defaultValues.media
+
+    return {
+      ...BASE_DEFAULTS,
+      ...defaultValues,
+      images: normalizeImages(img)
+    }
+  }, [defaultValues])
 
   const methods = useForm({
     defaultValues: mergedDefaults,
@@ -35,9 +63,9 @@ export default function ProductFormProvider({
   const { handleSubmit, reset } = methods
 
   // Re-seed the form when defaultValues change (e.g., navigating between IDs)
-  useEffect(() => {
-    reset(mergedDefaults)
-  }, [mergedDefaults, reset])
+  // useEffect(() => {
+  //   reset(mergedDefaults)
+  // }, [mergedDefaults, reset])
 
   const onValid = async (values, e) => {
     try {

@@ -73,7 +73,8 @@ const ProductImage = ({ mode = 'create' }) => {
   }, [setValue, watch])
 
   // Read images array from form state
-  const images = watch('images') || []
+  const rawImages = watch('images')
+  const images = Array.isArray(rawImages) ? rawImages : []
 
   // Dropzone: push new files into RHF state
   const { getRootProps, getInputProps } = useDropzone({
@@ -178,9 +179,18 @@ const ProductImage = ({ mode = 'create' }) => {
     <Dropzone>
       <Card>
         <CardHeader
-          title='Product Image'
+          title={isEdit ? 'Product Images' : 'Product Image'}
           action={
-            <Typography component={Link} color='primary.main' className='font-medium'>
+            <Typography
+              component={Link}
+              color='primary.main'
+              className='font-medium'
+              onClick={e => {
+                e.preventDefault()
+                handleAddUrl()
+              }}
+              href='#'
+            >
               Add media from URL
             </Typography>
           }

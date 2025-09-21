@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 const PosHeader = () => {
   return (
     <div className='flex items-center justify-between space-x-4 px-6 pr-12 w-2/3'>
@@ -11,14 +13,13 @@ const PosHeader = () => {
           <span>📊</span>
           <span>Today Sales</span>
         </button>
-        <button className='flex items-center space-x-1 px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm'>
-          <span>🧮</span>
-          <span>Calculator</span>
-        </button>
-        <button className='flex items-center space-x-1 px-3 py-1 bg-orange-100 text-orange-700 rounded text-sm'>
-          <span>📈</span>
-          <span>Dashboard</span>
-        </button>
+
+        <Link href='/dashboard'>
+          <button className='flex items-center space-x-1 px-3 py-1 bg-orange-100 text-orange-700 rounded text-sm'>
+            <span>📈</span>
+            <span>Dashboard</span>
+          </button>
+        </Link>
       </div>
     </div>
   )

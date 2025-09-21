@@ -5,7 +5,6 @@ const add = async () => {
   const data = await getEcommerceData()
   const suppliers = await getAllSuppliers()
 
-  // return <AddPurchase productsData={data?.productsData} />
   return <AddPurchase productsData={data?.productsData} suppliersData={suppliers} />
 }
 

@@ -11,7 +11,8 @@ import { useFormContext, Controller } from 'react-hook-form'
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
 
-const ProductPricing = () => {
+const ProductPricing = ({ mode = 'create' }) => {
+  const isEdit = mode === 'edit'
   const { control } = useFormContext()
 
   return (
@@ -23,7 +24,8 @@ const ProductPricing = () => {
           control={control}
           rules={{
             required: 'Base price is required',
-            min: { value: 0, message: 'Must be ≥ 0' }
+            min: { value: 0, message: 'Must be ≥ 0' },
+            setValueAs: v => (v === '' ? '' : Number(v))
           }}
           render={({ field, fieldState }) => (
             <CustomTextField
@@ -34,8 +36,9 @@ const ProductPricing = () => {
               inputProps={{ step: '0.01', min: 0 }}
               className='mbe-6'
               {...field}
-              value={field.value ?? ''}
               onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
+              value={field.value ?? ''}
+              inputMode='decimal'
               error={!!fieldState.error}
               helperText={fieldState.error?.message}
             />
@@ -48,7 +51,8 @@ const ProductPricing = () => {
           defaultValue=''
           rules={{
             min: { value: 0, message: 'Must be ≥ 0' },
-            max: { value: 100, message: 'Must be ≤ 100' }
+            max: { value: 100, message: 'Must be ≤ 100' },
+            setValueAs: v => (v === '' ? '' : Number(v))
           }}
           render={({ field, fieldState }) => (
             <CustomTextField
@@ -61,6 +65,7 @@ const ProductPricing = () => {
               {...field}
               value={field.value ?? ''}
               onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
+              inputMode='decimal'
               error={!!fieldState.error}
               helperText={fieldState.error?.message}
             />

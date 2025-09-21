@@ -14,6 +14,8 @@ export const handleDistributionExpense = (data, cartProducts, setCartProducts, s
     cartProducts.length
   )
 
+  console.log('transportationValue', cartProducts)
+
   const moshjidValue = calculateExpenseValue(data.moshjidAmount, data.moshjidType, cartProducts.length)
   const vanVaraValue = calculateExpenseValue(data.vanVaraAmount, data.vanVaraType, cartProducts.length)
   const tradingPostValue = calculateExpenseValue(data.tradingPostAmount, data.tradingPostType, cartProducts.length)
@@ -45,7 +47,7 @@ export const handleDistributionExpense = (data, cartProducts, setCartProducts, s
         (item.product_name || '').toLowerCase().includes('mango') ||
         (item.product_name || '').toLowerCase().includes('pineapple')
 
-      const commissionRate = isCommissioned ? 0.1 : 0
+      const commissionRate = isCommissioned ? item.commission_rate / 100 || 0.1 : 0
       const commissionAmount = Number((productBase * commissionRate).toFixed(2))
 
       console.log('commissionAmount', commissionAmount)
