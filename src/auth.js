@@ -86,6 +86,10 @@ export const {
       }
 
       return session
+    },
+
+    async redirect({ url, baseUrl }) {
+      return `${baseUrl}/dashboard`
     }
   },
   secret: process.env.AUTH_SECRET

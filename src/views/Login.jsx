@@ -5,7 +5,7 @@ import { useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import { signIn } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 
 // Next Imports
 
@@ -93,6 +93,12 @@ const LoginV2 = ({ mode }) => {
     borderedLightIllustration,
     borderedDarkIllustration
   )
+
+  const { data: session, status } = useSession()
+
+  // if (status === 'authenticated') {
+  //   router.push('/dashboard')
+  // }
 
   const handleClickShowPassword = () => setIsPasswordShown(show => !show)
 
