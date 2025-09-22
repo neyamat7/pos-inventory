@@ -489,7 +489,7 @@ export default function POSSystem({ productsData = [] }) {
             </table>
           </div>
 
-          <div className=''>
+          <div className='mt-auto'>
             {/* Expense Distribution */}
             {cartProducts.length > 0 && (
               <form className='space-y-4 mb-6' onSubmit={handleSubmit(handleDistributeSubmit)}>

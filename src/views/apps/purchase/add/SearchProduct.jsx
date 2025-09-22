@@ -32,12 +32,12 @@ const SearchProduct = ({
       >
         Category
       </button>
-      <button
+      {/* <button
         onClick={() => setBrandModalOpen(true)}
         className='px-4 py-3 h-full bg-[#7367f0] text-white rounded-lg hover:bg-[#5649de]'
       >
         Brand
-      </button>
+      </button> */}
     </div>
   )
 }

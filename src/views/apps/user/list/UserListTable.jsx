@@ -5,7 +5,8 @@ import { useEffect, useState, useMemo } from 'react'
 
 // Next Imports
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+
+// import { useParams } from 'next/navigation'
 
 // MUI Imports
 import Card from '@mui/material/Card'
@@ -112,7 +113,7 @@ const UserListTable = ({ tableData }) => {
   const [globalFilter, setGlobalFilter] = useState('')
 
   // Hooks
-  const { lang: locale } = useParams()
+  // const { lang: locale } = useParams()
 
   const columns = useMemo(
     () => [
@@ -200,7 +201,7 @@ const UserListTable = ({ tableData }) => {
               <i className='tabler-trash text-textSecondary' />
             </IconButton>
             <IconButton>
-              <Link href={getLocalizedUrl('/apps/user/view', locale)} className='flex'>
+              <Link href='/apps/user/view' className='flex'>
                 <i className='tabler-eye text-textSecondary' />
               </Link>
             </IconButton>
@@ -374,6 +375,7 @@ const UserListTable = ({ tableData }) => {
           }}
         />
       </Card>
+
       <AddUserDrawer
         open={addUserOpen}
         handleClose={() => setAddUserOpen(!addUserOpen)}

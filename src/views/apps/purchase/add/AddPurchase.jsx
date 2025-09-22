@@ -182,7 +182,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
   // Auto calculate due and change amounts
   usePaymentCalculation(receiveAmount, totalDueAmount, setPaymentValue)
 
-  console.log('cartProducts', cartProducts)
+  // console.log('cartProducts', cartProducts)
 
   const columns = useMemo(
     () => [
@@ -804,14 +804,14 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
       )}
 
       {/* Brand Modal */}
-      <BrandModal
+      {/* <BrandModal
         open={brandModalOpen}
         onClose={() => setBrandModalOpen(false)}
         searchValue={brandSearch}
         onSearchChange={e => setBrandSearch(e.target.value)}
         items={filteredBrands}
         setSelectedBrand={setSelectedBrand}
-      />
+      /> */}
     </div>
   )
 }
