@@ -3,11 +3,11 @@
 import { signIn, signOut } from '@/auth'
 
 export async function signOutAction() {
-  await signOut({ callbackUrl: 'https://pos-inventory-gamma.vercel.app/login' })
+  await signOut({ callbackUrl: `${process.env.AUTH_URL}/login` })
 }
 
 export async function signInAction() {
-  await signIn('google', { callbackUrl: 'https://pos-inventory-gamma.vercel.app/dashboard' })
+  await signIn('google', { callbackUrl: `${process.env.AUTH_URL}/dashboard` })
 }
 
 export async function loginWithCredentials(formData) {
@@ -18,7 +18,7 @@ export async function loginWithCredentials(formData) {
       redirect: false
     })
 
-    // console.log('response in auth action', response)
+    // console.log('response in action', response)
 
     return response
   } catch (error) {
