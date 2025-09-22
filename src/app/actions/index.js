@@ -3,11 +3,11 @@
 import { signIn, signOut } from '@/auth'
 
 export async function signOutAction() {
-  await signOut({ callbackUrl: 'http://localhost:3000/login' })
+  await signOut({ callbackUrl: 'https://pos-inventory-gamma.vercel.app/login' })
 }
 
 export async function signInAction() {
-  await signIn('google', { callbackUrl: 'http://localhost:3000/dashboard' })
+  await signIn('google', { callbackUrl: 'https://pos-inventory-gamma.vercel.app/dashboard' })
 }
 
 export async function loginWithCredentials(formData) {
