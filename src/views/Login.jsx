@@ -116,6 +116,7 @@ const LoginV2 = ({ mode }) => {
         console.log('error', response?.error)
       }
     } catch (error) {
+      showAlert('Login Failed', 'error')
       console.log(error)
     } finally {
       setLoading(false)
