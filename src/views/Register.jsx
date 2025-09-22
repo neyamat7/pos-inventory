@@ -22,6 +22,8 @@ import Divider from '@mui/material/Divider'
 import classnames from 'classnames'
 
 // Component Imports
+import { LoadingButton } from '@mui/lab'
+
 import Logo from '@components/layout/shared/Logo'
 import CustomTextField from '@core/components/mui/TextField'
 
@@ -31,6 +33,7 @@ import { useSettings } from '@core/hooks/useSettings'
 
 // Util Imports
 import { getLocalizedUrl } from '@/utils/i18n'
+import { showAlert } from '@/utils/showAlert'
 
 // Styled Custom Components
 const RegisterIllustration = styled('img')(({ theme }) => ({
@@ -61,6 +64,7 @@ const Register = ({ mode }) => {
 
   // States
   const [isPasswordShown, setIsPasswordShown] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   // Vars
   const darkImg = '/images/pages/auth-mask-dark.png'
@@ -90,6 +94,8 @@ const Register = ({ mode }) => {
   const handleSubmitData = async e => {
     e.preventDefault()
 
+    setLoading(true)
+
     try {
       const formData = new FormData(e.currentTarget)
 
@@ -115,7 +121,7 @@ const Register = ({ mode }) => {
       })
 
       if (response.ok) {
-        alert('Registration successful')
+        showAlert('Registration successful', 'success')
         router.push('/login')
       } else {
         const errorData = await response.json()
@@ -124,6 +130,8 @@ const Register = ({ mode }) => {
       }
     } catch (error) {
       console.log(error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -184,9 +192,10 @@ const Register = ({ mode }) => {
                 </>
               }
             />
-            <Button fullWidth variant='contained' type='submit'>
+
+            <LoadingButton fullWidth variant='contained' type='submit' loading={loading}>
               Sign Up
-            </Button>
+            </LoadingButton>
             <div className='flex justify-center items-center flex-wrap gap-2'>
               <Typography>Already have an account?</Typography>
               <Typography component={Link} href='/login' color='primary.main'>

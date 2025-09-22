@@ -22,6 +22,8 @@ import Divider from '@mui/material/Divider'
 
 import classnames from 'classnames'
 
+import { LoadingButton } from '@mui/lab'
+
 import { loginWithCredentials } from '@/app/actions'
 
 // Third-party Imports
@@ -38,6 +40,7 @@ import themeConfig from '@configs/themeConfig'
 import { useImageVariant } from '@core/hooks/useImageVariant'
 import { useSettings } from '@core/hooks/useSettings'
 import Signin from '@/components/Signin/Signin'
+import { showAlert } from '@/utils/showAlert'
 
 // Styled Custom Components
 const LoginIllustration = styled('img')(({ theme }) => ({
@@ -66,6 +69,7 @@ const MaskImg = styled('img')({
 const LoginV2 = ({ mode }) => {
   // States
   const [isPasswordShown, setIsPasswordShown] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   // Vars
   const darkImg = '/images/pages/auth-mask-dark.png'
@@ -95,6 +99,8 @@ const LoginV2 = ({ mode }) => {
   const handleSubmitData = async e => {
     e.preventDefault()
 
+    setLoading(true)
+
     try {
       const formData = new FormData(e.currentTarget)
 
@@ -103,8 +109,7 @@ const LoginV2 = ({ mode }) => {
       const response = await loginWithCredentials(formData)
 
       // console.log('response', response)
-      alert('login successful')
-
+      showAlert('Login Successfully', 'success')
       router.push('/dashboard')
 
       if (response?.error) {
@@ -112,6 +117,8 @@ const LoginV2 = ({ mode }) => {
       }
     } catch (error) {
       console.log(error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -176,9 +183,9 @@ const LoginV2 = ({ mode }) => {
                 Forgot password?
               </Typography>
             </div>
-            <Button fullWidth variant='contained' type='submit'>
+            <LoadingButton fullWidth variant='contained' type='submit' loading={loading}>
               Login
-            </Button>
+            </LoadingButton>
             <div className='flex justify-center items-center flex-wrap gap-2'>
               <Typography>New on our platform?</Typography>
               <Typography component={Link} href='/register' color='primary.main'>
