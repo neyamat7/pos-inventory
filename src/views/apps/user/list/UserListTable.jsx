@@ -50,6 +50,8 @@ import { getLocalizedUrl } from '@/utils/i18n'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
+import ViewUserModal from './ViewUserModal'
+import EditUserModal from './EditUserModal'
 
 // Styled Components
 const Icon = styled('i')({})
@@ -111,9 +113,23 @@ const UserListTable = ({ tableData }) => {
   const [data, setData] = useState(...[tableData])
   const [filteredData, setFilteredData] = useState(data)
   const [globalFilter, setGlobalFilter] = useState('')
+  const [userModal, setUserModal] = useState(false)
+  const [editModal, setEditModal] = useState(false)
+  const [selectedUser, setSelectedUser] = useState({})
 
   // Hooks
   // const { lang: locale } = useParams()
+
+  const handleSaveUser = updated => {
+    setData(prev => prev.map(u => (u.id === updated.id ? updated : u)))
+    setEditModal(false)
+  }
+
+  const handleEditUser = user => {
+    setUserModal(false)
+    setEditModal(true)
+    setSelectedUser(user)
+  }
 
   const columns = useMemo(
     () => [
@@ -139,16 +155,16 @@ const UserListTable = ({ tableData }) => {
           />
         )
       },
-      columnHelper.accessor('fullName', {
+      columnHelper.accessor('name', {
         header: 'User',
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
-            {getAvatar({ avatar: row.original.avatar, fullName: row.original.fullName })}
+            <img src={row.original.image} alt={row.original.name} className='w-10 h-10 rounded-full object-cover' />
             <div className='flex flex-col'>
               <Typography color='text.primary' className='font-medium'>
-                {row.original.fullName}
+                {row.original.name}
               </Typography>
-              <Typography variant='body2'>{row.original.username}</Typography>
+              <Typography variant='body2'>{row.original.email}</Typography>
             </div>
           </div>
         )
@@ -156,42 +172,18 @@ const UserListTable = ({ tableData }) => {
       columnHelper.accessor('role', {
         header: 'Role',
         cell: ({ row }) => (
-          <div className='flex items-center gap-2'>
-            <Icon
-              className={userRoleObj[row.original.role].icon}
-              sx={{ color: `var(--mui-palette-${userRoleObj[row.original.role].color}-main)` }}
-            />
-            <Typography className='capitalize' color='text.primary'>
-              {row.original.role}
-            </Typography>
-          </div>
-        )
-      }),
-      columnHelper.accessor('currentPlan', {
-        header: 'Plan',
-        cell: ({ row }) => (
           <Typography className='capitalize' color='text.primary'>
-            {row.original.currentPlan}
+            {row.original.role}
           </Typography>
         )
       }),
-      columnHelper.accessor('billing', {
-        header: 'Billing',
-        cell: ({ row }) => <Typography>{row.original.billing}</Typography>
+      columnHelper.accessor('contact', {
+        header: 'Contact',
+        cell: ({ row }) => <Typography color='text.primary'>{row.original.contact}</Typography>
       }),
-      columnHelper.accessor('status', {
-        header: 'Status',
-        cell: ({ row }) => (
-          <div className='flex items-center gap-3'>
-            <Chip
-              variant='tonal'
-              label={row.original.status}
-              size='small'
-              color={userStatusObj[row.original.status]}
-              className='capitalize'
-            />
-          </div>
-        )
+      columnHelper.accessor('email', {
+        header: 'Email',
+        cell: ({ row }) => <Typography color='text.primary'>{row.original.email}</Typography>
       }),
       columnHelper.accessor('action', {
         header: 'Action',
@@ -200,27 +192,18 @@ const UserListTable = ({ tableData }) => {
             <IconButton onClick={() => setData(data?.filter(product => product.id !== row.original.id))}>
               <i className='tabler-trash text-textSecondary' />
             </IconButton>
-            <IconButton>
-              <Link href='/apps/user/view' className='flex'>
-                <i className='tabler-eye text-textSecondary' />
-              </Link>
+            <IconButton
+              onClick={() => {
+                setUserModal(true)
+                setSelectedUser(row.original)
+              }}
+            >
+              <i className='tabler-eye text-textSecondary' />
             </IconButton>
-            <OptionMenu
-              iconButtonProps={{ size: 'medium' }}
-              iconClassName='text-textSecondary'
-              options={[
-                {
-                  text: 'Download',
-                  icon: 'tabler-download',
-                  menuItemProps: { className: 'flex items-center gap-2 text-textSecondary' }
-                },
-                {
-                  text: 'Edit',
-                  icon: 'tabler-edit',
-                  menuItemProps: { className: 'flex items-center gap-2 text-textSecondary' }
-                }
-              ]}
-            />
+
+            <IconButton onClick={() => handleEditUser(row.original)}>
+              <i className='tabler-edit text-textSecondary' />
+            </IconButton>
           </div>
         ),
         enableSorting: false
@@ -285,6 +268,7 @@ const UserListTable = ({ tableData }) => {
             <MenuItem value='25'>25</MenuItem>
             <MenuItem value='50'>50</MenuItem>
           </CustomTextField>
+
           <div className='flex flex-col sm:flex-row max-sm:is-full items-start sm:items-center gap-4'>
             <DebouncedInput
               value={globalFilter ?? ''}
@@ -292,14 +276,7 @@ const UserListTable = ({ tableData }) => {
               placeholder='Search User'
               className='max-sm:is-full'
             />
-            <Button
-              color='secondary'
-              variant='tonal'
-              startIcon={<i className='tabler-upload' />}
-              className='max-sm:is-full'
-            >
-              Export
-            </Button>
+
             <Button
               variant='contained'
               startIcon={<i className='tabler-plus' />}
@@ -382,6 +359,15 @@ const UserListTable = ({ tableData }) => {
         userData={data}
         setData={setData}
       />
+
+      <ViewUserModal
+        open={userModal}
+        user={selectedUser}
+        onClose={() => setUserModal(false)}
+        onEdit={() => handleEditUser(selectedUser)}
+      />
+
+      <EditUserModal open={editModal} user={selectedUser} onClose={() => setEditModal(false)} onSave={handleSaveUser} />
     </>
   )
 }
