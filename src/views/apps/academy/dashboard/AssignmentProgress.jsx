@@ -6,9 +6,7 @@ import Typography from '@mui/material/Typography'
 import CircularProgress from '@mui/material/CircularProgress'
 
 // Components Imports
-import CustomIconButton from '@core/components/mui/IconButton'
 import OptionMenu from '@core/components/option-menu'
-import DirectionalIcon from '@components/DirectionalIcon'
 
 // Vars
 const data = [
@@ -52,9 +50,6 @@ const AssignmentProgress = () => {
                 </Typography>
                 <Typography variant='body2'>{`${item.tasks} Tasks`}</Typography>
               </div>
-              <CustomIconButton size='small' variant='tonal' color='secondary' className='min-is-fit'>
-                <DirectionalIcon ltrIconClass='tabler-chevron-right' rtlIconClass='tabler-chevron-left' />
-              </CustomIconButton>
             </div>
           </div>
         ))}

@@ -3,7 +3,6 @@ import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 
 // Component Imports
-import DirectionalIcon from '@components/DirectionalIcon'
 
 const Submit = ({ activeStep, isLastStep, handleNext, handlePrev }) => {
   return (
@@ -16,26 +15,14 @@ const Submit = ({ activeStep, isLastStep, handleNext, handlePrev }) => {
         <img alt='submit-img' src='/images/illustrations/characters/4.png' height={200} width={176} />
       </div>
       <div className='flex items-center justify-between'>
-        <Button
-          variant='tonal'
-          color='secondary'
-          disabled={activeStep === 0}
-          onClick={handlePrev}
-          startIcon={<DirectionalIcon ltrIconClass='tabler-arrow-left' rtlIconClass='tabler-arrow-right' />}
-        >
+        <Button variant='tonal' color='secondary' disabled={activeStep === 0} onClick={handlePrev} startIcon=''>
           Previous
         </Button>
         <Button
           variant='contained'
           color={isLastStep ? 'success' : 'primary'}
           onClick={handleNext}
-          endIcon={
-            isLastStep ? (
-              <i className='tablerr-check' />
-            ) : (
-              <DirectionalIcon ltrIconClass='tabler-arrow-right' rtlIconClass='tabler-arrow-left' />
-            )
-          }
+          endIcon={isLastStep ? <i className='tablerr-check' /> : <p>icon</p>}
         >
           {isLastStep ? 'Submit' : 'Next'}
         </Button>

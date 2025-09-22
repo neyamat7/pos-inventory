@@ -14,6 +14,10 @@ const HomePage = async () => {
     redirect('/login')
   }
 
+  if (session) {
+    redirect('/dashboard')
+  }
+
   return (
     <div>
       {session?.user ? (

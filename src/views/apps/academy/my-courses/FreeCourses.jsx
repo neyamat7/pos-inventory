@@ -6,7 +6,6 @@ import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 
 // Third-party Imports
-import ReactPlayer from '@/libs/ReactPlayer'
 
 // Components Imports
 import CustomAvatar from '@core/components/mui/Avatar'
@@ -32,23 +31,6 @@ const FreeCourses = () => {
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <div className='border rounded bs-full'>
-              <div className='mli-2 mbs-2 overflow-hidden rounded'>
-                <ReactPlayer
-                  playing
-                  controls
-                  url='https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4'
-                  height={200}
-                  className='bg-black !is-full'
-                  light={
-                    <img src='/images/apps/academy/7.png' alt='Thumbnail' className='is-full bs-full object-cover' />
-                  }
-                  playIcon={
-                    <CustomIconButton variant='contained' color='error' className='absolute rounded-full'>
-                      <i className='tabler-player-play' />
-                    </CustomIconButton>
-                  }
-                />
-              </div>
               <div className='flex flex-col gap-2 p-6'>
                 <Typography variant='h5'>Your First Singing Lesson</Typography>
                 <Typography>
@@ -59,23 +41,6 @@ const FreeCourses = () => {
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <div className='border rounded bs-full'>
-              <div className='mli-2 mbs-2 overflow-hidden rounded'>
-                <ReactPlayer
-                  playing
-                  controls
-                  url='https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4'
-                  height={200}
-                  className='bg-black !is-full'
-                  light={
-                    <img src='/images/apps/academy/8.png' alt='Thumbnail' className='is-full bs-full object-cover' />
-                  }
-                  playIcon={
-                    <CustomIconButton variant='contained' color='error' className='absolute rounded-full'>
-                      <i className='tabler-player-play' />
-                    </CustomIconButton>
-                  }
-                />
-              </div>
               <div className='flex flex-col gap-2 p-6'>
                 <Typography variant='h5'>Guitar for Beginners</Typography>
                 <Typography>

@@ -6,10 +6,8 @@ import Radio from '@mui/material/Radio'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 
-// Component Imports
 import CustomAvatar from '@core/components/mui/Avatar'
 import CustomTextField from '@core/components/mui/TextField'
-import DirectionalIcon from '@components/DirectionalIcon'
 
 // Config Imports
 import themeConfig from '@configs/themeConfig'
@@ -71,26 +69,14 @@ const Details = ({ activeStep, isLastStep, handleNext, handlePrev }) => {
         </div>
       </div>
       <div className='flex items-center justify-between'>
-        <Button
-          variant='tonal'
-          color='secondary'
-          disabled={activeStep === 0}
-          onClick={handlePrev}
-          startIcon={<DirectionalIcon ltrIconClass='tabler-arrow-left' rtlIconClass='tabler-arrow-right' />}
-        >
+        <Button variant='tonal' color='secondary' disabled={activeStep === 0} onClick={handlePrev} startIcon=''>
           Previous
         </Button>
         <Button
           variant='contained'
           color={isLastStep ? 'success' : 'primary'}
           onClick={handleNext}
-          endIcon={
-            isLastStep ? (
-              <i className='tabler-check' />
-            ) : (
-              <DirectionalIcon ltrIconClass='tabler-arrow-right' rtlIconClass='tabler-arrow-left' />
-            )
-          }
+          endIcon={isLastStep ? <i className='tabler-check' /> : <p>icon</p>}
         >
           {isLastStep ? 'Submit' : 'Next'}
         </Button>

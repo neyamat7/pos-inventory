@@ -3,9 +3,6 @@
 // MUI imports
 import { styled } from '@mui/material/styles'
 
-// Third-party Imports
-import 'keen-slider/keen-slider.min.css'
-
 // Styled Components
 const AppKeenSlider = styled('div')(({ theme }) => ({
   '& .keen-slider': {

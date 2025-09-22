@@ -5,10 +5,10 @@ import Dialog from '@mui/material/Dialog'
 import DialogContent from '@mui/material/DialogContent'
 
 // Component Imports
+
 import DialogCloseButton from '../DialogCloseButton'
 
 // Component Imports
-import Pricing from '@components/pricing'
 
 const PricingDialog = ({ open, setOpen, data }) => {
   return (
@@ -24,9 +24,6 @@ const PricingDialog = ({ open, setOpen, data }) => {
       <DialogCloseButton onClick={() => setOpen(false)} disableRipple>
         <i className='tabler-x' />
       </DialogCloseButton>
-      <DialogContent className='sm:p-16'>
-        <Pricing data={data} />
-      </DialogContent>
     </Dialog>
   )
 }

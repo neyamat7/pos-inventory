@@ -11,8 +11,7 @@ import Typography from '@mui/material/Typography'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTheme } from '@mui/material/styles'
 
-// Third-party Imports
-import ReactPlayer from '@/libs/ReactPlayer'
+// Third-party Imports 
 
 // Components Imports
 import CustomAvatar from '@core/components/mui/Avatar'
@@ -40,27 +39,7 @@ const Details = ({ data }) => {
       </CardContent>
       <CardContent>
         <div className='border rounded'>
-          <div className='mli-2 mbs-2 overflow-hidden rounded'>
-            <ReactPlayer
-              playing
-              controls
-              url='https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4'
-              height={smallScreen ? 280 : 440}
-              className='bg-black !is-full'
-              light={
-                <img
-                  src='/images/apps/academy/4.png'
-                  alt='Thumbnail'
-                  className='is-full bs-full object-cover bg-backgroundPaper'
-                />
-              }
-              playIcon={
-                <CustomIconButton variant='contained' color='error' className='absolute rounded-full'>
-                  <i className='tabler-player-play text-2xl' />
-                </CustomIconButton>
-              }
-            />
-          </div>
+           
           <div className='flex flex-col gap-6 p-5'>
             <div className='flex flex-col gap-4'>
               <Typography variant='h5'>About this course</Typography>

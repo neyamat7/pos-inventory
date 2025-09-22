@@ -20,7 +20,6 @@ import Switch from '@mui/material/Switch'
 import Typography from '@mui/material/Typography'
 
 // Component Imports
-import DirectionalIcon from '@components/DirectionalIcon'
 
 // Util Imports
 import { getLocalizedUrl } from '@/utils/i18n'
@@ -175,9 +174,7 @@ const Courses = props => {
                         <Button
                           fullWidth
                           variant='tonal'
-                          endIcon={
-                            <DirectionalIcon ltrIconClass='tabler-chevron-right' rtlIconClass='tabler-chevron-left' />
-                          }
+                          endIcon=''
                           component={Link}
                           href={getLocalizedUrl('/apps/academy/course-details', locale)}
                           className='is-auto flex-auto'

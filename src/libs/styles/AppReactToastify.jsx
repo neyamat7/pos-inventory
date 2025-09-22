@@ -6,7 +6,6 @@ import useMediaQuery from '@mui/material/useMediaQuery'
 import { styled } from '@mui/material/styles'
 
 // Third-party Imports
-import 'react-toastify/dist/ReactToastify.css'
 import { ToastContainer } from 'react-toastify'
 
 // Config Imports

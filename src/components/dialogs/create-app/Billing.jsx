@@ -8,9 +8,7 @@ import Switch from '@mui/material/Switch'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 
-// Component Imports
 import CustomTextField from '@core/components/mui/TextField'
-import DirectionalIcon from '@components/DirectionalIcon'
 
 const Billing = ({ activeStep, isLastStep, handleNext, handlePrev }) => {
   // States
@@ -73,26 +71,14 @@ const Billing = ({ activeStep, isLastStep, handleNext, handlePrev }) => {
           <FormControlLabel control={<Switch defaultChecked />} label='Save Card for future billing?' />
         </Grid>
         <Grid size={{ xs: 12 }} className='flex items-center justify-between'>
-          <Button
-            variant='tonal'
-            color='secondary'
-            disabled={activeStep === 0}
-            onClick={handlePrev}
-            startIcon={<DirectionalIcon ltrIconClass='tabler-arrow-left' rtlIconClass='tabler-arrow-right' />}
-          >
+          <Button variant='tonal' color='secondary' disabled={activeStep === 0} onClick={handlePrev} startIcon=''>
             Previous
           </Button>
           <Button
             variant='contained'
             color={isLastStep ? 'success' : 'primary'}
             onClick={handleNext}
-            endIcon={
-              isLastStep ? (
-                <i className='tabler-check' />
-              ) : (
-                <DirectionalIcon ltrIconClass='tabler-arrow-right' rtlIconClass='tabler-arrow-left' />
-              )
-            }
+            endIcon={isLastStep ? <i className='tabler-check' /> : <p>icon</p>}
           >
             {isLastStep ? 'Submit' : 'Next'}
           </Button>
