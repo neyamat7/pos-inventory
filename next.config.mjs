@@ -1,19 +1,18 @@
+// next.config.mjs
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // basePath: process.env.BASEPATH,
-  // redirects: async () => {
-  //   return [
-  //     {
-  //       source: '/',
-  //       destination: '/home',
-  //       permanent: true,
-  //       locale: false
-  //     }
-  //   ]
-  // }
+  // redirects: async () => [
+  //   { source: '/', destination: '/home', permanent: true, locale: false }
+  // ],
   eslint: { ignoreDuringBuilds: true },
+
   webpack: config => {
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
@@ -28,13 +27,7 @@ const nextConfig = {
   },
 
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'lh3.googleusercontent.com'
-      }
-    ],
-
+    remotePatterns: [{ protocol: 'https', hostname: 'lh3.googleusercontent.com' }],
     domains: ['i.postimg.cc']
   }
 }

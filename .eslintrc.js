@@ -87,10 +87,10 @@ module.exports = {
     },
     'import/parsers': {},
     'import/resolver': {
-      node: {},
+      node: { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
       typescript: {
         project: './jsconfig.json',
-        "node": { "extensions": [".js", ".jsx", ".ts", ".tsx"] }
+        node: { extensions: ['.js', '.jsx', '.ts', '.tsx'] }
       }
     }
   },
