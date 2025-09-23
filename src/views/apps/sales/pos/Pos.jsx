@@ -368,17 +368,23 @@ export default function POSSystem({ productsData = [] }) {
           customer_id: item.customer_id,
           items: [],
           sub_total: 0,
-          commission_total: 0
+          commission_total: 0,
+          profit_total: 0
         }
       }
 
       acc[key].items.push({
         product_id: item.product_id,
-        customer_id: item.customer_id
+        crate: Number(item.crate) || 0,
+        product_name: item.product_name
       })
+
+      const itemTotal = Number(item.total) || 0
+      const itemCost = (Number(item.cost) || 0) * (Number(item.crate) || 1)
 
       acc[key].sub_total += Number(item.total) || 0
       acc[key].commission_total += Number(item.commission) || 0
+      acc[key].profit_total += itemTotal - itemCost
 
       return acc
     }, {})
@@ -388,12 +394,14 @@ export default function POSSystem({ productsData = [] }) {
     // Grand totals
     const grandSubTotal = customers.reduce((s, sup) => s + sup.sub_total, 0)
     const grandCommission = customers.reduce((s, sup) => s + sup.commission_total, 0)
+    const grandProfit = customers.reduce((s, sup) => s + sup.profit_total, 0)
 
     const payload = {
       summary: {
         date,
         sub_total: grandSubTotal,
-        commission_total: grandCommission
+        commission_total: grandCommission,
+        profit_total: grandProfit
       },
       payment,
       customers

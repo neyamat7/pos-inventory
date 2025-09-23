@@ -27,7 +27,6 @@ export default function ReportPage() {
   // Print handler
   const handlePrint = useReactToPrint({ contentRef })
 
-  // Aggregate report with date filtering
   const reportData = useMemo(() => {
     const filterByDate = (arr, key = 'summary.date') => {
       if (!filterDate) return arr
@@ -39,6 +38,7 @@ export default function ReportPage() {
       })
     }
 
+    // Filtered transactions by selected date
     const filteredPurchases = filterByDate(purchaseCollections)
     const filteredSales = filterByDate(salesCollections)
     const filteredPurchaseReturns = filterByDate(purchaseReturns, 'returnDate')
@@ -51,12 +51,62 @@ export default function ReportPage() {
     const totalSalesReturns = filteredSalesReturns.reduce((sum, r) => sum + r.returnAmount, 0)
     const totalExpenses = filteredExpenses.reduce((sum, e) => sum + e.amount, 0)
 
-    // Opening and Closing Stock (from stocks array)
-    const openingStockPurchase = stocks.reduce((sum, s) => sum + s.unitCost * s.openingQty, 0)
-    const openingStockSale = stocks.reduce((sum, s) => sum + s.unitPrice * s.openingQty, 0)
+    // 🔹 Calculate Opening & Closing Stock
+    let openingStockPurchase = 0
+    let openingStockSale = 0
+    let closingStockPurchase = 0
+    let closingStockSale = 0
 
-    const closingStockPurchase = stocks.reduce((sum, s) => sum + s.unitCost * s.closingQty, 0)
-    const closingStockSale = stocks.reduce((sum, s) => sum + s.unitPrice * s.closingQty, 0)
+    stocks.forEach(stock => {
+      const { productId, openingQty, unitCost, unitPrice } = stock
+
+      // Purchases of this product
+      const purchasesForProduct = filteredPurchases.reduce((qty, purchase) => {
+        purchase.suppliers.forEach(supplier => {
+          supplier.items.forEach(item => {
+            if (item.product_id === productId) qty += item.qty || 0
+          })
+        })
+
+        return qty
+      }, 0)
+
+      // Sales of this product
+      const salesForProduct = filteredSales.reduce((qty, sale) => {
+        sale.customers.forEach(customer => {
+          customer.items.forEach(item => {
+            if (item.product_id === productId) qty += item.qty || 0
+          })
+        })
+
+        return qty
+      }, 0)
+
+      // Purchase Returns of this product
+      const purchaseReturnsForProduct = filteredPurchaseReturns.reduce((qty, ret) => {
+        if (ret.productId === productId) qty += ret.quantityReturned || 0
+
+        return qty
+      }, 0)
+
+      // Sales Returns of this product
+      const salesReturnsForProduct = filteredSalesReturns.reduce((qty, ret) => {
+        if (ret.productId === productId) qty += ret.quantityReturned || 0
+
+        return qty
+      }, 0)
+
+      // Closing Stock (dynamic)
+      const closingQty =
+        (openingQty || 0) + purchasesForProduct - salesForProduct - purchaseReturnsForProduct + salesReturnsForProduct
+
+      // Add to totals
+      openingStockPurchase += (openingQty || 0) * unitCost
+      openingStockSale += (openingQty || 0) * unitPrice
+
+      closingStockPurchase += closingQty * unitCost
+      closingStockSale += closingQty * unitPrice
+    })
 
     const netProfit =
       totalSales +
@@ -83,7 +133,7 @@ export default function ReportPage() {
       <style>
         {`
           @page {
-            margin: 20mm 15mm; /* top/bottom, left/right margins */
+            margin: 20mm 15mm;
           }
         `}
       </style>
