@@ -11,7 +11,7 @@ const PurchaseReturnList = ({ purchaseReturnData }) => {
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12 }}>
-        <ReturnPurchaseCard />
+        <ReturnPurchaseCard purchaseReturnData={purchaseReturnData} />
       </Grid>
       <Grid size={{ xs: 12 }}>
         <ReturnPurchaseTable purchaseReturnData={purchaseReturnData} />

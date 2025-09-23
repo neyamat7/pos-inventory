@@ -12,9 +12,12 @@ import {
   Stack,
   Button,
   TextField,
-  Typography
+  Typography,
+  MenuItem
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
+
+const ROLE_OPTIONS = ['Software Engineer', 'Admin', 'Author', 'Editor', 'Maintainer', 'Subscriber']
 
 export default function EditUserModal({ open, user, onClose, onSave }) {
   const [form, setForm] = useState({ name: '', role: '', contact: '', email: '', image: '' })
@@ -56,7 +59,13 @@ export default function EditUserModal({ open, user, onClose, onSave }) {
             <TextField label='Name' fullWidth value={form.name} onChange={handleChange('name')} />
           </Grid>
           <Grid item xs={12} md={6}>
-            <TextField label='Role' fullWidth value={form.role} onChange={handleChange('role')} />
+            <TextField select label='Role' fullWidth value={form.role} onChange={handleChange('role')}>
+              {ROLE_OPTIONS.map(role => (
+                <MenuItem key={role} value={role}>
+                  {role}
+                </MenuItem>
+              ))}
+            </TextField>
           </Grid>
           <Grid item xs={12} md={6}>
             <TextField label='Contact' fullWidth value={form.contact} onChange={handleChange('contact')} />

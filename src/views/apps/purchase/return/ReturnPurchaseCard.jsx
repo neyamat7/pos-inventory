@@ -12,42 +12,35 @@ import classnames from 'classnames'
 // Component Imports
 import CustomAvatar from '@core/components/mui/Avatar'
 
-// Vars
-const data = [
-  {
-    value: 56,
-    title: 'Pending Payment',
-    icon: 'tabler-calendar-stats'
-  },
-  {
-    value: 12689,
-    title: 'Completed',
-    icon: 'tabler-checks'
-  },
-  {
-    value: 124,
-    title: 'Refunded',
-    icon: 'tabler-wallet'
-  },
-  {
-    value: 32,
-    title: 'Failed',
-    icon: 'tabler-alert-octagon'
-  }
-]
-
-const ReturnPurchaseCard = () => {
+const ReturnPurchaseCard = ({ purchaseReturnData = [] }) => {
   // Hooks
   const isBelowMdScreen = useMediaQuery(theme => theme.breakpoints.down('md'))
   const isBelowSmScreen = useMediaQuery(theme => theme.breakpoints.down('sm'))
+
+  // Calculations
+  const totalProducts = purchaseReturnData.length
+  const totalAmount = purchaseReturnData.reduce((sum, item) => sum + (item.returnAmount || 0), 0)
+
+  const stats = [
+    {
+      value: totalProducts,
+      title: 'Total Products Returned',
+      icon: 'tabler-package'
+    },
+    {
+      value: totalAmount,
+      title: 'Total Return Amount',
+      icon: 'tabler-currency-dollar'
+    }
+  ]
 
   return (
     <Card>
       <CardContent>
         <Grid container spacing={6}>
-          {data.map((item, index) => (
+          {stats.map((item, index) => (
             <Grid
-              size={{ xs: 12, sm: 6, md: 3 }}
+              size={{ xs: 12, sm: 3 }}
               key={index}
               className={classnames({
                 '[&:nth-of-type(odd)>div]:pie-6 [&:nth-of-type(odd)>div]:border-ie':
@@ -57,21 +50,18 @@ const ReturnPurchaseCard = () => {
             >
               <div className='flex justify-between gap-4'>
                 <div className='flex flex-col items-start'>
-                  <Typography variant='h4'>{item.value.toLocaleString()}</Typography>
+                  <Typography variant='h4'>
+                    {item.title.includes('Amount')
+                      ? item.value.toLocaleString(undefined, { style: 'currency', currency: 'USD' })
+                      : item.value}
+                  </Typography>
                   <Typography>{item.title}</Typography>
                 </div>
                 <CustomAvatar variant='rounded' size={42} skin='light'>
                   <i className={classnames(item.icon, 'text-[26px]')} />
                 </CustomAvatar>
               </div>
-              {isBelowMdScreen && !isBelowSmScreen && index < data.length - 2 && (
-                <Divider
-                  className={classnames('mbs-6', {
-                    'mie-6': index % 2 === 0
-                  })}
-                />
-              )}
-              {isBelowSmScreen && index < data.length - 1 && <Divider className='mbs-6' />}
+              {isBelowSmScreen && index < stats.length - 1 && <Divider className='mbs-6' />}
             </Grid>
           ))}
         </Grid>
