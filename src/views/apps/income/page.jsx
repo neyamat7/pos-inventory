@@ -32,6 +32,7 @@ import {
 import { salesCollections } from '@/fake-db/apps/reportsData'
 
 import AddIncomeModal from './AddIncomeModal'
+import TablePaginationComponent from '@/components/TablePaginationComponent'
 
 // 🔹 Group sales data by date
 const groupByDate = data => {
@@ -168,7 +169,7 @@ export default function ShowIncomePage() {
               ))}
             </TableHead>
 
-            <TableBody>
+            <TableBody className=''>
               {table.getRowModel().rows.map(row => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map(cell => (
@@ -205,6 +206,19 @@ export default function ShowIncomePage() {
         handleClose={() => setOpenDetailModal(false)}
         incomeData={selectedIncome}
       />
+
+      <TablePagination
+        component={() => <TablePaginationComponent table={table} />}
+        count={table.getFilteredRowModel().rows.length}
+        rowsPerPage={table.getState().pagination.pageSize}
+        page={table.getState().pagination.pageIndex}
+        onPageChange={(_, page) => {
+          table.setPageIndex(page)
+        }}
+        onRowsPerPageChange={e => {
+          table.setPageSize(Number(e.target.value))
+        }}
+      />
     </Card>
   )
 }
@@ -213,86 +227,88 @@ function IncomeDetailModal({ open, handleClose, incomeData }) {
   if (!incomeData || incomeData.length === 0) return null
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth='md' fullWidth>
-      <DialogTitle sx={{ fontWeight: 'bold' }}>Income Details</DialogTitle>
+    <>
+      <Dialog open={open} onClose={handleClose} maxWidth='md' fullWidth>
+        <DialogTitle sx={{ fontWeight: 'bold' }}>Income Details</DialogTitle>
 
-      <DialogContent dividers>
-        {incomeData.map((sale, idx) => (
-          <Paper key={idx} variant='outlined' sx={{ p: 3, mb: 3, borderRadius: 3 }}>
-            {/* 🔹 Summary Section */}
-            <Stack spacing={1} mb={2}>
-              <Typography variant='h6' color='primary'>
-                Summary
-              </Typography>
-              <Typography>Date: {sale.summary.date}</Typography>
-              <Typography>Total Sales: {sale.summary.sub_total}</Typography>
-              <Typography>Profit (Income): {sale.summary.profit_total}</Typography>
-            </Stack>
-
-            {/* 🔹 Payment Info */}
-            <Divider sx={{ my: 2 }} />
-            <Stack spacing={1} mb={2}>
-              <Typography variant='h6' color='secondary'>
-                Payment Info
-              </Typography>
-              <Typography>Type: {sale.payment.paymentType}</Typography>
-              <Typography>Receive Amount: {sale.payment.receiveAmount}</Typography>
-              <Typography>Due Amount: {sale.payment.dueAmount}</Typography>
-              <Typography>Note: {sale.payment.note || '-'}</Typography>
-            </Stack>
-
-            {/* 🔹 Customers */}
-            <Divider sx={{ my: 2 }} />
-            <Typography variant='h6' gutterBottom>
-              Customers
-            </Typography>
-
-            {sale.customers.map((cust, cIdx) => (
-              <Paper key={cIdx} sx={{ p: 2, mb: 2, borderRadius: 2, backgroundColor: 'grey.50' }} elevation={0}>
-                <Typography variant='subtitle1' sx={{ fontWeight: 'bold' }}>
-                  Customer #{cust.customer_id}
+        <DialogContent dividers>
+          {incomeData.map((sale, idx) => (
+            <Paper key={idx} variant='outlined' sx={{ p: 3, mb: 3, borderRadius: 3 }}>
+              {/* 🔹 Summary Section */}
+              <Stack spacing={1} mb={2}>
+                <Typography variant='h6' color='primary'>
+                  Summary
                 </Typography>
-                <Typography variant='body2'>Subtotal: {cust.sub_total}</Typography>
-                <Typography variant='body2'>Profit: {cust.profit_total}</Typography>
+                <Typography>Date: {sale.summary.date}</Typography>
+                <Typography>Total Sales: {sale.summary.sub_total}</Typography>
+                <Typography>Profit (Income): {sale.summary.profit_total}</Typography>
+              </Stack>
 
-                {/* 🔹 Products */}
-                <Box mt={1} pl={2}>
-                  <Typography variant='subtitle2' gutterBottom>
-                    Products
+              {/* 🔹 Payment Info */}
+              <Divider sx={{ my: 2 }} />
+              <Stack spacing={1} mb={2}>
+                <Typography variant='h6' color='secondary'>
+                  Payment Info
+                </Typography>
+                <Typography>Type: {sale.payment.paymentType}</Typography>
+                <Typography>Receive Amount: {sale.payment.receiveAmount}</Typography>
+                <Typography>Due Amount: {sale.payment.dueAmount}</Typography>
+                <Typography>Note: {sale.payment.note || '-'}</Typography>
+              </Stack>
+
+              {/* 🔹 Customers */}
+              <Divider sx={{ my: 2 }} />
+              <Typography variant='h6' gutterBottom>
+                Customers
+              </Typography>
+
+              {sale.customers.map((cust, cIdx) => (
+                <Paper key={cIdx} sx={{ p: 2, mb: 2, borderRadius: 2, backgroundColor: 'grey.50' }} elevation={0}>
+                  <Typography variant='subtitle1' sx={{ fontWeight: 'bold' }}>
+                    Customer #{cust.customer_id}
                   </Typography>
-                  <Stack spacing={0.5}>
-                    {cust.items.map((item, iIdx) => (
-                      <Paper
-                        key={iIdx}
-                        sx={{
-                          p: 1,
-                          borderRadius: 2,
-                          backgroundColor: 'white',
-                          border: '1px solid #eee'
-                        }}
-                        elevation={0}
-                      >
-                        <Typography variant='body2'>
-                          <b>{item.product_name}</b> (ID: {item.product_id})
-                        </Typography>
-                        <Typography variant='caption' color='text.secondary'>
-                          Crate: {item.crate}
-                        </Typography>
-                      </Paper>
-                    ))}
-                  </Stack>
-                </Box>
-              </Paper>
-            ))}
-          </Paper>
-        ))}
-      </DialogContent>
+                  <Typography variant='body2'>Subtotal: {cust.sub_total}</Typography>
+                  <Typography variant='body2'>Profit: {cust.profit_total}</Typography>
 
-      <DialogActions>
-        <Button onClick={handleClose} variant='contained' color='primary'>
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
+                  {/* 🔹 Products */}
+                  <Box mt={1} pl={2}>
+                    <Typography variant='subtitle2' gutterBottom>
+                      Products
+                    </Typography>
+                    <Stack spacing={0.5}>
+                      {cust.items.map((item, iIdx) => (
+                        <Paper
+                          key={iIdx}
+                          sx={{
+                            p: 1,
+                            borderRadius: 2,
+                            backgroundColor: 'white',
+                            border: '1px solid #eee'
+                          }}
+                          elevation={0}
+                        >
+                          <Typography variant='body2'>
+                            <b>{item.product_name}</b> (ID: {item.product_id})
+                          </Typography>
+                          <Typography variant='caption' color='text.secondary'>
+                            Crate: {item.crate}
+                          </Typography>
+                        </Paper>
+                      ))}
+                    </Stack>
+                  </Box>
+                </Paper>
+              ))}
+            </Paper>
+          ))}
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={handleClose} variant='contained' color='primary'>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   )
 }
