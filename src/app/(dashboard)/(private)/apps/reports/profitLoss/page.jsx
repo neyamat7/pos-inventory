@@ -1,4 +1,4 @@
-import Reports from '@/views/apps/reports/page'
+import Reports from '@/views/apps/reports/profitLoss'
 
 const ReportPage = () => {
   return <Reports />
