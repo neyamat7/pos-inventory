@@ -145,6 +145,11 @@ const VerticalMenu = ({ scrollMenu }) => {
           Income
         </MenuItem>
 
+        <SubMenu label='Accounts' icon={<i className='tabler-smart-home' />}>
+          <MenuItem href='/apps/accounts/list'>List Account</MenuItem>
+          <MenuItem href='/apps/accounts/paymentReport'>Payment Account Report</MenuItem>
+        </SubMenu>
+
         <MenuItem href='/apps/reports' icon={<i className='tabler-smart-home' />}>
           Reports
         </MenuItem>
