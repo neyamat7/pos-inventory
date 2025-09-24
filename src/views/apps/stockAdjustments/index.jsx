@@ -47,9 +47,9 @@ import { getInitials } from '@/utils/getInitials'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
-import AddStockTransferDrawer from './AddStockTransferDrawer'
 import { showAlert } from '@/utils/showAlert'
-import EditStockTransferModal from './EditStockTransferModal'
+import EditStockAdjustmentsModal from './EditStockAdjustmentsModal'
+import AddStockAdjustments from './AddStockAdjustments'
 
 export const paymentStatus = {
   1: { text: 'Paid', color: 'success' },
@@ -99,11 +99,11 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const StockTransfers = ({ stockTransfersData = [] }) => {
+const StockAdjustments = ({ stockAdjustments = [] }) => {
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
-  const [data, setData] = useState(...[stockTransfersData])
+  const [data, setData] = useState(...[stockAdjustments])
   const [globalFilter, setGlobalFilter] = useState('')
 
   // Hooks
@@ -131,15 +131,15 @@ const StockTransfers = ({ stockTransfersData = [] }) => {
         )
       },
 
-      // ✅ Stock Transfer data fields
-      { accessorKey: 'id', header: 'ID' },
+      // ✅ Stock Adjustment fields
       { accessorKey: 'date', header: 'Date' },
       { accessorKey: 'referenceNo', header: 'Reference No' },
-      { accessorKey: 'locationFrom', header: 'Location (From)' },
-      { accessorKey: 'locationTo', header: 'Location (To)' },
-      { accessorKey: 'status', header: 'Status' },
-      { accessorKey: 'shippingCharges', header: 'Shipping Charges' },
+      { accessorKey: 'location', header: 'Location' },
+      { accessorKey: 'adjustmentType', header: 'Type' },
       { accessorKey: 'totalAmount', header: 'Total Amount' },
+      { accessorKey: 'totalAmountRecovered', header: 'Amount Recovered' },
+      { accessorKey: 'reason', header: 'Reason' },
+      { accessorKey: 'addedBy', header: 'Added By' },
 
       // ✅ Action column
       {
@@ -181,20 +181,6 @@ const StockTransfers = ({ stockTransfersData = [] }) => {
     getFacetedMinMaxValues: getFacetedMinMaxValues()
   })
 
-  const getAvatar = params => {
-    const { avatar, customer } = params
-
-    if (avatar) {
-      return <CustomAvatar src={avatar} skin='light' size={34} />
-    } else {
-      return (
-        <CustomAvatar skin='light' size={34}>
-          {getInitials(customer)}
-        </CustomAvatar>
-      )
-    }
-  }
-
   return (
     <>
       <Card>
@@ -225,7 +211,7 @@ const StockTransfers = ({ stockTransfersData = [] }) => {
               startIcon={<i className='tabler-plus' />}
               onClick={() => setCustomerUserOpen(!customerUserOpen)}
             >
-              Add Transfer
+              Add Adjustment
             </Button>
           </div>
         </CardContent>
@@ -294,17 +280,17 @@ const StockTransfers = ({ stockTransfersData = [] }) => {
           }}
         />
       </Card>
-      <AddStockTransferDrawer
+      <AddStockAdjustments
         open={customerUserOpen}
         handleClose={() => setCustomerUserOpen(!customerUserOpen)}
         setData={setData}
-        stockTransfersData={data}
+        stockAdjustments={data}
       />
     </>
   )
 }
 
-export default StockTransfers
+export default StockAdjustments
 
 const ActionMenu = ({ row, setData }) => {
   const [open, setOpen] = useState(false)
@@ -360,7 +346,7 @@ const ActionMenu = ({ row, setData }) => {
       )}
 
       {/* Edit Modal */}
-      <EditStockTransferModal
+      <EditStockAdjustmentsModal
         open={editOpen}
         handleClose={() => setEditOpen(false)}
         rowData={row.original}
