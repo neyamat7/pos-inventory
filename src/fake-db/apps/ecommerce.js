@@ -4613,183 +4613,183 @@ export const db = {
   stockProductsData: [
     {
       sl: 1,
-      product: 'Laptop Pro 14',
-      code: 'LP1001',
-      category: 'Electronics',
-      cost: 850,
-      qty: 15,
-      sale: 1200
+      product: 'Apple',
+      code: 'FR1001',
+      category: 'Fruits',
+      cost: 2,
+      qty: 150,
+      sale: 4
     },
     {
       sl: 2,
-      product: 'Wireless Mouse',
-      code: 'WM1002',
-      category: 'Accessories',
-      cost: 15,
-      qty: 120,
-      sale: 25
+      product: 'Banana',
+      code: 'FR1002',
+      category: 'Fruits',
+      cost: 1,
+      qty: 200,
+      sale: 2
     },
     {
       sl: 3,
-      product: 'Mechanical Keyboard',
-      code: 'MK1003',
-      category: 'Accessories',
-      cost: 45,
-      qty: 80,
-      sale: 70
+      product: 'Orange',
+      code: 'FR1003',
+      category: 'Fruits',
+      cost: 1.5,
+      qty: 180,
+      sale: 3
     },
     {
       sl: 4,
-      product: 'Smartphone X',
-      code: 'SP1004',
-      category: 'Electronics',
-      cost: 500,
-      qty: 50,
-      sale: 750
+      product: 'Mango',
+      code: 'FR1004',
+      category: 'Fruits',
+      cost: 2.5,
+      qty: 120,
+      sale: 5
     },
     {
       sl: 5,
-      product: 'Bluetooth Speaker',
-      code: 'BS1005',
-      category: 'Audio',
-      cost: 30,
-      qty: 100,
-      sale: 55
-    },
-    {
-      sl: 6,
-      product: 'LED Monitor 24"',
-      code: 'MN1006',
-      category: 'Electronics',
-      cost: 120,
-      qty: 35,
-      sale: 180
-    },
-    {
-      sl: 7,
-      product: 'Gaming Chair',
-      code: 'GC1007',
-      category: 'Furniture',
-      cost: 150,
-      qty: 20,
-      sale: 250
-    },
-    {
-      sl: 8,
-      product: 'External Hard Drive 1TB',
-      code: 'HD1008',
-      category: 'Storage',
-      cost: 45,
-      qty: 70,
-      sale: 80
-    },
-    {
-      sl: 9,
-      product: 'USB-C Cable',
-      code: 'UC1009',
-      category: 'Accessories',
+      product: 'Pineapple',
+      code: 'FR1005',
+      category: 'Fruits',
       cost: 3,
-      qty: 300,
-      sale: 8
-    },
-    {
-      sl: 10,
-      product: 'Smartwatch Z',
-      code: 'SW1010',
-      category: 'Wearables',
-      cost: 100,
-      qty: 40,
-      sale: 160
-    },
-    {
-      sl: 11,
-      product: 'Air Conditioner 1.5 Ton',
-      code: 'AC1011',
-      category: 'Appliances',
-      cost: 400,
-      qty: 10,
-      sale: 650
-    },
-    {
-      sl: 12,
-      product: 'Refrigerator 300L',
-      code: 'RF1012',
-      category: 'Appliances',
-      cost: 380,
-      qty: 12,
-      sale: 600
-    },
-    {
-      sl: 13,
-      product: 'Microwave Oven',
-      code: 'MW1013',
-      category: 'Appliances',
-      cost: 120,
-      qty: 18,
-      sale: 200
-    },
-    {
-      sl: 14,
-      product: 'Office Desk',
-      code: 'OD1014',
-      category: 'Furniture',
-      cost: 90,
-      qty: 25,
-      sale: 150
-    },
-    {
-      sl: 15,
-      product: 'Printer Ink Cartridge',
-      code: 'IC1015',
-      category: 'Office Supplies',
-      cost: 12,
-      qty: 200,
-      sale: 25
-    },
-    {
-      sl: 16,
-      product: 'Coffee Maker',
-      code: 'CM1016',
-      category: 'Appliances',
-      cost: 50,
-      qty: 30,
-      sale: 85
-    },
-    {
-      sl: 17,
-      product: 'LED Bulb 12W',
-      code: 'LB1017',
-      category: 'Electrical',
-      cost: 2,
-      qty: 500,
+      qty: 80,
       sale: 6
     },
     {
-      sl: 18,
-      product: 'Ceiling Fan',
-      code: 'CF1018',
-      category: 'Electrical',
-      cost: 25,
+      sl: 6,
+      product: 'Strawberry',
+      code: 'FR1006',
+      category: 'Fruits',
+      cost: 4,
       qty: 60,
-      sale: 50
+      sale: 7
+    },
+    {
+      sl: 7,
+      product: 'Grapes',
+      code: 'FR1007',
+      category: 'Fruits',
+      cost: 3,
+      qty: 100,
+      sale: 5
+    },
+    {
+      sl: 8,
+      product: 'Watermelon',
+      code: 'FR1008',
+      category: 'Fruits',
+      cost: 5,
+      qty: 40,
+      sale: 9
+    },
+    {
+      sl: 9,
+      product: 'Papaya',
+      code: 'FR1009',
+      category: 'Fruits',
+      cost: 2,
+      qty: 70,
+      sale: 4
+    },
+    {
+      sl: 10,
+      product: 'Kiwi',
+      code: 'FR1010',
+      category: 'Fruits',
+      cost: 3,
+      qty: 50,
+      sale: 6
+    },
+    {
+      sl: 11,
+      product: 'Tomato',
+      code: 'VG1011',
+      category: 'Vegetables',
+      cost: 1,
+      qty: 300,
+      sale: 2
+    },
+    {
+      sl: 12,
+      product: 'Potato',
+      code: 'VG1012',
+      category: 'Vegetables',
+      cost: 0.5,
+      qty: 500,
+      sale: 1.5
+    },
+    {
+      sl: 13,
+      product: 'Onion',
+      code: 'VG1013',
+      category: 'Vegetables',
+      cost: 0.8,
+      qty: 400,
+      sale: 2
+    },
+    {
+      sl: 14,
+      product: 'Carrot',
+      code: 'VG1014',
+      category: 'Vegetables',
+      cost: 1,
+      qty: 250,
+      sale: 3
+    },
+    {
+      sl: 15,
+      product: 'Cabbage',
+      code: 'VG1015',
+      category: 'Vegetables',
+      cost: 1.2,
+      qty: 150,
+      sale: 3
+    },
+    {
+      sl: 16,
+      product: 'Cauliflower',
+      code: 'VG1016',
+      category: 'Vegetables',
+      cost: 1.5,
+      qty: 100,
+      sale: 4
+    },
+    {
+      sl: 17,
+      product: 'Spinach',
+      code: 'VG1017',
+      category: 'Vegetables',
+      cost: 0.7,
+      qty: 200,
+      sale: 2
+    },
+    {
+      sl: 18,
+      product: 'Broccoli',
+      code: 'VG1018',
+      category: 'Vegetables',
+      cost: 2,
+      qty: 80,
+      sale: 5
     },
     {
       sl: 19,
-      product: 'Router Dual Band',
-      code: 'RT1019',
-      category: 'Networking',
-      cost: 40,
-      qty: 45,
-      sale: 70
+      product: 'Cucumber',
+      code: 'VG1019',
+      category: 'Vegetables',
+      cost: 1,
+      qty: 180,
+      sale: 2.5
     },
     {
       sl: 20,
-      product: 'Graphics Card GTX 3060',
-      code: 'GC1020',
-      category: 'Electronics',
-      cost: 300,
-      qty: 22,
-      sale: 450
+      product: 'Eggplant',
+      code: 'VG1020',
+      category: 'Vegetables',
+      cost: 1.3,
+      qty: 140,
+      sale: 3
     }
   ],
   expiredProducts: [
