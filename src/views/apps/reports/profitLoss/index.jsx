@@ -113,6 +113,9 @@ export default function ReportPage() {
       closingStockSale -
       (openingStockPurchase + totalPurchases + totalExpenses + totalPurchaseReturns - totalSalesReturns)
 
+    const profit = netProfit > 0 ? netProfit : 0
+    const loss = netProfit < 0 ? Math.abs(netProfit) : 0
+
     return {
       totalPurchases,
       totalSales,
@@ -123,7 +126,9 @@ export default function ReportPage() {
       openingStockSale,
       closingStockPurchase,
       closingStockSale,
-      netProfit
+      netProfit,
+      profit,
+      loss
     }
   }, [filterDate])
 
@@ -153,7 +158,7 @@ export default function ReportPage() {
 
       {/* Report */}
       <div ref={contentRef} className='bg-white shadow rounded-lg p-6 print:pt-12 print:pl-12'>
-        <h2 className='text-2xl font-bold mb-4 text-gray-900'>Profit & Loss Report</h2>
+        <h2 className='text-3xl font-semibold mb-4 text-gray-900'>Profit & Loss Report</h2>
 
         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
           {/* Opening Stock */}
@@ -202,12 +207,17 @@ export default function ReportPage() {
             <h3 className='text-xl font-semibold'>৳{reportData.closingStockSale.toFixed(2)}</h3>
           </div>
 
-          {/* Net Profit */}
-          <div className='p-4 bg-gray-100 rounded-lg col-span-1 md:col-span-2'>
-            <p className='text-gray-600'>Net Profit</p>
-            <h3 className={`text-2xl font-bold ${reportData.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              ৳{reportData.netProfit.toFixed(2)}
-            </h3>
+          {/* Profit & Loss */}
+          <div className='grid grid-cols-2 gap-6 col-span-1 md:col-span-2'>
+            <div className='p-4 bg-gray-100 rounded-lg'>
+              <p className='text-gray-600'>Profit</p>
+              <h3 className='text-2xl font-bold text-green-600'>৳{reportData.profit.toFixed(2)}</h3>
+            </div>
+
+            <div className='p-4 bg-gray-100 rounded-lg'>
+              <p className='text-gray-600'>Loss</p>
+              <h3 className='text-2xl font-bold text-red-600'>৳{reportData.loss.toFixed(2)}</h3>
+            </div>
           </div>
         </div>
       </div>
