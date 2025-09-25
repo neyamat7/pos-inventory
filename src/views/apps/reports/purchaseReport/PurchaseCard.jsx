@@ -7,23 +7,40 @@ import Typography from '@mui/material/Typography'
 // Component Imports
 import CustomAvatar from '@core/components/mui/Avatar'
 
-// Utils
-const getTotalAmount = data => data.reduce((sum, item) => sum + (item.total || 0), 0)
+// Utility to calculate totals
+const getTotals = data => {
+  if (!Array.isArray(data)) return { total: 0, paid: 0, due: 0 }
 
-const PurchaseCard = ({ purchaseData = [] }) => {
-  const totalPurchaseCount = purchaseData.length
-  const totalPurchaseAmount = getTotalAmount(purchaseData)
+  return data.reduce(
+    (acc, item) => {
+      acc.total += item.total || 0
+      acc.paid += item.paid || 0
+      acc.due += item.due || 0
+
+      return acc
+    },
+    { total: 0, paid: 0, due: 0 }
+  )
+}
+
+const PurchaseCard = ({ PurchaseReportData }) => {
+  const { total, paid, due } = getTotals(PurchaseReportData)
 
   const stats = [
     {
-      value: totalPurchaseCount,
-      title: 'Total Purchases',
+      value: total,
+      title: 'Total Purchase',
       icon: 'tabler-shopping-cart'
     },
     {
-      value: totalPurchaseAmount,
-      title: 'Total Amount',
-      icon: 'tabler-currency-dollar'
+      value: paid,
+      title: 'Total Paid',
+      icon: 'tabler-cash'
+    },
+    {
+      value: due,
+      title: 'Total Due',
+      icon: 'tabler-alert-circle'
     }
   ]
 
@@ -32,10 +49,10 @@ const PurchaseCard = ({ purchaseData = [] }) => {
       <CardContent>
         <Grid container spacing={6}>
           {stats.map((item, index) => (
-            <Grid key={index} size={{ xs: 12, sm: 6, md: 3 }}>
-              <div className='flex justify-between gap-4'>
+            <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
+              <div className='flex justify-between items-center gap-4'>
                 <div className='flex flex-col items-start'>
-                  <Typography variant='h4'>{item.value.toLocaleString()}</Typography>
+                  <Typography variant='h4'>৳ {item.value.toLocaleString()}</Typography>
                   <Typography>{item.title}</Typography>
                 </div>
                 <CustomAvatar variant='rounded' size={48} skin='light'>

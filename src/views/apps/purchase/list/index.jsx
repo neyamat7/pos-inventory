@@ -12,7 +12,7 @@ const PurchaseList = ({ purchaseData }) => {
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12 }}>
-        <PurchaseCard />
+        <PurchaseCard purchaseData={purchaseData} />
       </Grid>
       <Grid size={{ xs: 12 }}>
         <PurchaseListTable purchaseData={purchaseData} />

@@ -4316,6 +4316,154 @@ export const db = {
       status: 'Partial'
     }
   ],
+
+  purchaseReportData: [
+    {
+      sl: 1,
+      date: '2025-09-01',
+      invoiceNo: 'INV-1001',
+      partyName: 'Alpha Traders',
+      total: 1500,
+      discount: 100,
+      paid: 1200,
+      due: 200,
+      payment: 'Cash',
+      status: 'Partial'
+    },
+    {
+      sl: 2,
+      date: '2025-09-01',
+      invoiceNo: 'INV-1002',
+      partyName: 'Beta Enterprises',
+      total: 2500,
+      discount: 200,
+      paid: 2300,
+      due: 0,
+      payment: 'Bank Transfer',
+      status: 'Paid'
+    },
+    {
+      sl: 3,
+      date: '2025-09-02',
+      invoiceNo: 'INV-1003',
+      partyName: 'Gamma Supplies',
+      total: 3200,
+      discount: 150,
+      paid: 1500,
+      due: 1550,
+      payment: 'Credit',
+      status: 'Partial'
+    },
+    {
+      sl: 4,
+      date: '2025-09-02',
+      invoiceNo: 'INV-1004',
+      partyName: 'Delta Wholesalers',
+      total: 1800,
+      discount: 0,
+      paid: 1800,
+      due: 0,
+      payment: 'Cash',
+      status: 'Paid'
+    },
+    {
+      sl: 5,
+      date: '2025-09-03',
+      invoiceNo: 'INV-1005',
+      partyName: 'Epsilon Traders',
+      total: 2200,
+      discount: 200,
+      paid: 1000,
+      due: 1000,
+      payment: 'Mobile Banking',
+      status: 'Partial'
+    },
+    {
+      sl: 6,
+      date: '2025-09-03',
+      invoiceNo: 'INV-1006',
+      partyName: 'Zeta Corporation',
+      total: 5000,
+      discount: 500,
+      paid: 4500,
+      due: 0,
+      payment: 'Bank Transfer',
+      status: 'Paid'
+    },
+    {
+      sl: 7,
+      date: '2025-09-04',
+      invoiceNo: 'INV-1007',
+      partyName: 'Eta Distributors',
+      total: 2750,
+      discount: 250,
+      paid: 1000,
+      due: 1500,
+      payment: 'Credit',
+      status: 'Partial'
+    },
+    {
+      sl: 8,
+      date: '2025-09-04',
+      invoiceNo: 'INV-1008',
+      partyName: 'Theta Imports',
+      total: 3500,
+      discount: 300,
+      paid: 3200,
+      due: 0,
+      payment: 'Cash',
+      status: 'Paid'
+    },
+    {
+      sl: 9,
+      date: '2025-09-05',
+      invoiceNo: 'INV-1009',
+      partyName: 'Iota Suppliers',
+      total: 4200,
+      discount: 400,
+      paid: 2000,
+      due: 1800,
+      payment: 'Mobile Banking',
+      status: 'Partial'
+    },
+    {
+      sl: 10,
+      date: '2025-09-05',
+      invoiceNo: 'INV-1010',
+      partyName: 'Kappa Traders',
+      total: 3100,
+      discount: 100,
+      paid: 3000,
+      due: 0,
+      payment: 'Bank Transfer',
+      status: 'Paid'
+    },
+    {
+      sl: 11,
+      date: '2025-09-06',
+      invoiceNo: 'INV-1011',
+      partyName: 'Lambda Enterprises',
+      total: 2600,
+      discount: 200,
+      paid: 1000,
+      due: 1400,
+      payment: 'Credit',
+      status: 'Partial'
+    },
+    {
+      sl: 12,
+      date: '2025-09-06',
+      invoiceNo: 'INV-1012',
+      partyName: 'Mu Wholesalers',
+      total: 4800,
+      discount: 300,
+      paid: 4500,
+      due: 0,
+      payment: 'Cash',
+      status: 'Paid'
+    }
+  ],
+
   stockProductsData: [
     {
       sl: 1,
