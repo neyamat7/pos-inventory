@@ -4464,6 +4464,152 @@ export const db = {
     }
   ],
 
+  salesReportData: [
+    {
+      sl: 1,
+      date: '2025-09-01',
+      invoiceNo: 'SAL-2001',
+      partyName: 'Orion Retailers',
+      total: 1800,
+      discount: 100,
+      paid: 1500,
+      due: 200,
+      payment: 'Cash',
+      status: 'Partial'
+    },
+    {
+      sl: 2,
+      date: '2025-09-01',
+      invoiceNo: 'SAL-2002',
+      partyName: 'Nova Mart',
+      total: 2800,
+      discount: 150,
+      paid: 2650,
+      due: 0,
+      payment: 'Card',
+      status: 'Paid'
+    },
+    {
+      sl: 3,
+      date: '2025-09-02',
+      invoiceNo: 'SAL-2003',
+      partyName: 'Stellar Supplies',
+      total: 3400,
+      discount: 200,
+      paid: 2000,
+      due: 1200,
+      payment: 'Mobile Banking',
+      status: 'Partial'
+    },
+    {
+      sl: 4,
+      date: '2025-09-02',
+      invoiceNo: 'SAL-2004',
+      partyName: 'Galaxy Wholesales',
+      total: 2100,
+      discount: 0,
+      paid: 2100,
+      due: 0,
+      payment: 'Cash',
+      status: 'Paid'
+    },
+    {
+      sl: 5,
+      date: '2025-09-03',
+      invoiceNo: 'SAL-2005',
+      partyName: 'Cosmos Traders',
+      total: 2600,
+      discount: 200,
+      paid: 1200,
+      due: 1200,
+      payment: 'Credit',
+      status: 'Partial'
+    },
+    {
+      sl: 6,
+      date: '2025-09-03',
+      invoiceNo: 'SAL-2006',
+      partyName: 'Apex Corporation',
+      total: 5200,
+      discount: 300,
+      paid: 4900,
+      due: 0,
+      payment: 'Bank Transfer',
+      status: 'Paid'
+    },
+    {
+      sl: 7,
+      date: '2025-09-04',
+      invoiceNo: 'SAL-2007',
+      partyName: 'Zenith Distributors',
+      total: 2950,
+      discount: 150,
+      paid: 1400,
+      due: 1400,
+      payment: 'Credit',
+      status: 'Partial'
+    },
+    {
+      sl: 8,
+      date: '2025-09-04',
+      invoiceNo: 'SAL-2008',
+      partyName: 'Vertex Imports',
+      total: 3700,
+      discount: 250,
+      paid: 3450,
+      due: 0,
+      payment: 'Cash',
+      status: 'Paid'
+    },
+    {
+      sl: 9,
+      date: '2025-09-05',
+      invoiceNo: 'SAL-2009',
+      partyName: 'Aurora Suppliers',
+      total: 4100,
+      discount: 200,
+      paid: 2500,
+      due: 1400,
+      payment: 'Mobile Banking',
+      status: 'Partial'
+    },
+    {
+      sl: 10,
+      date: '2025-09-05',
+      invoiceNo: 'SAL-2010',
+      partyName: 'Nimbus Traders',
+      total: 3300,
+      discount: 100,
+      paid: 3200,
+      due: 0,
+      payment: 'Card',
+      status: 'Paid'
+    },
+    {
+      sl: 11,
+      date: '2025-09-06',
+      invoiceNo: 'SAL-2011',
+      partyName: 'Pioneer Enterprises',
+      total: 2800,
+      discount: 150,
+      paid: 1300,
+      due: 1350,
+      payment: 'Credit',
+      status: 'Partial'
+    },
+    {
+      sl: 12,
+      date: '2025-09-06',
+      invoiceNo: 'SAL-2012',
+      partyName: 'Summit Wholesalers',
+      total: 4900,
+      discount: 400,
+      paid: 4500,
+      due: 0,
+      payment: 'Bank Transfer',
+      status: 'Paid'
+    }
+  ],
   stockProductsData: [
     {
       sl: 1,

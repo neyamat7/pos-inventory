@@ -6,10 +6,10 @@ import { useState, useMemo } from 'react'
 import Grid from '@mui/material/Grid2'
 
 // Component Imports
-import PurchaseCard from './PurchaseCard'
-import PurchaseListTable from './PurchaseListTable'
+import SalesListTable from './SalesListTable'
+import SalesCard from './SalesCard'
 
-const SalesReport = ({ PurchaseReportData }) => {
+const PurchaseReport = ({ SalesReportData }) => {
   const [filterDate, setFilterDate] = useState('')
 
   // Function to filter data by selected date
@@ -19,7 +19,7 @@ const SalesReport = ({ PurchaseReportData }) => {
 
   // Filter & sort data
   const filteredData = useMemo(() => {
-    let data = [...PurchaseReportData]
+    let data = [...SalesReportData]
 
     // Filter by date if selected
     if (filterDate) {
@@ -28,20 +28,20 @@ const SalesReport = ({ PurchaseReportData }) => {
 
     // Sort by date (recent first)
     return data.sort((a, b) => new Date(b.date) - new Date(a.date))
-  }, [PurchaseReportData, filterDate])
+  }, [SalesReportData, filterDate])
 
   return (
     <>
       <Grid container spacing={6}>
         <Grid size={{ xs: 12 }}>
-          <PurchaseCard PurchaseReportData={filteredData} />
+          <SalesCard salesReportData={filteredData} />
         </Grid>
         <Grid size={{ xs: 12 }}>
-          <PurchaseListTable PurchaseReportData={filteredData} onFilterByDate={handleFilterByDate} />
+          <SalesListTable salesReportData={filteredData} onFilterByDate={handleFilterByDate} />
         </Grid>
       </Grid>
     </>
   )
 }
 
-export default SalesReport
+export default PurchaseReport

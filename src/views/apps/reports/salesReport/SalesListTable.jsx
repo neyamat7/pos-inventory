@@ -45,7 +45,7 @@ import { getLocalizedUrl } from '@/utils/i18n'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
-import ViewPurchaseModal from './ViewPurchaseModal'
+import ViewPurchaseModal from './ViewSalesModal'
 
 export const paymentStatus = {
   1: { text: 'Paid', color: 'success', colorClassName: 'text-success' },
@@ -95,13 +95,17 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const PurchaseListTable = ({ purchaseData = [] }) => {
+const SalesListTable = ({ salesReportData = [], onFilterByDate }) => {
   // States
   const [rowSelection, setRowSelection] = useState({})
-  const [data, setData] = useState(...[purchaseData])
+  const [data, setData] = useState(salesReportData)
   const [globalFilter, setGlobalFilter] = useState('')
   const [viewOpen, setViewOpen] = useState(false)
   const [selectedRow, setSelectedRow] = useState(null)
+
+  useEffect(() => {
+    setData(salesReportData)
+  }, [salesReportData])
 
   // Hooks
   const { lang: locale } = useParams()
@@ -220,7 +224,7 @@ const PurchaseListTable = ({ purchaseData = [] }) => {
   return (
     <>
       <Card>
-        <h1 className='mt-3 ml-4 text-3xl font-semibold'>Purchase List</h1>
+        <h1 className='mt-3 ml-4 text-3xl font-semibold'>Sales Report</h1>
         <CardContent className='flex justify-between max-sm:flex-col sm:items-center gap-4'>
           <DebouncedInput
             value={globalFilter ?? ''}
@@ -228,7 +232,14 @@ const PurchaseListTable = ({ purchaseData = [] }) => {
             placeholder='Search Order'
             className='sm:is-auto'
           />
+
           <div className='flex items-center max-sm:flex-col gap-4 max-sm:is-full is-auto'>
+            <CustomTextField
+              type='date'
+              onChange={e => onFilterByDate(e.target.value)} // ⬅ call filter function
+              className='is-auto max-sm:is-full'
+            />
+
             <CustomTextField
               select
               value={table.getState().pagination.pageSize}
@@ -314,4 +325,4 @@ const PurchaseListTable = ({ purchaseData = [] }) => {
   )
 }
 
-export default PurchaseListTable
+export default SalesListTable
