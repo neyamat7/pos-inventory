@@ -4,7 +4,6 @@ import { redirect } from 'next/navigation'
 import Grid from '@mui/material/Grid2'
 
 // Component Imports
-import DistributedBarChartOrder from '@views/dashboards/crm/DistributedBarChartOrder'
 import LineAreaYearlySalesChart from '@views/dashboards/crm/LineAreaYearlySalesChart'
 import CardStatVertical from '@/components/card-statistics/Vertical'
 import BarChartRevenueGrowth from '@views/dashboards/crm/BarChartRevenueGrowth'
@@ -19,6 +18,13 @@ import ActivityTimeline from '@views/dashboards/crm/ActivityTimeline'
 // Server Action Imports
 import { getServerMode } from '@core/utils/serverHelpers'
 import { auth } from '@/auth'
+import EarningReports from '@/views/dashboards/crm/EarningReports'
+import PopularProducts from '@/views/dashboards/crm/PopularProducts'
+import DistributedBarChartPurchase from '@/views/dashboards/crm/DistributedBarChartPurchase'
+import DistributedBarChartPurchaseDue from '@/views/dashboards/crm/DistributedBarChartPurchaseDue'
+import LineAreaYearlySalesChartDue from '@/views/dashboards/crm/LineAreaYearlySalesChartDue'
+import DistributedBarChartPurchaseReturn from '@/views/dashboards/crm/DistributedBarChartPurchaseReturn'
+import LineAreaYearlySalesChartReturn from '@/views/dashboards/crm/LineAreaYearlySalesChartReturn'
 
 const DashboardCRM = async () => {
   const session = await auth()
@@ -32,13 +38,26 @@ const DashboardCRM = async () => {
 
   return (
     <Grid container spacing={6}>
-      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
-        <DistributedBarChartOrder />
+      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+        <DistributedBarChartPurchase />
       </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
+      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+        <DistributedBarChartPurchaseDue />
+      </Grid>
+      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+        <DistributedBarChartPurchaseReturn />
+      </Grid>
+      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
         <LineAreaYearlySalesChart />
       </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
+      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+        <LineAreaYearlySalesChartDue />
+      </Grid>
+      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+        <LineAreaYearlySalesChartReturn />
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
         <CardStatVertical
           title='Total Profit'
           subtitle='Last Week'
@@ -52,7 +71,8 @@ const DashboardCRM = async () => {
           chipVariant='tonal'
         />
       </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
+
+      {/* <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
         <CardStatVertical
           title='Total Sales'
           subtitle='Last Week'
@@ -65,30 +85,19 @@ const DashboardCRM = async () => {
           chipColor='success'
           chipVariant='tonal'
         />
-      </Grid>
-      <Grid size={{ xs: 12, md: 8, lg: 4 }}>
+      </Grid> */}
+
+      <Grid size={{ xs: 12, md: 8, lg: 3 }}>
         <BarChartRevenueGrowth />
       </Grid>
-      <Grid size={{ xs: 12, lg: 8 }}>
+      <Grid size={{ xs: 12, lg: 12 }}>
         <EarningReportsWithTabs />
       </Grid>
-      <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-        <RadarSalesChart />
+      <Grid size={{ xs: 12, md: 6, lg: 6 }}>
+        <EarningReports />
       </Grid>
-      <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-        <SalesByCountries />
-      </Grid>
-      <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-        <ProjectStatus />
-      </Grid>
-      <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-        <ActiveProjects />
-      </Grid>
-      <Grid size={{ xs: 12, md: 6 }}>
-        <LastTransaction serverMode={serverMode} />
-      </Grid>
-      <Grid size={{ xs: 12, md: 6 }}>
-        <ActivityTimeline />
+      <Grid size={{ xs: 12, md: 6, lg: 6 }}>
+        <PopularProducts />
       </Grid>
     </Grid>
   )

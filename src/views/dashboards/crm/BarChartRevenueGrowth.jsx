@@ -15,6 +15,7 @@ const AppReactApexCharts = dynamic(() => import('@/libs/styles/AppReactApexChart
 const series = [{ data: [32, 52, 72, 94, 116, 94, 72] }]
 
 const BarChartRevenueGrowth = () => {
+
   // Hook
   const theme = useTheme()
 
@@ -118,11 +119,13 @@ const BarChartRevenueGrowth = () => {
             <Typography variant='h5'>Revenue Growth</Typography>
             <Typography>Weekly Report</Typography>
           </div>
+
           <div className='flex flex-col gap-y-2 items-start'>
             <Typography variant='h3'>$4,673</Typography>
-            <Chip variant='tonal' size='small' color='success' label='+15.2%' />
+            {/* <Chip variant='tonal' size='small' color='success' label='+15.2%' /> */}
           </div>
         </div>
+
         <AppReactApexCharts type='bar' width={170} height={172} series={series} options={options} />
       </CardContent>
     </Card>

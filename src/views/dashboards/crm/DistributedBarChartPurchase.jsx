@@ -16,7 +16,7 @@ const AppReactApexCharts = dynamic(() => import('@/libs/styles/AppReactApexChart
 // Vars
 const series = [{ data: [77, 55, 23, 43, 77, 55, 89] }]
 
-const DistributedBarChartOrder = () => {
+const DistributedBarChartPurchase = () => {
   // Hooks
   const theme = useTheme()
 
@@ -104,16 +104,13 @@ const DistributedBarChartOrder = () => {
   }
 
   return (
-    <Card>
-      <CardHeader title='Order' subheader='Last Week' className='pbe-0' />
+    <Card className='min-h-[220px]'>
+      <CardHeader title='Total Purchase' subheader='Last Week' className='pbe-0' />
       <CardContent className='flex flex-col'>
         <AppReactApexCharts type='bar' height={84} width='100%' options={options} series={series} />
         <div className='flex items-center justify-between flex-wrap gap-x-4 gap-y-0.5'>
           <Typography variant='h4' color='text.primary'>
             124k
-          </Typography>
-          <Typography variant='body2' color='success.main'>
-            +12.6%
           </Typography>
         </div>
       </CardContent>
@@ -121,4 +118,4 @@ const DistributedBarChartOrder = () => {
   )
 }
 
-export default DistributedBarChartOrder
+export default DistributedBarChartPurchase

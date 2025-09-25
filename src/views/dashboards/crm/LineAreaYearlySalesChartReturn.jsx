@@ -16,12 +16,12 @@ const AppReactApexCharts = dynamic(() => import('@/libs/styles/AppReactApexChart
 // Vars
 const series = [{ data: [40, 10, 65, 45] }]
 
-const LineAreaYearlySalesChart = () => {
+const LineAreaYearlySalesChartReturn = () => {
   // Hooks
   const theme = useTheme()
 
   // Vars
-  const successColor = theme.palette.success.main
+  const successColor = 'red'
 
   const options = {
     chart: {
@@ -59,7 +59,7 @@ const LineAreaYearlySalesChart = () => {
             {
               opacity: 0,
               offset: 100,
-              color: 'var(--mui-palette-background-paper)'
+              color: successColor
             }
           ]
         ]
@@ -83,20 +83,17 @@ const LineAreaYearlySalesChart = () => {
 
   return (
     <Card className='min-h-[220px]'>
-      <CardHeader title='Total Sales' subheader='Last Year' className='pbe-0' />
+      <CardHeader title='Sales Return' subheader='Last Year' className='pbe-0' />
       <AppReactApexCharts type='area' height={84} width='100%' options={options} series={series} />
       <CardContent className='flex flex-col pbs-0'>
         <div className='flex items-center justify-between flex-wrap gap-x-4 gap-y-0.5'>
           <Typography variant='h4' color='text.primary'>
-            175k
+            32k
           </Typography>
-          {/* <Typography variant='body2' color='error.main'>
-            -16.2%
-          </Typography> */}
         </div>
       </CardContent>
     </Card>
   )
 }
 
-export default LineAreaYearlySalesChart
+export default LineAreaYearlySalesChartReturn
