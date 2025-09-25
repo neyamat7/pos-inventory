@@ -69,7 +69,8 @@ const VerticalMenu = ({ scrollMenu }) => {
         <SubMenu
           label='Products'
           icon={<i className='tabler-smart-home' />}
-          suffix={<CustomChip label='3' size='small' color='error' round='true' />}
+
+          // suffix={<CustomChip label='3' size='small' color='error' round='true' />}
         >
           <MenuItem href='/apps/products/list'>All Products</MenuItem>
           <MenuItem href='/apps/products/add'>Add Product</MenuItem>
@@ -154,6 +155,8 @@ const VerticalMenu = ({ scrollMenu }) => {
           <MenuItem href='/apps/reports/profitLoss'>Profit & Loss</MenuItem>
           <MenuItem href='/apps/reports/purchase'>Purchase Report</MenuItem>
           <MenuItem href='/apps/reports/sales'>Sales Report</MenuItem>
+          <MenuItem href='/apps/reports/suppliers'>Suppliers Report</MenuItem>
+          <MenuItem href='/apps/reports/customers'>Customers Report</MenuItem>
           <MenuItem href='/apps/reports/activityLog'>Activity Log</MenuItem>
         </SubMenu>
       </Menu>

@@ -23,14 +23,14 @@ const Value = styled(Typography)(({ theme }) => ({
   fontSize: '1rem'
 }))
 
-const ViewPurchaseModal = ({ open, handleClose, data }) => {
+const ViewSupplierModal = ({ open, handleClose, data }) => {
   if (!data) return null
 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth='md'>
       <DialogTitle>
         <Typography variant='h6' component='span' fontWeight={600}>
-          Purchase Details
+          Sales Details
         </Typography>
       </DialogTitle>
 
@@ -98,4 +98,4 @@ const ViewPurchaseModal = ({ open, handleClose, data }) => {
   )
 }
 
-export default ViewPurchaseModal
+export default ViewSupplierModal
