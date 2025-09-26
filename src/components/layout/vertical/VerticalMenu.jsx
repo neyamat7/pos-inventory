@@ -1,5 +1,6 @@
 // MUI Imports
 import { useTheme } from '@mui/material/styles'
+import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline'
 
 // Third-party Imports
 import PerfectScrollbar from 'react-perfect-scrollbar'
@@ -58,17 +59,17 @@ const VerticalMenu = ({ scrollMenu }) => {
         renderExpandedMenuItemIcon={{ icon: <i className='tabler-circle text-xs' /> }}
         menuSectionStyles={menuSectionStyles(verticalNavOptions, theme)}
       >
-        <MenuItem href='/dashboard' icon={<i className='tabler-smart-home' />}>
+        <MenuItem href='/dashboard' icon={<i className='tabler-layout-dashboard' />}>
           Dashboard
         </MenuItem>
 
-        <MenuItem href='/apps/users' icon={<i className='tabler-smart-home' />}>
+        <MenuItem href='/apps/users' icon={<i className='tabler-users' />}>
           Users
         </MenuItem>
 
         <SubMenu
           label='Products'
-          icon={<i className='tabler-smart-home' />}
+          icon={<i className='tabler-box' />}
 
           // suffix={<CustomChip label='3' size='small' color='error' round='true' />}
         >
@@ -77,20 +78,20 @@ const VerticalMenu = ({ scrollMenu }) => {
           <MenuItem href='/apps/products/category'>Category</MenuItem>
         </SubMenu>
 
-        <SubMenu label='Stock List' icon={<i className='tabler-smart-home' />}>
+        <SubMenu label='Stock List' icon={<i className='tabler-packages' />}>
           <MenuItem href='/apps/stockList/allStock'>All Stock</MenuItem>
           <MenuItem href='/apps/stockList/lowStock'>Low Stock</MenuItem>
           <MenuItem href='/apps/stockList/expiredProducts'>Expired Products</MenuItem>
         </SubMenu>
 
-        <MenuItem href='/apps/stockTransfers' icon={<i className='tabler-smart-home' />}>
+        <MenuItem href='/apps/stockTransfers' icon={<i className='tabler-truck' />}>
           Stock Transfers
         </MenuItem>
-        <MenuItem href='/apps/stockAdjustments' icon={<i className='tabler-smart-home' />}>
+        <MenuItem href='/apps/stockAdjustments' icon={<i className='tabler-adjustments' />}>
           Stock Adjustments
         </MenuItem>
 
-        <SubMenu label='Customers' icon={<i className='tabler-smart-home' />}>
+        <SubMenu label='Customers' icon={<i className='tabler-user-circle' />}>
           <MenuItem href='/apps/customers/list'>All Customers</MenuItem>
           <MenuItem
             href={`/apps/customers/details/${id}`}
@@ -102,7 +103,7 @@ const VerticalMenu = ({ scrollMenu }) => {
           </MenuItem>
         </SubMenu>
 
-        <SubMenu label='Suppliers' icon={<i className='tabler-smart-home' />}>
+        <SubMenu label='Suppliers' icon={<i className='tabler-building-store' />}>
           <MenuItem href='/apps/suppliers/list' icon={<i className='tabler-smart-home' />}>
             All Suppliers
           </MenuItem>
@@ -118,40 +119,40 @@ const VerticalMenu = ({ scrollMenu }) => {
           </MenuItem>
         </SubMenu>
 
-        <SubMenu label='Purchase' icon={<i className='tabler-smart-home' />}>
+        <SubMenu label='Purchase' icon={<i className='tabler-shopping-bag' />}>
           <MenuItem href='/apps/purchase/add'>Add Purchase</MenuItem>
           <MenuItem href='/apps/purchase/list'>Purchase List</MenuItem>
           <MenuItem href='/apps/purchase/return'>Purchase Return</MenuItem>
         </SubMenu>
 
-        <SubMenu label='Sales' icon={<i className='tabler-smart-home' />}>
+        <SubMenu label='Sales' icon={<i className='tabler-cash' />}>
           <MenuItem href='/apps/sales/pos'>POS</MenuItem>
           <MenuItem href='/apps/sales/list'>Sales List</MenuItem>
           <MenuItem href='/apps/sales/return'>Sales Return</MenuItem>
         </SubMenu>
 
-        <MenuItem href='/apps/branches' icon={<i className='tabler-smart-home' />}>
+        <MenuItem href='/apps/branches' icon={<i className='tabler-hierarchy' />}>
           Branches
         </MenuItem>
 
-        <MenuItem href='/apps/dueList' icon={<i className='tabler-smart-home' />}>
+        <MenuItem href='/apps/dueList' icon={<i className='tabler-receipt' />}>
           Due List
         </MenuItem>
 
-        <MenuItem href='/apps/expenses/list' icon={<i className='tabler-smart-home' />}>
+        <MenuItem href='/apps/expenses/list' icon={<i className='tabler-wallet' />}>
           Expenses
         </MenuItem>
 
-        <MenuItem href='/apps/income' icon={<i className='tabler-smart-home' />}>
+        <MenuItem href='/apps/income' icon={<i className='tabler-currency-taka' />}>
           Income
         </MenuItem>
 
-        <SubMenu label='Accounts' icon={<i className='tabler-smart-home' />}>
+        <SubMenu label='Accounts' icon={<i className='tabler-credit-card' />}>
           <MenuItem href='/apps/accounts/list'>List Account</MenuItem>
           <MenuItem href='/apps/accounts/paymentReport'>Payment Account Report</MenuItem>
         </SubMenu>
 
-        <SubMenu label='Reports' icon={<i className='tabler-smart-home' />}>
+        <SubMenu label='Reports' icon={<i className='tabler-chart-bar' />}>
           <MenuItem href='/apps/reports/profitLoss'>Profit & Loss</MenuItem>
           <MenuItem href='/apps/reports/purchase'>Purchase Report</MenuItem>
           <MenuItem href='/apps/reports/sales'>Sales Report</MenuItem>
