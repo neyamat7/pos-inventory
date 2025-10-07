@@ -11,7 +11,7 @@ import { useTheme } from '@mui/material/styles'
 
 // Styled Component Imports
 const AppReactApexCharts = dynamic(() => import('@/libs/styles/AppReactApexCharts'))
-const series = [32, 41, 41, 70]
+const series = [{ name: 'Revenue', data: [0, 0, 0] }]
 
 const BarChartRevenueGrowth = () => {
   // Hook

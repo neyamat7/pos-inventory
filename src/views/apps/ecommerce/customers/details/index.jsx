@@ -9,21 +9,8 @@ import CustomerDetailsHeader from './CustomerDetailsHeader'
 import CustomerLeftOverview from './customer-left-overview'
 import CustomerRight from './customer-right'
 
+// Dynamically import OverviewTab
 const OverViewTab = dynamic(() => import('@views/apps/ecommerce/customers/details/customer-right/overview'))
-const SecurityTab = dynamic(() => import('@views/apps/ecommerce/customers/details/customer-right/security'))
-const NotificationsTab = dynamic(() => import('@views/apps/ecommerce/customers/details/customer-right/notification'))
-
-const AddressBillingTab = dynamic(
-  () => import('@views/apps/ecommerce/customers/details/customer-right/address-billing')
-)
-
-// Vars
-const tabContentList = (customerId) => ({
-  overview: <OverViewTab customerId={customerId} />,
-  security: <SecurityTab />,
-  addressBilling: <AddressBillingTab />,
-  notifications: <NotificationsTab />
-})
 
 const CustomerDetails = ({ customerData, customerId }) => {
   console.log('cus id', customerId)
@@ -37,7 +24,10 @@ const CustomerDetails = ({ customerData, customerId }) => {
         <CustomerLeftOverview customerData={customerData} />
       </Grid>
       <Grid size={{ xs: 12, md: 8 }}>
-        <CustomerRight tabContentList={tabContentList(customerId)} />
+        {/* Directly render overview content */}
+        <CustomerRight>
+          <OverViewTab customerId={customerId} />
+        </CustomerRight>
       </Grid>
     </Grid>
   )

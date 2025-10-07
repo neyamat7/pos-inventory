@@ -20,7 +20,16 @@ const AppReactApexCharts = dynamic(() => import('@/libs/styles/AppReactApexChart
 
 const CardStatsWithAreaChart = props => {
   // Props
-  const { stats, title, avatarIcon, chartSeries, avatarSize, chartColor = 'primary', avatarColor, avatarSkin } = props
+  const {
+    stats,
+    title,
+    avatarIcon,
+    chartSeries = [{ name: 'Revenue', data: [0, 0, 0] }],
+    avatarSize,
+    chartColor = 'primary',
+    avatarColor,
+    avatarSkin
+  } = props
 
   // Hook
   const theme = useTheme()

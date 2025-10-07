@@ -168,7 +168,7 @@ const CustomersListTable = ({ customerReportData = [] }) => {
   return (
     <>
       <Card>
-        <h1 className='mt-3 ml-4 text-3xl font-semibold'>Suppliers Report</h1>
+        <h1 className='mt-3 ml-4 text-3xl font-semibold'>Customer Report</h1>
         <CardContent className='flex justify-between max-sm:flex-col sm:items-center gap-4'>
           <DebouncedInput
             value={globalFilter ?? ''}

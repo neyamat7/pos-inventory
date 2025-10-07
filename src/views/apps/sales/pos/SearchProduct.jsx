@@ -13,7 +13,7 @@ const SearchProduct = ({
   setBrandSearch
 }) => {
   return (
-    <div className='flex flex-col gap-3 items-center space-x-2 w-1/3 mt-6 lg:mt-0'>
+    <div className='flex flex-col sm:flex-row gap-3 items-center space-x-2 w-1/3 mt-6 lg:mt-0'>
       <div className='flex'>
         <input
           type='text'
@@ -32,13 +32,6 @@ const SearchProduct = ({
       >
         Category
       </button>
-
-      {/* <button
-        onClick={() => setBrandModalOpen(true)}
-        className='px-4 py-3 h-full bg-[#7367f0] text-white rounded-lg hover:bg-[#5649de]'
-      >
-        Brand
-      </button> */}
     </div>
   )
 }

@@ -7,6 +7,8 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 
+import { useForm } from 'react-hook-form'
+
 // MUI Imports
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -33,6 +35,8 @@ import {
 } from '@tanstack/react-table'
 
 // Component Imports
+import Swal from 'sweetalert2'
+
 import AddExpenseDrawer from './AddExpenseDrawer'
 import CustomAvatar from '@core/components/mui/Avatar'
 import CustomTextField from '@core/components/mui/TextField'
@@ -299,37 +303,110 @@ const ExpenseListTable = ({ expenseData }) => {
 
 export default ExpenseListTable
 
+// Updated ActionMenu
 const ActionMenu = ({ row, setData }) => {
   const [open, setOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+
+  // React Hook Form setup
+  const { register, handleSubmit, reset } = useForm({
+    defaultValues: row.original
+  })
+
+  // Handle save
+  const onSubmit = values => {
+    setData(prev => prev.map(item => (item.sl === row.original.sl ? { ...item, ...values } : item)))
+    setEditOpen(false)
+    setOpen(false)
+  }
+
+  // Open modal & reset with current data
+  const handleEdit = () => {
+    reset(row.original)
+    setEditOpen(true)
+    setOpen(false)
+  }
 
   return (
     <div className='relative'>
       {/* 3-dot trigger */}
-      <button onClick={() => setOpen(prev => !prev)} className='p-2 rounded hover:bg-gray-100'>
+      <button onClick={() => setOpen(prev => !prev)} className='p-2 rounded hover:bg-gray-100 transition'>
         ⋮
       </button>
 
-      {/* Dropdown */}
+      {/* Dropdown Menu */}
       {open && (
-        <div className='absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-10'>
-          <button
-            onClick={() => {
-              alert(`Editing ${row.original.referenceNumber}`)
-              setOpen(false)
-            }}
-            className='flex items-center w-full px-3 py-2 text-sm hover:bg-gray-100'
-          >
+        <div className='absolute right-0 mt-2 w-36 bg-white border rounded shadow-md z-10'>
+          <button onClick={handleEdit} className='flex items-center w-full px-3 py-2 text-sm hover:bg-gray-100'>
             ✏️ Edit
           </button>
+
           <button
-            onClick={() => {
-              setData(prev => prev.filter(item => item.sl !== row.original.sl))
+            onClick={async () => {
+              Swal.fire({
+                title: 'Are you sure?',
+                text: `You are about to delete expense ${row.original.referenceNumber}. This action cannot be undone.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+              }).then(result => {
+                if (result.isConfirmed) {
+                  setData(prev => prev.filter(item => item.sl !== row.original.sl))
+                  Swal.fire('Deleted!', `Expense ${row.original.referenceNumber} has been removed.`, 'success')
+                }
+              })
               setOpen(false)
             }}
             className='flex items-center w-full px-3 py-2 text-sm hover:bg-gray-100 text-red-500'
           >
             🗑 Delete
           </button>
+        </div>
+      )}
+
+      {/* ✅ Edit Modal */}
+      {editOpen && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4'>
+          <div className='bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6'>
+            <Typography variant='h6' className='mb-4 font-semibold text-gray-900'>
+              Edit Expense — <span className='text-primary'>{row.original.referenceNumber}</span>
+            </Typography>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+              <div className='grid grid-cols-2 gap-4'>
+                <CustomTextField label='Amount' type='number' {...register('amount')} fullWidth />
+                <CustomTextField label='Category' {...register('category')} fullWidth />
+              </div>
+
+              <div className='grid grid-cols-2 gap-4'>
+                <CustomTextField label='Expense For' {...register('expenseFor')} fullWidth />
+                <CustomTextField label='Payment Type' {...register('paymentType')} fullWidth />
+              </div>
+
+              <div className='grid grid-cols-2 gap-4'>
+                <CustomTextField label='Reference Number' {...register('referenceNumber')} fullWidth />
+                <CustomTextField label='Expense Date' type='date' {...register('expenseDate')} fullWidth />
+              </div>
+
+              {/* Actions */}
+              <div className='flex justify-end gap-3 pt-6'>
+                <Button
+                  variant='outlined'
+                  color='inherit'
+                  onClick={() => setEditOpen(false)}
+                  className='px-4 py-2 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100 transition'
+                >
+                  Cancel
+                </Button>
+                <Button variant='contained' color='primary' className='px-5 py-2 rounded-lg shadow-md' type='submit'>
+                  Save Changes
+                </Button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

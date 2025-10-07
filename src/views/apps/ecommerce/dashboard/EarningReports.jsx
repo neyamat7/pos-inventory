@@ -16,7 +16,7 @@ import CustomAvatar from '@core/components/mui/Avatar'
 const AppReactApexCharts = dynamic(() => import('@/libs/styles/AppReactApexCharts'))
 
 // Vars
-const series = [{ data: [32, 98, 61, 41, 88, 47, 71] }]
+const series = [{ name: 'Revenue', data: [0, 0, 0] }]
 
 const data = [
   {

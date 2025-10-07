@@ -38,8 +38,8 @@ const CustomerStats = ({ heading = '', value = '', subHeading = '', description 
                   <Typography>{subHeading}</Typography>
                 </div>
                 <div className='flex items-center gap-1'>
-                  <Typography color='#675cd8'>Type One: {crate.type1.qty},</Typography>
-                  <Typography color='#675cd8'>Type Two: {crate.type2.qty}</Typography>
+                  <Typography color='#675cd8'>Type One: {crate.type_one.qty},</Typography>
+                  <Typography color='#675cd8'>Type Two: {crate.type_two.qty}</Typography>
                 </div>
               </div>
             ) : (

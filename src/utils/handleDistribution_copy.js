@@ -6,44 +6,41 @@ const calculateExpenseValue = (amount, type, totalItems) => {
   return Number(Number(amount).toFixed(2))
 }
 
-export const handleSalesDistributionExpense = (data, cartProducts, setCartProducts, customers) => {
-  // console.log('Form data:', data)
-
-  // calculate expense values
+export const handleDistributionExpense = (data, cartProducts, setCartProducts, suppliersData = []) => {
+  // calculate distributed expense values
   const transportationValue = calculateExpenseValue(
     data.transportationAmount,
     data.transportationType,
     cartProducts.length
   )
 
+  // console.log('transportationValue', cartProducts)
+
   const moshjidValue = calculateExpenseValue(data.moshjidAmount, data.moshjidType, cartProducts.length)
-
   const vanVaraValue = calculateExpenseValue(data.vanVaraAmount, data.vanVaraType, cartProducts.length)
-
   const tradingPostValue = calculateExpenseValue(data.tradingPostAmount, data.tradingPostType, cartProducts.length)
-
   const labourValue = calculateExpenseValue(data.labourAmount, data.labourType, cartProducts.length)
 
-  // ✅ update cartProducts with distributed expenses
   setCartProducts(prevCart =>
     prevCart.map(item => {
       const expenses = transportationValue + moshjidValue + vanVaraValue + tradingPostValue + labourValue
 
       // --- crate price from supplier data ---
-      const customer = customers?.find(s => s.sl === item.customer_id)
+      const supplier = suppliersData?.find(s => s.sl === item.supplier_id)
 
-      // --- calculate crate prices for both types ---
-      const customerCrate = customer?.crate || {}
-      const typeOnePrice = customerCrate.type_one?.price || 0
-      const typeTwoPrice = customerCrate.type_two?.price || 0
+      const crateKey = item.crateType
 
-      const typeOneQty = item.crate?.type_one || 0
-      const typeTwoQty = item.crate?.type_two || 0
+      // console.log('item', item)
+      // console.log('crateKey', crateKey)
 
-      const cratePrice = Number((typeOneQty * typeOnePrice + typeTwoQty * typeTwoPrice).toFixed(2))
+      const crateUnitPrice = crateKey && supplier?.crate?.[crateKey]?.price ? Number(supplier.crate[crateKey].price) : 0
+
+      // console.log('crateUnitPrice', crateUnitPrice)
+      const crateQty = Number(item.crate) || 0
+      const cratePrice = Number((crateUnitPrice * crateQty).toFixed(2))
 
       // --- base product total before commission ---
-      const productBase = Number(item.cost || 0) * (typeOneQty + typeTwoQty) + expenses
+      const productBase = Number(item.cost) * Number(item.crate) + expenses
 
       const isCommissioned =
         (item.product_name || '').toLowerCase().includes('mango') ||
@@ -52,18 +49,21 @@ export const handleSalesDistributionExpense = (data, cartProducts, setCartProduc
       const commissionRate = isCommissioned ? item.commission_rate / 100 || 0.1 : 0
       const commissionAmount = Number((productBase * commissionRate).toFixed(2))
 
+      // console.log('commissionAmount', commissionAmount)
+
+      // console.log('producbase', productBase)
+
       // Apply commission (10%) to productBase ONLY, then add cratePrice without commission
       const productAfterCommission = isCommissioned
-        ? Number((productBase * (1 + commissionRate)).toFixed(2))
+        ? Number((productBase * (1 - commissionRate)).toFixed(2))
         : productBase
 
-      console.log('base', productBase)
-      console.log('commission', commissionAmount)
-      console.log('commissionRate', commissionRate)
-
-      console.log('productAfterCommission', productAfterCommission)
+      // console.log('productAfterCommission', productAfterCommission)
 
       const total = Number((productAfterCommission + cratePrice).toFixed(2))
+
+      // console.log('total', total)
+      // console.log('crateprice', cratePrice)
 
       return {
         ...item,
@@ -73,9 +73,10 @@ export const handleSalesDistributionExpense = (data, cartProducts, setCartProduc
         trading_post: tradingPostValue,
         labour: labourValue,
         expenses: Number(expenses.toFixed(2)),
+
         commission: commissionAmount,
         cratePrice,
-        total: total
+        total
       }
     })
   )

@@ -80,6 +80,13 @@ const CustomerListTable = ({ customerData }) => {
   const [data, setData] = useState(...[customerData]) // keep your pattern
   const [globalFilter, setGlobalFilter] = useState('')
 
+  // For modals
+  const [openBalanceModal, setOpenBalanceModal] = useState(false)
+  const [openCrateModal, setOpenCrateModal] = useState(false)
+  const [selectedCustomer, setSelectedCustomer] = useState(null)
+  const [newBalance, setNewBalance] = useState('')
+  const [crateForm, setCrateForm] = useState({})
+
   // Hooks
   const { lang: locale } = useParams()
 
@@ -200,16 +207,59 @@ const CustomerListTable = ({ customerData }) => {
               iconClassName='text-textSecondary'
               options={[
                 {
-                  text: 'View',
-                  icon: 'tabler-eye',
-                  href: `/people/customers/${row.original.sl}`,
-                  linkProps: { className: 'flex items-center gap-2 w-full px-2 py-1' }
+                  text: 'Add Balance',
+                  icon: 'tabler-coin',
+                  menuItemProps: {
+                    onClick: () => {
+                      setSelectedCustomer(row.original)
+                      setNewBalance('')
+                      setOpenBalanceModal(true)
+                    },
+                    className: 'flex items-center'
+                  }
+                },
+                {
+                  text: 'Add Crate',
+                  icon: 'tabler-box',
+                  menuItemProps: {
+                    onClick: () => {
+                      setSelectedCustomer(row.original)
+                      const crateObj = row.original.crate || {}
+
+                      const form = Object.keys(crateObj).reduce((acc, key) => {
+                        acc[key] = { qty: crateObj[key].qty, price: crateObj[key].price }
+
+                        return acc
+                      }, {})
+
+                      setCrateForm(form)
+                      setOpenCrateModal(true)
+                    },
+                    className: 'flex items-center'
+                  }
                 },
                 {
                   text: 'Delete',
                   icon: 'tabler-trash',
                   menuItemProps: {
-                    onClick: () => setData(prev => prev.filter(item => item.sl !== row.original.sl)),
+                    onClick: async () => {
+                      const Swal = (await import('sweetalert2')).default
+
+                      Swal.fire({
+                        title: 'Are you sure?',
+                        text: `You are about to delete ${row.original.name}. This action cannot be undone.`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Yes, delete it!'
+                      }).then(result => {
+                        if (result.isConfirmed) {
+                          setData(prev => prev.filter(item => item.sl !== row.original.sl))
+                          Swal.fire('Deleted!', `${row.original.name} has been removed.`, 'success')
+                        }
+                      })
+                    },
                     className: 'flex items-center'
                   }
                 }
@@ -346,6 +396,146 @@ const CustomerListTable = ({ customerData }) => {
         setData={setData}
         customerData={data}
       />
+
+      {/* Add Balance Modal */}
+      {openBalanceModal && selectedCustomer && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4'>
+          <div className='w-full max-w-md bg-white text-gray-800 rounded-2xl shadow-2xl p-6 transition-all duration-300'>
+            <Typography variant='h6' className='mb-4 font-semibold text-gray-900'>
+              Add Balance for <span className='text-primary'>{selectedCustomer.name}</span>
+            </Typography>
+
+            <Typography variant='body2' className='text-gray-600 mb-3'>
+              Enter the amount you want to add to this customer&aposs balance.
+            </Typography>
+
+            <CustomTextField
+              fullWidth
+              label='Amount (৳)'
+              type='number'
+              value={newBalance}
+              onChange={e => setNewBalance(e.target.value)}
+              InputProps={{
+                style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
+              }}
+              sx={{
+                '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
+                '& input': { color: '#111827' },
+                '& label': { color: '#6b7280' }
+              }}
+            />
+
+            <div className='flex justify-end gap-3 mt-6'>
+              <Button
+                variant='outlined'
+                onClick={() => setOpenBalanceModal(false)}
+                className='px-4 py-2 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100 transition'
+              >
+                Cancel
+              </Button>
+              <Button
+                variant='contained'
+                color='primary'
+                className='px-5 py-2 rounded-lg shadow-md'
+                onClick={() => {
+                  if (!newBalance) return
+                  setData(prev =>
+                    prev.map(item =>
+                      item.sl === selectedCustomer.sl ? { ...item, balance: item.balance + Number(newBalance) } : item
+                    )
+                  )
+                  setOpenBalanceModal(false)
+                }}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Crate Modal */}
+      {openCrateModal && selectedCustomer && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4'>
+          <div className='w-full max-w-lg bg-white text-gray-800 rounded-2xl shadow-2xl p-6 transition-all duration-300'>
+            <Typography variant='h6' className='mb-4 font-semibold text-gray-900'>
+              Update Crates for <span className='text-primary'>{selectedCustomer.name}</span>
+            </Typography>
+
+            <Typography variant='body2' className='text-gray-600 mb-3'>
+              You can adjust the quantity and price for each crate type.
+            </Typography>
+
+            <div className='space-y-4 max-h-[60vh] overflow-y-auto pr-2'>
+              {Object.entries(crateForm).map(([key, val]) => (
+                <div key={key} className='grid grid-cols-2 gap-4 p-3 rounded-lg bg-gray-50 border border-gray-200'>
+                  <CustomTextField
+                    label={`${key.replace('_', ' ')} Qty`}
+                    type='number'
+                    value={val.qty}
+                    onChange={e =>
+                      setCrateForm(prev => ({
+                        ...prev,
+                        [key]: { ...prev[key], qty: Number(e.target.value) }
+                      }))
+                    }
+                    InputProps={{
+                      style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
+                    }}
+                    sx={{
+                      '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
+                      '& input': { color: '#111827' },
+                      '& label': { color: '#6b7280' }
+                    }}
+                  />
+                  <CustomTextField
+                    label={`${key.replace('_', ' ')} Price`}
+                    type='number'
+                    value={val.price}
+                    onChange={e =>
+                      setCrateForm(prev => ({
+                        ...prev,
+                        [key]: { ...prev[key], price: Number(e.target.value) }
+                      }))
+                    }
+                    InputProps={{
+                      style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
+                    }}
+                    sx={{
+                      '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
+                      '& input': { color: '#111827' },
+                      '& label': { color: '#6b7280' }
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className='flex justify-end gap-3 mt-6'>
+              <Button
+                variant='outlined'
+                onClick={() => setOpenCrateModal(false)}
+                className='px-4 py-2 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100 transition'
+              >
+                Cancel
+              </Button>
+              <Button
+                variant='contained'
+                color='primary'
+                className='px-5 py-2 rounded-lg shadow-md'
+                onClick={() => {
+                  setData(prev =>
+                    prev.map(item => (item.sl === selectedCustomer.sl ? { ...item, crate: crateForm } : item))
+                  )
+                  setOpenCrateModal(false)
+                }}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

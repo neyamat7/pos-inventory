@@ -6,7 +6,7 @@ import Link from 'next/link'
 
 import { useForm } from 'react-hook-form'
 
-import { FaTimes, FaPlus, FaMinus, FaEdit } from 'react-icons/fa'
+import { FaTimes, FaEdit } from 'react-icons/fa'
 
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table'
 
@@ -15,11 +15,10 @@ import SearchProduct from './SearchProduct'
 
 import { handleSalesDistributionExpense } from '@/utils/handleSalesDistribution'
 import CategoryModal from '@/components/layout/shared/CategoryModal'
-import BrandModal from '@/components/layout/shared/BrandModal'
 import { categories, brands } from '@/data/productsCategory/productsCategory'
 import { customers } from '@/data/customerData/customerData'
 import { filteredProductsData } from '@/utils/filteredProductsData'
-import { handleBoxCount } from '@/utils/handleBoxCount'
+import { handleCrateCount } from '@/utils/handleCrateCount'
 import { calculateTotalDue } from '@/utils/calculateTotalDue'
 import { usePaymentCalculation } from '@/utils/usePaymentCalculation'
 import { showAlert } from '@/utils/showAlert'
@@ -94,8 +93,10 @@ export default function POSSystem({ productsData = [] }) {
         product_name: product.name,
         customer_id: selectedCustomer.sl,
         customer_name: selectedCustomer.name,
-        crate: 1,
-        crateType: 'type1',
+        crate: {
+          type_one: 0,
+          type_two: 0
+        },
         cratePrice: 0,
         transportation: 0,
         moshjid: 0,
@@ -107,7 +108,7 @@ export default function POSSystem({ productsData = [] }) {
         trading_post: 0,
         labour: 0,
         expenses: 0,
-        received_date: date,
+        selling_date: date,
         expiry_date: ''
       }
 
@@ -207,59 +208,45 @@ export default function POSSystem({ productsData = [] }) {
         }
       },
       {
-        accessorKey: 'crate',
-        header: 'Crate',
+        accessorKey: 'crate_type_one',
+        header: 'Crate Type 1',
         cell: ({ row }) => {
           const product = row.original
 
           return (
-            <div className='flex justify-between gap-2 items-center'>
-              <button
-                onClick={() => handleBoxCount(setCartProducts, product.product_id, product.customer_id, false)}
-                className='text-red-500 bg-transparent border-none outline-none h-full w-full flex items-center justify-center'
-              >
-                <FaMinus />
-              </button>
+            <input
+              type='number'
+              min='0'
+              value={product.crate?.type_one ?? 0}
+              onChange={e => {
+                const value = parseInt(e.target.value) || 0
 
-              <span>{product.crate}</span>
-              <button
-                onClick={() => handleBoxCount(setCartProducts, product.product_id, product.customer_id, true)}
-                className='text-green-500 bg-transparent border-none outline-none w-full h-full flex items-center justify-center'
-              >
-                <FaPlus />
-              </button>
-            </div>
+                handleCrateCount(setCartProducts, product.product_id, product.customer_id, 'type_one', value)
+              }}
+              className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
+            />
           )
         }
       },
+
       {
-        accessorKey: 'crateType',
-        header: 'Crate Type',
+        accessorKey: 'crate_type_two',
+        header: 'Crate Type 2',
         cell: ({ row }) => {
           const product = row.original
 
           return (
-            <select
-              value={product.crateType}
+            <input
+              type='number'
+              min='0'
+              value={product.crate?.type_two ?? 0}
               onChange={e => {
-                const value = e.target.value
+                const value = parseInt(e.target.value) || 0
 
-                console.log('value', value)
-
-                // update cartProducts state
-                setCartProducts(prev =>
-                  prev.map(item =>
-                    item.product_id === product.product_id && item.customer_id === product.customer_id
-                      ? { ...item, crateType: value }
-                      : item
-                  )
-                )
+                handleCrateCount(setCartProducts, product.product_id, product.customer_id, 'type_two', value)
               }}
-              className='px-2 py-1 border border-gray-300 rounded text-sm outline-none'
-            >
-              <option value='type1'>One</option>
-              <option value='type2'>Two</option>
-            </select>
+              className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
+            />
           )
         }
       },
@@ -373,11 +360,7 @@ export default function POSSystem({ productsData = [] }) {
         }
       }
 
-      acc[key].items.push({
-        product_id: item.product_id,
-        crate: Number(item.crate) || 0,
-        product_name: item.product_name
-      })
+      acc[key].items.push(item)
 
       const itemTotal = Number(item.total) || 0
       const itemCost = (Number(item.cost) || 0) * (Number(item.crate) || 1)
@@ -476,7 +459,10 @@ export default function POSSystem({ productsData = [] }) {
                 {table.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id} className='bg-gray-50'>
                     {headerGroup.headers.map(header => (
-                      <th key={header.id} className='border border-gray-200 px-3 py-2 text-left text-sm font-medium'>
+                      <th
+                        key={header.id}
+                        className='border border-gray-200 px-3 py-2 text-left text-sm font-medium whitespace-nowrap'
+                      >
                         {flexRender(header.column.columnDef.header, header.getContext())}
                       </th>
                     ))}
@@ -487,7 +473,7 @@ export default function POSSystem({ productsData = [] }) {
                 {table.getRowModel().rows.map(row => (
                   <tr key={row.id}>
                     {row.getVisibleCells().map(cell => (
-                      <td key={cell.id} className='border border-gray-200 px-3 py-2'>
+                      <td key={cell.id} className='border border-gray-200 px-3 py-2 whitespace-nowrap'>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </td>
                     ))}
@@ -733,18 +719,38 @@ export default function POSSystem({ productsData = [] }) {
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className='flex space-x-4 mt-8'>
-                <button className='flex-1 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium'>
-                  Cancel
-                </button>
-                <button
-                  type='submit'
-                  className='flex-1 py-3 bg-[#7367f0] text-white rounded-lg hover:bg-[#4e43c5] font-medium'
-                >
-                  Save
-                </button>
-              </div>
+              {/* Purchase Summary Section */}
+              {cartProducts.length > 0 && (
+                <div className=''>
+                  <div className='bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-xl p-6 shadow-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-10'>
+                    <div className='flex flex-col sm:flex-row sm:gap-10 text-center sm:text-left w-full justify-between'>
+                      <div>
+                        <p className='text-base opacity-80'>Total Products</p>
+                        <h2 className='text-2xl font-bold'>{cartProducts.length}</h2>
+                      </div>
+                      <div>
+                        <p className='text-base opacity-80'>Total Suppliers</p>
+                        <h2 className='text-2xl font-bold'>
+                          {[...new Set(cartProducts.map(p => p.supplier_id))].length}
+                        </h2>
+                      </div>
+                      <div>
+                        <p className='text-base opacity-80'>Total Amount</p>
+                        <h2 className='text-2xl font-bold'>৳ {totalDueAmount}</h2>
+                      </div>
+                    </div>
+
+                    <div className='flex justify-center sm:justify-end w-full sm:w-auto'>
+                      <button
+                        type='submit'
+                        className='bg-white text-indigo-600 font-semibold px-6 py-3 rounded-lg hover:bg-gray-100 transition-all duration-200 w-full sm:w-auto cursor-pointer'
+                      >
+                        Purchase
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </form>
           </div>
         </div>
@@ -768,16 +774,6 @@ export default function POSSystem({ productsData = [] }) {
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
       />
-
-      {/* Brand Modal */}
-      {/* <BrandModal
-        open={brandModalOpen}
-        onClose={() => setBrandModalOpen(false)}
-        searchValue={brandSearch}
-        onSearchChange={e => setBrandSearch(e.target.value)}
-        items={filteredBrands}
-        setSelectedBrand={setSelectedBrand}
-      /> */}
 
       {/* Commission Edit Modal */}
       {commissionModal.open && (

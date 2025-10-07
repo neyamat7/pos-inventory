@@ -25,7 +25,7 @@ export const db = {
       price: 120,
       commision_rate: 7,
       category: 'fruits',
-      images: 'https://i.postimg.cc/TY7hJw1K/banana.jpg',
+      images: 'https://i.postimg.cc/cLd3d3ZF/pexels-jibarofoto-2238309.jpg',
       status: 'active'
     },
     {
@@ -38,22 +38,10 @@ export const db = {
       price: 250,
       commision_rate: 9,
       category: 'fruits',
-      images: 'https://i.postimg.cc/8kS8R0XW/orange.jpg',
+      images: 'https://i.postimg.cc/QdDzsfH4/pexels-quang-nguyen-vinh-222549-2135677.jpg',
       status: 'active'
     },
-    {
-      id: 'p004',
-      sku: 'GRP321',
-      barcode: '4444444444444',
-      name: 'Grapes',
-      description: 'Fresh seedless grapes',
-      variants: [{ option: 'Weight', value: '500g' }],
-      price: 180,
-      commision_rate: 6,
-      category: 'fruits',
-      images: 'https://i.postimg.cc/pdsvSRm0/grapes.jpg',
-      status: 'active'
-    },
+    
     {
       id: 'p005',
       sku: 'MNG654',
@@ -64,22 +52,10 @@ export const db = {
       price: 300,
       commision_rate: 10,
       category: 'fruits',
-      images: 'https://i.postimg.cc/GmD7MSpT/mango.jpg',
+      images: 'https://i.postimg.cc/2yhsJDLj/Mangoes.jpg',
       status: 'active'
     },
-    {
-      id: 'p006',
-      sku: 'PAP987',
-      barcode: '6666666666666',
-      name: 'Papaya',
-      description: 'Ripe papayas rich in nutrients',
-      variants: [{ option: 'Weight', value: '2kg' }],
-      price: 220,
-      commision_rate: 8,
-      category: 'fruits',
-      images: 'https://i.postimg.cc/GhMcnw5h/papaya.jpg',
-      status: 'active'
-    },
+
     {
       id: 'p007',
       sku: 'PNE147',
@@ -90,22 +66,10 @@ export const db = {
       price: 180,
       commision_rate: 7,
       category: 'fruits',
-      images: 'https://i.postimg.cc/Tw0xjV1N/pineapple.jpg',
+      images: 'https://i.postimg.cc/X7phQrt9/pexels-psco-1071882.jpg',
       status: 'active'
     },
-    {
-      id: 'p008',
-      sku: 'STR258',
-      barcode: '8888888888888',
-      name: 'Strawberry',
-      description: 'Fresh strawberries',
-      variants: [{ option: 'Box', value: '500g' }],
-      price: 400,
-      commision_rate: 12,
-      category: 'fruits',
-      images: 'https://i.postimg.cc/W3F2rPHz/strawberry.jpg',
-      status: 'active'
-    },
+
     {
       id: 'p009',
       sku: 'WML369',
@@ -116,46 +80,7 @@ export const db = {
       price: 280,
       commision_rate: 9,
       category: 'fruits',
-      images: 'https://i.postimg.cc/MZxKvc6k/watermelon.jpg',
-      status: 'active'
-    },
-    {
-      id: 'p010',
-      sku: 'CHR741',
-      barcode: '1010101010101',
-      name: 'Cherry',
-      description: 'Sweet cherries',
-      variants: [{ option: 'Box', value: '250g' }],
-      price: 350,
-      commision_rate: 11,
-      category: 'fruits',
-      images: 'https://i.postimg.cc/7Pnt9LtS/cherry.jpg',
-      status: 'active'
-    },
-    {
-      id: 'p011',
-      sku: 'KIW852',
-      barcode: '1212121212121',
-      name: 'Kiwi',
-      description: 'Tangy green kiwis',
-      variants: [{ option: 'Box', value: '6pcs' }],
-      price: 270,
-      commision_rate: 9,
-      category: 'fruits',
-      images: 'https://i.postimg.cc/02gJx6t1/kiwi.jpg',
-      status: 'active'
-    },
-    {
-      id: 'p012',
-      sku: 'POM963',
-      barcode: '1313131313131',
-      name: 'Pomegranate',
-      description: 'Juicy pomegranates',
-      variants: [{ option: 'Weight', value: '1kg' }],
-      price: 320,
-      commision_rate: 10,
-      category: 'fruits',
-      images: 'https://i.postimg.cc/6q1HbqW1/pomegranate.jpg',
+      images: 'https://i.postimg.cc/nrcL64qc/pexels-mahmoud-yahyaoui-27863683.jpg',
       status: 'active'
     }
   ],
@@ -174,7 +99,7 @@ export const db = {
       id: 2,
       name: 'Pineapple',
       price: 90,
-      image: 'https://images.unsplash.com/photo-1600891964599-f61ba0e24092',
+      image: 'https://i.postimg.cc/X7phQrt9/pexels-psco-1071882.jpg',
       category: 'Fruits',
       brand: 'Tropical Fresh',
       commission_rate: 20
@@ -183,7 +108,7 @@ export const db = {
       id: 3,
       name: 'Banana',
       price: 60,
-      image: 'https://images.unsplash.com/photo-1574226516831-e1dff420e43e',
+      image: 'https://i.postimg.cc/cLd3d3ZF/pexels-jibarofoto-2238309.jpg',
       category: 'Fruits',
       brand: 'Nature Organic'
     },
@@ -199,49 +124,18 @@ export const db = {
       id: 5,
       name: 'Orange',
       price: 100,
-      image: 'https://images.unsplash.com/photo-1582515073490-dc9a8c1f7bda',
+      image: 'https://i.postimg.cc/QdDzsfH4/pexels-quang-nguyen-vinh-222549-2135677.jpg',
       category: 'Fruits',
       brand: 'Citrus Co'
     },
-    {
-      id: 6,
-      name: 'Papaya',
-      price: 80,
-      image: 'https://images.unsplash.com/photo-1615485297995-bbd2c4e4d823',
-      category: 'Fruits',
-      brand: 'Fresh Valley'
-    },
-    {
-      id: 7,
-      name: 'Grapes',
-      price: 140,
-      image: 'https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2',
-      category: 'Fruits',
-      brand: 'Vineyard Fresh'
-    },
+
     {
       id: 8,
       name: 'Watermelon',
       price: 200,
-      image: 'https://images.unsplash.com/photo-1627308595120-376e3e6f72f2',
+      image: 'https://i.postimg.cc/nrcL64qc/pexels-mahmoud-yahyaoui-27863683.jpg',
       category: 'Fruits',
       brand: 'Green Fields'
-    },
-    {
-      id: 9,
-      name: 'Mango (Langra)',
-      price: 130,
-      image: 'https://images.unsplash.com/photo-1627308595187-4bfb9f5e4f79',
-      category: 'Fruits',
-      brand: 'Bangla Fresh'
-    },
-    {
-      id: 10,
-      name: 'Pineapple (Honey Gold)',
-      price: 110,
-      image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994',
-      category: 'Fruits',
-      brand: 'Golden Farm'
     },
 
     // Vegetables
@@ -249,7 +143,7 @@ export const db = {
       id: 11,
       name: 'Tomato',
       price: 50,
-      image: 'https://images.unsplash.com/photo-1587049352846-4a222eac4f2a',
+      image: 'https://i.postimg.cc/CL0CK5V4/pexels-rauf-allahverdiyev-561368-1367242.jpg',
       category: 'Vegetables',
       brand: 'Green Fresh'
     },
@@ -257,7 +151,7 @@ export const db = {
       id: 12,
       name: 'Potato',
       price: 40,
-      image: 'https://images.unsplash.com/photo-1607305387299-238c3f2e7c56',
+      image: 'https://i.postimg.cc/Yq7NS0wR/pexels-victorino-2286776.jpg',
       category: 'Vegetables',
       brand: 'Farm Fresh'
     },
@@ -265,249 +159,25 @@ export const db = {
       id: 13,
       name: 'Onion',
       price: 60,
-      image: 'https://images.unsplash.com/photo-1603052875971-024e6a0e0efb',
+      image: 'https://i.postimg.cc/BQ35vbGR/onion-1-kg-product-images-o590003515-p590003515-0-202509221825.webp',
       category: 'Vegetables',
       brand: 'Daily Harvest'
-    },
-    {
-      id: 14,
-      name: 'Cucumber',
-      price: 45,
-      image: 'https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2',
-      category: 'Vegetables',
-      brand: 'Cool Fresh'
-    },
-    {
-      id: 15,
-      name: 'Carrot',
-      price: 55,
-      image: 'https://images.unsplash.com/photo-1606756792951-3f8b8b67d3cf',
-      category: 'Vegetables',
-      brand: 'Organic Garden'
-    },
-    {
-      id: 16,
-      name: 'Spinach',
-      price: 35,
-      image: 'https://images.unsplash.com/photo-1584270354949-1b8fa6e1c2d0',
-      category: 'Vegetables',
-      brand: 'Leafy Fresh'
-    },
-    {
-      id: 17,
-      name: 'Broccoli',
-      price: 90,
-      image: 'https://images.unsplash.com/photo-1582515073305-f27a5a39b9b8',
-      category: 'Vegetables',
-      brand: 'Green Basket'
-    },
-    {
-      id: 18,
-      name: 'Cauliflower',
-      price: 85,
-      image: 'https://images.unsplash.com/photo-1575936123452-b67c3203c357',
-      category: 'Vegetables',
-      brand: 'Farm Choice'
-    },
-    {
-      id: 19,
-      name: 'Capsicum',
-      price: 70,
-      image: 'https://images.unsplash.com/photo-1567303315732-95eb1280c76b',
-      category: 'Vegetables',
-      brand: 'Daily Fresh'
-    },
-    {
-      id: 20,
-      name: 'Brinjal',
-      price: 65,
-      image: 'https://images.unsplash.com/photo-1603052875473-9c9230e650ba',
-      category: 'Vegetables',
-      brand: 'Veggie World'
-    },
-
-    // Snacks
-    {
-      id: 21,
-      name: 'Potato Chips',
-      price: 30,
-      image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc',
-      category: 'Snacks',
-      brand: 'Crispy Co'
-    },
-    {
-      id: 22,
-      name: 'Biscuits',
-      price: 40,
-      image: 'https://images.unsplash.com/photo-1611078489939-7a0a49bfae87',
-      category: 'Snacks',
-      brand: 'Cookie Jar'
-    },
-    {
-      id: 23,
-      name: 'Chocolate Bar',
-      price: 70,
-      image: 'https://images.unsplash.com/photo-1611078489939-7a0a49bfae87',
-      category: 'Snacks',
-      brand: 'Sweet Treats'
-    },
-    {
-      id: 24,
-      name: 'Popcorn',
-      price: 50,
-      image: 'https://images.unsplash.com/photo-1586796679724-b25dc6c22f8d',
-      category: 'Snacks',
-      brand: 'Movie Time'
-    },
-    {
-      id: 25,
-      name: 'Instant Noodles',
-      price: 60,
-      image: 'https://images.unsplash.com/photo-1627308595192-f7c21fdeb00e',
-      category: 'Snacks',
-      brand: 'Quick Meal'
-    },
-
-    // Poultry & Meat
-    {
-      id: 26,
-      name: 'Chicken Breast',
-      price: 220,
-      image: 'https://images.unsplash.com/photo-1617196039163-fd8c4f3fbb67',
-      category: 'Poultry',
-      brand: 'Farm Raised'
-    },
-    {
-      id: 27,
-      name: 'Eggs (Dozen)',
-      price: 120,
-      image: 'https://images.unsplash.com/photo-1608571423904-4e622bea6509',
-      category: 'Poultry',
-      brand: 'Daily Fresh'
-    },
-    {
-      id: 28,
-      name: 'Duck Meat',
-      price: 350,
-      image: 'https://images.unsplash.com/photo-1598515213699-28fdaa1d61e2',
-      category: 'Poultry',
-      brand: 'Organic Farm'
-    },
-    {
-      id: 29,
-      name: 'Beef',
-      price: 600,
-      image: 'https://images.unsplash.com/photo-1606756792951-3f8b8b67d3cf',
-      category: 'Meat',
-      brand: 'Premium Cuts'
-    },
-    {
-      id: 30,
-      name: 'Mutton',
-      price: 750,
-      image: 'https://images.unsplash.com/photo-1598514982103-3c51f9e246d9',
-      category: 'Meat',
-      brand: 'Mountain Farm'
-    },
-
-    // Dairy
-    {
-      id: 31,
-      name: 'Milk (1L)',
-      price: 70,
-      image: 'https://images.unsplash.com/photo-1611078489939-7a0a49bfae87',
-      category: 'Dairy',
-      brand: 'DairyBest'
-    },
-    {
-      id: 32,
-      name: 'Cheese',
-      price: 250,
-      image: 'https://images.unsplash.com/photo-1603052875971-024e6a0e0efb',
-      category: 'Dairy',
-      brand: 'Cheddar Co'
-    },
-    {
-      id: 33,
-      name: 'Butter',
-      price: 180,
-      image: 'https://images.unsplash.com/photo-1627308595120-376e3e6f72f2',
-      category: 'Dairy',
-      brand: 'Golden Spread'
-    },
-    {
-      id: 34,
-      name: 'Yogurt',
-      price: 90,
-      image: 'https://images.unsplash.com/photo-1584270354949-1b8fa6e1c2d0',
-      category: 'Dairy',
-      brand: 'Fresh Dairy'
-    },
-    {
-      id: 35,
-      name: 'Cream',
-      price: 220,
-      image: 'https://images.unsplash.com/photo-1611078489939-7a0a49bfae87',
-      category: 'Dairy',
-      brand: 'Creamy Delight'
-    },
-
-    // Beverages
-    {
-      id: 36,
-      name: 'Orange Juice',
-      price: 110,
-      image: 'https://images.unsplash.com/photo-1577801596887-6b9dfd4a94a0',
-      category: 'Beverages',
-      brand: 'Citrus Fresh'
-    },
-    {
-      id: 37,
-      name: 'Mango Juice',
-      price: 130,
-      image: 'https://images.unsplash.com/photo-1592928304832-9853d5e6f2d1',
-      category: 'Beverages',
-      brand: 'Juice Time'
-    },
-    {
-      id: 38,
-      name: 'Cola Drink',
-      price: 60,
-      image: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62',
-      category: 'Beverages',
-      brand: 'Cool Cola'
-    },
-    {
-      id: 39,
-      name: 'Green Tea',
-      price: 90,
-      image: 'https://images.unsplash.com/photo-1510626176961-4b37d6af1e96',
-      category: 'Beverages',
-      brand: 'Tea Garden'
-    },
-    {
-      id: 40,
-      name: 'Coffee',
-      price: 180,
-      image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93',
-      category: 'Beverages',
-      brand: 'Brewed Fresh'
     },
 
     // Grains & Spices
     {
       id: 41,
-      name: 'Rice (5kg)',
+      name: 'Rice',
       price: 450,
-      image: 'https://images.unsplash.com/photo-1584270354949-1b8fa6e1c2d0',
+      image: 'https://i.postimg.cc/qRjtMJcj/9fd402e1470f3fca485e5fe6b317db58cbea003f951871c1.jpg',
       category: 'Grains',
       brand: 'Rice Valley'
     },
     {
       id: 42,
-      name: 'Wheat Flour (5kg)',
+      name: 'Wheat Flour',
       price: 400,
-      image: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0',
+      image: 'https://i.postimg.cc/k4n6m6Ss/istockphoto-172876049-612x612.jpg',
       category: 'Grains',
       brand: 'Healthy Grain'
     },
@@ -515,65 +185,10 @@ export const db = {
       id: 43,
       name: 'Lentils',
       price: 150,
-      image: 'https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2',
+      image:
+        'https://i.postimg.cc/zB0LXzwK/Lentils-Are-Your-Ticket-to-Quick-and-Hearty-Meals-FT-BLOG0125-83a85aa4ddcf47f4ac0a5a71870a379d.jpg',
       category: 'Grains',
       brand: 'Pulse Fresh'
-    },
-    {
-      id: 44,
-      name: 'Salt',
-      price: 40,
-      image: 'https://images.unsplash.com/photo-1617196039163-fd8c4f3fbb67',
-      category: 'Spices',
-      brand: 'Pure Salt'
-    },
-    {
-      id: 45,
-      name: 'Sugar',
-      price: 80,
-      image: 'https://images.unsplash.com/photo-1584270354949-1b8fa6e1c2d0',
-      category: 'Spices',
-      brand: 'Sweet House'
-    },
-    {
-      id: 46,
-      name: 'Turmeric Powder',
-      price: 90,
-      image: 'https://images.unsplash.com/photo-1592928304832-9853d5e6f2d1',
-      category: 'Spices',
-      brand: 'Spice King'
-    },
-    {
-      id: 47,
-      name: 'Chili Powder',
-      price: 100,
-      image: 'https://images.unsplash.com/photo-1603052875473-9c9230e650ba',
-      category: 'Spices',
-      brand: 'Hot Spice'
-    },
-    {
-      id: 48,
-      name: 'Cinnamon',
-      price: 120,
-      image: 'https://images.unsplash.com/photo-1603052875971-024e6a0e0efb',
-      category: 'Spices',
-      brand: 'Aroma Fresh'
-    },
-    {
-      id: 49,
-      name: 'Black Pepper',
-      price: 150,
-      image: 'https://images.unsplash.com/photo-1603052875473-9c9230e650ba',
-      category: 'Spices',
-      brand: 'Spice Valley'
-    },
-    {
-      id: 50,
-      name: 'Cumin Seeds',
-      price: 140,
-      image: 'https://images.unsplash.com/photo-1603052875971-024e6a0e0efb',
-      category: 'Spices',
-      brand: 'Flavor House'
     }
   ],
   reviews: [
@@ -5671,7 +5286,7 @@ export const db = {
       phone: '+8801711000001',
       balance: 5000,
       due: 3875,
-      crate: { type1: { qty: 10, price: 100 }, type2: { qty: 5, price: 150 } },
+      crate: { type_one: { qty: 10, price: 100 }, type_two: { qty: 5, price: 150 } },
       cost: 0,
       orders: 23,
       totalSpent: 22040,
@@ -5679,14 +5294,14 @@ export const db = {
     },
     {
       sl: 2,
-      image: 'https://i.postimg.cc/GpXVckNg/images-3.jpg',
+      image: 'https://i.postimg.cc/05MFsKCZ/images-4.jpg',
       name: 'Karim Distributors',
       email: 'karimdist@example.com',
       type: 'Supplier',
       phone: '+8801711000002',
       balance: 2000,
       due: 2452,
-      crate: { type1: { qty: 8, price: 100 }, type2: { qty: 4, price: 150 } },
+      crate: { type_one: { qty: 8, price: 100 }, type_two: { qty: 4, price: 150 } },
       cost: 0,
       orders: 23,
       totalSpent: 22040,
@@ -5694,14 +5309,14 @@ export const db = {
     },
     {
       sl: 3,
-      image: 'https://i.postimg.cc/GpXVckNg/images-3.jpg',
+      image: 'https://i.postimg.cc/brWmZgHL/360-F-523629123-Rp-AMod-BJXg-CTPfilf-Ya-CIb-Paal-FIjbvv.jpg',
       name: 'Global Supply Ltd.',
       email: 'contact@globalsupply.com',
       type: 'Supplier',
       phone: '+8801711000003',
       balance: 7500,
       due: 9387,
-      crate: { type1: { qty: 15, price: 100 }, type2: { qty: 10, price: 150 } },
+      crate: { type_one: { qty: 15, price: 100 }, type_two: { qty: 10, price: 150 } },
       cost: 0,
       orders: 23,
       totalSpent: 22040,
@@ -5709,14 +5324,14 @@ export const db = {
     },
     {
       sl: 4,
-      image: 'https://i.postimg.cc/GpXVckNg/images-3.jpg',
+      image: 'https://i.postimg.cc/yd5GR77F/ecf3db173fea15839fdfe0625b25bfec.jpg',
       name: 'FreshMart Supplies',
       email: 'support@freshmart.com',
       type: 'Supplier',
       phone: '+8801711000004',
       balance: 1200,
       due: 0,
-      crate: { type1: { qty: 6, price: 100 }, type2: { qty: 2, price: 150 } },
+      crate: { type_one: { qty: 6, price: 100 }, type_two: { qty: 2, price: 150 } },
       cost: 0,
       orders: 23,
       totalSpent: 22040,
@@ -5724,20 +5339,21 @@ export const db = {
     },
     {
       sl: 5,
-      image: 'https://i.postimg.cc/GpXVckNg/images-3.jpg',
+      image: 'https://i.postimg.cc/05MFsKCZ/images-4.jpg',
       name: 'Unity Importers',
       email: 'unityimporters@gmail.com',
       type: 'Supplier',
       phone: '+8801711000005',
       balance: 4000,
       due: 0,
-      crate: { type1: { qty: 12, price: 100 }, type2: { qty: 7, price: 150 } },
+      crate: { type_one: { qty: 12, price: 100 }, type_two: { qty: 7, price: 150 } },
       cost: 0,
       orders: 23,
       totalSpent: 22040,
       location: 'Chandpur'
     }
   ],
+
   expenseData: [
     {
       sl: 1,

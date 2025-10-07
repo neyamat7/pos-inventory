@@ -128,11 +128,10 @@ const AddUserDrawer = props => {
                 {...(errors.role && { error: true, helperText: 'This field is required.' })}
               >
                 <MenuItem value='Software Engineer'>Software Engineer</MenuItem>
-                <MenuItem value='Admin'>Admin</MenuItem>
-                <MenuItem value='Author'>Author</MenuItem>
-                <MenuItem value='Editor'>Editor</MenuItem>
-                <MenuItem value='Maintainer'>Maintainer</MenuItem>
-                <MenuItem value='Subscriber'>Subscriber</MenuItem>
+                <MenuItem value='admin'>Admin</MenuItem>
+                <MenuItem value='manager'>Manager</MenuItem>
+                <MenuItem value='operator'>Operator</MenuItem>
+                <MenuItem value='stuff'>Stuff</MenuItem>
               </CustomTextField>
             )}
           />

@@ -12,7 +12,7 @@ import Typography from '@mui/material/Typography'
 import classnames from 'classnames'
 
 import { useFormContext, Controller, useWatch } from 'react-hook-form'
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent} from '@tiptap/react'
 import { StarterKit } from '@tiptap/starter-kit'
 import { Underline } from '@tiptap/extension-underline'
 import { Placeholder } from '@tiptap/extension-placeholder'

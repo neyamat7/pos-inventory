@@ -14,7 +14,7 @@ import { useTheme } from '@mui/material/styles'
 const AppReactApexCharts = dynamic(() => import('@/libs/styles/AppReactApexCharts'))
 
 // Vars
-const series = [{ data: [0, 19, 7, 27, 15, 40] }]
+const series = [{ name: 'Revenue', data: [0, 0, 0] }]
 
 const LineChartProfit = () => {
   // Hooks

@@ -298,6 +298,7 @@ const PurchaseListTable = ({ purchaseData = [] }) => {
             )}
           </table>
         </div>
+
         <TablePagination
           component={() => <TablePaginationComponent table={table} />}
           count={table.getFilteredRowModel().rows.length}
