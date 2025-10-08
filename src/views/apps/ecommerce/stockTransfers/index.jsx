@@ -3,9 +3,9 @@
 // React Imports
 import { useState, useEffect, useMemo } from 'react'
 
-// Next Imports
-// import Link from 'next/link'
 import { useParams } from 'next/navigation'
+
+import { MdMoreVert, MdDeleteOutline, MdOutlineEdit } from 'react-icons/md'
 
 // MUI Imports
 import Card from '@mui/material/Card'
@@ -111,7 +111,7 @@ const StockTransfers = ({ stockTransfersData = [] }) => {
 
   const columns = useMemo(
     () => [
-      // ✅ Checkbox column
+      // Checkbox column
       {
         id: 'select',
         header: ({ table }) => (
@@ -131,7 +131,7 @@ const StockTransfers = ({ stockTransfersData = [] }) => {
         )
       },
 
-      // ✅ Stock Transfer data fields
+      // Stock Transfer data fields
       { accessorKey: 'id', header: 'ID' },
       { accessorKey: 'date', header: 'Date' },
       { accessorKey: 'referenceNo', header: 'Reference No' },
@@ -141,7 +141,7 @@ const StockTransfers = ({ stockTransfersData = [] }) => {
       { accessorKey: 'shippingCharges', header: 'Shipping Charges' },
       { accessorKey: 'totalAmount', header: 'Total Amount' },
 
-      // ✅ Action column
+      //Action column
       {
         id: 'action',
         header: 'Action',
@@ -235,7 +235,7 @@ const StockTransfers = ({ stockTransfersData = [] }) => {
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => (
-                    <th key={header.id}>
+                    <th className='whitespace-nowrap border-r' key={header.id}>
                       {header.isPlaceholder ? null : (
                         <>
                           <div
@@ -275,7 +275,9 @@ const StockTransfers = ({ stockTransfersData = [] }) => {
                     return (
                       <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                         {row.getVisibleCells().map(cell => (
-                          <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                          <td className='whitespace-nowrap border-r' key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
                         ))}
                       </tr>
                     )
@@ -331,8 +333,8 @@ const ActionMenu = ({ row, setData }) => {
   return (
     <div className='relative'>
       {/* 3-dot trigger */}
-      <button onClick={() => setOpen(prev => !prev)} className='p-2 rounded hover:bg-gray-100'>
-        ⋮
+      <button onClick={() => setOpen(prev => !prev)} className='p-2 rounded hover:bg-gray-100 cursor-pointer'>
+        <MdMoreVert size={20} />
       </button>
 
       {/* Dropdown */}
@@ -343,18 +345,18 @@ const ActionMenu = ({ row, setData }) => {
               setEditOpen(true)
               setOpen(false)
             }}
-            className='flex items-center w-full px-3 py-2 text-sm hover:bg-gray-100'
+            className='flex items-center w-full px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer'
           >
-            ✏️ Edit
+            <MdOutlineEdit /> Edit
           </button>
           <button
             onClick={() => {
               handleDelete()
               setOpen(false)
             }}
-            className='flex items-center w-full px-3 py-2 text-sm hover:bg-gray-100 text-red-500'
+            className='flex items-center w-full px-3 py-2 text-sm hover:bg-gray-100 text-red-500 cursor-pointer'
           >
-            🗑 Delete
+            <MdDeleteOutline /> Delete
           </button>
         </div>
       )}

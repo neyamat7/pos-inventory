@@ -3,9 +3,12 @@
 // React Imports
 import { useState, useEffect, useMemo } from 'react'
 
+import { useParams } from 'next/navigation'
+
+import { MdMoreVert, MdDeleteOutline, MdOutlineEdit } from 'react-icons/md'
+
 // Next Imports
 // import Link from 'next/link'
-import { useParams } from 'next/navigation'
 
 // MUI Imports
 import Card from '@mui/material/Card'
@@ -51,6 +54,7 @@ import { showAlert } from '@/utils/showAlert'
 
 import EditAccounts from './EditAccounts'
 import AddAccounts from './AddAccounts'
+import OptionMenu from '@/@core/components/option-menu'
 
 export const paymentStatus = {
   1: { text: 'Paid', color: 'success' },
@@ -101,6 +105,8 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 const columnHelper = createColumnHelper()
 
 const AccountList = ({ accountsData = [] }) => {
+  const [editOpenRow, setEditOpenRow] = useState(null)
+
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
@@ -112,7 +118,7 @@ const AccountList = ({ accountsData = [] }) => {
 
   const columns = useMemo(
     () => [
-      // ✅ Checkbox column
+      // Checkbox column
       {
         id: 'select',
         header: ({ table }) => (
@@ -132,7 +138,7 @@ const AccountList = ({ accountsData = [] }) => {
         )
       },
 
-      // ✅ Bank Accounts fields
+      // Bank Accounts fields
       { accessorKey: 'name', header: 'Account Name' },
       { accessorKey: 'accountType', header: 'Type' },
       { accessorKey: 'accountNumber', header: 'Account Number' },
@@ -148,11 +154,51 @@ const AccountList = ({ accountsData = [] }) => {
       { accessorKey: 'accountDetails', header: 'Details' },
       { accessorKey: 'addedBy', header: 'Added By' },
 
-      // ✅ Action column
+      // Action column
       {
         id: 'action',
         header: 'Action',
-        cell: ({ row }) => <ActionMenu row={row} setData={setData} />,
+        cell: ({ row }) => (
+          <OptionMenu
+            iconButtonProps={{ size: 'medium' }}
+            iconClassName='text-textSecondary'
+            options={[
+              {
+                text: 'Edit',
+                icon: 'tabler-pencil',
+                menuItemProps: {
+                  onClick: () => {
+                    setEditOpenRow(row.original)
+                  },
+                  className: 'flex items-center'
+                }
+              },
+              {
+                text: 'Delete',
+                icon: 'tabler-trash',
+                menuItemProps: {
+                  onClick: () => {
+                    Swal.fire({
+                      title: 'Are you sure?',
+                      text: `You are about to delete transfer: ${row.original.referenceNo}`,
+                      icon: 'warning',
+                      showCancelButton: true,
+                      confirmButtonColor: '#3085d6',
+                      cancelButtonColor: '#d33',
+                      confirmButtonText: 'Yes, delete it!'
+                    }).then(result => {
+                      if (result.isConfirmed) {
+                        setData(prev => prev.filter(item => item.id !== row.original.id))
+                        showAlert('Deleted Successfully!', 'success')
+                      }
+                    })
+                  },
+                  className: 'flex items-center text-red-500'
+                }
+              }
+            ]}
+          />
+        ),
         enableSorting: false
       }
     ],
@@ -228,7 +274,7 @@ const AccountList = ({ accountsData = [] }) => {
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => (
-                    <th key={header.id}>
+                    <th key={header.id} className='whitespace-nowrap border-r'>
                       {header.isPlaceholder ? null : (
                         <>
                           <div
@@ -251,6 +297,7 @@ const AccountList = ({ accountsData = [] }) => {
                 </tr>
               ))}
             </thead>
+
             {table.getFilteredRowModel().rows.length === 0 ? (
               <tbody>
                 <tr>
@@ -268,7 +315,9 @@ const AccountList = ({ accountsData = [] }) => {
                     return (
                       <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                         {row.getVisibleCells().map(cell => (
-                          <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                          <td className='whitespace-nowrap border-r' key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
                         ))}
                       </tr>
                     )
@@ -293,67 +342,17 @@ const AccountList = ({ accountsData = [] }) => {
         setData={setData}
         accountsData={data}
       />
+
+      {editOpenRow && (
+        <EditAccounts
+          open={!!editOpenRow}
+          handleClose={() => setEditOpenRow(null)}
+          rowData={editOpenRow}
+          setData={setData}
+        />
+      )}
     </>
   )
 }
 
 export default AccountList
-
-const ActionMenu = ({ row, setData }) => {
-  const [open, setOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
-
-  const handleDelete = () => {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: `You are about to delete transfer: ${row.original.referenceNo}`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
-    }).then(result => {
-      if (result.isConfirmed) {
-        setData(prev => prev.filter(item => item.id !== row.original.id))
-
-        showAlert('Deleted Successfully!', 'success')
-      }
-    })
-  }
-
-  return (
-    <div className='relative'>
-      {/* 3-dot trigger */}
-      <button onClick={() => setOpen(prev => !prev)} className='p-2 rounded hover:bg-gray-100'>
-        ⋮
-      </button>
-
-      {/* Dropdown */}
-      {open && (
-        <div className='absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-10'>
-          <button
-            onClick={() => {
-              setEditOpen(true)
-              setOpen(false)
-            }}
-            className='flex items-center w-full px-3 py-2 text-sm hover:bg-gray-100'
-          >
-            ✏️ Edit
-          </button>
-          <button
-            onClick={() => {
-              handleDelete()
-              setOpen(false)
-            }}
-            className='flex items-center w-full px-3 py-2 text-sm hover:bg-gray-100 text-red-500'
-          >
-            🗑 Delete
-          </button>
-        </div>
-      )}
-
-      {/* Edit Modal */}
-      <EditAccounts open={editOpen} handleClose={() => setEditOpen(false)} rowData={row.original} setData={setData} />
-    </div>
-  )
-}

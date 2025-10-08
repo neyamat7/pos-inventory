@@ -197,7 +197,7 @@ const CustomersListTable = ({ customerReportData = [] }) => {
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => (
-                    <th key={header.id}>
+                    <th key={header.id} className='whitespace-nowrap border-r'>
                       {header.isPlaceholder ? null : (
                         <>
                           <div
@@ -238,7 +238,9 @@ const CustomersListTable = ({ customerReportData = [] }) => {
                     return (
                       <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                         {row.getVisibleCells().map(cell => (
-                          <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                          <td className='whitespace-nowrap border-r' key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
                         ))}
                       </tr>
                     )

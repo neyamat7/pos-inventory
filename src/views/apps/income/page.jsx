@@ -161,7 +161,7 @@ export default function ShowIncomePage() {
               {table.getHeaderGroups().map(headerGroup => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map(header => (
-                    <TableCell key={header.id} className='text-base whitespace-nowrap'>
+                    <TableCell key={header.id} className='text-base border-t-2 border-r border-l whitespace-nowrap'>
                       {flexRender(header.column.columnDef.header, header.getContext())}
                     </TableCell>
                   ))}
@@ -173,7 +173,7 @@ export default function ShowIncomePage() {
               {table.getRowModel().rows.map(row => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map(cell => (
-                    <TableCell className='text-[14px] whitespace-nowrap' key={cell.id}>
+                    <TableCell className='text-[14px] whitespace-nowrap border-r border-l' key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}

@@ -184,7 +184,7 @@ const DueListTable = ({ suppliersData, customersData }) => {
                         setSupplierList(prev => prev.filter(item => item.sl !== sl))
                       }
                     },
-                    className: 'flex items-center'
+                    className: 'flex items-center gap-2 w-full px-2 py-1'
                   }
                 }
               ]}
@@ -263,7 +263,7 @@ const DueListTable = ({ suppliersData, customersData }) => {
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
-                  <th key={header.id}>
+                  <th key={header.id} className='whitespace-nowrap border-r'>
                     {header.isPlaceholder ? null : (
                       <div
                         className={classnames({
@@ -301,7 +301,9 @@ const DueListTable = ({ suppliersData, customersData }) => {
                 .map(row => (
                   <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                     {row.getVisibleCells().map(cell => (
-                      <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                      <td className='whitespace-nowrap border-r' key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
                     ))}
                   </tr>
                 ))}

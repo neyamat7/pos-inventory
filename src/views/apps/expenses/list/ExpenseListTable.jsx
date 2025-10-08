@@ -7,6 +7,8 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 
+import { MdMoreVert, MdDeleteOutline, MdOutlineEdit } from 'react-icons/md'
+
 import { useForm } from 'react-hook-form'
 
 // MUI Imports
@@ -48,6 +50,8 @@ import { getLocalizedUrl } from '@/utils/i18n'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
+import EditExpenseModal from './EditExpenseModal'
+import OptionMenu from '@/@core/components/option-menu'
 
 export const paymentStatus = {
   1: { text: 'Paid', color: 'success' },
@@ -98,6 +102,8 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 const columnHelper = createColumnHelper()
 
 const ExpenseListTable = ({ expenseData }) => {
+  const [editOpen, setEditOpen] = useState(null)
+
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
@@ -109,7 +115,7 @@ const ExpenseListTable = ({ expenseData }) => {
 
   const columns = useMemo(
     () => [
-      // ✅ Checkbox column
+      // Checkbox column
       {
         id: 'select',
         header: ({ table }) => (
@@ -129,7 +135,7 @@ const ExpenseListTable = ({ expenseData }) => {
         )
       },
 
-      // ✅ Expense data fields
+      // Expense data fields
       { accessorKey: 'sl', header: 'SL' },
       { accessorKey: 'amount', header: 'Amount' },
       { accessorKey: 'category', header: 'Category' },
@@ -138,11 +144,56 @@ const ExpenseListTable = ({ expenseData }) => {
       { accessorKey: 'referenceNumber', header: 'Reference Number' },
       { accessorKey: 'expenseDate', header: 'Expense Date' },
 
-      // ✅ Action column
+      // Action column
       {
         id: 'action',
         header: 'Action',
-        cell: ({ row }) => <ActionMenu row={row} setData={setData} />,
+        cell: ({ row }) => {
+          const handleDelete = () => {
+            Swal.fire({
+              title: 'Are you sure?',
+              text: `You are about to delete expense ${row.original.referenceNumber}. This action cannot be undone.`,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#d33',
+              cancelButtonColor: '#3085d6',
+              confirmButtonText: 'Yes, delete it!'
+            }).then(result => {
+              if (result.isConfirmed) {
+                setData(prev => prev.filter(item => item.sl !== row.original.sl))
+                Swal.fire('Deleted!', `Expense ${row.original.referenceNumber} has been removed.`, 'success')
+              }
+            })
+          }
+
+          return (
+            <div className='flex items-center'>
+              <OptionMenu
+                tooltipProps={{ title: 'More options' }}
+                iconClassName='text-textSecondary'
+                iconButtonProps={{ size: 'small' }}
+                options={[
+                  {
+                    text: 'Edit',
+                    icon: 'tabler-edit',
+                    menuItemProps: {
+                      onClick: () => setEditOpen(row.original),
+                      className: 'flex items-center'
+                    }
+                  },
+                  {
+                    text: 'Delete',
+                    icon: 'tabler-trash',
+                    menuItemProps: {
+                      onClick: handleDelete,
+                      className: 'flex items-center text-red-500'
+                    }
+                  }
+                ]}
+              />
+            </div>
+          )
+        },
         enableSorting: false
       }
     ],
@@ -232,7 +283,7 @@ const ExpenseListTable = ({ expenseData }) => {
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => (
-                    <th key={header.id}>
+                    <th key={header.id} className='whitespace-nowrap border-r'>
                       {header.isPlaceholder ? null : (
                         <>
                           <div
@@ -272,7 +323,9 @@ const ExpenseListTable = ({ expenseData }) => {
                     return (
                       <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                         {row.getVisibleCells().map(cell => (
-                          <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                          <td className='whitespace-nowrap border-r' key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
                         ))}
                       </tr>
                     )
@@ -291,12 +344,22 @@ const ExpenseListTable = ({ expenseData }) => {
           }}
         />
       </Card>
+
       <AddExpenseDrawer
         open={customerUserOpen}
         handleClose={() => setCustomerUserOpen(!customerUserOpen)}
         setData={setData}
         expenseData={data}
       />
+      {/* Edit Modal Component */}
+      {editOpen && (
+        <EditExpenseModal
+          open={!!editOpen}
+          handleClose={() => setEditOpen(null)}
+          rowData={editOpen}
+          setData={setData}
+        />
+      )}
     </>
   )
 }
@@ -330,15 +393,22 @@ const ActionMenu = ({ row, setData }) => {
   return (
     <div className='relative'>
       {/* 3-dot trigger */}
-      <button onClick={() => setOpen(prev => !prev)} className='p-2 rounded hover:bg-gray-100 transition'>
-        ⋮
+      <button
+        onClick={() => setOpen(prev => !prev)}
+        className='p-2 rounded hover:bg-gray-100 transition cursor-pointer'
+      >
+        <MdMoreVert size={20} />
       </button>
 
       {/* Dropdown Menu */}
       {open && (
         <div className='absolute right-0 mt-2 w-36 bg-white border rounded shadow-md z-10'>
-          <button onClick={handleEdit} className='flex items-center w-full px-3 py-2 text-sm hover:bg-gray-100'>
-            ✏️ Edit
+          <button
+            onClick={handleEdit}
+            className='cursor-pointer flex items-center w-full px-3 py-2 text-base hover:bg-gray-100'
+          >
+            <MdOutlineEdit className='mr-1' />
+            Edit
           </button>
 
           <button
@@ -359,14 +429,14 @@ const ActionMenu = ({ row, setData }) => {
               })
               setOpen(false)
             }}
-            className='flex items-center w-full px-3 py-2 text-sm hover:bg-gray-100 text-red-500'
+            className='cursor-pointer flex items-center w-full px-3 py-2 text-base hover:bg-gray-100 text-red-500'
           >
-            🗑 Delete
+            <MdDeleteOutline className='mr-1' /> Delete
           </button>
         </div>
       )}
 
-      {/* ✅ Edit Modal */}
+      {/* Edit Modal */}
       {editOpen && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4'>
           <div className='bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6'>

@@ -126,7 +126,7 @@ const SalesListTable = ({ salesReportData = [], onFilterByDate }) => {
     { accessorKey: 'payment', header: 'Payment' },
     { accessorKey: 'status', header: 'Status' },
 
-    // ✅ Action column
+    // Action column
     {
       id: 'action',
       header: 'Action',
@@ -167,7 +167,7 @@ const SalesListTable = ({ salesReportData = [], onFilterByDate }) => {
                       }
                     })
                   },
-                  className: 'flex items-center'
+                  className: 'flex items-center text-red-500'
                 }
               }
             ]}
@@ -259,7 +259,7 @@ const SalesListTable = ({ salesReportData = [], onFilterByDate }) => {
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => (
-                    <th key={header.id}>
+                    <th key={header.id} className='whitespace-nowrap border-r'>
                       {header.isPlaceholder ? null : (
                         <>
                           <div
@@ -300,7 +300,9 @@ const SalesListTable = ({ salesReportData = [], onFilterByDate }) => {
                     return (
                       <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                         {row.getVisibleCells().map(cell => (
-                          <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                          <td className='whitespace-nowrap border-r' key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
                         ))}
                       </tr>
                     )

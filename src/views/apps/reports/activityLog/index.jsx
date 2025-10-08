@@ -111,7 +111,7 @@ const ActivityLogs = ({ activityLogsData = [] }) => {
 
   const columns = useMemo(
     () => [
-      // ✅ Checkbox column
+      // Checkbox column
       {
         id: 'select',
         header: ({ table }) => (
@@ -131,7 +131,7 @@ const ActivityLogs = ({ activityLogsData = [] }) => {
         )
       },
 
-      // ✅ Activity Logs fields
+      // Activity Logs fields
       { accessorKey: 'date', header: 'Date' },
       { accessorKey: 'subjectType', header: 'Subject Type' },
       { accessorKey: 'action', header: 'Action' },
@@ -235,7 +235,7 @@ const ActivityLogs = ({ activityLogsData = [] }) => {
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => (
-                    <th key={header.id}>
+                    <th key={header.id} className='whitespace-nowrap border-r'>
                       {header.isPlaceholder ? null : (
                         <>
                           <div
@@ -275,7 +275,9 @@ const ActivityLogs = ({ activityLogsData = [] }) => {
                     return (
                       <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                         {row.getVisibleCells().map(cell => (
-                          <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                          <td className='whitespace-nowrap border-r' key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
                         ))}
                       </tr>
                     )
