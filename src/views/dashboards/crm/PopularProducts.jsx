@@ -13,38 +13,38 @@ const data = [
     title: 'Fresh Mango',
     subtitle: '2500',
     amount: '$2.99 / kg',
-    imgSrc: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce'
+    imgSrc: 'https://i.postimg.cc/2yhsJDLj/Mangoes.jpg'
   },
   {
     title: 'Red Apples',
     subtitle: '1800',
     amount: '$3.49 / kg',
-    imgSrc: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce'
+    imgSrc: 'https://i.postimg.cc/DfsDFWyh/images.jpg'
   },
   {
     title: 'Organic Carrots',
     subtitle: '3200',
     amount: '$1.89 / kg',
-    imgSrc: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce'
+    imgSrc: 'https://i.postimg.cc/cLd3d3ZF/pexels-jibarofoto-2238309.jpg'
   },
   {
     title: 'Green Broccoli',
     subtitle: '1450',
     amount: '$2.40 / kg',
-    imgSrc: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce'
+    imgSrc: 'https://i.postimg.cc/QdDzsfH4/pexels-quang-nguyen-vinh-222549-2135677.jpg'
   },
 
   {
     title: 'Organic Carrots',
     subtitle: '3200',
     amount: '$1.89 / kg',
-    imgSrc: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce'
+    imgSrc: 'https://i.postimg.cc/X7phQrt9/pexels-psco-1071882.jpg'
   },
   {
     title: 'Green Broccoli',
     subtitle: '1450',
     amount: '$2.40 / kg',
-    imgSrc: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce'
+    imgSrc: 'https://i.postimg.cc/CL0CK5V4/pexels-rauf-allahverdiyev-561368-1367242.jpg'
   }
 ]
 

@@ -31,6 +31,8 @@ import {
 } from '@tanstack/react-table'
 
 // Component Imports
+import { IconButton } from '@mui/material'
+
 import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
 import OptionMenu from '@core/components/option-menu'
@@ -110,28 +112,28 @@ const AllStockListTable = ({ stockProductsData = [] }) => {
       header: 'Action',
       cell: ({ row }) => (
         <div className='flex items-center'>
-          <OptionMenu
-            iconButtonProps={{ size: 'medium' }}
-            iconClassName='text-textSecondary'
-            options={[
-              {
-                text: 'View',
-                icon: 'tabler-eye',
-                menuItemProps: {
-                  onClick: () => setSelectedProduct(row.original),
-                  className: 'flex items-center'
+          {/* Delete Button with SweetAlert2 confirm */}
+          <IconButton
+            aria-label='Delete'
+            onClick={() => {
+              Swal.fire({
+                title: 'Are you sure?',
+                text: `You are about to delete "${row.original.product}". This action cannot be undone.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+              }).then(result => {
+                if (result.isConfirmed) {
+                  handleDelete(row)
+                  Swal.fire('Deleted!', `"${row.original.product}" has been removed successfully.`, 'success')
                 }
-              },
-              {
-                text: 'Delete',
-                icon: 'tabler-trash',
-                menuItemProps: {
-                  onClick: () => handleDelete(row),
-                  className: 'flex items-center'
-                }
-              }
-            ]}
-          />
+              })
+            }}
+          >
+            <i className='tabler-trash text-textSecondary' />
+          </IconButton>
         </div>
       ),
       enableSorting: false

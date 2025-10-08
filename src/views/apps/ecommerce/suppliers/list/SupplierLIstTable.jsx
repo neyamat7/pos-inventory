@@ -259,7 +259,7 @@ const SupplierListTable = ({ supplierData = [] }) => {
                         }
                       })
                     },
-                    className: 'flex items-center'
+                    className: 'flex items-center text-red-500'
                   }
                 }
               ]}

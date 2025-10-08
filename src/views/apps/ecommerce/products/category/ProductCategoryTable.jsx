@@ -29,6 +29,8 @@ import {
 } from '@tanstack/react-table'
 
 // Component Imports
+import Swal from 'sweetalert2'
+
 import AddCategoryDrawer from './AddCategoryDrawer'
 import OptionMenu from '@core/components/option-menu'
 import CustomTextField from '@core/components/mui/TextField'
@@ -36,6 +38,7 @@ import TablePaginationComponent from '@components/TablePaginationComponent'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
+import EditCategoryModal from './EditCategoryModal'
 
 const fuzzyFilter = (row, columnId, value, addMeta) => {
   // Rank the item
@@ -73,99 +76,99 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 const categoryData = [
   {
     id: 1,
-    categoryTitle: 'Smart Phone',
-    description: 'Choose from wide range of smartphones online at best prices.',
-    totalProduct: 12548,
-    totalEarning: 98784,
-    image: '/images/apps/ecommerce/product-1.png'
+    categoryTitle: 'Fresh Fruits',
+    description: 'Buy a variety of fresh and seasonal fruits sourced directly from farms.',
+    totalProduct: 1245,
+    totalEarning: 85742,
+    image: '/images/apps/ecommerce/fruits-1.png'
   },
   {
     id: 2,
-    categoryTitle: 'Clothing, Shoes, and jewellery',
-    description: 'Fashion for a wide selection of clothing, shoes, jewellery and watches.',
-    totalProduct: 4689,
-    totalEarning: 45627,
-    image: '/images/apps/ecommerce/product-9.png'
+    categoryTitle: 'Leafy Vegetables',
+    description: 'Shop fresh spinach, lettuce, kale, and other leafy greens for a healthy diet.',
+    totalProduct: 978,
+    totalEarning: 65412,
+    image: '/images/apps/ecommerce/veggies-1.png'
   },
   {
     id: 3,
-    categoryTitle: 'Home and Kitchen',
-    description: 'Browse through the wide range of Home and kitchen products.',
-    totalProduct: 11297,
-    totalEarning: 51097,
-    image: '/images/apps/ecommerce/product-10.png'
+    categoryTitle: 'Root Vegetables',
+    description: 'Explore carrots, potatoes, onions, beets, and more farm-fresh root vegetables.',
+    totalProduct: 1689,
+    totalEarning: 74218,
+    image: '/images/apps/ecommerce/veggies-2.png'
   },
   {
     id: 4,
-    categoryTitle: 'Beauty and Personal Care',
-    description: 'Explore beauty and personal care products, shop makeup and etc.',
-    totalProduct: 9474,
-    totalEarning: 74829,
-    image: '/images/apps/ecommerce/product-19.png'
+    categoryTitle: 'Citrus Fruits',
+    description: 'Enjoy vitamin-rich oranges, lemons, and limes fresh from the orchard.',
+    totalProduct: 1457,
+    totalEarning: 62540,
+    image: '/images/apps/ecommerce/fruits-2.png'
   },
   {
     id: 5,
-    categoryTitle: 'Books',
-    description: 'Over 25 million titles across categories such as business  and etc.',
-    totalProduct: 10257,
-    totalEarning: 63618,
-    image: '/images/apps/ecommerce/product-25.png'
+    categoryTitle: 'Berries',
+    description: 'Shop for strawberries, blueberries, raspberries, and other sweet berries.',
+    totalProduct: 856,
+    totalEarning: 58210,
+    image: '/images/apps/ecommerce/fruits-3.png'
   },
   {
     id: 6,
-    categoryTitle: 'Games',
-    description: 'Every month, get exclusive in-game loot, free games, a free subscription.',
-    totalProduct: 14501,
-    totalEarning: 65920,
-    image: '/images/apps/ecommerce/product-12.png'
+    categoryTitle: 'Tropical Fruits',
+    description: 'Taste exotic tropical fruits like mango, pineapple, papaya, and banana.',
+    totalProduct: 1325,
+    totalEarning: 69842,
+    image: '/images/apps/ecommerce/fruits-4.png'
   },
   {
     id: 7,
-    categoryTitle: 'Baby Products',
-    description: 'Buy baby products across different categories from top brands.',
-    totalProduct: 8624,
-    totalEarning: 38838,
-    image: '/images/apps/ecommerce/product-14.png'
+    categoryTitle: 'Herbs & Spices',
+    description: 'Fresh herbs like coriander, basil, mint, and other aromatic greens.',
+    totalProduct: 623,
+    totalEarning: 31258,
+    image: '/images/apps/ecommerce/veggies-3.png'
   },
   {
     id: 8,
-    categoryTitle: 'Growsari',
-    description: 'Shop grocery Items through at best prices in India.',
-    totalProduct: 7389,
-    totalEarning: 72652,
-    image: '/images/apps/ecommerce/product-26.png'
+    categoryTitle: 'Organic Vegetables',
+    description: 'Certified organic produce grown without pesticides or synthetic fertilizers.',
+    totalProduct: 1478,
+    totalEarning: 85236,
+    image: '/images/apps/ecommerce/veggies-4.png'
   },
   {
     id: 9,
-    categoryTitle: 'Computer Accessories',
-    description: 'Enhance your computing experience with our range of computer accessories.',
-    totalProduct: 9876,
-    totalEarning: 65421,
-    image: '/images/apps/ecommerce/product-17.png'
+    categoryTitle: 'Seasonal Fruits',
+    description: 'Discover the best seasonal fruits available fresh each month.',
+    totalProduct: 1034,
+    totalEarning: 75984,
+    image: '/images/apps/ecommerce/fruits-5.png'
   },
   {
     id: 10,
-    categoryTitle: 'Fitness Tracker',
-    description: 'Monitor your health and fitness goals with our range of advanced fitness trackers.',
-    totalProduct: 1987,
-    totalEarning: 32067,
-    image: '/images/apps/ecommerce/product-10.png'
+    categoryTitle: 'Exotic Vegetables',
+    description: 'Premium range of imported and gourmet vegetables like broccoli, zucchini, and asparagus.',
+    totalProduct: 698,
+    totalEarning: 56234,
+    image: '/images/apps/ecommerce/veggies-5.png'
   },
   {
     id: 11,
-    categoryTitle: 'Smart Home Devices',
-    description: 'Transform your home into a smart home with our innovative smart home devices.',
-    totalProduct: 2345,
-    totalEarning: 87654,
-    image: '/images/apps/ecommerce/product-11.png'
+    categoryTitle: 'Mushrooms',
+    description: 'Fresh white, button, and oyster mushrooms perfect for every dish.',
+    totalProduct: 524,
+    totalEarning: 42357,
+    image: '/images/apps/ecommerce/veggies-6.png'
   },
   {
     id: 12,
-    categoryTitle: 'Audio Speakers',
-    description: 'Immerse yourself in rich audio quality with our wide range of speakers.',
-    totalProduct: 5678,
-    totalEarning: 32145,
-    image: '/images/apps/ecommerce/product-2.png'
+    categoryTitle: 'Nuts & Dried Fruits',
+    description: 'Healthy nuts and dried fruits including almonds, cashews, raisins, and dates.',
+    totalProduct: 875,
+    totalEarning: 69542,
+    image: '/images/apps/ecommerce/fruits-6.png'
   }
 ]
 
@@ -173,6 +176,8 @@ const categoryData = [
 const columnHelper = createColumnHelper()
 
 const ProductCategoryTable = () => {
+  const [editOpen, setEditOpen] = useState(null)
+
   // States
   const [addCategoryOpen, setAddCategoryOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
@@ -207,7 +212,7 @@ const ProductCategoryTable = () => {
         header: 'Categories',
         cell: ({ row }) => (
           <div className='flex items-center gap-3'>
-            <img src={row.original.image} width={38} height={38} className='rounded bg-actionHover' />
+            {/* <img src={row.original.image} width={38} height={38} className='rounded bg-actionHover' /> */}
             <div className='flex flex-col items-start'>
               <Typography className='font-medium' color='text.primary'>
                 {row.original.categoryTitle}
@@ -231,26 +236,52 @@ const ProductCategoryTable = () => {
       }),
       columnHelper.accessor('actions', {
         header: 'Actions',
-        cell: ({ row }) => (
-          <div className='flex items-center'>
-            <IconButton>
-              <i className='tabler-edit text-textSecondary' />
-            </IconButton>
-            <OptionMenu
-              iconButtonProps={{ size: 'medium' }}
-              iconClassName='text-textSecondary'
-              options={[
-                { text: 'Download', icon: 'tabler-download' },
-                {
-                  text: 'Delete',
-                  icon: 'tabler-trash',
-                  menuItemProps: { onClick: () => setData(data.filter(category => category.id !== row.original.id)) }
-                },
-                { text: 'Duplicate', icon: 'tabler-copy' }
-              ]}
-            />
-          </div>
-        ),
+        cell: ({ row }) => {
+          const handleDelete = () => {
+            Swal.fire({
+              title: 'Are you sure?',
+              text: `You are about to delete "${row.original.categoryTitle}". This action cannot be undone.`,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Yes, delete it!'
+            }).then(result => {
+              if (result.isConfirmed) {
+                setData(prev => prev.filter(category => category.id !== row.original.id))
+                Swal.fire('Deleted!', `"${row.original.categoryTitle}" has been removed.`, 'success')
+              }
+            })
+          }
+
+          return (
+            <div className='flex items-center'>
+              <OptionMenu
+                tooltipProps={{ title: 'More options' }}
+                iconClassName='text-textSecondary'
+                iconButtonProps={{ size: 'small' }}
+                options={[
+                  {
+                    text: 'Edit',
+                    icon: <i className='tabler-edit mr-2 text-[18px]' />,
+                    menuItemProps: {
+                      onClick: () => setEditOpen(row.original),
+                      className: 'flex items-center'
+                    }
+                  },
+                  {
+                    text: 'Delete',
+                    icon: <i className='tabler-trash mr-2 text-[18px]' />,
+                    menuItemProps: {
+                      onClick: handleDelete,
+                      className: 'flex items-center text-red-500'
+                    }
+                  }
+                ]}
+              />
+            </div>
+          )
+        },
         enableSorting: false
       })
     ],
@@ -318,6 +349,7 @@ const ProductCategoryTable = () => {
             </Button>
           </div>
         </div>
+
         <div className='overflow-x-auto'>
           <table className={tableStyles.table}>
             <thead>
@@ -373,6 +405,7 @@ const ProductCategoryTable = () => {
             )}
           </table>
         </div>
+
         <TablePagination
           component={() => <TablePaginationComponent table={table} />}
           count={table.getFilteredRowModel().rows.length}
@@ -389,6 +422,16 @@ const ProductCategoryTable = () => {
         setData={setData}
         handleClose={() => setAddCategoryOpen(!addCategoryOpen)}
       />
+
+      {/* Edit Modal */}
+      {editOpen && (
+        <EditCategoryModal
+          open={!!editOpen}
+          handleClose={() => setEditOpen(null)}
+          rowData={editOpen}
+          setData={setData}
+        />
+      )}
     </>
   )
 }

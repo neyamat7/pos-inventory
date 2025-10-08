@@ -72,21 +72,6 @@ const DashboardCRM = async () => {
         />
       </Grid>
 
-      {/* <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-        <CardStatVertical
-          title='Total Sales'
-          subtitle='Last Week'
-          stats='24.67k'
-          avatarColor='success'
-          avatarIcon='tabler-currency-dollar'
-          avatarSkin='light'
-          avatarSize={44}
-          chipText='+24.67%'
-          chipColor='success'
-          chipVariant='tonal'
-        />
-      </Grid> */}
-
       <Grid size={{ xs: 12, md: 8, lg: 3 }}>
         <BarChartRevenueGrowth />
       </Grid>

@@ -41,7 +41,7 @@ export const db = {
       images: 'https://i.postimg.cc/QdDzsfH4/pexels-quang-nguyen-vinh-222549-2135677.jpg',
       status: 'active'
     },
-    
+
     {
       id: 'p005',
       sku: 'MNG654',
@@ -4653,138 +4653,138 @@ export const db = {
   lowStockData: [
     {
       sl: 1,
-      product: 'Wireless Mouse',
-      code: 'LP1001',
-      category: 'Electronics',
-      cost: 850,
-      qty: 15,
-      sale: 1200
+      product: 'Apples (Red Delicious)',
+      code: 'FR1001',
+      category: 'Fruits',
+      cost: 2.5,
+      qty: 25,
+      sale: 3.8
     },
     {
       sl: 2,
-      product: 'Wired Mouse',
-      code: 'WM1002',
-      category: 'Accessories',
-      cost: 15,
+      product: 'Bananas (Cavendish)',
+      code: 'FR1002',
+      category: 'Fruits',
+      cost: 1.0,
       qty: 120,
-      sale: 25
+      sale: 1.8
     },
     {
       sl: 3,
-      product: 'Smartphone X',
-      code: 'MK1003',
-      category: 'Accessories',
-      cost: 45,
-      qty: 80,
-      sale: 70
+      product: 'Tomatoes (Cherry)',
+      code: 'VG1003',
+      category: 'Vegetables',
+      cost: 1.2,
+      qty: 60,
+      sale: 2.2
     },
     {
       sl: 4,
-      product: 'Smartphone Pro',
-      code: 'SP1004',
-      category: 'Electronics',
-      cost: 500,
-      qty: 50,
-      sale: 750
+      product: 'Carrots (Organic)',
+      code: 'VG1004',
+      category: 'Vegetables',
+      cost: 0.8,
+      qty: 80,
+      sale: 1.5
     },
     {
       sl: 5,
-      product: 'Bluetooth Speaker',
-      code: 'BS1005',
-      category: 'Audio',
-      cost: 30,
-      qty: 100,
-      sale: 55
+      product: 'Potatoes (White)',
+      code: 'VG1005',
+      category: 'Vegetables',
+      cost: 0.6,
+      qty: 150,
+      sale: 1.1
     },
     {
       sl: 6,
-      product: 'LED Monitor 24"',
-      code: 'MN1006',
-      category: 'Electronics',
-      cost: 120,
-      qty: 35,
-      sale: 180
+      product: 'Oranges (Mandarin)',
+      code: 'FR1006',
+      category: 'Fruits',
+      cost: 2.0,
+      qty: 40,
+      sale: 3.2
     },
     {
       sl: 7,
-      product: 'Gaming Chair',
-      code: 'GC1007',
-      category: 'Furniture',
-      cost: 150,
-      qty: 20,
-      sale: 250
+      product: 'Spinach (Fresh Leaves)',
+      code: 'VG1007',
+      category: 'Leafy Vegetables',
+      cost: 1.5,
+      qty: 35,
+      sale: 2.6
     },
     {
       sl: 8,
-      product: 'External Hard Drive 1TB',
-      code: 'HD1008',
-      category: 'Storage',
-      cost: 45,
-      qty: 70,
-      sale: 80
+      product: 'Mango (Alphonso)',
+      code: 'FR1008',
+      category: 'Fruits',
+      cost: 3.0,
+      qty: 20,
+      sale: 4.5
     },
     {
       sl: 9,
-      product: 'USB-C Cable',
-      code: 'UC1009',
-      category: 'Accessories',
-      cost: 3,
-      qty: 300,
-      sale: 8
+      product: 'Onions (Red)',
+      code: 'VG1009',
+      category: 'Vegetables',
+      cost: 0.7,
+      qty: 200,
+      sale: 1.3
     },
     {
       sl: 10,
-      product: 'Smartwatch Z',
-      code: 'SW1010',
-      category: 'Wearables',
-      cost: 100,
-      qty: 40,
-      sale: 160
+      product: 'Strawberries (Fresh)',
+      code: 'FR1010',
+      category: 'Berries',
+      cost: 2.8,
+      qty: 50,
+      sale: 4.0
     },
     {
       sl: 11,
-      product: 'Air Conditioner 1.5 Ton',
-      code: 'AC1011',
-      category: 'Appliances',
-      cost: 400,
-      qty: 10,
-      sale: 650
+      product: 'Broccoli (Organic)',
+      code: 'VG1011',
+      category: 'Vegetables',
+      cost: 2.2,
+      qty: 15,
+      sale: 3.5
     },
     {
       sl: 12,
-      product: 'Refrigerator 300L',
-      code: 'RF1012',
-      category: 'Appliances',
-      cost: 380,
-      qty: 12,
-      sale: 600
+      product: 'Grapes (Green Seedless)',
+      code: 'FR1012',
+      category: 'Fruits',
+      cost: 2.5,
+      qty: 30,
+      sale: 3.8
     },
     {
       sl: 13,
-      product: 'Microwave Oven',
-      code: 'MW1013',
-      category: 'Appliances',
-      cost: 120,
-      qty: 18,
-      sale: 200
+      product: 'Garlic (Fresh)',
+      code: 'VG1013',
+      category: 'Vegetables',
+      cost: 1.0,
+      qty: 70,
+      sale: 1.8
     },
     {
       sl: 14,
-      product: 'Office Desk',
-      code: 'OD1014',
-      category: 'Furniture',
-      cost: 90,
-      qty: 25,
-      sale: 150
+      product: 'Cucumber (Long)',
+      code: 'VG1014',
+      category: 'Vegetables',
+      cost: 1.1,
+      qty: 60,
+      sale: 1.9
     },
     {
       sl: 15,
-      product: 'Printer Ink Cartridge',
-      code: 'IC1015',
-      category: 'Office Supplies',
-      cost: 12,
-      qty: 200,
-      sale: 25
+      product: 'Watermelon (Seedless)',
+      code: 'FR1015',
+      category: 'Fruits',
+      cost: 4.5,
+      qty: 18,
+      sale: 6.8
     }
   ],
   salesReturnData: [

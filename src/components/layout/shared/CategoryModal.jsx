@@ -64,7 +64,7 @@ const CategoryModal = ({
                     <img
                       src={category.image || '/placeholder.svg'}
                       alt={category.name}
-                      className='w-12 h-12 object-cover rounded mb-2 mx-auto'
+                      className='w-full h-[100px] sobject-cover rounded mb-2 mx-auto'
                     />
                     <p className='text-center text-sm font-medium'>{category.name}</p>
                   </div>

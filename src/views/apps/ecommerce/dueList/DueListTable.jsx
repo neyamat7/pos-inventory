@@ -184,7 +184,7 @@ const DueListTable = ({ suppliersData, customersData }) => {
                         setSupplierList(prev => prev.filter(item => item.sl !== sl))
                       }
                     },
-                    className: 'flex items-center gap-2 w-full px-2 py-1'
+                    className: 'flex items-center text-red-500 gap-2 w-full px-2 py-1'
                   }
                 }
               ]}

@@ -122,7 +122,7 @@ const PurchaseListTable = ({ purchaseData = [] }) => {
     { accessorKey: 'payment', header: 'Payment' },
     { accessorKey: 'status', header: 'Status' },
 
-    // ✅ Action column
+    // Action column
     {
       id: 'action',
       header: 'Action',
@@ -163,7 +163,7 @@ const PurchaseListTable = ({ purchaseData = [] }) => {
                       }
                     })
                   },
-                  className: 'flex items-center'
+                  className: 'flex items-center text-red-500'
                 }
               }
             ]}

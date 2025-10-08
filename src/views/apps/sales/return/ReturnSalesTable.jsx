@@ -135,7 +135,7 @@ const ReturnSalesTable = ({ salesReturnData = [] }) => {
               icon: 'tabler-trash',
               menuItemProps: {
                 onClick: () => setData(prev => prev.filter(item => item.sl !== row.original.sl)),
-                className: 'flex items-center'
+                className: 'flex items-center gap-2 w-full px-2 py-1 text-red-500'
               }
             }
           ]}

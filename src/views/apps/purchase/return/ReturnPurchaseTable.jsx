@@ -148,7 +148,7 @@ const ReturnPurchaseTable = ({ purchaseReturnData = [] }) => {
               icon: 'tabler-trash',
               menuItemProps: {
                 onClick: () => handleDelete(row.original.id),
-                className: 'flex items-center'
+                className: 'flex items-center text-red-500'
               }
             }
           ]}

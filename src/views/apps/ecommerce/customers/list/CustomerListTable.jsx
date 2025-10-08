@@ -260,7 +260,7 @@ const CustomerListTable = ({ customerData }) => {
                         }
                       })
                     },
-                    className: 'flex items-center'
+                    className: 'flex items-center text-red-500'
                   }
                 }
               ]}

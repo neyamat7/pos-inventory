@@ -34,6 +34,10 @@ import {
 } from '@tanstack/react-table'
 
 // Component Imports
+import Swal from 'sweetalert2'
+
+import { IconButton } from '@mui/material'
+
 import CustomAvatar from '@core/components/mui/Avatar'
 import OptionMenu from '@core/components/option-menu'
 import CustomTextField from '@core/components/mui/TextField'
@@ -133,26 +137,28 @@ const LowStockListTable = ({ lowStockData = [] }) => {
       header: 'Action',
       cell: ({ row }) => (
         <div className='flex items-center'>
-          <OptionMenu
-            iconButtonProps={{ size: 'medium' }}
-            iconClassName='text-textSecondary'
-            options={[
-              {
-                text: 'View',
-                icon: 'tabler-eye',
-                href: `/products/${row.original.code}`, // link to view product
-                linkProps: { className: 'flex items-center gap-2 w-full px-2 py-1' }
-              },
-              {
-                text: 'Delete',
-                icon: 'tabler-trash',
-                menuItemProps: {
-                  onClick: () => setData(prev => prev.filter(item => item.sl !== row.original.sl)),
-                  className: 'flex items-center'
+          {/* Delete Button with SweetAlert2 */}
+          <IconButton
+            aria-label='Delete'
+            onClick={() => {
+              Swal.fire({
+                title: 'Are you sure?',
+                text: `You are about to delete "${row.original.product}". This action cannot be undone.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+              }).then(result => {
+                if (result.isConfirmed) {
+                  setData(prev => prev.filter(item => item.sl !== row.original.sl))
+                  Swal.fire('Deleted!', `"${row.original.product}" has been removed successfully.`, 'success')
                 }
-              }
-            ]}
-          />
+              })
+            }}
+          >
+            <i className='tabler-trash text-textSecondary' />
+          </IconButton>
         </div>
       ),
       enableSorting: false
@@ -225,6 +231,7 @@ const LowStockListTable = ({ lowStockData = [] }) => {
           </CustomTextField>
         </div>
       </CardContent>
+
       <div className='overflow-x-auto'>
         <table className={tableStyles.table}>
           <thead>
@@ -264,7 +271,7 @@ const LowStockListTable = ({ lowStockData = [] }) => {
               </tr>
             </tbody>
           ) : (
-            <tbody>
+            <tbody>     
               {table
                 .getRowModel()
                 .rows.slice(0, table.getState().pagination.pageSize)
@@ -281,6 +288,7 @@ const LowStockListTable = ({ lowStockData = [] }) => {
           )}
         </table>
       </div>
+
       <TablePagination
         component={() => <TablePaginationComponent table={table} />}
         count={table.getFilteredRowModel().rows.length}
@@ -290,6 +298,7 @@ const LowStockListTable = ({ lowStockData = [] }) => {
           table.setPageIndex(page)
         }}
       />
+      
     </Card>
   )
 }

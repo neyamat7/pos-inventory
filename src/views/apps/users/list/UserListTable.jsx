@@ -52,6 +52,7 @@ import { getLocalizedUrl } from '@/utils/i18n'
 import tableStyles from '@core/styles/table.module.css'
 import ViewUserModal from './ViewUserModal'
 import EditUserModal from './EditUserModal'
+import Swal from 'sweetalert2'
 
 // Styled Components
 const Icon = styled('i')({})
@@ -189,9 +190,27 @@ const UserListTable = ({ tableData }) => {
         header: 'Action',
         cell: ({ row }) => (
           <div className='flex items-center'>
-            <IconButton onClick={() => setData(data?.filter(product => product.id !== row.original.id))}>
+            <IconButton
+              onClick={() => {
+                Swal.fire({
+                  title: 'Are you sure?',
+                  text: `You are about to delete "${row.original.name}". This action cannot be undone.`,
+                  icon: 'warning',
+                  showCancelButton: true,
+                  confirmButtonColor: '#3085d6',
+                  cancelButtonColor: '#d33',
+                  confirmButtonText: 'Yes, delete it!'
+                }).then(result => {
+                  if (result.isConfirmed) {
+                    setData(prev => prev?.filter(product => product.id !== row.original.id))
+                    Swal.fire('Deleted!', `"${row.original.name}" has been removed successfully.`, 'success')
+                  }
+                })
+              }}
+            >
               <i className='tabler-trash text-textSecondary' />
             </IconButton>
+
             <IconButton
               onClick={() => {
                 setUserModal(true)

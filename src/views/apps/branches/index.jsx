@@ -55,6 +55,7 @@ import tableStyles from '@core/styles/table.module.css'
 import { showAlert } from '@/utils/showAlert'
 import AddBranchesDrawer from './AddBranchesDrawer'
 import EditBranchesModal from './EditBranchesModal'
+import OptionMenu from '@/@core/components/option-menu'
 
 export const paymentStatus = {
   1: { text: 'Paid', color: 'success' },
@@ -105,6 +106,8 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 const columnHelper = createColumnHelper()
 
 const Branches = ({ branchesData = [] }) => {
+  const [editOpen, setEditOpen] = useState(null)
+
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
@@ -168,11 +171,65 @@ const Branches = ({ branchesData = [] }) => {
         }
       },
 
-      // Action column
       {
         id: 'action',
         header: 'Action',
-        cell: ({ row }) => <ActionMenu row={row} setData={setData} />,
+        cell: ({ row }) => {
+          const handleDelete = () => {
+            Swal.fire({
+              title: 'Are you sure?',
+              text: `You are about to delete transfer: ${row.original.referenceNo}`,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Yes, delete it!'
+            }).then(result => {
+              if (result.isConfirmed) {
+                setData(prev => prev.filter(item => item.sl !== row.original.sl))
+                showAlert('Deleted Successfully!', 'success')
+              }
+            })
+          }
+
+          return (
+            <div className='flex items-center'>
+              <OptionMenu
+                tooltipProps={{ title: 'More options' }}
+                iconClassName='text-textSecondary'
+                iconButtonProps={{ size: 'small' }}
+                options={[
+                  {
+                    text: 'Edit',
+                    icon: 'tabler-edit',
+                    menuItemProps: {
+                      onClick: () => setEditOpen(row.original),
+                      className: 'flex items-center'
+                    }
+                  },
+                  {
+                    text: 'Delete',
+                    icon: 'tabler-trash',
+                    menuItemProps: {
+                      onClick: handleDelete,
+                      className: 'flex items-center text-red-500'
+                    }
+                  }
+                ]}
+              />
+
+              {/* Edit Modal */}
+              {editOpen && (
+                <EditBranchesModal
+                  open={!!editOpen}
+                  handleClose={() => setEditOpen(null)}
+                  rowData={editOpen}
+                  setData={setData}
+                />
+              )}
+            </div>
+          )
+        },
         enableSorting: false
       }
     ],
@@ -315,72 +372,18 @@ const Branches = ({ branchesData = [] }) => {
         setData={setData}
         branchesData={data}
       />
+
+      {/* Edit Modal */}
+      {editOpen && (
+        <EditBranchesModal
+          open={!!editOpen}
+          handleClose={() => setEditOpen(null)}
+          rowData={editOpen}
+          setData={setData}
+        />
+      )}
     </>
   )
 }
 
 export default Branches
-
-const ActionMenu = ({ row, setData }) => {
-  const [open, setOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
-
-  const handleDelete = () => {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: `You are about to delete transfer: ${row.original.referenceNo}`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
-    }).then(result => {
-      if (result.isConfirmed) {
-        setData(prev => prev.filter(item => item.sl !== row.original.sl))
-
-        showAlert('Deleted Successfully!', 'success')
-      }
-    })
-  }
-
-  return (
-    <div className='relative'>
-      {/* 3-dot trigger */}
-      <button onClick={() => setOpen(prev => !prev)} className='p-2 rounded hover:bg-gray-100 cursor-pointer'>
-        <MdMoreVert size={20} />
-      </button>
-
-      {/* Dropdown */}
-      {open && (
-        <div className='absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-10'>
-          <button
-            onClick={() => {
-              setEditOpen(true)
-              setOpen(false)
-            }}
-            className='flex items-center w-full px-3 py-2 text-base hover:bg-gray-100 cursor-pointer'
-          >
-            <MdOutlineEdit className='mr-1' /> Edit
-          </button>
-          <button
-            onClick={() => {
-              handleDelete()
-              setOpen(false)
-            }}
-            className='flex items-center w-full px-3 py-2 text-base hover:bg-gray-100 text-red-500 cursor-pointer'
-          >
-            <MdDeleteOutline className='mr-1' /> Delete
-          </button>
-        </div>
-      )}
-
-      {/* Edit Modal */}
-      <EditBranchesModal
-        open={editOpen}
-        handleClose={() => setEditOpen(false)}
-        rowData={row.original}
-        setData={setData}
-      />
-    </div>
-  )
-}

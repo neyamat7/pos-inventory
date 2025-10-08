@@ -34,6 +34,8 @@ import {
 } from '@tanstack/react-table'
 
 // Component Imports
+import Swal from 'sweetalert2'
+
 import TableFilters from './TableFilters'
 import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
@@ -182,9 +184,25 @@ const ProductListTable = ({ productData }) => {
                 <i className='tabler-edit text-textSecondary' />
               </IconButton>
             </Link>
+
             <IconButton
               aria-label='Delete'
-              onClick={() => setData(prev => prev?.filter(p => p.id !== row.original.id))}
+              onClick={() => {
+                Swal.fire({
+                  title: 'Are you sure?',
+                  text: `You are about to delete "${row.original.name}". This action cannot be undone.`,
+                  icon: 'warning',
+                  showCancelButton: true,
+                  confirmButtonColor: '#3085d6',
+                  cancelButtonColor: '#d33',
+                  confirmButtonText: 'Yes, delete it!'
+                }).then(result => {
+                  if (result.isConfirmed) {
+                    setData(prev => prev?.filter(p => p.id !== row.original.id))
+                    Swal.fire('Deleted!', `"${row.original.name}" has been removed.`, 'success')
+                  }
+                })
+              }}
             >
               <i className='tabler-trash text-textSecondary' />
             </IconButton>

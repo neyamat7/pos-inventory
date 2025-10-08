@@ -18,16 +18,6 @@ const ProductAddHeader = ({ mode = 'create' }) => {
       </div>
 
       <div className='flex flex-wrap max-sm:flex-col gap-4'>
-        <Button variant='tonal' color='secondary' type='button'>
-          Discard
-        </Button>
-
-        {!isEdit && (
-          <Button variant='tonal' type='button'>
-            Save Draft
-          </Button>
-        )}
-
         <Button variant='contained' type='submit'>
           {isEdit ? 'Save Changes' : 'Publish Product'}
         </Button>
