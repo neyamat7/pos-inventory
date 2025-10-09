@@ -608,6 +608,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
           <div className='bg-white rounded-lg shadow-lg p-4 w-full max-w-xs'>
             <div className='flex items-center justify-between mb-3'>
               <h3 className='text-base font-medium'>Edit Commission (%)</h3>
+              
               <button
                 type='button'
                 onClick={() => setCommissionModal({ open: false, productId: null, supplierId: null, value: 0 })}

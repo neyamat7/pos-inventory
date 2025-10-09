@@ -415,9 +415,9 @@ export default function POSSystem({ productsData = [] }) {
         </div>
       </div>
 
-      <div className='flex flex-col lg:flex-row gap-6'>
+      <div className='flex flex-col  lg:flex-row gap-x-2 gap-y-5'>
         {/* Left Side - Form */}
-        <div className='w-full lg:w-4/5 bg-white rounded-lg lg:p-6 flex flex-col'>
+        <div className='w-full lg:w-8/12 xl:w-7/12 bg-white rounded-lg lg:p-6 flex flex-col'>
           {/* Order Details */}
           <div className='grid w-full grid-cols-1 lg:grid-cols-3 gap-2 lg:gap-4 mb-6'>
             <input
@@ -793,7 +793,7 @@ export default function POSSystem({ productsData = [] }) {
             <input
               type='number'
               min='0'
-              step='0.01'
+              step='any'
               value={commissionModal.value}
               onChange={e => setCommissionModal(m => ({ ...m, value: e.target.value }))}
               className='w-full px-3 py-2 border border-gray-300 rounded mb-3'

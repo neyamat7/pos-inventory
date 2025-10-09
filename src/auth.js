@@ -78,6 +78,8 @@ export const {
 
     // Called whenever the session is fetched
     async session({ session, token }) {
+      // console.log('token in session', token);
+
       if (token) {
         session.user = {
           id: token.id,

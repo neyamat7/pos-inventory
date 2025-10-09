@@ -20,10 +20,13 @@ const eCommerceProductsAdd = () => {
 
     // form.append('name', values.name ?? '')
     // form.append('sku', values.sku ?? '')
+
     // form.append('barcode', values.barcode ?? '')
     // form.append('description', values.description ?? '')
+
     // form.append('price', JSON.stringify(values.price ?? {}))
     // form.append('organize', JSON.stringify(values.organize ?? {}))
+
     // form.append('variants', JSON.stringify(values.variants ?? []))
     // ;(values.images ?? []).forEach(f => form.append('images', f))
 
@@ -40,7 +43,11 @@ const eCommerceProductsAdd = () => {
           <ProductAddHeader mode='create' />
         </Grid>
 
-        <Grid size={{ xs: 12, md: 8 }}>
+        <Grid size={{ xs: 12 }}>
+          <ProductInformation mode='create' />
+        </Grid>
+
+        {/* <Grid size={{ xs: 12, md: 8 }}>
           <Grid container spacing={6}>
             <Grid size={{ xs: 12 }}>
               <ProductInformation mode='create' />
@@ -51,13 +58,10 @@ const eCommerceProductsAdd = () => {
             <Grid size={{ xs: 12 }}>
               <ProductVariants mode='create' />
             </Grid>
-            {/* <Grid size={{ xs: 12 }}>
-            <ProductInventory />
-          </Grid> */}
           </Grid>
-        </Grid>
+        </Grid> */}
 
-        <Grid size={{ xs: 12, md: 4 }}>
+        {/* <Grid size={{ xs: 12, md: 4 }}>
           <Grid container spacing={6}>
             <Grid size={{ xs: 12 }}>
               <ProductPricing mode='create' />
@@ -67,7 +71,7 @@ const eCommerceProductsAdd = () => {
               <ProductOrganize mode='create' />
             </Grid>
           </Grid>
-        </Grid>
+        </Grid> */}
       </Grid>
     </ProductFormProvider>
   )

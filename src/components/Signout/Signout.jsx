@@ -1,4 +1,6 @@
-import { signOutAction } from '@/app/actions'
+// import { signOutAction } from '@/app/actions'
+
+import { signOutAction } from '@/actions/authActions'
 
 const Signout = () => {
   return (

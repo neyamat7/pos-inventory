@@ -16,12 +16,6 @@ const ProductAddHeader = ({ mode = 'create' }) => {
           {isEdit ? 'Update details for your existing product' : 'Orders placed across your store'}
         </Typography>
       </div>
-
-      <div className='flex flex-wrap max-sm:flex-col gap-4'>
-        <Button variant='contained' type='submit'>
-          {isEdit ? 'Save Changes' : 'Publish Product'}
-        </Button>
-      </div>
     </div>
   )
 }

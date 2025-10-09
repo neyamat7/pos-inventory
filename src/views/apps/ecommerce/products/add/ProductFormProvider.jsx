@@ -14,7 +14,7 @@ const BASE_DEFAULTS = {
   price: 0,
   commision_rate: 0,
   category: '',
-  images: [],
+  image: '',
   status: ''
 }
 
@@ -41,8 +41,8 @@ const normalizeImages = val => {
 export default function ProductFormProvider({
   children,
   onSubmit,
-  mode = 'create', // 'create' | 'edit'
-  defaultValues = {}, // pass product when editing
+  mode = 'create',
+  defaultValues = {},
   resetOnSubmit = false
 }) {
   const mergedDefaults = useMemo(() => {
@@ -51,7 +51,7 @@ export default function ProductFormProvider({
     return {
       ...BASE_DEFAULTS,
       ...defaultValues,
-      images: normalizeImages(img)
+      image: normalizeImages(img)
     }
   }, [defaultValues])
 
@@ -61,11 +61,7 @@ export default function ProductFormProvider({
   })
 
   const { handleSubmit, reset } = methods
-
-  // Re-seed the form when defaultValues change (e.g., navigating between IDs)
-  // useEffect(() => {
-  //   reset(mergedDefaults)
-  // }, [mergedDefaults, reset])
+ 
 
   const onValid = async (values, e) => {
     try {
@@ -76,14 +72,7 @@ export default function ProductFormProvider({
   }
 
   const ctx = useMemo(() => ({ ...methods, formMode: mode }), [methods, mode])
-
-  // const handleSubmit = async (values, e) => {
-  //   try {
-  //     await onSubmit?.(values, e)
-  //   } finally {
-  //     if (resetOnSubmit) methods.reset()
-  //   }
-  // }
+ 
 
   return (
     <FormProvider {...ctx}>

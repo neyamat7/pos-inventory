@@ -90,7 +90,7 @@ export const db = {
       id: 1,
       name: 'Mango',
       price: 120,
-      image: 'https://i.postimg.cc/2yhsJDLj/Mangoes.jpg',
+      image: 'https://i.postimg.cc/4y0HNNp5/Chat-GPT-Image-Oct-9-2025-06-54-36-PM.png',
       category: 'Fruits',
       brand: 'Fresh Farm',
       commission_rate: 10
@@ -99,7 +99,7 @@ export const db = {
       id: 2,
       name: 'Pineapple',
       price: 90,
-      image: 'https://i.postimg.cc/X7phQrt9/pexels-psco-1071882.jpg',
+      image: 'https://i.postimg.cc/Y2T1HbRX/Chat-GPT-Image-Oct-9-2025-07-01-22-PM.png',
       category: 'Fruits',
       brand: 'Tropical Fresh',
       commission_rate: 20
@@ -108,7 +108,7 @@ export const db = {
       id: 3,
       name: 'Banana',
       price: 60,
-      image: 'https://i.postimg.cc/cLd3d3ZF/pexels-jibarofoto-2238309.jpg',
+      image: 'https://i.postimg.cc/q72FsNRC/Chat-GPT-Image-Oct-9-2025-07-05-58-PM.png',
       category: 'Fruits',
       brand: 'Nature Organic'
     },

@@ -10,7 +10,6 @@ import MenuItem from '@mui/material/MenuItem'
 import { useFormContext, Controller } from 'react-hook-form'
 
 // Component Imports
-import CustomIconButton from '@core/components/mui/IconButton'
 import CustomTextField from '@core/components/mui/TextField'
 
 const CATEGORIES = [
@@ -68,17 +67,6 @@ const ProductOrganize = ({ mode = 'create' }) => {
               </CustomTextField>
             )}
           />
-
-          {/* If you later add tags:
-          <Controller
-            name='organize.tags'
-            control={control}
-            defaultValue={[]}
-            render={({ field }) => (
-              <CustomTextField fullWidth label='Enter Tags' placeholder='Fashion, Trending, Summer' {...field} />
-            )}
-          />
-          */}
         </div>
       </CardContent>
     </Card>

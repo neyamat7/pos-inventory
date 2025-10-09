@@ -4,16 +4,11 @@ import { redirect } from 'next/navigation'
 import Grid from '@mui/material/Grid2'
 
 // Component Imports
+
 import LineAreaYearlySalesChart from '@views/dashboards/crm/LineAreaYearlySalesChart'
 import CardStatVertical from '@/components/card-statistics/Vertical'
 import BarChartRevenueGrowth from '@views/dashboards/crm/BarChartRevenueGrowth'
 import EarningReportsWithTabs from '@views/dashboards/crm/EarningReportsWithTabs'
-import RadarSalesChart from '@views/dashboards/crm/RadarSalesChart'
-import SalesByCountries from '@views/dashboards/crm/SalesByCountries'
-import ProjectStatus from '@views/dashboards/crm/ProjectStatus'
-import ActiveProjects from '@views/dashboards/crm/ActiveProjects'
-import LastTransaction from '@views/dashboards/crm/LastTransaction'
-import ActivityTimeline from '@views/dashboards/crm/ActivityTimeline'
 
 // Server Action Imports
 import { getServerMode } from '@core/utils/serverHelpers'
@@ -27,11 +22,13 @@ import DistributedBarChartPurchaseReturn from '@/views/dashboards/crm/Distribute
 import LineAreaYearlySalesChartReturn from '@/views/dashboards/crm/LineAreaYearlySalesChartReturn'
 
 const DashboardCRM = async () => {
-  const session = await auth()
+  // const session = await auth()
 
-  if (!session) {
-    redirect('/login')
-  }
+  // // console.log('session', session)
+
+  // if (!session) {
+  //   redirect('/login')
+  // }
 
   // Vars
   const serverMode = await getServerMode()

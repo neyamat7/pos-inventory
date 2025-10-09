@@ -1,152 +1,39 @@
 'use client'
 
-import { useEffect } from 'react'
+import MenuItem from '@mui/material/MenuItem'
 
-import Divider from '@mui/material/Divider'
 import Grid from '@mui/material/Grid2'
 import Card from '@mui/material/Card'
 import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
-import Typography from '@mui/material/Typography'
-
-import classnames from 'classnames'
 
 import { useFormContext, Controller, useWatch } from 'react-hook-form'
-import { useEditor, EditorContent} from '@tiptap/react'
-import { StarterKit } from '@tiptap/starter-kit'
-import { Underline } from '@tiptap/extension-underline'
-import { Placeholder } from '@tiptap/extension-placeholder'
-import { TextAlign } from '@tiptap/extension-text-align'
+
+import { Button } from '@mui/material'
 
 import CustomTextField from '@core/components/mui/TextField'
-import CustomIconButton from '@/@core/components/mui/IconButton'
 
 // Style Imports
 import '@/libs/styles/tiptapEditor.css'
 
-const EditorToolbar = ({ editor }) => {
-  if (!editor) {
-    return null
-  }
-
-  return (
-    <div className='flex flex-wrap gap-x-3 gap-y-1 pbs-6 pbe-4 pli-6'>
-      <CustomIconButton
-        {...(editor.isActive('bold') && { color: 'primary' })}
-        variant='tonal'
-        size='small'
-        onClick={() => editor.chain().focus().toggleBold().run()}
-      >
-        <i className={classnames('tabler-bold', { 'text-textSecondary': !editor.isActive('bold') })} />
-      </CustomIconButton>
-      <CustomIconButton
-        {...(editor.isActive('underline') && { color: 'primary' })}
-        variant='tonal'
-        size='small'
-        onClick={() => editor.chain().focus().toggleUnderline().run()}
-      >
-        <i className={classnames('tabler-underline', { 'text-textSecondary': !editor.isActive('underline') })} />
-      </CustomIconButton>
-      <CustomIconButton
-        {...(editor.isActive('italic') && { color: 'primary' })}
-        variant='tonal'
-        size='small'
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-      >
-        <i className={classnames('tabler-italic', { 'text-textSecondary': !editor.isActive('italic') })} />
-      </CustomIconButton>
-      <CustomIconButton
-        {...(editor.isActive('strike') && { color: 'primary' })}
-        variant='tonal'
-        size='small'
-        onClick={() => editor.chain().focus().toggleStrike().run()}
-      >
-        <i className={classnames('tabler-strikethrough', { 'text-textSecondary': !editor.isActive('strike') })} />
-      </CustomIconButton>
-      <CustomIconButton
-        {...(editor.isActive({ textAlign: 'left' }) && { color: 'primary' })}
-        variant='tonal'
-        size='small'
-        onClick={() => editor.chain().focus().setTextAlign('left').run()}
-      >
-        <i
-          className={classnames('tabler-align-left', { 'text-textSecondary': !editor.isActive({ textAlign: 'left' }) })}
-        />
-      </CustomIconButton>
-      <CustomIconButton
-        {...(editor.isActive({ textAlign: 'center' }) && { color: 'primary' })}
-        variant='tonal'
-        size='small'
-        onClick={() => editor.chain().focus().setTextAlign('center').run()}
-      >
-        <i
-          className={classnames('tabler-align-center', {
-            'text-textSecondary': !editor.isActive({ textAlign: 'center' })
-          })}
-        />
-      </CustomIconButton>
-      <CustomIconButton
-        {...(editor.isActive({ textAlign: 'right' }) && { color: 'primary' })}
-        variant='tonal'
-        size='small'
-        onClick={() => editor.chain().focus().setTextAlign('right').run()}
-      >
-        <i
-          className={classnames('tabler-align-right', {
-            'text-textSecondary': !editor.isActive({ textAlign: 'right' })
-          })}
-        />
-      </CustomIconButton>
-      <CustomIconButton
-        {...(editor.isActive({ textAlign: 'justify' }) && { color: 'primary' })}
-        variant='tonal'
-        size='small'
-        onClick={() => editor.chain().focus().setTextAlign('justify').run()}
-      >
-        <i
-          className={classnames('tabler-align-justified', {
-            'text-textSecondary': !editor.isActive({ textAlign: 'justify' })
-          })}
-        />
-      </CustomIconButton>
-    </div>
-  )
-}
+const CATEGORIES = [
+  { value: 'fruits', label: 'Fruits' },
+  { value: 'vegetables', label: 'Vegetables' },
+  { value: 'grains', label: 'Grains' }
+]
 
 const ProductInformation = (mode = 'create') => {
   const { control, setValue, getValues, formMode } = useFormContext()
   const isEdit = mode === 'edit'
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Underline,
-      Placeholder.configure({ placeholder: 'Write something here...' }),
-      TextAlign.configure({ types: ['heading', 'paragraph'] })
-    ],
-    content: getValues('description') || '',
-    onUpdate: ({ editor }) => {
-      setValue('description', editor.getText(), { shouldDirty: true })
-    },
-    immediatelyRender: false
-  })
-
-  const description = useWatch({ control, name: 'description' })
-
-  //  update editor if defaultValues change (navigating between products)
-
-  useEffect(() => {
-    if (editor && typeof description === 'string' && description !== editor.getText()) {
-      editor.commands.setContent(description)
-    }
-  }, [editor, description])
+  const preview = useWatch({ control, name: 'imagePreview' })
 
   return (
     <Card>
       <CardHeader title='Product Information' />
       <CardContent>
         <Grid container spacing={6} className='mbe-6'>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Controller
               name='id'
               control={control}
@@ -165,7 +52,7 @@ const ProductInformation = (mode = 'create') => {
             />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Controller
               name='name'
               control={control}
@@ -174,7 +61,7 @@ const ProductInformation = (mode = 'create') => {
                 <CustomTextField
                   fullWidth
                   label='Product Name'
-                  placeholder='iPhone 14'
+                  placeholder='Mango'
                   {...field}
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message}
@@ -183,7 +70,7 @@ const ProductInformation = (mode = 'create') => {
             />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Controller
               name='sku'
               control={control}
@@ -193,25 +80,169 @@ const ProductInformation = (mode = 'create') => {
             />
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Controller
-              name='barcode'
+              name='price'
               control={control}
-              render={({ field }) => (
-                <CustomTextField fullWidth label='Barcode' placeholder='0123-4567' {...field} disabled={isEdit} />
+              rules={{
+                required: 'Base price is required',
+                min: { value: 0, message: 'Must be ≥ 0' },
+                setValueAs: v => (v === '' ? '' : Number(v))
+              }}
+              render={({ field, fieldState }) => (
+                <CustomTextField
+                  fullWidth
+                  label='Base Price'
+                  placeholder='Enter Base Price'
+                  type='number'
+                  inputProps={{ step: '0.01', min: 0 }}
+                  className='mbe-6'
+                  {...field}
+                  onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
+                  value={field.value ?? ''}
+                  inputMode='decimal'
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
               )}
             />
           </Grid>
-        </Grid>
 
-        <Typography className='mbe-1'>Description (Optional)</Typography>
-        <Card className='p-0 border shadow-none'>
-          <CardContent className='p-0'>
-            <EditorToolbar editor={editor} />
-            <Divider className='mli-6' />
-            <EditorContent editor={editor} className='bs-[135px] overflow-y-auto flex' />
-          </CardContent>
-        </Card>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <Controller
+              name='commision_rate'
+              control={control}
+              defaultValue=''
+              rules={{
+                min: { value: 0, message: 'Must be ≥ 0' },
+                max: { value: 100, message: 'Must be ≤ 100' },
+                setValueAs: v => (v === '' ? '' : Number(v))
+              }}
+              render={({ field, fieldState }) => (
+                <CustomTextField
+                  fullWidth
+                  label='Commission Rate(%)'
+                  placeholder='10'
+                  type='number'
+                  inputProps={{ step: '0.01', min: 0, max: 100 }}
+                  className='mbe-6'
+                  {...field}
+                  value={field.value ?? ''}
+                  onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
+                  inputMode='decimal'
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <Controller
+              name='category'
+              control={control}
+              render={({ field }) => (
+                <CustomTextField select fullWidth label='Category' {...field} value={field.value ?? ''}>
+                  {CATEGORIES.map(opt => (
+                    <MenuItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </MenuItem>
+                  ))}
+                </CustomTextField>
+              )}
+            />
+          </Grid>
+
+          {/* Image Upload & Description */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Controller
+              name='image'
+              control={control}
+              render={({ field }) => {
+                const handleImageChange = e => {
+                  const file = e.target.files?.[0]
+
+                  if (file) {
+                    const previewUrl = URL.createObjectURL(file)
+
+                    field.onChange(file)
+                    setValue('imagePreview', previewUrl)
+                  }
+                }
+
+                return (
+                  <Card variant='outlined' sx={{ textAlign: 'center', p: 3 }}>
+                    <CardHeader title='Product Image' sx={{ textAlign: 'left', pb: 1 }} />
+                    <CardContent>
+                      <label htmlFor='image-upload'>
+                        <input id='image-upload' type='file' accept='image/*' hidden onChange={handleImageChange} />
+                        <div
+                          style={{
+                            border: '2px dashed var(--mui-palette-divider)',
+                            borderRadius: '8px',
+                            padding: '16px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'border-color 0.3s ease'
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--mui-palette-primary-main)')}
+                          onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--mui-palette-divider)')}
+                        >
+                          {preview ? (
+                            <img
+                              src={preview}
+                              alt='Preview'
+                              style={{
+                                width: '100%',
+                                maxWidth: '100px',
+                                maxHeight: '100px',
+                                borderRadius: '8px',
+                                objectFit: 'cover'
+                              }}
+                            />
+                          ) : (
+                            <>
+                              <i className='tabler-camera' style={{ fontSize: '2rem', color: 'gray' }} />
+                              <span style={{ marginTop: '8px', color: 'gray' }}>Click to upload image</span>
+                            </>
+                          )}
+                        </div>
+                      </label>
+                    </CardContent>
+                  </Card>
+                )
+              }}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 6 }}>
+            <div className='flex flex-col gap-4'>
+              <Controller
+                name='description'
+                control={control}
+                rules={{ required: 'Description is required' }}
+                render={({ field, fieldState }) => (
+                  <CustomTextField
+                    fullWidth
+                    label='Description'
+                    placeholder='Enter product description...'
+                    multiline
+                    minRows={6}
+                    {...field}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                  />
+                )}
+              />
+              <Button variant='contained' type='submit' className='self-end'>
+                {isEdit ? 'Save Changes' : 'Publish Product'}
+              </Button>
+            </div>
+          </Grid>
+        </Grid>
       </CardContent>
     </Card>
   )

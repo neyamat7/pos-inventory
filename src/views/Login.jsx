@@ -24,7 +24,7 @@ import classnames from 'classnames'
 
 import { LoadingButton } from '@mui/lab'
 
-import { loginWithCredentials } from '@/app/actions'
+// import { loginWithCredentials } from '@/app/actions'
 
 // Third-party Imports
 
@@ -41,6 +41,7 @@ import { useImageVariant } from '@core/hooks/useImageVariant'
 import { useSettings } from '@core/hooks/useSettings'
 import Signin from '@/components/Signin/Signin'
 import { showAlert } from '@/utils/showAlert'
+import { loginWithCredentials } from '@/actions/authActions'
 
 // Styled Custom Components
 const LoginIllustration = styled('img')(({ theme }) => ({
@@ -115,6 +116,7 @@ const LoginV2 = ({ mode }) => {
       const response = await loginWithCredentials(formData)
 
       // console.log('response', response)
+
       showAlert('Login Successfully', 'success')
       router.push('/dashboard')
 

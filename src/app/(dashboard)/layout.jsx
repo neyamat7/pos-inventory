@@ -1,4 +1,6 @@
 // MUI Imports
+import { redirect } from 'next/navigation'
+
 import Button from '@mui/material/Button'
 
 // Layout Imports
@@ -17,9 +19,18 @@ import ScrollToTop from '@core/components/scroll-to-top'
 
 // Util Imports
 import { getMode, getSystemMode } from '@core/utils/serverHelpers'
+import { auth } from '@/auth'
 
 const Layout = async props => {
   const { children } = props
+
+  const session = await auth()
+
+  // console.log('session', session)
+
+  if (!session) {
+    redirect('/login')
+  }
 
   // Vars
   const direction = 'ltr'
