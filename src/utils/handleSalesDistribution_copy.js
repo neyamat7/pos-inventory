@@ -24,7 +24,7 @@ export const handleSalesDistributionExpense = (data, cartProducts, setCartProduc
 
   const labourValue = calculateExpenseValue(data.labourAmount, data.labourType, cartProducts.length)
 
-  // ✅ update cartProducts with distributed expenses
+  // update cartProducts with distributed expenses
   setCartProducts(prevCart =>
     prevCart.map(item => {
       const expenses = transportationValue + moshjidValue + vanVaraValue + tradingPostValue + labourValue
@@ -57,11 +57,11 @@ export const handleSalesDistributionExpense = (data, cartProducts, setCartProduc
         ? Number((productBase * (1 + commissionRate)).toFixed(2))
         : productBase
 
-      console.log('base', productBase)
-      console.log('commission', commissionAmount)
-      console.log('commissionRate', commissionRate)
+      // console.log('base', productBase)
+      // console.log('commission', commissionAmount)
+      // console.log('commissionRate', commissionRate)
 
-      console.log('productAfterCommission', productAfterCommission)
+      // console.log('productAfterCommission', productAfterCommission)
 
       const total = Number((productAfterCommission + cratePrice).toFixed(2))
 

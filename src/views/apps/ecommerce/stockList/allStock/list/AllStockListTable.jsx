@@ -3,8 +3,16 @@
 // React Imports
 import { useState, useEffect } from 'react'
 
-// Next Imports
 import { useParams } from 'next/navigation'
+
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
+import Button from '@mui/material/Button'
+import Grid from '@mui/material/Grid'
+
+// Next Imports
 
 // MUI Imports
 import Card from '@mui/material/Card'
@@ -75,6 +83,20 @@ const AllStockListTable = ({ stockProductsData = [] }) => {
   const [globalFilter, setGlobalFilter] = useState('')
   const [selectedProduct, setSelectedProduct] = useState(null)
 
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [editFormData, setEditFormData] = useState(null)
+
+  const handleEdit = row => {
+    setEditFormData(row.original)
+    setEditModalOpen(true)
+  }
+
+  const handleEditSubmit = () => {
+    setData(prevData => prevData.map(item => (item.sl === editFormData.sl ? editFormData : item)))
+    setEditModalOpen(false)
+    Swal.fire('Updated!', 'Product information updated successfully.', 'success')
+  }
+
   const { lang: locale } = useParams()
 
   const handleDelete = row => {
@@ -97,6 +119,7 @@ const AllStockListTable = ({ stockProductsData = [] }) => {
   const columns = [
     { accessorKey: 'sl', header: 'SL' },
     { accessorKey: 'product', header: 'Product' },
+    { accessorKey: 'supplier_name', header: 'Supplier' },
     { accessorKey: 'code', header: 'Code' },
     { accessorKey: 'category', header: 'Category' },
     { accessorKey: 'cost', header: 'Cost' },
@@ -112,6 +135,11 @@ const AllStockListTable = ({ stockProductsData = [] }) => {
       header: 'Action',
       cell: ({ row }) => (
         <div className='flex items-center'>
+          {/* Edit Button */}
+          <IconButton aria-label='Edit' onClick={() => handleEdit(row)} color='primary'>
+            <i className='tabler-edit text-textSecondary' />
+          </IconButton>
+
           {/* Delete Button with SweetAlert2 confirm */}
           <IconButton
             aria-label='Delete'
@@ -242,6 +270,97 @@ const AllStockListTable = ({ stockProductsData = [] }) => {
           onPageChange={(_, page) => table.setPageIndex(page)}
         />
       </Card>
+      {/* Edit Product Modal */}
+      <Dialog
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        fullWidth
+        maxWidth='md'
+        sx={{
+          '& .MuiDialog-paper': {
+            borderRadius: 4,
+            p: 2,
+            backgroundColor: 'background.paper'
+          }
+        }}
+      >
+        <DialogTitle className='text-lg font-semibold border-b pb-2'>Edit Product Details</DialogTitle>
+
+        <DialogContent dividers>
+          {editFormData && (
+            <Grid container spacing={3} sx={{ mt: 1 }}>
+              <Grid item xs={12} sm={6}>
+                <CustomTextField
+                  fullWidth
+                  label='Product Name'
+                  value={editFormData.product}
+                  onChange={e => setEditFormData({ ...editFormData, product: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <CustomTextField
+                  fullWidth
+                  label='Supplier Name'
+                  value={editFormData.supplier_name}
+                  onChange={e => setEditFormData({ ...editFormData, supplier_name: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <CustomTextField
+                  fullWidth
+                  label='Category'
+                  value={editFormData.category}
+                  onChange={e => setEditFormData({ ...editFormData, category: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <CustomTextField
+                  fullWidth
+                  label='Code'
+                  value={editFormData.code}
+                  onChange={e => setEditFormData({ ...editFormData, code: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <CustomTextField
+                  fullWidth
+                  label='Cost'
+                  type='number'
+                  value={editFormData.cost}
+                  onChange={e => setEditFormData({ ...editFormData, cost: Number(e.target.value) })}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <CustomTextField
+                  fullWidth
+                  label='Quantity'
+                  type='number'
+                  value={editFormData.qty}
+                  onChange={e => setEditFormData({ ...editFormData, qty: Number(e.target.value) })}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <CustomTextField
+                  fullWidth
+                  label='Sale Price'
+                  type='number'
+                  value={editFormData.sale}
+                  onChange={e => setEditFormData({ ...editFormData, sale: Number(e.target.value) })}
+                />
+              </Grid>
+            </Grid>
+          )}
+        </DialogContent>
+
+        <DialogActions className='border-t pt-3'>
+          <Button variant='outlined' color='secondary' onClick={() => setEditModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button variant='contained' color='primary' onClick={handleEditSubmit}>
+            Save Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {selectedProduct && <ProductViewModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />}
     </>

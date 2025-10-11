@@ -10,7 +10,7 @@ export const db = {
       description: 'Fresh red apples',
       variants: [{ option: 'Weight', value: '1kg' }],
       price: 150,
-      commision_rate: 8,
+      commision_rate: 0,
       category: 'fruits',
       images: 'https://i.postimg.cc/DfsDFWyh/images.jpg',
       status: 'active'
@@ -23,7 +23,7 @@ export const db = {
       description: 'Organic ripe bananas',
       variants: [{ option: 'Dozen', value: '12' }],
       price: 120,
-      commision_rate: 7,
+      commision_rate: 0,
       category: 'fruits',
       images: 'https://i.postimg.cc/cLd3d3ZF/pexels-jibarofoto-2238309.jpg',
       status: 'active'
@@ -36,7 +36,7 @@ export const db = {
       description: 'Juicy oranges full of vitamin C',
       variants: [{ option: 'Weight', value: '2kg' }],
       price: 250,
-      commision_rate: 9,
+      commision_rate: 0,
       category: 'fruits',
       images: 'https://i.postimg.cc/QdDzsfH4/pexels-quang-nguyen-vinh-222549-2135677.jpg',
       status: 'active'
@@ -64,7 +64,7 @@ export const db = {
       description: 'Tropical pineapples',
       variants: [{ option: 'Piece', value: '1' }],
       price: 180,
-      commision_rate: 7,
+      commision_rate: 10,
       category: 'fruits',
       images: 'https://i.postimg.cc/X7phQrt9/pexels-psco-1071882.jpg',
       status: 'active'
@@ -78,18 +78,18 @@ export const db = {
       description: 'Refreshing watermelons',
       variants: [{ option: 'Weight', value: '3kg' }],
       price: 280,
-      commision_rate: 9,
+      commision_rate: 0,
       category: 'fruits',
       images: 'https://i.postimg.cc/nrcL64qc/pexels-mahmoud-yahyaoui-27863683.jpg',
       status: 'active'
     }
   ],
+
   productsData: [
-    // Fruits
     {
       id: 1,
       name: 'Mango',
-      price: 120,
+      price: 100,
       image: 'https://i.postimg.cc/4y0HNNp5/Chat-GPT-Image-Oct-9-2025-06-54-36-PM.png',
       category: 'Fruits',
       brand: 'Fresh Farm',
@@ -104,6 +104,7 @@ export const db = {
       brand: 'Tropical Fresh',
       commission_rate: 20
     },
+
     {
       id: 3,
       name: 'Banana',
@@ -112,19 +113,21 @@ export const db = {
       category: 'Fruits',
       brand: 'Nature Organic'
     },
+
     {
       id: 4,
       name: 'Apple',
       price: 150,
-      image: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce',
+      image: 'https://i.postimg.cc/90j6KK62/Chat-GPT-Image-Oct-11-2025-10-57-06-AM.png',
       category: 'Fruits',
       brand: 'Fresh Orchard'
     },
+
     {
       id: 5,
       name: 'Orange',
       price: 100,
-      image: 'https://i.postimg.cc/QdDzsfH4/pexels-quang-nguyen-vinh-222549-2135677.jpg',
+      image: 'https://i.postimg.cc/qqdPSSP0/Chat-GPT-Image-Oct-11-2025-11-05-15-AM.png',
       category: 'Fruits',
       brand: 'Citrus Co'
     },
@@ -191,6 +194,7 @@ export const db = {
       brand: 'Pulse Fresh'
     }
   ],
+
   reviews: [
     {
       id: 1,
@@ -4229,182 +4233,202 @@ export const db = {
     {
       sl: 1,
       product: 'Apple',
-      code: 'FR1001',
+      code: 'RT-APP-001',
       category: 'Fruits',
       cost: 2,
       qty: 150,
-      sale: 4
+      sale: 4,
+      supplier_name: 'Rahim Traders'
     },
     {
       sl: 2,
       product: 'Banana',
-      code: 'FR1002',
+      code: 'SA-BAN-002',
       category: 'Fruits',
       cost: 1,
       qty: 200,
-      sale: 2
+      sale: 2,
+      supplier_name: 'Saiful Alam'
     },
     {
       sl: 3,
       product: 'Orange',
-      code: 'FR1003',
+      code: 'HA-ORA-003',
       category: 'Fruits',
       cost: 1.5,
       qty: 180,
-      sale: 3
+      sale: 3,
+      supplier_name: 'Hasan Agro'
     },
     {
       sl: 4,
       product: 'Mango',
-      code: 'FR1004',
+      code: 'MA-MAN-004',
       category: 'Fruits',
       cost: 2.5,
       qty: 120,
-      sale: 5
+      sale: 5,
+      supplier_name: 'Mahmud Agro'
     },
     {
       sl: 5,
       product: 'Pineapple',
-      code: 'FR1005',
+      code: 'RT-PIN-005',
       category: 'Fruits',
       cost: 3,
       qty: 80,
-      sale: 6
+      sale: 6,
+      supplier_name: 'Rashid Traders'
     },
     {
       sl: 6,
       product: 'Strawberry',
-      code: 'FR1006',
+      code: 'JA-STR-006',
       category: 'Fruits',
       cost: 4,
       qty: 60,
-      sale: 7
+      sale: 7,
+      supplier_name: 'Jamil Agro'
     },
     {
       sl: 7,
       product: 'Grapes',
-      code: 'FR1007',
+      code: 'SF-GRA-007',
       category: 'Fruits',
       cost: 3,
       qty: 100,
-      sale: 5
+      sale: 5,
+      supplier_name: 'Sabbir Fruits'
     },
     {
       sl: 8,
       product: 'Watermelon',
-      code: 'FR1008',
+      code: 'TA-WAT-008',
       category: 'Fruits',
       cost: 5,
       qty: 40,
-      sale: 9
+      sale: 9,
+      supplier_name: 'Tariq Agro'
     },
     {
       sl: 9,
       product: 'Papaya',
-      code: 'FR1009',
+      code: 'NF-PAP-009',
       category: 'Fruits',
       cost: 2,
       qty: 70,
-      sale: 4
+      sale: 4,
+      supplier_name: 'Nayeem Fresh'
     },
     {
       sl: 10,
       product: 'Kiwi',
-      code: 'FR1010',
+      code: 'II-KIW-010',
       category: 'Fruits',
       cost: 3,
       qty: 50,
-      sale: 6
+      sale: 6,
+      supplier_name: 'Imran Imports'
     },
     {
       sl: 11,
       product: 'Tomato',
-      code: 'VG1011',
+      code: 'RA-TOM-011',
       category: 'Vegetables',
       cost: 1,
       qty: 300,
-      sale: 2
+      sale: 2,
+      supplier_name: 'Rafi Agro'
     },
     {
       sl: 12,
       product: 'Potato',
-      code: 'VG1012',
+      code: 'KV-POT-012',
       category: 'Vegetables',
       cost: 0.5,
       qty: 500,
-      sale: 1.5
+      sale: 1.5,
+      supplier_name: 'Kamal Vegetables'
     },
     {
       sl: 13,
       product: 'Onion',
-      code: 'VG1013',
+      code: 'FA-ONI-013',
       category: 'Vegetables',
       cost: 0.8,
       qty: 400,
-      sale: 2
+      sale: 2,
+      supplier_name: 'Farid Agro'
     },
     {
       sl: 14,
       product: 'Carrot',
-      code: 'VG1014',
+      code: 'HV-CAR-014',
       category: 'Vegetables',
       cost: 1,
       qty: 250,
-      sale: 3
+      sale: 3,
+      supplier_name: 'Habib Vegetables'
     },
     {
       sl: 15,
       product: 'Cabbage',
-      code: 'VG1015',
+      code: 'RA-CAB-015',
       category: 'Vegetables',
       cost: 1.2,
       qty: 150,
-      sale: 3
+      sale: 3,
+      supplier_name: 'Rana Agro'
     },
     {
       sl: 16,
       product: 'Cauliflower',
-      code: 'VG1016',
+      code: 'NA-CAU-016',
       category: 'Vegetables',
       cost: 1.5,
       qty: 100,
-      sale: 4
+      sale: 4,
+      supplier_name: 'Nazmul Agro'
     },
     {
       sl: 17,
       product: 'Spinach',
-      code: 'VG1017',
+      code: 'SG-SPI-017',
       category: 'Vegetables',
       cost: 0.7,
       qty: 200,
-      sale: 2
+      sale: 2,
+      supplier_name: 'Shahid Green'
     },
     {
       sl: 18,
       product: 'Broccoli',
-      code: 'VG1018',
+      code: 'AA-BRO-018',
       category: 'Vegetables',
       cost: 2,
       qty: 80,
-      sale: 5
+      sale: 5,
+      supplier_name: 'Anis Agro'
     },
     {
       sl: 19,
       product: 'Cucumber',
-      code: 'VG1019',
+      code: 'YT-CUC-019',
       category: 'Vegetables',
       cost: 1,
       qty: 180,
-      sale: 2.5
+      sale: 2.5,
+      supplier_name: 'Yasin Traders'
     },
     {
       sl: 20,
       product: 'Eggplant',
-      code: 'VG1020',
+      code: 'NA-EGG-020',
       category: 'Vegetables',
       cost: 1.3,
       qty: 140,
-      sale: 3
+      sale: 3,
+      supplier_name: 'Noman Agro'
     }
   ],
   expiredProducts: [

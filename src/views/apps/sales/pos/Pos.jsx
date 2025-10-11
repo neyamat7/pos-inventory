@@ -10,10 +10,11 @@ import { FaTimes, FaEdit } from 'react-icons/fa'
 
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table'
 
+import { toast } from 'react-toastify'
+
 import PosHeader from './PosHeader'
 import SearchProduct from './SearchProduct'
 
-import { handleSalesDistributionExpense } from '@/utils/handleSalesDistribution'
 import CategoryModal from '@/components/layout/shared/CategoryModal'
 import { categories, brands } from '@/data/productsCategory/productsCategory'
 import { customers } from '@/data/customerData/customerData'
@@ -21,8 +22,8 @@ import { filteredProductsData } from '@/utils/filteredProductsData'
 import { handleCrateCount } from '@/utils/handleCrateCount'
 import { calculateTotalDue } from '@/utils/calculateTotalDue'
 import { usePaymentCalculation } from '@/utils/usePaymentCalculation'
-import { showAlert } from '@/utils/showAlert'
 import ShowProductList from '@/components/layout/shared/ShowProductList'
+import { handleSalesTotal } from '@/utils/handleSalesTotal'
 
 export default function POSSystem({ productsData = [] }) {
   const [searchTerm, setSearchTerm] = useState('')
@@ -48,6 +49,16 @@ export default function POSSystem({ productsData = [] }) {
     value: 0
   })
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (cartProducts.length > 0) {
+        handleSalesTotal(setCartProducts, customers)
+      }
+    }, 100)
+
+    return () => clearTimeout(timeout)
+  }, [cartProducts])
+
   const filteredProducts = filteredProductsData(productsData, searchTerm, selectedCategory)
 
   const filteredCategories = categories.filter(category =>
@@ -70,7 +81,9 @@ export default function POSSystem({ productsData = [] }) {
 
   const handleCartProductClick = product => {
     if (!selectedCustomer?.sl) {
-      showAlert('Please select a customer first.', 'warning')
+      toast.warning('Please select a customer first.', {
+        position: 'top-center'
+      })
 
       return
     }
@@ -80,7 +93,9 @@ export default function POSSystem({ productsData = [] }) {
     )
 
     if (isAlreadyAdded) {
-      showAlert('This product is already added to the cart.', 'warning')
+      toast.warning('This product is already added to the cart.', {
+        position: 'top-center'
+      })
 
       return
     }
@@ -98,16 +113,11 @@ export default function POSSystem({ productsData = [] }) {
           type_two: 0
         },
         cratePrice: 0,
-        transportation: 0,
-        moshjid: 0,
-        van_vara: 0,
+        discount_kg: 0,
         total: 0,
         cost: product.price,
         commission: 0,
         commission_rate: product.commission_rate || 0,
-        trading_post: 0,
-        labour: 0,
-        expenses: 0,
         selling_date: date,
         expiry_date: ''
       }
@@ -117,9 +127,9 @@ export default function POSSystem({ productsData = [] }) {
   }
 
   // Function to handle distribute form submission
-  const handleDistributeSubmit = data => {
-    handleSalesDistributionExpense(data, cartProducts, setCartProducts, customers)
-  }
+  // const handleDistributeSubmit = data => {
+  //   handleSalesDistributionExpense(data, cartProducts, setCartProducts, customers)
+  // }
 
   // calculate total due amount
   const totalDueAmount = calculateTotalDue(cartProducts)
@@ -170,13 +180,17 @@ export default function POSSystem({ productsData = [] }) {
   const updateCommissionForProduct = () => {
     const { productId, customerId, value } = commissionModal
 
-    setCartProducts(prev =>
-      prev.map(item =>
+    setCartProducts(prev => {
+      const updated = prev.map(item =>
         item.product_id === productId && item.customer_id === customerId
           ? { ...item, commission_rate: Number(value) || 0 }
           : item
       )
-    )
+
+      handleSalesTotal(() => updated, customers)
+
+      return updated
+    })
 
     setCommissionModal({ open: false, productId: null, customerId: null, value: 0 })
   }
@@ -212,17 +226,20 @@ export default function POSSystem({ productsData = [] }) {
         header: 'Crate Type 1',
         cell: ({ row }) => {
           const product = row.original
+          const value = product.crate?.type_one
 
           return (
             <input
               type='number'
-              min='0'
-              value={product.crate?.type_one ?? 0}
+              onWheel={e => e.currentTarget.blur()}
+              value={value === 0 ? '' : (value ?? '')}
               onChange={e => {
-                const value = parseInt(e.target.value) || 0
+                const rawValue = e.target.value
+                const parsedValue = rawValue === '' ? 0 : parseInt(rawValue) || 0
 
-                handleCrateCount(setCartProducts, product.product_id, product.customer_id, 'type_one', value)
+                handleCrateCount(setCartProducts, product.product_id, product.customer_id, 'type_one', parsedValue)
               }}
+              placeholder='0'
               className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
             />
           )
@@ -234,43 +251,55 @@ export default function POSSystem({ productsData = [] }) {
         header: 'Crate Type 2',
         cell: ({ row }) => {
           const product = row.original
+          const value = product.crate?.type_two
 
           return (
             <input
               type='number'
-              min='0'
-              value={product.crate?.type_two ?? 0}
+              onWheel={e => e.currentTarget.blur()}
+              value={value === 0 ? '' : (value ?? '')}
               onChange={e => {
-                const value = parseInt(e.target.value) || 0
+                const rawValue = e.target.value
+                const parsedValue = rawValue === '' ? 0 : parseInt(rawValue) || 0
 
-                handleCrateCount(setCartProducts, product.product_id, product.customer_id, 'type_two', value)
+                handleCrateCount(setCartProducts, product.product_id, product.customer_id, 'type_two', parsedValue)
               }}
+              placeholder='0'
               className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
             />
           )
         }
       },
+      ,
       {
         accessorKey: 'cost',
-        header: 'Cost(unit)'
-      },
-      {
-        accessorKey: 'transportation',
-        header: 'Transportation'
-      },
-      {
-        accessorKey: 'moshjid',
-        header: 'Moshjid'
-      },
-      {
-        accessorKey: 'van_vara',
-        header: 'Van Vara'
-      },
-      {
-        accessorKey: 'expenses',
-        header: 'Expenses'
-      },
+        header: 'Cost(unit)',
+        cell: ({ row }) => {
+          const product = row.original
 
+          return (
+            <input
+              type='number'
+              onWheel={e => e.currentTarget.blur()}
+              value={product.cost === 0 ? '' : (product.cost ?? '')}
+              onChange={e => {
+                const rawValue = e.target.value
+
+                setCartProducts(prev =>
+                  prev.map(item =>
+                    item.product_id === product.product_id && item.customer_id === product.customer_id
+                      ? { ...item, cost: rawValue === '' ? 0 : parseFloat(rawValue) }
+                      : item
+                  )
+                )
+              }}
+              placeholder='0'
+              className='w-24 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
+            />
+          )
+        }
+      },
+      ,
       {
         accessorKey: 'commission_rate',
         header: 'Commission',
@@ -278,7 +307,7 @@ export default function POSSystem({ productsData = [] }) {
           const product = row.original
           const pct = Number(product?.commission_rate) || 0
 
-          console.log('product', product)
+          // console.log('product', product)
 
           return (
             <div className='flex items-center gap-2'>
@@ -294,6 +323,35 @@ export default function POSSystem({ productsData = [] }) {
                 </button>
               )}
             </div>
+          )
+        }
+      },
+      {
+        accessorKey: 'discount_kg',
+        header: 'Discount (kg)',
+        cell: ({ row }) => {
+          const product = row.original
+
+          return (
+            <input
+              type='number'
+              onWheel={e => e.currentTarget.blur()}
+              value={product.discount_kg === 0 ? '' : (product.discount_kg ?? '')}
+              onChange={e => {
+                const rawValue = e.target.value
+                const newValue = rawValue === '' ? 0 : parseFloat(rawValue)
+
+                setCartProducts(prev =>
+                  prev.map(item =>
+                    item.product_id === product.product_id && item.customer_id === product.customer_id
+                      ? { ...item, discount_kg: newValue }
+                      : item
+                  )
+                )
+              }}
+              placeholder='0'
+              className='w-24 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
+            />
           )
         }
       },
@@ -363,11 +421,12 @@ export default function POSSystem({ productsData = [] }) {
       acc[key].items.push(item)
 
       const itemTotal = Number(item.total) || 0
-      const itemCost = (Number(item.cost) || 0) * (Number(item.crate) || 1)
+      const itemCost = Number(item.cost) || 0
+      const profit = itemTotal - itemCost
 
       acc[key].sub_total += Number(item.total) || 0
       acc[key].commission_total += Number(item.commission) || 0
-      acc[key].profit_total += itemTotal - itemCost
+      acc[key].profit_total += profit
 
       return acc
     }, {})
@@ -391,6 +450,7 @@ export default function POSSystem({ productsData = [] }) {
     }
 
     console.log('Customer sell payload (multi-customer):', payload)
+    toast.success('Product sold successfully!')
   }
 
   return (
@@ -483,13 +543,13 @@ export default function POSSystem({ productsData = [] }) {
             </table>
           </div>
 
-          <div className='mt-auto'>
+          <div className='mt-20'>
             {/* Expense Distribution */}
-            {cartProducts.length > 0 && (
+            {/* {cartProducts.length > 0 && (
               <form className='space-y-4 mb-6' onSubmit={handleSubmit(handleDistributeSubmit)}>
                 <h1 className='text-2xl font-medium'>Expense Distribution</h1>
 
-                {/* Transportation */}
+                 
 
                 <div className='flex flex-col lg:flex-row gap-2 lg:gap-5'>
                   <label className='w-32 text-sm'>Transportation</label>
@@ -512,7 +572,7 @@ export default function POSSystem({ productsData = [] }) {
                   </div>
                 </div>
 
-                {/* Moshjid */}
+       
                 <div className='flex flex-col lg:flex-row gap-2 lg:gap-5'>
                   <label className='w-32 text-sm'>Moshjid</label>
                   <div className='flex gap-1 lg:gap-5 w-full'>
@@ -534,8 +594,7 @@ export default function POSSystem({ productsData = [] }) {
                     </div>
                   </div>
                 </div>
-
-                {/* Van Vara */}
+ 
                 <div className='flex flex-col lg:flex-row gap-2 lg:gap-5'>
                   <label className='w-32 text-sm'>Van Vara</label>
                   <div className='flex gap-1 lg:gap-5 w-full'>
@@ -557,8 +616,7 @@ export default function POSSystem({ productsData = [] }) {
                     </div>
                   </div>
                 </div>
-
-                {/* Trading Post */}
+ 
                 <div className='flex flex-col lg:flex-row gap-2 lg:gap-5'>
                   <label className='w-32 text-sm'>Trading Post</label>
                   <div className='flex gap-1 lg:gap-5 w-full'>
@@ -581,7 +639,7 @@ export default function POSSystem({ productsData = [] }) {
                   </div>
                 </div>
 
-                {/* Labour */}
+          
                 <div className='flex flex-col lg:flex-row gap-2 lg:gap-5'>
                   <label className='w-32 text-sm'>Labour</label>
                   <div className='flex gap-1 lg:gap-5 w-full'>
@@ -611,7 +669,7 @@ export default function POSSystem({ productsData = [] }) {
                   Distribute Expenses
                 </button>
               </form>
-            )}
+            )} */}
 
             {/* Payment Details */}
             <form onSubmit={handleSubmitPayment(onSubmitPayment)} className='mt-auto'>
@@ -673,6 +731,7 @@ export default function POSSystem({ productsData = [] }) {
                     <span className='text-sm'>Sub Total</span>
                     <span className='font-medium'>৳ {totalDueAmount}</span>
                   </div>
+
                   <div className='flex items-center justify-between'>
                     <span className='text-sm'>Vat</span>
                     <div className='flex items-center space-x-2'>
@@ -719,38 +778,37 @@ export default function POSSystem({ productsData = [] }) {
                 </div>
               </div>
 
-              {/* Purchase Summary Section */}
-              {cartProducts.length > 0 && (
-                <div className=''>
-                  <div className='bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-xl p-6 shadow-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-10'>
-                    <div className='flex flex-col sm:flex-row sm:gap-10 text-center sm:text-left w-full justify-between'>
-                      <div>
-                        <p className='text-base opacity-80'>Total Products</p>
-                        <h2 className='text-2xl font-bold'>{cartProducts.length}</h2>
-                      </div>
-                      <div>
-                        <p className='text-base opacity-80'>Total Suppliers</p>
-                        <h2 className='text-2xl font-bold'>
-                          {[...new Set(cartProducts.map(p => p.supplier_id))].length}
-                        </h2>
-                      </div>
-                      <div>
-                        <p className='text-base opacity-80'>Total Amount</p>
-                        <h2 className='text-2xl font-bold'>৳ {totalDueAmount}</h2>
-                      </div>
-                    </div>
+              {/* Selling Summary Section */}
 
-                    <div className='flex justify-center sm:justify-end w-full sm:w-auto'>
-                      <button
-                        type='submit'
-                        className='bg-white text-indigo-600 font-semibold px-6 py-3 rounded-lg hover:bg-gray-100 transition-all duration-200 w-full sm:w-auto cursor-pointer'
-                      >
-                        Purchase
-                      </button>
+              <div className='mt-5'>
+                <div className='bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-xl p-6 shadow-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-10'>
+                  <div className='flex flex-col sm:flex-row sm:gap-10 text-center sm:text-left w-full justify-between'>
+                    <div>
+                      <p className='text-base opacity-80'>Total Products</p>
+                      <h2 className='text-2xl font-bold'>{cartProducts.length}</h2>
+                    </div>
+                    <div>
+                      <p className='text-base opacity-80'>Total Customers</p>
+                      <h2 className='text-2xl font-bold'>
+                        {[...new Set(cartProducts.map(p => p.customer_id))].length}
+                      </h2>
+                    </div>
+                    <div>
+                      <p className='text-base opacity-80'>Total Amount</p>
+                      <h2 className='text-2xl font-bold'>৳ {totalDueAmount}</h2>
                     </div>
                   </div>
+
+                  <div className='flex justify-center sm:justify-end w-full sm:w-auto'>
+                    <button
+                      type='submit'
+                      className='bg-white text-base text-indigo-600 font-semibold px-6 py-2 rounded-lg hover:bg-gray-100 transition-all duration-200 w-full sm:w-auto cursor-pointer'
+                    >
+                      Sell
+                    </button>
+                  </div>
                 </div>
-              )}
+              </div>
             </form>
           </div>
         </div>

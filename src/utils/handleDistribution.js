@@ -6,21 +6,32 @@ const calculateExpenseValue = (amount, type, totalItems) => {
   return Number(Number(amount).toFixed(2))
 }
 
-export const handleDistributionExpense = (data, cartProducts, setCartProducts, suppliersData = []) => {
-  // calculate distributed expense values
-  const transportationValue = calculateExpenseValue(
-    data.transportationAmount,
-    data.transportationType,
-    cartProducts.length
-  )
-
-  const moshjidValue = calculateExpenseValue(data.moshjidAmount, data.moshjidType, cartProducts.length)
-  const vanVaraValue = calculateExpenseValue(data.vanVaraAmount, data.vanVaraType, cartProducts.length)
-  const tradingPostValue = calculateExpenseValue(data.tradingPostAmount, data.tradingPostType, cartProducts.length)
-  const labourValue = calculateExpenseValue(data.labourAmount, data.labourType, cartProducts.length)
+export const handleDistributionExpense = (data = {}, cartProducts, setCartProducts, suppliersData = []) => {
+  const isDataEmpty = !data || Object.keys(data).length === 0
 
   setCartProducts(prevCart =>
     prevCart.map(item => {
+      // calculate distributed expense values
+      const transportationValue = isDataEmpty
+        ? item.transportation || 0
+        : calculateExpenseValue(data.transportationAmount, data.transportationType, cartProducts.length) || 0
+
+      const moshjidValue = isDataEmpty
+        ? item.moshjid || 0
+        : calculateExpenseValue(data.moshjidAmount, data.moshjidType, cartProducts.length) || 0
+
+      const vanVaraValue = isDataEmpty
+        ? item.van_vara || 0
+        : calculateExpenseValue(data.vanVaraAmount, data.vanVaraType, cartProducts.length) || 0
+
+      const tradingPostValue = isDataEmpty
+        ? item.trading_post || 0
+        : calculateExpenseValue(data.tradingPostAmount, data.tradingPostType, cartProducts.length) || 0
+
+      const labourValue = isDataEmpty
+        ? item.labour || 0
+        : calculateExpenseValue(data.labourAmount, data.labourType, cartProducts.length) || 0
+
       const expenses = transportationValue + moshjidValue + vanVaraValue + tradingPostValue + labourValue
 
       // --- get supplier info ---
@@ -40,7 +51,8 @@ export const handleDistributionExpense = (data, cartProducts, setCartProducts, s
       const productBase = Number(item.cost || 0) * (typeOneQty + typeTwoQty) + expenses
 
       // --- total calculation ---
-      const total = Number((productBase + cratePrice).toFixed(2))
+      // const total = Number((productBase + cratePrice).toFixed(2))
+      const total = Number(productBase.toFixed(2))
 
       return {
         ...item,

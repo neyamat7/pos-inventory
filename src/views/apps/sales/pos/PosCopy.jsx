@@ -9,7 +9,7 @@ import { FaTimes, FaPlus, FaMinus } from 'react-icons/fa'
 import PosHeader from './PosHeader'
 import SearchProduct from './SearchProduct'
 
-import { handleSalesDistributionExpense } from '@/utils/handleSalesDistribution'
+import { handleSalesDistributionExpense } from '@/utils/handleSalesTotal'
 import CategoryModal from '@/components/layout/shared/CategoryModal'
 import BrandModal from '@/components/layout/shared/BrandModal'
 import { categories, brands } from '@/data/productsCategory/productsCategory'

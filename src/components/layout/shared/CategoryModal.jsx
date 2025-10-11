@@ -7,7 +7,9 @@ const modalStyle = {
   position: 'fixed',
   top: 0,
   right: 0,
-  width: '250px',
+  minWidth: '300px',
+  maxWidth: '400px',
+  width: '100%',
   height: '100vh',
   bgcolor: 'white',
   boxShadow: 24,
@@ -54,7 +56,7 @@ const CategoryModal = ({
                 />
               </div>
 
-              <div className='grid grid-cols-1 gap-3'>
+              <div className='grid grid-cols-2 gap-3'>
                 {filteredCategories.map(category => (
                   <div
                     onClick={() => handleCategoryClick(category.name)}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 
 import Link from 'next/link'
 
@@ -9,6 +9,8 @@ import { useForm } from 'react-hook-form'
 import { FaTimes, FaPlus, FaMinus, FaEdit } from 'react-icons/fa'
 
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table'
+
+import { toast } from 'react-toastify'
 
 import PurchaseHeader from './PurchaseHeader'
 import SearchProduct from './SearchProduct'
@@ -22,6 +24,7 @@ import { showAlert } from '@/utils/showAlert'
 import ShowProductList from '@/components/layout/shared/ShowProductList'
 
 export default function AddPurchase({ productsData = [], suppliersData = [] }) {
+  const skipNextEffect = useRef(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryModalOpen, setCategoryModalOpen] = useState(false)
   const [brandModalOpen, setBrandModalOpen] = useState(false)
@@ -61,7 +64,9 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
 
   const handleCartProductClick = product => {
     if (!selectedSupplier?.sl) {
-      showAlert('Please select a supplier first.', 'warning')
+      toast.warning('Please select a supplier first.', {
+        position: 'top-center'
+      })
 
       return
     }
@@ -71,7 +76,9 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
     )
 
     if (isAlreadyAdded) {
-      showAlert('This product is already added to the cart.', 'warning')
+      toast.warning('This product is already added to the cart.', {
+        position: 'top-center'
+      })
 
       return
     }
@@ -108,8 +115,26 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
 
   // Function to handle distribute form submission
   const handleDistributeSubmit = data => {
+    skipNextEffect.current = true
+
     handleDistributionExpense(data, cartProducts, setCartProducts, suppliersData)
   }
+
+  useEffect(() => {
+    if (skipNextEffect.current) {
+      skipNextEffect.current = false
+
+      return
+    }
+
+    const timeout = setTimeout(() => {
+      if (cartProducts.length > 0) {
+        handleDistributionExpense({}, cartProducts, setCartProducts, suppliersData)
+      }
+    }, 100)
+
+    return () => clearTimeout(timeout)
+  }, [cartProducts, setCartProducts, suppliersData])
 
   // calculate total due amount
   const totalDueAmount = calculateTotalDue(cartProducts)
@@ -211,7 +236,31 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
 
       {
         accessorKey: 'cost',
-        header: 'Cost(unit)'
+        header: 'Cost(unit)',
+        cell: ({ row }) => {
+          const product = row.original
+
+          return (
+            <input
+              type='number'
+              onWheel={e => e.currentTarget.blur()}
+              value={product.cost === 0 ? '' : (product.cost ?? '')}
+              onChange={e => {
+                const rawValue = e.target.value
+
+                setCartProducts(prev =>
+                  prev.map(item =>
+                    item.product_id === product.product_id && item.supplier_id === product.supplier_id
+                      ? { ...item, cost: rawValue === '' ? 0 : parseFloat(rawValue) }
+                      : item
+                  )
+                )
+              }}
+              placeholder='0'
+              className='w-24 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
+            />
+          )
+        }
       },
       {
         accessorKey: 'transportation',
@@ -356,7 +405,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
 
       <div className='flex flex-col lg:flex-row gap-6'>
         {/* Left Side - Form */}
-        <div className='w-4/5 bg-white rounded-lg p-6 flex flex-col'>
+        <div className='w-full lg:w-8/12 xl:w-9/12 bg-white rounded-lg p-6 flex flex-col'>
           {/* Order Details */}
           <div className='grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6'>
             <input
@@ -608,7 +657,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
           <div className='bg-white rounded-lg shadow-lg p-4 w-full max-w-xs'>
             <div className='flex items-center justify-between mb-3'>
               <h3 className='text-base font-medium'>Edit Commission (%)</h3>
-              
+
               <button
                 type='button'
                 onClick={() => setCommissionModal({ open: false, productId: null, supplierId: null, value: 0 })}
