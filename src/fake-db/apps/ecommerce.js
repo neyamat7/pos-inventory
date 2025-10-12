@@ -9,7 +9,8 @@ export const db = {
       name: 'Apple',
       description: 'Fresh red apples',
       variants: [{ option: 'Weight', value: '1kg' }],
-      price: 150,
+      cost_price: 120,
+      selling_price: 150,
       commision_rate: 0,
       category: 'fruits',
       images: 'https://i.postimg.cc/DfsDFWyh/images.jpg',
@@ -22,7 +23,8 @@ export const db = {
       name: 'Banana',
       description: 'Organic ripe bananas',
       variants: [{ option: 'Dozen', value: '12' }],
-      price: 120,
+      cost_price: 95,
+      selling_price: 120,
       commision_rate: 0,
       category: 'fruits',
       images: 'https://i.postimg.cc/cLd3d3ZF/pexels-jibarofoto-2238309.jpg',
@@ -35,13 +37,13 @@ export const db = {
       name: 'Orange',
       description: 'Juicy oranges full of vitamin C',
       variants: [{ option: 'Weight', value: '2kg' }],
-      price: 250,
+      cost_price: 200,
+      selling_price: 250,
       commision_rate: 0,
       category: 'fruits',
       images: 'https://i.postimg.cc/QdDzsfH4/pexels-quang-nguyen-vinh-222549-2135677.jpg',
       status: 'active'
     },
-
     {
       id: 'p005',
       sku: 'MNG654',
@@ -49,13 +51,13 @@ export const db = {
       name: 'Mango',
       description: 'Sweet Alphonso mangoes',
       variants: [{ option: 'Weight', value: '1kg' }],
-      price: 300,
+      cost_price: 250,
+      selling_price: 300,
       commision_rate: 10,
       category: 'fruits',
       images: 'https://i.postimg.cc/2yhsJDLj/Mangoes.jpg',
       status: 'active'
     },
-
     {
       id: 'p007',
       sku: 'PNE147',
@@ -63,13 +65,13 @@ export const db = {
       name: 'Pineapple',
       description: 'Tropical pineapples',
       variants: [{ option: 'Piece', value: '1' }],
-      price: 180,
+      cost_price: 140,
+      selling_price: 180,
       commision_rate: 10,
       category: 'fruits',
       images: 'https://i.postimg.cc/X7phQrt9/pexels-psco-1071882.jpg',
       status: 'active'
     },
-
     {
       id: 'p009',
       sku: 'WML369',
@@ -77,19 +79,21 @@ export const db = {
       name: 'Watermelon',
       description: 'Refreshing watermelons',
       variants: [{ option: 'Weight', value: '3kg' }],
-      price: 280,
+      cost_price: 230,
+      selling_price: 280,
       commision_rate: 0,
       category: 'fruits',
       images: 'https://i.postimg.cc/nrcL64qc/pexels-mahmoud-yahyaoui-27863683.jpg',
       status: 'active'
     }
   ],
-
   productsData: [
     {
       id: 1,
       name: 'Mango',
       price: 100,
+      cost_price: 80,
+      selling_price: 100,
       image: 'https://i.postimg.cc/4y0HNNp5/Chat-GPT-Image-Oct-9-2025-06-54-36-PM.png',
       category: 'Fruits',
       brand: 'Fresh Farm',
@@ -99,43 +103,49 @@ export const db = {
       id: 2,
       name: 'Pineapple',
       price: 90,
+      cost_price: 70,
+      selling_price: 90,
       image: 'https://i.postimg.cc/Y2T1HbRX/Chat-GPT-Image-Oct-9-2025-07-01-22-PM.png',
       category: 'Fruits',
       brand: 'Tropical Fresh',
       commission_rate: 20
     },
-
     {
       id: 3,
       name: 'Banana',
       price: 60,
+      cost_price: 45,
+      selling_price: 60,
       image: 'https://i.postimg.cc/q72FsNRC/Chat-GPT-Image-Oct-9-2025-07-05-58-PM.png',
       category: 'Fruits',
       brand: 'Nature Organic'
     },
-
     {
       id: 4,
       name: 'Apple',
       price: 150,
+      cost_price: 120,
+      selling_price: 150,
       image: 'https://i.postimg.cc/90j6KK62/Chat-GPT-Image-Oct-11-2025-10-57-06-AM.png',
       category: 'Fruits',
       brand: 'Fresh Orchard'
     },
-
     {
       id: 5,
       name: 'Orange',
       price: 100,
+      cost_price: 80,
+      selling_price: 100,
       image: 'https://i.postimg.cc/qqdPSSP0/Chat-GPT-Image-Oct-11-2025-11-05-15-AM.png',
       category: 'Fruits',
       brand: 'Citrus Co'
     },
-
     {
       id: 8,
       name: 'Watermelon',
       price: 200,
+      cost_price: 160,
+      selling_price: 200,
       image: 'https://i.postimg.cc/nrcL64qc/pexels-mahmoud-yahyaoui-27863683.jpg',
       category: 'Fruits',
       brand: 'Green Fields'
@@ -146,6 +156,8 @@ export const db = {
       id: 11,
       name: 'Tomato',
       price: 50,
+      cost_price: 40,
+      selling_price: 50,
       image: 'https://i.postimg.cc/CL0CK5V4/pexels-rauf-allahverdiyev-561368-1367242.jpg',
       category: 'Vegetables',
       brand: 'Green Fresh'
@@ -154,6 +166,8 @@ export const db = {
       id: 12,
       name: 'Potato',
       price: 40,
+      cost_price: 30,
+      selling_price: 40,
       image: 'https://i.postimg.cc/Yq7NS0wR/pexels-victorino-2286776.jpg',
       category: 'Vegetables',
       brand: 'Farm Fresh'
@@ -162,6 +176,8 @@ export const db = {
       id: 13,
       name: 'Onion',
       price: 60,
+      cost_price: 45,
+      selling_price: 60,
       image: 'https://i.postimg.cc/BQ35vbGR/onion-1-kg-product-images-o590003515-p590003515-0-202509221825.webp',
       category: 'Vegetables',
       brand: 'Daily Harvest'
@@ -172,6 +188,8 @@ export const db = {
       id: 41,
       name: 'Rice',
       price: 450,
+      cost_price: 370,
+      selling_price: 450,
       image: 'https://i.postimg.cc/qRjtMJcj/9fd402e1470f3fca485e5fe6b317db58cbea003f951871c1.jpg',
       category: 'Grains',
       brand: 'Rice Valley'
@@ -180,6 +198,8 @@ export const db = {
       id: 42,
       name: 'Wheat Flour',
       price: 400,
+      cost_price: 320,
+      selling_price: 400,
       image: 'https://i.postimg.cc/k4n6m6Ss/istockphoto-172876049-612x612.jpg',
       category: 'Grains',
       brand: 'Healthy Grain'
@@ -188,6 +208,8 @@ export const db = {
       id: 43,
       name: 'Lentils',
       price: 150,
+      cost_price: 120,
+      selling_price: 150,
       image:
         'https://i.postimg.cc/zB0LXzwK/Lentils-Are-Your-Ticket-to-Quick-and-Hearty-Meals-FT-BLOG0125-83a85aa4ddcf47f4ac0a5a71870a379d.jpg',
       category: 'Grains',

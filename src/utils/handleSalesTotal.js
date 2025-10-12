@@ -1,12 +1,9 @@
-export const handleSalesTotal = (setCartProducts, customers) => {
-  // update cartProducts with distributed expenses
+// ✅ Updated handleSalesTotal for single customer, using cost_price & selling_price
+export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
   setCartProducts(prevCart =>
     prevCart.map(item => {
-      // --- crate price from customer data ---
-      const customer = customers?.find(s => s.sl === item.customer_id)
-
-      // --- calculate crate prices for both types ---
-      const customerCrate = customer?.crate || {}
+      // --- crate price from selected customer data ---
+      const customerCrate = selectedCustomer?.crate || {}
       const typeOnePrice = customerCrate.type_one?.price || 0
       const typeTwoPrice = customerCrate.type_two?.price || 0
 
@@ -15,9 +12,18 @@ export const handleSalesTotal = (setCartProducts, customers) => {
 
       const cratePrice = Number((typeOneQty * typeOnePrice + typeTwoQty * typeTwoPrice).toFixed(2))
 
-      // --- base product total before commission ---
-      const productBase = Number(item.cost || 0) * (typeOneQty + typeTwoQty)
+      // Get kg, cost price, and selling price
+      const kg = Number(item.kg) || 0
+      const costPrice = Number(item.cost_price) || 0
+      const sellingPrice = Number(item.selling_price) || 0
 
+      // Calculate total based on selling price
+      const productBase = kg * sellingPrice
+
+      // Calculate profit per item (never below zero)
+      const profit = Math.max(0, (sellingPrice - costPrice) * kg)
+
+      // --- commission calculation ---
       const isCommissioned =
         (item.product_name || '').toLowerCase().includes('mango') ||
         (item.product_name || '').toLowerCase().includes('pineapple')
@@ -27,24 +33,20 @@ export const handleSalesTotal = (setCartProducts, customers) => {
 
       const commissionAmount = Number((productBase * commissionRate).toFixed(2))
 
-      // Apply commission (10%) to productBase ONLY, then add cratePrice without commission
+      // Apply commission on productBase (selling total)
       const productAfterCommission = isCommissioned
         ? Number((productBase * (1 + commissionRate)).toFixed(2))
         : productBase
 
-      // console.log('base', productBase)
-      // console.log('commission', commissionAmount)
-      // console.log('commissionRate', commissionRate)
-
-      // console.log('productAfterCommission', productAfterCommission)
-
-      const total = Number(productAfterCommission.toFixed(2))
+      // Final total = productAfterCommission + cratePrice
+      const total = Number((productBase + cratePrice).toFixed(2))
 
       return {
         ...item,
-        commission: commissionAmount,
+        kg,
         cratePrice,
-        total: total
+        total,
+        profit
       }
     })
   )

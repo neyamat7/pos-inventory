@@ -24,6 +24,8 @@ import { calculateTotalDue } from '@/utils/calculateTotalDue'
 import { usePaymentCalculation } from '@/utils/usePaymentCalculation'
 import ShowProductList from '@/components/layout/shared/ShowProductList'
 import { handleSalesTotal } from '@/utils/handleSalesTotal'
+import { lots } from '@/fake-db/apps/lotsData'
+import { useGlobalTooltip } from '@/components/layout/shared/useGlobalTooltip'
 
 export default function POSSystem({ productsData = [] }) {
   const [searchTerm, setSearchTerm] = useState('')
@@ -41,6 +43,7 @@ export default function POSSystem({ productsData = [] }) {
   const { register, handleSubmit } = useForm()
   const [selectedCategory, setSelectedCategory] = useState([])
   const [selectedBrand, setSelectedBrand] = useState([])
+  const showTooltip = useGlobalTooltip()
 
   const [commissionModal, setCommissionModal] = useState({
     open: false,
@@ -49,15 +52,22 @@ export default function POSSystem({ productsData = [] }) {
     value: 0
   })
 
+  const [lotModal, setLotModal] = useState({
+    open: false,
+    productId: null,
+    productName: '',
+    selectedLots: []
+  })
+
   useEffect(() => {
     const timeout = setTimeout(() => {
-      if (cartProducts.length > 0) {
-        handleSalesTotal(setCartProducts, customers)
+      if (cartProducts.length > 0 && selectedCustomer?.sl) {
+        handleSalesTotal(setCartProducts, selectedCustomer)
       }
     }, 100)
 
     return () => clearTimeout(timeout)
-  }, [cartProducts])
+  }, [cartProducts, selectedCustomer])
 
   const filteredProducts = filteredProductsData(productsData, searchTerm, selectedCategory)
 
@@ -68,10 +78,8 @@ export default function POSSystem({ productsData = [] }) {
   const filteredBrands = brands.filter(brand => brand.name.toLowerCase().includes(brandSearch.toLowerCase()))
 
   // Function to remove item from cart
-  const handleRemoveCartItem = (productId, customerId) => {
-    setCartProducts(prevCart =>
-      prevCart.filter(item => !(item.product_id === productId && item.customer_id === customerId))
-    )
+  const handleRemoveCartItem = productId => {
+    setCartProducts(prevCart => prevCart.filter(item => item.product_id !== productId))
   }
 
   // Function to remove category
@@ -106,30 +114,31 @@ export default function POSSystem({ productsData = [] }) {
         ...product,
         product_id: product.id,
         product_name: product.name,
-        customer_id: selectedCustomer.sl,
-        customer_name: selectedCustomer.name,
+
+        // customer_id: selectedCustomer.sl,
+        // customer_name: selectedCustomer.name,
         crate: {
           type_one: 0,
           type_two: 0
         },
         cratePrice: 0,
+        kg: 0,
         discount_kg: 0,
         total: 0,
-        cost: product.price,
+        profit: 0,
+        cost_price: product.cost_price ?? 0,
+        selling_price: product.selling_price ?? 0,
         commission: 0,
         commission_rate: product.commission_rate || 0,
         selling_date: date,
-        expiry_date: ''
+        expiry_date: '',
+        lots_selected: [],
+        total_from_lots: 0
       }
 
       return [...prevCart, newCartItem]
     })
   }
-
-  // Function to handle distribute form submission
-  // const handleDistributeSubmit = data => {
-  //   handleSalesDistributionExpense(data, cartProducts, setCartProducts, customers)
-  // }
 
   // calculate total due amount
   const totalDueAmount = calculateTotalDue(cartProducts)
@@ -178,13 +187,11 @@ export default function POSSystem({ productsData = [] }) {
 
   // Save only the commission value
   const updateCommissionForProduct = () => {
-    const { productId, customerId, value } = commissionModal
+    const { productId, value } = commissionModal
 
     setCartProducts(prev => {
       const updated = prev.map(item =>
-        item.product_id === productId && item.customer_id === customerId
-          ? { ...item, commission_rate: Number(value) || 0 }
-          : item
+        item.product_id === productId ? { ...item, commission_rate: Number(value) || 0 } : item
       )
 
       handleSalesTotal(() => updated, customers)
@@ -192,7 +199,7 @@ export default function POSSystem({ productsData = [] }) {
       return updated
     })
 
-    setCommissionModal({ open: false, productId: null, customerId: null, value: 0 })
+    setCommissionModal({ open: false, productId: null, value: 0 })
   }
 
   // Auto calculate due and change amounts
@@ -200,14 +207,6 @@ export default function POSSystem({ productsData = [] }) {
 
   const columns = useMemo(
     () => [
-      {
-        accessorKey: 'customer_id',
-        header: 'SL'
-      },
-      {
-        accessorKey: 'customer_name',
-        header: 'Customer'
-      },
       {
         accessorKey: 'product_name',
         header: 'Product',
@@ -221,6 +220,92 @@ export default function POSSystem({ productsData = [] }) {
           )
         }
       },
+
+      // UPDATED: LOT column with global (non-clipped) tooltip
+      {
+        accessorKey: 'lots_selected',
+        header: 'Select Lot',
+        cell: ({ row }) => {
+          const product = row.original
+          const totalLots = product.lots_selected?.length || 0
+
+          // No lot
+          if (totalLots === 0) {
+            return (
+              <button
+                type='button'
+                onClick={() =>
+                  setLotModal({
+                    open: true,
+                    productId: product.product_id,
+                    productName: product.product_name,
+                    selectedLots: product.lots_selected || []
+                  })
+                }
+                className='text-indigo-600 hover:text-indigo-800 font-medium underline'
+              >
+                Select Lot
+              </button>
+            )
+          }
+
+          // One lot
+          if (totalLots === 1) {
+            const lot = product.lots_selected[0]
+
+            return (
+              <span
+                onClick={() =>
+                  setLotModal({
+                    open: true,
+                    productId: product.product_id,
+                    productName: product.product_name,
+                    selectedLots: product.lots_selected
+                  })
+                }
+                className='text-gray-800 font-semibold cursor-pointer hover:text-indigo-600 transition-colors'
+              >
+                {lot.lot_name}
+              </span>
+            )
+          }
+
+          // Multiple lots — static tooltip above item
+          return (
+            <span
+              className='text-gray-800 font-semibold cursor-pointer hover:text-indigo-600 transition-colors relative'
+              onClick={() =>
+                setLotModal({
+                  open: true,
+                  productId: product.product_id,
+                  productName: product.product_name,
+                  selectedLots: product.lots_selected
+                })
+              }
+              onMouseEnter={e => {
+                const rect = e.currentTarget.getBoundingClientRect()
+
+                const content = product.lots_selected
+                  .map(
+                    l => `
+            <div class='flex justify-between gap-3 whitespace-nowrap'>
+              <span>${l.lot_name}</span>
+              <span class='text-gray-300 ml-3'>${l.use_qty || 0} kg</span>
+            </div>`
+                  )
+                  .join('')
+
+                //  Tooltip appears directly above the item
+                showTooltip({ rect, content })
+              }}
+              onMouseLeave={() => showTooltip(null)}
+            >
+              {totalLots} lots selected
+            </span>
+          )
+        }
+      },
+
       {
         accessorKey: 'crate_type_one',
         header: 'Crate Type 1',
@@ -272,7 +357,7 @@ export default function POSSystem({ productsData = [] }) {
       },
       ,
       {
-        accessorKey: 'cost',
+        accessorKey: 'selling_price',
         header: 'Cost(unit)',
         cell: ({ row }) => {
           const product = row.original
@@ -281,14 +366,14 @@ export default function POSSystem({ productsData = [] }) {
             <input
               type='number'
               onWheel={e => e.currentTarget.blur()}
-              value={product.cost === 0 ? '' : (product.cost ?? '')}
+              value={product.selling_price === 0 ? '' : (product.selling_price ?? '')}
               onChange={e => {
                 const rawValue = e.target.value
 
                 setCartProducts(prev =>
                   prev.map(item =>
-                    item.product_id === product.product_id && item.customer_id === product.customer_id
-                      ? { ...item, cost: rawValue === '' ? 0 : parseFloat(rawValue) }
+                    item.product_id === product.product_id
+                      ? { ...item, selling_price: rawValue === '' ? 0 : parseFloat(rawValue) }
                       : item
                   )
                 )
@@ -299,6 +384,33 @@ export default function POSSystem({ productsData = [] }) {
           )
         }
       },
+
+      {
+        accessorKey: 'kg',
+        header: 'KG',
+        cell: ({ row }) => {
+          const product = row.original
+
+          return (
+            <input
+              type='number'
+              onWheel={e => e.currentTarget.blur()}
+              value={product.kg === 0 ? '' : (product.kg ?? '')}
+              onChange={e => {
+                const rawValue = e.target.value
+                const parsedValue = rawValue === '' ? 0 : parseFloat(rawValue) || 0
+
+                setCartProducts(prev =>
+                  prev.map(item => (item.product_id === product.product_id ? { ...item, kg: parsedValue } : item))
+                )
+              }}
+              placeholder='0'
+              className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
+            />
+          )
+        }
+      },
+
       ,
       {
         accessorKey: 'commission_rate',
@@ -362,9 +474,26 @@ export default function POSSystem({ productsData = [] }) {
         cell: ({ row }) => {
           const product = row.original
 
-          return (parseFloat(product.total) || 0).toFixed(2)
+          return (
+            <input
+              type='number'
+              onWheel={e => e.currentTarget.blur()}
+              value={product.total === 0 ? '' : (product.total ?? '')}
+              onChange={e => {
+                const rawValue = e.target.value
+                const newValue = rawValue === '' ? 0 : parseFloat(rawValue)
+
+                setCartProducts(prev =>
+                  prev.map(item => (item.product_id === product.product_id ? { ...item, total: newValue } : item))
+                )
+              }}
+              placeholder='0'
+              className='w-24 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
+            />
+          )
         }
       },
+
       {
         id: 'actions',
         header: 'Action',
@@ -373,7 +502,7 @@ export default function POSSystem({ productsData = [] }) {
 
           return (
             <button
-              onClick={() => handleRemoveCartItem(product.product_id, product.customer_id)}
+              onClick={() => handleRemoveCartItem(product.product_id)}
               className='text-red-500 bg-transparent border-none outline-none w-full h-full'
             >
               <FaTimes />
@@ -404,49 +533,24 @@ export default function POSSystem({ productsData = [] }) {
       vatType: data.vatType || ''
     }
 
-    // Group by customer with only IDs + totals
-    const customersMap = cartProducts.reduce((acc, item) => {
-      const key = item.customer_id ?? 'unknown'
+    const sub_total = cartProducts.reduce((sum, item) => sum + (Number(item.total) || 0), 0)
+    const commission_total = cartProducts.reduce((sum, item) => sum + (Number(item.commission) || 0), 0)
 
-      if (!acc[key]) {
-        acc[key] = {
-          customer_id: item.customer_id,
-          items: [],
-          sub_total: 0,
-          commission_total: 0,
-          profit_total: 0
-        }
-      }
-
-      acc[key].items.push(item)
-
-      const itemTotal = Number(item.total) || 0
-      const itemCost = Number(item.cost) || 0
-      const profit = itemTotal - itemCost
-
-      acc[key].sub_total += Number(item.total) || 0
-      acc[key].commission_total += Number(item.commission) || 0
-      acc[key].profit_total += profit
-
-      return acc
-    }, {})
-
-    const customers = Object.values(customersMap)
-
-    // Grand totals
-    const grandSubTotal = customers.reduce((s, sup) => s + sup.sub_total, 0)
-    const grandCommission = customers.reduce((s, sup) => s + sup.commission_total, 0)
-    const grandProfit = customers.reduce((s, sup) => s + sup.profit_total, 0)
+    const profit_total = cartProducts.reduce((sum, item) => {
+      // If profit is negative, count as 0
+      return sum + Math.max(0, item.profit)
+    }, 0)
 
     const payload = {
+      customer: selectedCustomer,
       summary: {
         date,
-        sub_total: grandSubTotal,
-        commission_total: grandCommission,
-        profit_total: grandProfit
+        sub_total,
+        commission_total,
+        profit_total
       },
       payment,
-      customers
+      items: cartProducts
     }
 
     console.log('Customer sell payload (multi-customer):', payload)
@@ -477,7 +581,7 @@ export default function POSSystem({ productsData = [] }) {
 
       <div className='flex flex-col  lg:flex-row gap-x-2 gap-y-5'>
         {/* Left Side - Form */}
-        <div className='w-full lg:w-8/12 xl:w-7/12 bg-white rounded-lg lg:p-6 flex flex-col'>
+        <div className='w-full lg:w-8/12 xl:w-8/12 bg-white rounded-lg lg:p-6 flex flex-col'>
           {/* Order Details */}
           <div className='grid w-full grid-cols-1 lg:grid-cols-3 gap-2 lg:gap-4 mb-6'>
             <input
@@ -512,8 +616,43 @@ export default function POSSystem({ productsData = [] }) {
             </div>
           </div>
 
+          {/* Selected Customer Info */}
+          {selectedCustomer?.sl && (
+            <div className='mb-6'>
+              <div className='bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-xl shadow-lg p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
+                {/* Left Section - Profile */}
+                <div className='flex items-center gap-4 w-full sm:w-auto'>
+                  <img
+                    src={selectedCustomer.image}
+                    alt={selectedCustomer.name}
+                    className='w-16 h-16 rounded-full border-2 border-white object-cover shadow-md'
+                  />
+
+                  <div>
+                    <h2 className='text-lg font-semibold'>{selectedCustomer.name}</h2>
+                    <p className='text-sm opacity-80'>{selectedCustomer.phone}</p>
+                    <p className='text-xs opacity-60'>{selectedCustomer.email}</p>
+                  </div>
+                </div>
+
+                {/* Right Section - Stats */}
+                <div className='grid grid-cols-2 gap-4 w-full sm:w-auto text-center'>
+                  <div className='bg-white/15 backdrop-blur-sm rounded-lg py-2 px-3'>
+                    <p className='text-xs opacity-80'>Balance</p>
+                    <p className='text-base font-bold'>৳ {selectedCustomer.balance.toFixed(2)}</p>
+                  </div>
+
+                  <div className='bg-white/15 backdrop-blur-sm rounded-lg py-2 px-3'>
+                    <p className='text-xs opacity-80'>Due</p>
+                    <p className='text-base font-bold text-yellow-300'>৳ {selectedCustomer.due.toFixed(2)}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Items Table */}
-          <div className='mb-6 overflow-x-auto'>
+          <div className='mb-6 overflow-x-auto relative z-0'>
             <table className='w-full border-collapse'>
               <thead>
                 {table.getHeaderGroups().map(headerGroup => (
@@ -533,7 +672,10 @@ export default function POSSystem({ productsData = [] }) {
                 {table.getRowModel().rows.map(row => (
                   <tr key={row.id}>
                     {row.getVisibleCells().map(cell => (
-                      <td key={cell.id} className='border border-gray-200 px-3 py-2 whitespace-nowrap'>
+                      <td
+                        key={cell.id}
+                        className='border border-gray-200 px-3 py-2 whitespace-nowrap relative overflow-visible'
+                      >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </td>
                     ))}
@@ -872,6 +1014,179 @@ export default function POSSystem({ productsData = [] }) {
                 className='flex-1 py-2 bg-gray-200 rounded hover:bg-gray-300'
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* UPDATED: Modern multi-lot selection modal with dropdown, cards, and summary */}
+      {lotModal.open && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4'>
+          <div className='bg-white w-full max-w-2xl rounded-xl shadow-lg p-6 relative overflow-y-auto max-h-[90vh]'>
+            {/* Header */}
+            <h3 className='text-xl font-semibold mb-4 text-center'>
+              Select Lots for <span className='text-indigo-600'>{lotModal.productName}</span>
+            </h3>
+
+            {/* NEW: Dropdown for selecting related lots */}
+            <div className='mb-5'>
+              <select
+                value=''
+                onChange={e => {
+                  const selectedLot = lots.find(l => l.lot_name === e.target.value)
+
+                  if (selectedLot) {
+                    setLotModal(prev => {
+                      // Prevent duplicates
+                      if (prev.selectedLots.some(l => l.lot_name === selectedLot.lot_name)) return prev
+
+                      return { ...prev, selectedLots: [...prev.selectedLots, { ...selectedLot, use_qty: 0 }] }
+                    })
+                  }
+                }}
+                className='w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none'
+              >
+                <option value=''>Select a lot...</option>
+                {lots
+                  .filter(
+                    l =>
+                      l.product.toLowerCase() === lotModal.productName.toLowerCase() &&
+                      l.qty > 0 &&
+                      !lotModal.selectedLots.some(s => s.lot_name === l.lot_name)
+                  )
+                  .map(l => (
+                    <option key={l.lot_name} value={l.lot_name}>
+                      {l.lot_name} — {l.qty} kg available
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            {/* NEW: Selected lot cards */}
+            <div className='space-y-4 mb-6'>
+              {lotModal.selectedLots.map(l => (
+                <div
+                  key={l.lot_name}
+                  className='border border-gray-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm hover:shadow-md transition-all duration-150'
+                >
+                  {/* Left Info */}
+                  <div className='flex flex-col sm:flex-row sm:items-center sm:gap-6'>
+                    <div>
+                      <p className='font-semibold text-gray-800'>{l.lot_name}</p>
+                      <p className='text-sm text-gray-600'>Supplier: {l.supplier_name}</p>
+                      <p className='text-sm text-gray-600'>Remaining: {l.qty} kg</p>
+                    </div>
+
+                    {/* Input field */}
+                    <div className='flex items-center gap-2 mt-2 sm:mt-0'>
+                      <label className='text-sm text-gray-600'>Use:</label>
+                      <input
+                        type='number'
+                        min='0'
+                        max={l.qty}
+                        value={l.use_qty}
+                        onChange={e => {
+                          const val = parseFloat(e.target.value) || 0
+
+                          setLotModal(prev => ({
+                            ...prev,
+                            selectedLots: prev.selectedLots.map(s =>
+                              s.lot_name === l.lot_name ? { ...s, use_qty: val } : s
+                            )
+                          }))
+                        }}
+                        className='w-20 px-2 py-1 border border-gray-300 rounded-md text-center focus:ring-2 focus:ring-indigo-500 outline-none'
+                      />
+                      <span className='text-sm'>kg</span>
+                    </div>
+                  </div>
+
+                  {/* Remove Button */}
+                  <button
+                    onClick={() =>
+                      setLotModal(prev => ({
+                        ...prev,
+                        selectedLots: prev.selectedLots.filter(s => s.lot_name !== l.lot_name)
+                      }))
+                    }
+                    className='text-gray-400 hover:text-red-500 transition-colors'
+                    title='Remove this lot'
+                  >
+                    <svg
+                      xmlns='http://www.w3.org/2000/svg'
+                      fill='none'
+                      viewBox='0 0 24 24'
+                      strokeWidth={2}
+                      stroke='currentColor'
+                      className='w-5 h-5'
+                    >
+                      <path strokeLinecap='round' strokeLinejoin='round' d='M6 18L18 6M6 6l12 12' />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* NEW: Summary section */}
+            {lotModal.selectedLots.length > 0 && (
+              <div className='bg-gray-50 border-t border-gray-200 rounded-lg p-4 mb-5'>
+                <h4 className='text-base font-medium text-gray-700 mb-3'>Selected Lots Summary</h4>
+                <ul className='space-y-1 text-sm text-gray-700'>
+                  {lotModal.selectedLots.map(l => (
+                    <li key={l.lot_name} className='flex justify-between'>
+                      <span>{l.lot_name}</span>
+                      <span className='font-semibold'>{l.use_qty || 0} kg</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className='border-t mt-3 pt-2 flex justify-between font-medium text-gray-800'>
+                  <span>Total Qty:</span>
+                  <span>{lotModal.selectedLots.reduce((s, l) => s + (l.use_qty || 0), 0)} kg</span>
+                </div>
+              </div>
+            )}
+
+            {/* Buttons */}
+            <div className='flex justify-end gap-3'>
+              <button
+                onClick={() => setLotModal({ open: false, productId: null, productName: '', selectedLots: [] })}
+                className='px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md font-medium'
+              >
+                Cancel
+              </button>
+
+              <button
+                disabled={
+                  lotModal.selectedLots.length === 0 || lotModal.selectedLots.every(l => !l.use_qty || l.use_qty <= 0)
+                }
+                onClick={() => {
+                  // ✅ Only keep lots with > 0 qty
+                  const validLots = lotModal.selectedLots.filter(l => l.use_qty && l.use_qty > 0)
+
+                  // ✅ Calculate total qty from valid lots only
+                  const totalQty = validLots.reduce((sum, l) => sum + (l.use_qty || 0), 0)
+
+                  // ✅ Update product in cart
+                  setCartProducts(prev =>
+                    prev.map(item =>
+                      item.product_id === lotModal.productId
+                        ? { ...item, lots_selected: validLots, total_from_lots: totalQty }
+                        : item
+                    )
+                  )
+
+                  // ✅ Close modal
+                  setLotModal({ open: false, productId: null, productName: '', selectedLots: [] })
+                }}
+                className={`px-4 py-2 rounded-md font-medium text-white ${
+                  lotModal.selectedLots.length > 0
+                    ? 'bg-indigo-600 hover:bg-indigo-700'
+                    : 'bg-gray-400 cursor-not-allowed'
+                }`}
+              >
+                Confirm
               </button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-export const filteredProductsData = (productsData, searchTerm = '', selectedCategory = []) => {
+export const  filteredProductsData = (productsData, searchTerm = '', selectedCategory = []) => {
   return productsData.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
 
