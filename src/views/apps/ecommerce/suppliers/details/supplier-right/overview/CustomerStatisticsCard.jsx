@@ -8,8 +8,9 @@ import CustomerStats from '@components/card-statistics/CustomerStats'
 
 const CustomerStatisticsCard = ({ supplierData }) => {
   return (
-    <Grid container spacing={6}>
-      <Grid size={{ xs: 12, md: 6 }} key={Math.random()}>
+   <div className='mt-5'>
+     <Grid container spacing={6}>
+      <Grid size={{ xs: 12, md: 6, lg: 4 }} key={Math.random()}>
         <CustomerStats
           heading='Account Balance'
           value={`৳ ${supplierData.balance}`}
@@ -19,7 +20,7 @@ const CustomerStatisticsCard = ({ supplierData }) => {
         />
       </Grid>
 
-      <Grid size={{ xs: 12, md: 6 }} key={Math.random()}>
+      <Grid size={{ xs: 12, md: 6, lg: 4 }} key={Math.random()}>
         <CustomerStats
           heading='Due Amount'
           value={`৳ ${supplierData.due}`}
@@ -29,7 +30,7 @@ const CustomerStatisticsCard = ({ supplierData }) => {
         />
       </Grid>
 
-      <Grid size={{ xs: 12, md: 6 }} key={Math.random()}>
+      <Grid size={{ xs: 12, md: 6, lg: 4 }} key={Math.random()}>
         <CustomerStats
           heading='Total Crate'
           subHeading='Remaining'
@@ -39,6 +40,7 @@ const CustomerStatisticsCard = ({ supplierData }) => {
         />
       </Grid>
     </Grid>
+   </div>
   )
 }
 
