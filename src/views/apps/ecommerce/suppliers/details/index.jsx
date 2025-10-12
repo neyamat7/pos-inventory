@@ -8,7 +8,6 @@ import Grid from '@mui/material/Grid2'
 import SupplierLeftOverview from './supplier-left-overview'
 import SupplierRight from './supplier-right'
 import SupplierDetailHeader from './SupplierDetailsHeader'
-import CustomerStatisticsCard from './supplier-right/overview/CustomerStatisticsCard'
 
 // Dynamic import for Overview tab
 const OverViewTab = dynamic(() => import('@views/apps/ecommerce/suppliers/details/supplier-right/overview'))
@@ -21,8 +20,6 @@ const SupplierDetails = ({ supplierData, supplierId }) => {
       </Grid>
       <Grid size={{ xs: 12 }}>
         <SupplierLeftOverview supplierData={supplierData} />
-
-        <CustomerStatisticsCard supplierData={supplierData} />
       </Grid>
       <Grid size={{ xs: 12 }}>
         {/* Directly render overview content instead of using tabs */}

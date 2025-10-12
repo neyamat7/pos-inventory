@@ -224,7 +224,7 @@ export default function POSSystem({ productsData = [] }) {
       // UPDATED: LOT column with global (non-clipped) tooltip
       {
         accessorKey: 'lots_selected',
-        header: 'Select Lot',
+        header: 'Lot',
         cell: ({ row }) => {
           const product = row.original
           const totalLots = product.lots_selected?.length || 0
@@ -242,7 +242,7 @@ export default function POSSystem({ productsData = [] }) {
                     selectedLots: product.lots_selected || []
                   })
                 }
-                className='text-indigo-600 hover:text-indigo-800 font-medium underline'
+                className='text-indigo-600 hover:text-indigo-800 font-medium underline cursor-pointer'
               >
                 Select Lot
               </button>
@@ -1162,13 +1162,13 @@ export default function POSSystem({ productsData = [] }) {
                   lotModal.selectedLots.length === 0 || lotModal.selectedLots.every(l => !l.use_qty || l.use_qty <= 0)
                 }
                 onClick={() => {
-                  // ✅ Only keep lots with > 0 qty
+                  //  Only keep lots with > 0 qty
                   const validLots = lotModal.selectedLots.filter(l => l.use_qty && l.use_qty > 0)
 
-                  // ✅ Calculate total qty from valid lots only
+                  // Calculate total qty from valid lots only
                   const totalQty = validLots.reduce((sum, l) => sum + (l.use_qty || 0), 0)
 
-                  // ✅ Update product in cart
+                  // Update product in cart
                   setCartProducts(prev =>
                     prev.map(item =>
                       item.product_id === lotModal.productId
@@ -1177,10 +1177,10 @@ export default function POSSystem({ productsData = [] }) {
                     )
                   )
 
-                  // ✅ Close modal
+                  // Close modal
                   setLotModal({ open: false, productId: null, productName: '', selectedLots: [] })
                 }}
-                className={`px-4 py-2 rounded-md font-medium text-white ${
+                className={`px-4 py-2 rounded-md font-medium text-white disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed ${
                   lotModal.selectedLots.length > 0
                     ? 'bg-indigo-600 hover:bg-indigo-700'
                     : 'bg-gray-400 cursor-not-allowed'
