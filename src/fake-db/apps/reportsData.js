@@ -65,220 +65,776 @@ export const purchaseCollections = [
 
 export const salesCollections = [
   {
-    summary: { date: '2025-09-23', sub_total: 1020, commission_total: 60, profit_total: 244 },
-    payment: {
-      receiveAmount: 0,
-      changeAmount: 0,
-      dueAmount: 1020,
-      paymentType: 'cash',
-      note: '',
-      vatType: 'Select'
+    customer: {
+      sl: 1,
+      image: 'https://i.postimg.cc/fRbC2QmY/360-F-523629123-Rp-AMod-BJXg-CTPfilf-Ya-CIb-Paal-FIjbvv.jpg',
+      name: 'Abdur Rahman',
+      email: 'arahman01@example.com',
+      type: 'Customer',
+      phone: '+8801711000001',
+      balance: 0,
+      due: 3200,
+      crate: { type_one: { qty: 2, price: 100 }, type_two: { qty: 1, price: 150 } },
+      cost: 0,
+      orders: 312,
+      totalSpent: 14500,
+      location: 'Dhaka, Bangladesh'
     },
-    customers: [
-      {
-        customer_id: 1,
-        items: [{ product_id: 'p001', crate: 2, product_name: 'mango' }],
-        sub_total: 342,
-        commission_total: 22,
-        profit_total: 244
-      },
-      {
-        customer_id: 3,
-        items: [{ product_id: 'p002', crate: 2, product_name: 'mango' }],
-        sub_total: 678,
-        commission_total: 38,
-        profit_total: 244
-      }
-    ]
-  },
-  {
     summary: {
-      date: '2025-09-23',
-      sub_total: 364,
-      commission_total: 24,
-      profit_total: 244
+      date: '2025-10-12',
+      sub_total: 12500,
+      commission_total: 200,
+      profit_total: 2200
     },
     payment: {
-      receiveAmount: 0,
+      receiveAmount: 9300,
       changeAmount: 0,
-      dueAmount: 364,
+      dueAmount: 3200,
       paymentType: 'cash',
-      note: '',
+      note: 'Partial payment',
       vatType: 'Select'
     },
-    customers: [
+    items: [
       {
-        customer_id: 3,
-        items: [
+        id: 1,
+        name: 'Mango',
+        price: 100,
+        cost_price: 80,
+        selling_price: 100,
+        image: 'https://i.postimg.cc/4y0HNNp5/Chat-GPT-Image-Oct-9-2025-06-54-36-PM.png',
+        category: 'Fruits',
+        brand: 'Fresh Farm',
+        commission_rate: 10,
+        product_id: 1,
+        product_name: 'Mango',
+        crate: { type_one: 2, type_two: 0 },
+        cratePrice: 200,
+        kg: 60,
+        discount_kg: 0,
+        total: 6200,
+        profit: 1200,
+        commission: 0,
+        selling_date: '2025-10-12',
+        expiry_date: '',
+        lots_selected: [
           {
-            product_id: 1,
-            crate: 2,
-            product_name: 'mango'
+            supplier_name: 'Shahidul Alam',
+            supplier_id: 823,
+            product: 'Mango',
+            qty: 120,
+            lot_name: 'SA-111025-MANGO-120',
+            use_qty: 20
+          },
+          {
+            supplier_name: 'Tanvir Alam',
+            supplier_id: 203,
+            product: 'Mango',
+            qty: 130,
+            lot_name: 'TA-111025-MANGO-130',
+            use_qty: 10
           }
         ],
-        sub_total: 364,
-        commission_total: 24,
-        profit_total: 244
+        total_from_lots: 30
+      },
+      {
+        id: 2,
+        name: 'Banana',
+        price: 60,
+        cost_price: 45,
+        selling_price: 60,
+        image: 'https://i.postimg.cc/q72FsNRC/Chat-GPT-Image-Oct-9-2025-07-05-58-PM.png',
+        category: 'Fruits',
+        brand: 'Nature Organic',
+        commission_rate: 0,
+        product_id: 3,
+        product_name: 'Banana',
+        crate: { type_one: 0, type_two: 10 },
+        cratePrice: 1500,
+        kg: 25,
+        discount_kg: 0,
+        total: 6300,
+        profit: 1000,
+        commission: 0,
+        selling_date: '2025-10-12',
+        expiry_date: '',
+        lots_selected: [
+          {
+            supplier_name: 'Rafiqul Islam',
+            supplier_id: 2,
+            product: 'Banana',
+            qty: 25,
+            lot_name: 'RI-111025-BANANA-25',
+            use_qty: 10
+          },
+          {
+            supplier_name: 'Sultana Begum',
+            supplier_id: 302,
+            product: 'Banana',
+            qty: 45,
+            lot_name: 'SB-111025-BANANA-45',
+            use_qty: 15
+          }
+        ],
+        total_from_lots: 25
       }
     ]
   },
   {
-    summary: { date: '2025-09-23', sub_total: 840, commission_total: 55, profit_total: 244 },
+    customer: {
+      sl: 2,
+      image: 'https://i.postimg.cc/g0hSKrjV/360-F-489739373-UBp-D3-Pu-OP9n-Qp-Jp-WD3c-Ru5x-Vg3z6-Gh-Yk.jpg',
+      name: 'Nusrat Jahan',
+      email: 'nusrat.jahan@example.com',
+      type: 'Customer',
+      phone: '+8801711000002',
+      balance: 0,
+      due: 0,
+      crate: { type_one: { qty: 1, price: 100 }, type_two: { qty: 2, price: 150 } },
+      cost: 0,
+      orders: 428,
+      totalSpent: 27400,
+      location: 'Chittagong, Bangladesh'
+    },
+    summary: {
+      date: '2025-10-13',
+      sub_total: 19200,
+      commission_total: 0,
+      profit_total: 3100
+    },
     payment: {
-      receiveAmount: 0,
+      receiveAmount: 19200,
       changeAmount: 0,
-      dueAmount: 840,
+      dueAmount: 0,
       paymentType: 'card',
-      note: 'Second sale',
+      note: 'Paid in full',
       vatType: 'Select'
     },
-    customers: [
+    items: [
       {
-        customer_id: 2,
-        items: [{ product_id: 'p001', crate: 2, product_name: 'mango' }],
-        sub_total: 420,
-        commission_total: 25,
-        profit_total: 244
+        id: 4,
+        name: 'Apple',
+        price: 150,
+        cost_price: 120,
+        selling_price: 150,
+        image: 'https://i.postimg.cc/90j6KK62/Chat-GPT-Image-Oct-11-2025-10-57-06-AM.png',
+        category: 'Fruits',
+        brand: 'Fresh Orchard',
+        commission_rate: 0,
+        product_id: 4,
+        product_name: 'Apple',
+        crate: { type_one: 3, type_two: 0 },
+        cratePrice: 300,
+        kg: 40,
+        discount_kg: 0,
+        total: 9600,
+        profit: 1200,
+        commission: 0,
+        selling_date: '2025-10-13',
+        expiry_date: '',
+        lots_selected: [
+          {
+            supplier_name: 'Mahfuz Alam',
+            supplier_id: 501,
+            product: 'Apple',
+            qty: 25,
+            lot_name: 'MA-111025-APPLE-25',
+            use_qty: 20
+          }
+        ],
+        total_from_lots: 20
       },
       {
-        customer_id: 4,
-        items: [{ product_id: 'p002', crate: 2, product_name: 'mango' }],
-        sub_total: 420,
-        commission_total: 30,
-        profit_total: 244
+        id: 5,
+        name: 'Orange',
+        price: 100,
+        cost_price: 80,
+        selling_price: 100,
+        image: 'https://i.postimg.cc/qqdPSSP0/Chat-GPT-Image-Oct-11-2025-11-05-15-AM.png',
+        category: 'Fruits',
+        brand: 'Citrus Co',
+        commission_rate: 0,
+        product_id: 5,
+        product_name: 'Orange',
+        crate: { type_one: 0, type_two: 20 },
+        cratePrice: 3000,
+        kg: 70,
+        discount_kg: 0,
+        total: 9600,
+        profit: 1900,
+        commission: 0,
+        selling_date: '2025-10-13',
+        expiry_date: '',
+        lots_selected: [
+          {
+            supplier_name: 'Imran Hossain',
+            supplier_id: 604,
+            product: 'Orange',
+            qty: 40,
+            lot_name: 'IH-111025-ORANGE-40',
+            use_qty: 15
+          },
+          {
+            supplier_name: 'Rokeya Begum',
+            supplier_id: 601,
+            product: 'Orange',
+            qty: 25,
+            lot_name: 'RB-111025-ORANGE-25',
+            use_qty: 20
+          }
+        ],
+        total_from_lots: 35
       }
     ]
   },
-
   {
-    summary: { date: '2025-09-24', sub_total: 720, commission_total: 45, profit_total: 320 },
+    customer: {
+      sl: 3,
+      image: 'https://i.postimg.cc/5NcqS1y7/portrait-smiling-young-man-260nw-1709362074.jpg',
+      name: 'Kamrul Hasan',
+      email: 'kamrul.hasan@example.com',
+      type: 'Customer',
+      phone: '+8801711000003',
+      balance: 0,
+      due: 2800,
+      crate: { type_one: { qty: 0, price: 100 }, type_two: { qty: 1, price: 150 } },
+      cost: 0,
+      orders: 158,
+      totalSpent: 10200,
+      location: 'Rajshahi, Bangladesh'
+    },
+    summary: {
+      date: '2025-10-14',
+      sub_total: 10800,
+      commission_total: 0,
+      profit_total: 1600
+    },
     payment: {
-      receiveAmount: 720,
+      receiveAmount: 8000,
+      changeAmount: 0,
+      dueAmount: 2800,
+      paymentType: 'mobile',
+      note: 'Partial payment via bKash',
+      vatType: 'Select'
+    },
+    items: [
+      {
+        id: 8,
+        name: 'Watermelon',
+        price: 200,
+        cost_price: 160,
+        selling_price: 200,
+        image: 'https://i.postimg.cc/nrcL64qc/pexels-mahmoud-yahyaoui-27863683.jpg',
+        category: 'Fruits',
+        brand: 'Green Fields',
+        commission_rate: 0,
+        product_id: 8,
+        product_name: 'Watermelon',
+        crate: { type_one: 1, type_two: 0 },
+        cratePrice: 100,
+        kg: 50,
+        discount_kg: 0,
+        total: 10800,
+        profit: 1600,
+        commission: 0,
+        selling_date: '2025-10-13',
+        expiry_date: '',
+        lots_selected: [
+          {
+            supplier_name: 'Liton Ahmed',
+            supplier_id: 9,
+            product: 'Watermelon',
+            qty: 40,
+            lot_name: 'LA-111025-WATERMELON-40',
+            use_qty: 10
+          }
+        ],
+        total_from_lots: 10
+      }
+    ]
+  },
+  {
+    customer: {
+      sl: 4,
+      image: 'https://i.postimg.cc/4NvZQLT4/pexels-photo-1181686.webp',
+      name: 'Farhana Akter',
+      email: 'farhana.akter@example.com',
+      type: 'Customer',
+      phone: '+8801711000004',
+      balance: 0,
+      due: 0,
+      crate: { type_one: { qty: 2, price: 100 }, type_two: { qty: 0, price: 150 } },
+      cost: 0,
+      orders: 210,
+      totalSpent: 18400,
+      location: 'Sylhet, Bangladesh'
+    },
+    summary: {
+      date: '2025-10-15',
+      sub_total: 9200,
+      commission_total: 0,
+      profit_total: 1400
+    },
+    payment: {
+      receiveAmount: 9200,
       changeAmount: 0,
       dueAmount: 0,
       paymentType: 'cash',
-      note: 'Regular customer',
-      vatType: 'VAT 15%'
+      note: '',
+      vatType: 'Select'
     },
-    customers: [
+    items: [
       {
-        customer_id: 5,
-        items: [
-          { product_id: 'p003', crate: 3, product_name: 'mango' },
-          { product_id: 'p004', crate: 1, product_name: 'mango' }
+        id: 5,
+        name: 'Orange',
+        price: 100,
+        cost_price: 80,
+        selling_price: 100,
+        image: 'https://i.postimg.cc/qqdPSSP0/Chat-GPT-Image-Oct-11-2025-11-05-15-AM.png',
+        category: 'Fruits',
+        brand: 'Citrus Co',
+        product_id: 5,
+        product_name: 'Orange',
+        crate: { type_one: 5, type_two: 0 },
+        cratePrice: 500,
+        kg: 80,
+        discount_kg: 0,
+        total: 9200,
+        profit: 1400,
+        commission: 0,
+        commission_rate: 0,
+        selling_date: '2025-10-13',
+        expiry_date: '',
+        lots_selected: [
+          {
+            supplier_name: 'Imran Hossain',
+            supplier_id: 604,
+            product: 'Orange',
+            qty: 40,
+            lot_name: 'IH-111025-ORANGE-40',
+            use_qty: 10
+          },
+          {
+            supplier_name: 'Tasnim Akter',
+            supplier_id: 603,
+            product: 'Orange',
+            qty: 28,
+            lot_name: 'TAK-111025-ORANGE-28',
+            use_qty: 8
+          }
         ],
-        sub_total: 720,
-        commission_total: 45,
-        profit_total: 320
+        total_from_lots: 18
       }
     ]
   },
-
   {
-    summary: { date: '2025-09-25', sub_total: 1250, commission_total: 85, profit_total: 510 },
-    payment: {
-      receiveAmount: 1000,
-      changeAmount: 0,
-      dueAmount: 250,
-      paymentType: 'mixed',
-      note: 'Partial payment',
-      vatType: 'VAT 10%'
+    customer: {
+      sl: 5,
+      image: 'https://i.postimg.cc/y6kCSFrd/pexels-photo-2379004.webp',
+      name: 'Rafiul Islam',
+      email: 'rafiul.islam@example.com',
+      type: 'Customer',
+      phone: '+8801711000005',
+      balance: 0,
+      due: 2000,
+      crate: { type_one: { qty: 1, price: 100 }, type_two: { qty: 0, price: 150 } },
+      cost: 0,
+      orders: 285,
+      totalSpent: 12400,
+      location: 'Barishal, Bangladesh'
     },
-    customers: [
-      {
-        customer_id: 3,
-        items: [{ product_id: 'p005', crate: 4, product_name: 'mango' }],
-        sub_total: 600,
-        commission_total: 35,
-        profit_total: 220
-      },
-      {
-        customer_id: 7,
-        items: [{ product_id: 'p006', crate: 2, product_name: 'mango' }],
-        sub_total: 350,
-        commission_total: 25,
-        profit_total: 150
-      },
-      {
-        customer_id: 9,
-        items: [{ product_id: 'p007', crate: 3, product_name: 'mango' }],
-        sub_total: 300,
-        commission_total: 25,
-        profit_total: 140
-      }
-    ]
-  },
-
-  {
-    summary: { date: '2025-09-26', sub_total: 2100, commission_total: 120, profit_total: 890 },
-    payment: {
-      receiveAmount: 0,
-      changeAmount: 0,
-      dueAmount: 2100,
-      paymentType: 'credit',
-      note: 'Monthly account',
-      vatType: 'VAT 0%'
+    summary: {
+      date: '2025-10-16',
+      sub_total: 11400,
+      commission_total: 0,
+      profit_total: 1800
     },
-    customers: [
+    payment: {
+      receiveAmount: 9400,
+      changeAmount: 0,
+      dueAmount: 2000,
+      paymentType: 'mobile',
+      note: 'Partial payment bKash',
+      vatType: 'Select'
+    },
+    items: [
       {
-        customer_id: 12,
-        items: [
-          { product_id: 'p008', crate: 5, product_name: 'mango' },
-          { product_id: 'p009', crate: 3, product_name: 'mango' },
-          { product_id: 'p010', crate: 2, product_name: 'mango' }
+        id: 2,
+        name: 'Pineapple',
+        price: 90,
+        cost_price: 70,
+        selling_price: 90,
+        image: 'https://i.postimg.cc/Y2T1HbRX/Chat-GPT-Image-Oct-9-2025-07-01-22-PM.png',
+        category: 'Fruits',
+        brand: 'Tropical Fresh',
+        commission_rate: 20,
+        product_id: 2,
+        product_name: 'Pineapple',
+        crate: { type_one: 0, type_two: 10 },
+        cratePrice: 1500,
+        kg: 30,
+        discount_kg: 0,
+        total: 11400,
+        profit: 1800,
+        commission: 0,
+        selling_date: '2025-10-13',
+        expiry_date: '',
+        lots_selected: [
+          {
+            supplier_name: 'Hasan Mahmud',
+            supplier_id: 403,
+            product: 'Pineapple',
+            qty: 25,
+            lot_name: 'HM-111025-PINEAPPLE-25',
+            use_qty: 10
+          },
+          {
+            supplier_name: 'Nusrat Jahan',
+            supplier_id: 404,
+            product: 'Pineapple',
+            qty: 30,
+            lot_name: 'NJ-111025-PINEAPPLE-30',
+            use_qty: 5
+          }
         ],
-        sub_total: 2100,
-        commission_total: 120,
-        profit_total: 890
+        total_from_lots: 15
       }
     ]
   },
-
   {
-    summary: { date: '2025-09-27', sub_total: 280, commission_total: 18, profit_total: 95 },
+    customer: {
+      sl: 6,
+      image: 'https://i.postimg.cc/P5byb0cw/pexels-photo-774909.webp',
+      name: 'Sumaiya Akter',
+      email: 'sumaiya.akter@example.com',
+      type: 'Customer',
+      phone: '+8801711000006',
+      balance: 0,
+      due: 0,
+      crate: { type_one: { qty: 2, price: 100 }, type_two: { qty: 1, price: 150 } },
+      cost: 0,
+      orders: 175,
+      totalSpent: 18600,
+      location: 'Comilla, Bangladesh'
+    },
+    summary: {
+      date: '2025-10-16',
+      sub_total: 12400,
+      commission_total: 0,
+      profit_total: 1900
+    },
     payment: {
-      receiveAmount: 300,
-      changeAmount: 20,
+      receiveAmount: 12400,
+      changeAmount: 0,
       dueAmount: 0,
       paymentType: 'cash',
-      note: 'Walk-in customer',
-      vatType: 'VAT 8%'
+      note: 'Full cash payment',
+      vatType: 'Select'
     },
-    customers: [
+    items: [
       {
-        customer_id: 15,
-        items: [{ product_id: 'p011', crate: 1, product_name: 'mango' }],
-        sub_total: 280,
-        commission_total: 18,
-        profit_total: 95
+        id: 5,
+        name: 'Orange',
+        price: 100,
+        cost_price: 80,
+        selling_price: 100,
+        image: 'https://i.postimg.cc/qqdPSSP0/Chat-GPT-Image-Oct-11-2025-11-05-15-AM.png',
+        category: 'Fruits',
+        brand: 'Citrus Co',
+        commission_rate: 0,
+        product_id: 5,
+        product_name: 'Orange',
+        crate: { type_one: 2, type_two: 0 },
+        cratePrice: 200,
+        kg: 70,
+        discount_kg: 0,
+        total: 12400,
+        profit: 1900,
+        commission: 0,
+        selling_date: '2025-10-13',
+        expiry_date: '',
+        lots_selected: [
+          {
+            supplier_name: 'Sohail Ahmed',
+            supplier_id: 602,
+            product: 'Orange',
+            qty: 30,
+            lot_name: 'SAH-111025-ORANGE-30',
+            use_qty: 25
+          },
+          {
+            supplier_name: 'Tasnim Akter',
+            supplier_id: 603,
+            product: 'Orange',
+            qty: 28,
+            lot_name: 'TAK-111025-ORANGE-28',
+            use_qty: 20
+          }
+        ],
+        total_from_lots: 45
       }
     ]
   },
-
   {
-    summary: { date: '2025-09-28', sub_total: 980, commission_total: 65, profit_total: 420 },
+    customer: {
+      sl: 7,
+      image: 'https://i.postimg.cc/0jXzLhXM/pexels-photo-1858175.webp',
+      name: 'Tariqul Alam',
+      email: 'tariqul.alam@example.com',
+      type: 'Customer',
+      phone: '+8801711000007',
+      balance: 0,
+      due: 1500,
+      crate: { type_one: { qty: 0, price: 100 }, type_two: { qty: 1, price: 150 } },
+      cost: 0,
+      orders: 243,
+      totalSpent: 15600,
+      location: 'Khulna, Bangladesh'
+    },
+    summary: {
+      date: '2025-10-13',
+      sub_total: 11500,
+      commission_total: 0,
+      profit_total: 1600
+    },
     payment: {
-      receiveAmount: 980,
+      receiveAmount: 10000,
+      changeAmount: 0,
+      dueAmount: 1500,
+      paymentType: 'bank transfer',
+      note: 'Remaining due next week',
+      vatType: 'Select'
+    },
+    items: [
+      {
+        id: 1,
+        name: 'Mango',
+        price: 100,
+        cost_price: 80,
+        selling_price: 100,
+        image: 'https://i.postimg.cc/4y0HNNp5/Chat-GPT-Image-Oct-9-2025-06-54-36-PM.png',
+        category: 'Fruits',
+        brand: 'Fresh Farm',
+        commission_rate: 10,
+        product_id: 1,
+        product_name: 'Mango',
+        crate: { type_one: 1, type_two: 1 },
+        cratePrice: 250,
+        kg: 55,
+        discount_kg: 0,
+        total: 11500,
+        profit: 1600,
+        commission: 0,
+        selling_date: '2025-10-13',
+        expiry_date: '',
+        lots_selected: [
+          {
+            supplier_name: 'Abdur Rahman',
+            supplier_id: 201,
+            product: 'Mango',
+            qty: 75,
+            lot_name: 'AR-111025-MANGO-75',
+            use_qty: 12
+          }
+        ],
+        total_from_lots: 12
+      }
+    ]
+  },
+  {
+    customer: {
+      sl: 8,
+      image: 'https://i.postimg.cc/gJJh8tTD/pexels-photo-774909.webp',
+      name: 'Lamia Rahman',
+      email: 'lamia.rahman@example.com',
+      type: 'Customer',
+      phone: '+8801711000008',
+      balance: 0,
+      due: 0,
+      crate: { type_one: { qty: 1, price: 100 }, type_two: { qty: 1, price: 150 } },
+      cost: 0,
+      orders: 191,
+      totalSpent: 9400,
+      location: 'Gazipur, Bangladesh'
+    },
+    summary: {
+      date: '2025-10-13',
+      sub_total: 9400,
+      commission_total: 0,
+      profit_total: 1300
+    },
+    payment: {
+      receiveAmount: 9400,
       changeAmount: 0,
       dueAmount: 0,
-      paymentType: 'digital',
-      note: 'Mobile payment',
-      vatType: 'VAT 12%'
+      paymentType: 'card',
+      note: 'POS payment',
+      vatType: 'Select'
     },
-    customers: [
+    items: [
       {
-        customer_id: 8,
-        items: [{ product_id: 'p012', crate: 2, product_name: 'mango' }],
-        sub_total: 440,
-        commission_total: 30,
-        profit_total: 190
-      },
+        id: 4,
+        name: 'Apple',
+        price: 150,
+        cost_price: 120,
+        selling_price: 150,
+        image: 'https://i.postimg.cc/90j6KK62/Chat-GPT-Image-Oct-11-2025-10-57-06-AM.png',
+        category: 'Fruits',
+        brand: 'Fresh Orchard',
+        commission_rate: 0,
+        product_id: 4,
+        product_name: 'Apple',
+        crate: { type_one: 1, type_two: 0 },
+        cratePrice: 100,
+        kg: 35,
+        discount_kg: 0,
+        total: 9400,
+        profit: 1300,
+        commission: 0,
+        selling_date: '2025-10-13',
+        expiry_date: '',
+        lots_selected: [
+          {
+            supplier_name: 'Fazlul Karim',
+            supplier_id: 503,
+            product: 'Apple',
+            qty: 35,
+            lot_name: 'FK-111025-APPLE-35',
+            use_qty: 15
+          }
+        ],
+        total_from_lots: 15
+      }
+    ]
+  },
+  {
+    customer: {
+      sl: 9,
+      image: 'https://i.postimg.cc/L5pQTK6m/pexels-photo-774909.webp',
+      name: 'Mahmudul Hasan',
+      email: 'mahmudul.hasan@example.com',
+      type: 'Customer',
+      phone: '+8801711000009',
+      balance: 0,
+      due: 2600,
+      crate: { type_one: { qty: 2, price: 100 }, type_two: { qty: 0, price: 150 } },
+      cost: 0,
+      orders: 129,
+      totalSpent: 14500,
+      location: 'Mymensingh, Bangladesh'
+    },
+    summary: {
+      date: '2025-10-13',
+      sub_total: 12600,
+      commission_total: 0,
+      profit_total: 1700
+    },
+    payment: {
+      receiveAmount: 10000,
+      changeAmount: 0,
+      dueAmount: 2600,
+      paymentType: 'mobile',
+      note: 'bKash payment partially done',
+      vatType: 'Select'
+    },
+    items: [
       {
-        customer_id: 11,
-        items: [{ product_id: 'p013', crate: 3, product_name: 'mango' }],
-        sub_total: 540,
-        commission_total: 35,
-        profit_total: 230
+        id: 3,
+        name: 'Banana',
+        price: 60,
+        cost_price: 45,
+        selling_price: 60,
+        image: 'https://i.postimg.cc/q72FsNRC/Chat-GPT-Image-Oct-9-2025-07-05-58-PM.png',
+        category: 'Fruits',
+        brand: 'Nature Organic',
+        commission_rate: 0,
+        product_id: 3,
+        product_name: 'Banana',
+        crate: { type_one: 0, type_two: 15 },
+        cratePrice: 2250,
+        kg: 45,
+        discount_kg: 0,
+        total: 12600,
+        profit: 1700,
+        commission: 0,
+        selling_date: '2025-10-13',
+        expiry_date: '',
+        lots_selected: [
+          {
+            supplier_name: 'Rahima Khatun',
+            supplier_id: 304,
+            product: 'Banana',
+            qty: 35,
+            lot_name: 'RK-111025-BANANA-35',
+            use_qty: 12
+          }
+        ],
+        total_from_lots: 12
+      }
+    ]
+  },
+  {
+    customer: {
+      sl: 10,
+      image: 'https://i.postimg.cc/gkkYhcR1/pexels-photo-2379004.webp',
+      name: 'Shamim Ahmed',
+      email: 'shamim.ahmed@example.com',
+      type: 'Customer',
+      phone: '+8801711000010',
+      balance: 0,
+      due: 0,
+      crate: { type_one: { qty: 1, price: 100 }, type_two: { qty: 0, price: 150 } },
+      cost: 0,
+      orders: 198,
+      totalSpent: 9800,
+      location: 'Rangpur, Bangladesh'
+    },
+    summary: {
+      date: '2025-10-13',
+      sub_total: 9800,
+      commission_total: 0,
+      profit_total: 1500
+    },
+    payment: {
+      receiveAmount: 9800,
+      changeAmount: 0,
+      dueAmount: 0,
+      paymentType: 'cash',
+      note: 'Completed order payment',
+      vatType: 'Select'
+    },
+    items: [
+      {
+        id: 8,
+        name: 'Watermelon',
+        price: 200,
+        cost_price: 160,
+        selling_price: 200,
+        image: 'https://i.postimg.cc/nrcL64qc/pexels-mahmoud-yahyaoui-27863683.jpg',
+        category: 'Fruits',
+        brand: 'Green Fields',
+        commission_rate: 0,
+        product_id: 8,
+        product_name: 'Watermelon',
+        crate: { type_one: 0, type_two: 2 },
+        cratePrice: 300,
+        kg: 60,
+        discount_kg: 0,
+        total: 9800,
+        profit: 1500,
+        commission: 0,
+        selling_date: '2025-10-13',
+        expiry_date: '',
+        lots_selected: [
+          {
+            supplier_name: 'Liton Ahmed',
+            supplier_id: 9,
+            product: 'Watermelon',
+            qty: 40,
+            lot_name: 'LA-111025-WATERMELON-40',
+            use_qty: 20
+          }
+        ],
+        total_from_lots: 20
       }
     ]
   }

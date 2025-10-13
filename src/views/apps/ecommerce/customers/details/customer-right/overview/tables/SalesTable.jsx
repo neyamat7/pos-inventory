@@ -7,31 +7,38 @@ import {
   getPaginationRowModel,
   createColumnHelper
 } from '@tanstack/react-table'
-import { TablePagination } from '@mui/material'
+import { Typography, TablePagination } from '@mui/material'
 
 import TablePaginationComponent from '@components/TablePaginationComponent'
 import tableStyles from '@core/styles/table.module.css'
 
 const columnHelper = createColumnHelper()
 
-const paymentColumns = [
-  columnHelper.accessor('date', { header: 'Date' }),
+const purchaseColumns = [
+  columnHelper.accessor('date', {
+    header: 'Date',
+    cell: info => new Date(info.getValue()).toLocaleDateString()
+  }),
 
-  columnHelper.accessor('supplierId', { header: 'Supplier ID' }),
+  columnHelper.accessor('lotName', { header: 'Lot Name' }),
 
-  columnHelper.accessor('method', { header: 'Method' }),
+  columnHelper.accessor('salesStatus', { header: 'Sales Status' }),
 
-  columnHelper.accessor('amount', { header: 'Amount' }),
+  columnHelper.accessor('paymentStatus', { header: 'Payment Status' }),
 
-  columnHelper.accessor('ref', { header: 'Reference' }),
+  columnHelper.accessor('grandTotal', { header: 'Grand Total' }),
 
-  columnHelper.accessor('note', { header: 'Note' })
+  columnHelper.accessor('paidAmount', { header: 'Paid Amount' }),
+
+  columnHelper.accessor('due', { header: 'Due' }),
+
+  columnHelper.accessor('addedBy', { header: 'Added By' })
 ]
 
-const PaymentTable = ({ data }) => {
+const SalesTable = ({ data }) => {
   const table = useReactTable({
     data,
-    columns: paymentColumns,
+    columns: purchaseColumns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     initialState: { pagination: { pageSize: 10 } }
@@ -41,9 +48,9 @@ const PaymentTable = ({ data }) => {
     <>
       <table className={tableStyles.table}>
         <thead>
-          {table.getHeaderGroups().map(group => (
-            <tr key={group.id}>
-              {group.headers.map(header => (
+          {table.getHeaderGroups().map(headerGroup => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map(header => (
                 <th key={header.id}>{flexRender(header.column.columnDef.header, header.getContext())}</th>
               ))}
             </tr>
@@ -52,7 +59,7 @@ const PaymentTable = ({ data }) => {
         <tbody>
           {table.getRowModel().rows.length === 0 ? (
             <tr>
-              <td colSpan={paymentColumns.length} className='text-center p-4'>
+              <td colSpan={purchaseColumns.length} className='text-center p-4'>
                 No data available
               </td>
             </tr>
@@ -79,4 +86,4 @@ const PaymentTable = ({ data }) => {
   )
 }
 
-export default PaymentTable
+export default SalesTable

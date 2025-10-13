@@ -17,14 +17,12 @@ export default function ReportPage() {
   const [filterDate, setFilterDate] = useState('')
   const contentRef = useRef(null)
 
-  // Set today's date initially
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0]
 
     setFilterDate(today)
   }, [])
 
-  // Print handler
   const handlePrint = useReactToPrint({ contentRef })
 
   const reportData = useMemo(() => {
@@ -32,24 +30,24 @@ export default function ReportPage() {
       if (!filterDate) return arr
 
       return arr.filter(obj => {
-        const date = key.includes('.') ? key.split('.').reduce((o, k) => o[k], obj) : obj[key]
+        const date = key.includes('.') ? key.split('.').reduce((o, k) => o?.[k], obj) : obj[key]
 
         return date === filterDate
       })
     }
 
-    // Filtered transactions by selected date
+    // Filtered collections by date
     const filteredPurchases = filterByDate(purchaseCollections)
     const filteredSales = filterByDate(salesCollections)
     const filteredPurchaseReturns = filterByDate(purchaseReturns, 'returnDate')
     const filteredSalesReturns = filterByDate(salesReturns, 'returnDate')
     const filteredExpenses = filterByDate(expenses, 'expenseDate')
 
-    const totalPurchases = filteredPurchases.reduce((sum, p) => sum + p.summary.sub_total, 0)
-    const totalSales = filteredSales.reduce((sum, s) => sum + s.summary.sub_total, 0)
-    const totalPurchaseReturns = filteredPurchaseReturns.reduce((sum, r) => sum + r.returnAmount, 0)
-    const totalSalesReturns = filteredSalesReturns.reduce((sum, r) => sum + r.returnAmount, 0)
-    const totalExpenses = filteredExpenses.reduce((sum, e) => sum + e.amount, 0)
+    const totalPurchases = filteredPurchases.reduce((sum, p) => sum + (p.summary?.sub_total || 0), 0)
+    const totalSales = filteredSales.reduce((sum, s) => sum + (s.summary?.sub_total || 0), 0)
+    const totalPurchaseReturns = filteredPurchaseReturns.reduce((sum, r) => sum + (r.returnAmount || 0), 0)
+    const totalSalesReturns = filteredSalesReturns.reduce((sum, r) => sum + (r.returnAmount || 0), 0)
+    const totalExpenses = filteredExpenses.reduce((sum, e) => sum + (e.amount || 0), 0)
 
     // 🔹 Calculate Opening & Closing Stock
     let openingStockPurchase = 0
@@ -62,8 +60,8 @@ export default function ReportPage() {
 
       // Purchases of this product
       const purchasesForProduct = filteredPurchases.reduce((qty, purchase) => {
-        purchase.suppliers.forEach(supplier => {
-          supplier.items.forEach(item => {
+        purchase.suppliers?.forEach(supplier => {
+          supplier.items?.forEach(item => {
             if (item.product_id === productId) qty += item.qty || 0
           })
         })
@@ -71,43 +69,41 @@ export default function ReportPage() {
         return qty
       }, 0)
 
-      // Sales of this product
+      // Sales of this product (updated to new structure)
       const salesForProduct = filteredSales.reduce((qty, sale) => {
-        sale.customers.forEach(customer => {
-          customer.items.forEach(item => {
-            if (item.product_id === productId) qty += item.qty || 0
-          })
+        if (!Array.isArray(sale.items)) return qty
+        sale.items.forEach(item => {
+          if (item.product_id === productId) qty += item.kg || 0
         })
 
         return qty
       }, 0)
 
-      // Purchase Returns of this product
+      // Purchase Returns
       const purchaseReturnsForProduct = filteredPurchaseReturns.reduce((qty, ret) => {
         if (ret.productId === productId) qty += ret.quantityReturned || 0
 
         return qty
       }, 0)
 
-      // Sales Returns of this product
+      // Sales Returns
       const salesReturnsForProduct = filteredSalesReturns.reduce((qty, ret) => {
         if (ret.productId === productId) qty += ret.quantityReturned || 0
 
         return qty
       }, 0)
 
-      // Closing Stock (dynamic)
+      // Closing Stock
       const closingQty =
         (openingQty || 0) + purchasesForProduct - salesForProduct - purchaseReturnsForProduct + salesReturnsForProduct
 
-      // Add to totals
       openingStockPurchase += (openingQty || 0) * unitCost
       openingStockSale += (openingQty || 0) * unitPrice
-
       closingStockPurchase += closingQty * unitCost
       closingStockSale += closingQty * unitPrice
     })
 
+    // Updated Net Profit Calculation
     const netProfit =
       totalSales +
       closingStockSale -
@@ -134,7 +130,6 @@ export default function ReportPage() {
 
   return (
     <div className='p-6 bg-gray-50 min-h-screen'>
-      {/* Print Page Margins */}
       <style>
         {`
           @page {

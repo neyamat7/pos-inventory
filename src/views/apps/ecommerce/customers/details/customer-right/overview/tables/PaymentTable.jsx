@@ -15,20 +15,18 @@ import tableStyles from '@core/styles/table.module.css'
 const columnHelper = createColumnHelper()
 
 const paymentColumns = [
-  columnHelper.accessor('date', { header: 'Date' }),
-
-  columnHelper.accessor('supplierId', { header: 'Supplier ID' }),
-
+  columnHelper.accessor('date', {
+    header: 'Date',
+    cell: info => new Date(info.getValue()).toLocaleDateString()
+  }),
+  columnHelper.accessor('customerId', { header: 'Customer ID' }),
   columnHelper.accessor('method', { header: 'Method' }),
-
   columnHelper.accessor('amount', { header: 'Amount' }),
-
   columnHelper.accessor('ref', { header: 'Reference' }),
-
   columnHelper.accessor('note', { header: 'Note' })
 ]
 
-const PaymentTable = ({ data }) => {
+const CustomerPaymentTable = ({ data }) => {
   const table = useReactTable({
     data,
     columns: paymentColumns,
@@ -79,4 +77,4 @@ const PaymentTable = ({ data }) => {
   )
 }
 
-export default PaymentTable
+export default CustomerPaymentTable

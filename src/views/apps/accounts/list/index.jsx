@@ -272,9 +272,9 @@ const AccountList = ({ accountsData = [] }) => {
           <table className={tableStyles.table}>
             <thead>
               {table.getHeaderGroups().map(headerGroup => (
-                <tr key={headerGroup.id}>
+                <tr key={headerGroup.id} className='bg-[#8b81f3]'>
                   {headerGroup.headers.map(header => (
-                    <th key={header.id} className='whitespace-nowrap border-r'>
+                    <th key={header.id} className='whitespace-nowrap border-r text-white text-base'>
                       {header.isPlaceholder ? null : (
                         <>
                           <div

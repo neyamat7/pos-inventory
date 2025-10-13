@@ -3,9 +3,6 @@
 import { useMemo, useState } from 'react'
 
 import { FaEye } from 'react-icons/fa'
-
-import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender } from '@tanstack/react-table'
-
 import {
   Card,
   CardContent,
@@ -18,7 +15,6 @@ import {
   TableRow,
   TableContainer,
   Paper,
-  TablePagination,
   Typography,
   Dialog,
   DialogTitle,
@@ -26,15 +22,22 @@ import {
   DialogActions,
   Divider,
   Box,
-  Stack
+  IconButton,
+  Stack,
+  Grid,
+  Chip
 } from '@mui/material'
 
-import { salesCollections } from '@/fake-db/apps/reportsData'
+import { motion } from 'framer-motion'
+import { Receipt, Payment, Group } from '@mui/icons-material'
 
+import { useReactTable, getCoreRowModel, getPaginationRowModel, flexRender } from '@tanstack/react-table'
+
+import { salesCollections } from '@/fake-db/apps/reportsData'
 import AddIncomeModal from './AddIncomeModal'
 import TablePaginationComponent from '@/components/TablePaginationComponent'
 
-// 🔹 Group sales data by date
+// Group sales data by date
 const groupByDate = data => {
   const grouped = {}
 
@@ -42,7 +45,12 @@ const groupByDate = data => {
     const { date, sub_total, profit_total } = sale.summary
 
     if (!grouped[date]) {
-      grouped[date] = { date, total_sales: 0, total_income: 0, total_payment: 0 }
+      grouped[date] = {
+        date,
+        total_sales: 0,
+        total_income: 0,
+        total_payment: 0
+      }
     }
 
     grouped[date].total_sales += sub_total
@@ -54,53 +62,76 @@ const groupByDate = data => {
 }
 
 export default function ShowIncomePage() {
-  const today = new Date().toISOString().split('T')[0]
-
   const [selectedIncome, setSelectedIncome] = useState(null)
   const [openDetailModal, setOpenDetailModal] = useState(false)
-
   const [filterDate, setFilterDate] = useState('')
   const [openModal, setOpenModal] = useState(false)
-
-  // 🔹 State for income rows
   const [incomeData, setIncomeData] = useState(groupByDate(salesCollections))
 
-  // Apply filter
+  //  Apply date filter
   const data = useMemo(() => {
-    if (filterDate) {
-      return incomeData.filter(row => row.date === filterDate)
-    }
+    if (filterDate) return incomeData.filter(row => row.date === filterDate)
 
     return incomeData
   }, [filterDate, incomeData])
 
-  // Table setup
+  //  Define table columns
   const columns = useMemo(
     () => [
-      { accessorKey: 'date', header: 'Date' },
-      { accessorKey: 'total_sales', header: 'Total Sales' },
-      { accessorKey: 'total_income', header: 'Total Income' },
-      { accessorKey: 'total_payment', header: 'Received' },
+      {
+        accessorKey: 'date',
+        header: 'Date',
+        cell: info => (
+          <Typography variant='body2' fontWeight={600}>
+            {info.getValue()}
+          </Typography>
+        )
+      },
+      {
+        accessorKey: 'total_sales',
+        header: 'Total Sales',
+        cell: info => `৳ ${info.getValue().toLocaleString()}`
+      },
+      {
+        accessorKey: 'total_income',
+        header: 'Profit',
+        cell: info => (
+          <Typography color='success.main' fontWeight={600}>
+            ৳ {info.getValue().toLocaleString()}
+          </Typography>
+        )
+      },
+      {
+        accessorKey: 'total_payment',
+        header: 'Received',
+        cell: info => (
+          <Typography color='primary.main' fontWeight={600}>
+            ৳ {info.getValue().toLocaleString()}
+          </Typography>
+        )
+      },
       {
         id: 'actions',
         header: 'Actions',
         cell: ({ row }) => (
-          <FaEye
-            className='cursor-pointer text-blue-600 hover:text-blue-800'
-            size={18}
+          <IconButton
+            color='primary'
             onClick={() => {
               const fullDetail = salesCollections.filter(sale => sale.summary.date === row.original.date)
 
               setSelectedIncome(fullDetail)
               setOpenDetailModal(true)
             }}
-          />
+          >
+            <FaEye />
+          </IconButton>
         )
       }
     ],
     []
   )
 
+  // Setup table instance
   const table = useReactTable({
     data,
     columns,
@@ -108,37 +139,37 @@ export default function ShowIncomePage() {
     getPaginationRowModel: getPaginationRowModel()
   })
 
-  // 🔹 Handle new income addition
+  // Add income handler
   const handleAddIncome = newIncome => {
     setIncomeData(prev => {
       const existing = prev.find(row => row.date === newIncome.date)
 
       if (existing) {
-        // update existing row totals
         return prev.map(row =>
           row.date === newIncome.date
             ? {
                 ...row,
                 total_sales: row.total_sales + Number(newIncome.total_sales),
-                total_commission: row.total_commission + Number(newIncome.total_commission),
-                total_income: row.total_income + Number(newIncome.total_income)
+                total_income: row.total_income + Number(newIncome.total_income),
+                total_payment: row.total_payment + Number(newIncome.total_payment)
               }
             : row
         )
       }
 
-      // add as new row
       return [...prev, newIncome]
     })
   }
 
   return (
-    <Card>
+    <Card component={motion.div} layout className='shadow-lg rounded-2xl'>
       <CardContent>
-        <div className='flex flex-col md:flex-row gap-5 justify-between items-center mb-4'>
-          <Typography variant='h3'>Income Report</Typography>
-
-          <div className='flex gap-3'>
+        {/* Header */}
+        <Box display='flex' justifyContent='space-between' alignItems='center' mb={3} flexWrap='wrap' gap={2}>
+          <Typography variant='h4' fontWeight={700}>
+            Income Report
+          </Typography>
+          <Box display='flex' gap={2} alignItems='center'>
             <TextField
               label='Filter by Date'
               type='date'
@@ -147,21 +178,36 @@ export default function ShowIncomePage() {
               onChange={e => setFilterDate(e.target.value)}
               InputLabelProps={{ shrink: true }}
             />
-
-            <Button variant='contained' className='whitespace-nowrap' onClick={() => setOpenModal(true)}>
+            <Button variant='contained' onClick={() => setOpenModal(true)}>
               + Add Income
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
 
         {/* Table */}
-        <TableContainer component={Paper}>
+        <TableContainer
+          component={Paper}
+          sx={{
+            borderRadius: 3,
+            overflow: 'hidden',
+            boxShadow: '0px 2px 8px rgba(0,0,0,0.1)',
+            marginTop: 15
+          }}
+        >
           <Table>
             <TableHead>
               {table.getHeaderGroups().map(headerGroup => (
-                <TableRow key={headerGroup.id}>
+                <TableRow key={headerGroup.id} sx={{ backgroundColor: '#8b81f3' }}>
                   {headerGroup.headers.map(header => (
-                    <TableCell key={header.id} className='text-base border-t-2 border-r border-l whitespace-nowrap'>
+                    <TableCell
+                      key={header.id}
+                      sx={{
+                        color: 'white',
+                        fontWeight: 600,
+                        fontSize: '18px',
+                        borderRight: '1px solid rgba(255,255,255,0.2)'
+                      }}
+                    >
                       {flexRender(header.column.columnDef.header, header.getContext())}
                     </TableCell>
                   ))}
@@ -169,56 +215,77 @@ export default function ShowIncomePage() {
               ))}
             </TableHead>
 
-            <TableBody className=''>
-              {table.getRowModel().rows.map(row => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map(cell => (
-                    <TableCell className='text-[14px] whitespace-nowrap border-r border-l' key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
+            <TableBody>
+              {table.getRowModel().rows.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} align='center' sx={{ py: 3 }}>
+                    No records found
+                  </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                table.getRowModel().rows.map((row, i) => (
+                  <TableRow
+                    key={row.id}
+                    sx={{
+                      backgroundColor: i % 2 === 0 ? 'rgba(0,0,0,0.02)' : 'white',
+                      '&:hover': { backgroundColor: 'rgba(25,118,210,0.08)' }
+                    }}
+                  >
+                    {row.getVisibleCells().map(cell => (
+                      <TableCell key={cell.id} sx={{ fontSize: '14px', borderBottom: '1px solid #eee' }}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
 
         {/* Pagination */}
-        <TablePagination
-          component={() => <div />}
-          count={table.getFilteredRowModel().rows.length}
-          rowsPerPage={table.getState().pagination.pageSize}
-          page={table.getState().pagination.pageIndex}
-          onPageChange={(_, page) => {
-            table.setPageIndex(page)
-          }}
-          onRowsPerPageChange={e => {
-            table.setPageSize(Number(e.target.value))
-          }}
-        />
+        <Box mt={3}>
+          <TablePaginationComponent table={table} />
+        </Box>
       </CardContent>
 
-      {/* Add Income Modal */}
+      {/* Modals */}
       <AddIncomeModal open={openModal} handleClose={() => setOpenModal(false)} onAddIncome={handleAddIncome} />
 
+      {/* Detail Modal */}
       <IncomeDetailModal
         open={openDetailModal}
         handleClose={() => setOpenDetailModal(false)}
         incomeData={selectedIncome}
       />
-
-      <TablePagination
-        component={() => <TablePaginationComponent table={table} />}
-        count={table.getFilteredRowModel().rows.length}
-        rowsPerPage={table.getState().pagination.pageSize}
-        page={table.getState().pagination.pageIndex}
-        onPageChange={(_, page) => {
-          table.setPageIndex(page)
-        }}
-        onRowsPerPageChange={e => {
-          table.setPageSize(Number(e.target.value))
-        }}
-      />
+      {/* <Dialog open={openDetailModal} onClose={() => setOpenDetailModal(false)} fullWidth maxWidth='md'>
+        <DialogTitle>
+          <Typography variant='h5' fontWeight={700}>
+            Income Details
+          </Typography>
+        </DialogTitle>
+        <Divider />
+        <DialogContent>
+          {selectedIncome && selectedIncome.length > 0 ? (
+            selectedIncome.map((sale, idx) => (
+              <Box key={idx} mb={3} p={2} border='1px solid #eee' borderRadius={2}>
+                <Typography variant='h6'>
+                  Customer: {sale.customer?.name || 'N/A'} ({sale.customer?.phone})
+                </Typography>
+                <Typography variant='body2' color='text.secondary'>
+                  Total: ৳{sale.summary.sub_total} | Profit: ৳{sale.summary.profit_total} | Received: ৳
+                  {sale.payment.receiveAmount}
+                </Typography>
+              </Box>
+            ))
+          ) : (
+            <Typography>No income details found.</Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDetailModal(false)}>Close</Button>
+        </DialogActions>
+      </Dialog> */}
     </Card>
   )
 }
@@ -227,88 +294,211 @@ function IncomeDetailModal({ open, handleClose, incomeData }) {
   if (!incomeData || incomeData.length === 0) return null
 
   return (
-    <>
-      <Dialog open={open} onClose={handleClose} maxWidth='md' fullWidth>
-        <DialogTitle sx={{ fontWeight: 'bold' }}>Income Details</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth='md'
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 4,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+          bgcolor: '#fafafa'
+        }
+      }}
+    >
+      <DialogTitle
+        sx={{
+          fontWeight: 700,
+          fontSize: '1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          bgcolor: 'primary.main',
+          color: 'white',
+          p: 2,
+          borderTopLeftRadius: 16,
+          borderTopRightRadius: 16
+        }}
+      >
+        <Receipt fontSize='medium' />
+        Income Details
+      </DialogTitle>
 
-        <DialogContent dividers>
-          {incomeData.map((sale, idx) => (
-            <Paper key={idx} variant='outlined' sx={{ p: 3, mb: 3, borderRadius: 3 }}>
-              {/* 🔹 Summary Section */}
-              <Stack spacing={1} mb={2}>
-                <Typography variant='h6' color='primary'>
-                  Summary
-                </Typography>
-                <Typography>Date: {sale.summary.date}</Typography>
-                <Typography>Total Sales: {sale.summary.sub_total}</Typography>
-                <Typography>Profit (Income): {sale.summary.profit_total}</Typography>
+      <DialogContent dividers sx={{ p: 3 }}>
+        {incomeData.map((sale, idx) => (
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.1 }}
+          >
+            <Paper
+              variant='outlined'
+              sx={{
+                p: 3,
+                mb: 3,
+                borderRadius: 3,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                background: 'white'
+              }}
+            >
+              {/* Summary */}
+              <Stack spacing={1.5} mb={3}>
+                <Box display='flex' alignItems='center' gap={1}>
+                  <Typography variant='h6' fontWeight={600} color='primary'>
+                    Sale Summary
+                  </Typography>
+                  <Chip label={`#${idx + 1}`} color='primary' size='small' />
+                </Box>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={4}>
+                    <Typography variant='body2' color='text.secondary'>
+                      Date
+                    </Typography>
+                    <Typography fontWeight={500}>{sale.summary.date}</Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Typography variant='body2' color='text.secondary'>
+                      Total Sales
+                    </Typography>
+                    <Typography fontWeight={500}>৳ {sale.summary.sub_total.toLocaleString()}</Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Typography variant='body2' color='text.secondary'>
+                      Profit (Income)
+                    </Typography>
+                    <Typography fontWeight={500} color='success.main'>
+                      ৳ {sale.summary.profit_total.toLocaleString()}
+                    </Typography>
+                  </Grid>
+                </Grid>
               </Stack>
 
-              {/* 🔹 Payment Info */}
-              <Divider sx={{ my: 2 }} />
-              <Stack spacing={1} mb={2}>
-                <Typography variant='h6' color='secondary'>
-                  Payment Info
-                </Typography>
-                <Typography>Type: {sale.payment.paymentType}</Typography>
-                <Typography>Receive Amount: {sale.payment.receiveAmount}</Typography>
-                <Typography>Due Amount: {sale.payment.dueAmount}</Typography>
-                <Typography>Note: {sale.payment.note || '-'}</Typography>
+              {/* Payment Info */}
+              <Divider sx={{ my: 3 }} />
+              <Stack spacing={1.5} mb={2}>
+                <Box display='flex' alignItems='center' gap={1}>
+                  <Payment color='secondary' />
+                  <Typography variant='h6' fontWeight={600} color='secondary'>
+                    Payment Info
+                  </Typography>
+                </Box>
+
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Typography variant='body2' color='text.secondary'>
+                      Type
+                    </Typography>
+                    <Typography fontWeight={500}>{sale.payment.paymentType}</Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Typography variant='body2' color='text.secondary'>
+                      Receive Amount
+                    </Typography>
+                    <Typography fontWeight={500} color='success.main'>
+                      ৳ {sale.payment.receiveAmount.toLocaleString()}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Typography variant='body2' color='text.secondary'>
+                      Due Amount
+                    </Typography>
+                    <Typography fontWeight={500} color='error.main'>
+                      ৳ {sale.payment.dueAmount.toLocaleString()}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Typography variant='body2' color='text.secondary'>
+                      Note
+                    </Typography>
+                    <Typography fontWeight={500}>{sale.payment.note || '-'}</Typography>
+                  </Grid>
+                </Grid>
               </Stack>
 
-              {/* 🔹 Customers */}
-              <Divider sx={{ my: 2 }} />
-              <Typography variant='h6' gutterBottom>
-                Customers
+              {/* Customer Info */}
+              <Divider sx={{ my: 3 }} />
+              <Box display='flex' alignItems='center' gap={1} mb={1}>
+                <Group color='action' />
+                <Typography variant='h6' fontWeight={600}>
+                  Customer Information
+                </Typography>
+              </Box>
+
+              <Paper
+                sx={{
+                  p: 2,
+                  borderRadius: 3,
+                  backgroundColor: 'grey.50',
+                  border: '1px solid #e0e0e0'
+                }}
+                elevation={0}
+              >
+                <Typography variant='subtitle1' fontWeight={600}>
+                  {sale.customer.name}
+                </Typography>
+                <Typography variant='body2' color='text.secondary'>
+                  📍 {sale.customer.location}
+                </Typography>
+                <Typography variant='body2'>📞 {sale.customer.phone}</Typography>
+                <Stack direction='row' spacing={1} mt={1}>
+                  <Chip label={`Orders: ${sale.customer.orders}`} size='small' color='info' />
+                  <Chip label={`Due: ৳${sale.customer.due}`} size='small' color='error' />
+                  <Chip label={`Total Spent: ৳${sale.customer.totalSpent}`} size='small' color='primary' />
+                </Stack>
+              </Paper>
+
+              {/* Items Section */}
+              <Divider sx={{ my: 3 }} />
+              <Typography variant='h6' fontWeight={600} mb={2}>
+                Sold Items
               </Typography>
 
-              {sale.customers.map((cust, cIdx) => (
-                <Paper key={cIdx} sx={{ p: 2, mb: 2, borderRadius: 2, backgroundColor: 'grey.50' }} elevation={0}>
-                  <Typography variant='subtitle1' sx={{ fontWeight: 'bold' }}>
-                    Customer #{cust.customer_id}
-                  </Typography>
-                  <Typography variant='body2'>Subtotal: {cust.sub_total}</Typography>
-                  <Typography variant='body2'>Profit: {cust.profit_total}</Typography>
-
-                  {/* 🔹 Products */}
-                  <Box mt={1} pl={2}>
-                    <Typography variant='subtitle2' gutterBottom>
-                      Products
-                    </Typography>
-                    <Stack spacing={0.5}>
-                      {cust.items.map((item, iIdx) => (
-                        <Paper
-                          key={iIdx}
-                          sx={{
-                            p: 1,
-                            borderRadius: 2,
-                            backgroundColor: 'white',
-                            border: '1px solid #eee'
-                          }}
-                          elevation={0}
-                        >
-                          <Typography variant='body2'>
-                            <b>{item.product_name}</b> (ID: {item.product_id})
-                          </Typography>
-                          <Typography variant='caption' color='text.secondary'>
-                            Crate: {item.crate}
-                          </Typography>
-                        </Paper>
-                      ))}
-                    </Stack>
-                  </Box>
-                </Paper>
-              ))}
+              <Grid container spacing={2}>
+                {sale.items.map((item, iIdx) => (
+                  <Grid item xs={12} sm={6} key={iIdx}>
+                    <Paper
+                      sx={{
+                        p: 2,
+                        borderRadius: 2,
+                        backgroundColor: 'white',
+                        border: '1px solid #eee',
+                        transition: '0.2s',
+                        '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }
+                      }}
+                      elevation={0}
+                    >
+                      <Typography variant='subtitle1' fontWeight={600}>
+                        {item.product_name}
+                      </Typography>
+                      <Typography variant='caption' color='text.secondary'>
+                        Category: {item.category}
+                      </Typography>
+                      <Stack direction='row' spacing={1} mt={1}>
+                        <Chip label={`Qty: ${item.kg}`} size='small' />
+                        <Chip label={`Price: ৳${item.price}`} size='small' />
+                        <Chip label={`Profit: ৳${item.profit}`} size='small' color='success' />
+                      </Stack>
+                    </Paper>
+                  </Grid>
+                ))}
+              </Grid>
             </Paper>
-          ))}
-        </DialogContent>
+          </motion.div>
+        ))}
+      </DialogContent>
 
-        <DialogActions>
-          <Button onClick={handleClose} variant='contained' color='primary'>
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
+      <DialogActions sx={{ p: 2, bgcolor: 'grey.50', borderTop: '1px solid #e0e0e0' }}>
+        <Button
+          onClick={handleClose}
+          variant='contained'
+          color='primary'
+          sx={{ px: 4, borderRadius: 2, textTransform: 'none', fontWeight: 600, marginTop: 2 }}
+        >
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
   )
 }

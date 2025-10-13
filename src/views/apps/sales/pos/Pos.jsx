@@ -96,9 +96,7 @@ export default function POSSystem({ productsData = [] }) {
       return
     }
 
-    const isAlreadyAdded = cartProducts.some(
-      item => item.product_id === product.id && item.customer_id === selectedCustomer.sl
-    )
+    const isAlreadyAdded = cartProducts.some(item => item.product_id === product.id)
 
     if (isAlreadyAdded) {
       toast.warning('This product is already added to the cart.', {

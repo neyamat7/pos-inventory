@@ -8,46 +8,37 @@ import { Calendar, FileText, Layers, ShoppingCart, CreditCard, RotateCcw, Clipbo
 import dayjs from 'dayjs'
 
 import CustomTextField from '@core/components/mui/TextField'
-import PurchaseTable from './tables/PurchaseTable'
-import PaymentTable from './tables/PaymentTable'
-import ProductTable from './tables/ProductTable'
-
-// Mock data imports
-import { supplierPurchases } from '@/fake-db/apps/supplierPurchaseHistory'
-import { paymentHistoryData } from '@/fake-db/apps/paymentHistory'
-import { lotInformation } from '@/fake-db/apps/lotInformation'
-import ReturnTable from './tables/ReturnTable'
-import { returnProductsHistory } from '@/fake-db/apps/returnHistory'
+import SalesTable from './tables/SalesTable'
+import { customerPayments, customerReturns, salesReports } from '@/fake-db/apps/customerReportData'
+import CustomerReturnTable from './tables/CustomerReturnTable'
+import CustomerPaymentTable from './tables/PaymentTable'
 
 // -------------------------------------------------------------
 // MAIN COMPONENT
 // -------------------------------------------------------------
-const PurchaseReport = () => {
-  const [activeTab, setActiveTab] = useState('purchases')
+const SalesReport = () => {
+  const [activeTab, setActiveTab] = useState('sales')
   const [searchValue, setSearchValue] = useState('')
   const [fromDate, setFromDate] = useState(dayjs().subtract(1, 'month').format('YYYY-MM-DD'))
   const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'))
 
-  // console.log('from date', fromDate)
-  // console.log('to date', toDate)
-
   const tabs = [
-    { key: 'purchases', label: 'Purchases', icon: <ShoppingCart size={16} /> },
-    { key: 'stock', label: 'Stock Report', icon: <ClipboardList size={16} /> },
+    { key: 'sales', label: 'Sales', icon: <ShoppingCart size={16} /> },
     { key: 'payments', label: 'Payments', icon: <CreditCard size={16} /> },
     { key: 'returns', label: 'Returns', icon: <RotateCcw size={16} /> }
   ]
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'purchases':
-        return <PurchaseTable data={supplierPurchases} />
+      case 'sales':
+        return <SalesTable data={salesReports} />
+
       case 'payments':
-        return <PaymentTable data={paymentHistoryData} />
-      case 'stock':
-        return <ProductTable data={lotInformation} />
+        return <CustomerPaymentTable data={customerPayments} />
+
       case 'returns':
-        return <ReturnTable data={returnProductsHistory} />
+        return <CustomerReturnTable data={customerReturns} />
+
       default:
         return <div className='p-6 text-center text-gray-500'>No data available for this section.</div>
     }
@@ -111,4 +102,4 @@ const PurchaseReport = () => {
   )
 }
 
-export default PurchaseReport
+export default SalesReport

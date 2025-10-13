@@ -3,14 +3,14 @@ import Grid from '@mui/material/Grid2'
 
 // Component Imports
 import CustomerStatisticsCard from './CustomerStatisticsCard'
-import OrderListTable from './OrderListTable'
+import SalesReport from './SalesReport'
 import { customers } from '@/data/customerData/customerData'
 
 // Data Imports
 import { getStatisticsData, getEcommerceData } from '@/app/server/actions'
 
 const Overview = async ({ customerId }) => {
-  console.log('customerId', customerId)
+  // console.log('customerId', customerId)
 
   // Vars
   // const data = await getStatisticsData()
@@ -21,10 +21,7 @@ const Overview = async ({ customerId }) => {
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12 }}>
-        <CustomerStatisticsCard customerStatData={customer} />
-      </Grid>
-      <Grid size={{ xs: 12 }}>
-        <OrderListTable orderData={tableData?.orderData} />
+        <SalesReport orderData={tableData?.orderData} />
       </Grid>
     </Grid>
   )

@@ -51,14 +51,15 @@ export const customers = [
     email: 'hburkill3@drupal.org',
     type: 'Customer',
     phone: '+8801711000004',
-    balance: 0,
+    balance: 5000,
     due: 0,
-    crate: { type_one: { qty: 0, price: 100 }, type_two: { qty: 0, price: 150 } },
+    crate: { type_one: { qty: 10, price: 100 }, type_two: { qty: 20, price: 150 } },
     cost: 0,
     orders: 640,
     totalSpent: 5294.35,
     location: 'United States'
   },
+
   {
     sl: 5,
     image: 'https://i.postimg.cc/05MFsKCZ/images-4.jpg',
