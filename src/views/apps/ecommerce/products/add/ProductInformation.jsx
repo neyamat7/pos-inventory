@@ -26,6 +26,7 @@ const CATEGORIES = [
 
 const ProductInformation = (mode = 'create') => {
   const { control, setValue, getValues, formMode } = useFormContext()
+  
   const isEdit = mode === 'edit'
 
   const preview = useWatch({ control, name: 'imagePreview' })

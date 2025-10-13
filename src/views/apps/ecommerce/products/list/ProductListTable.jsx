@@ -143,9 +143,9 @@ const ProductListTable = ({ productData }) => {
         },
         enableSorting: false
       }),
-      columnHelper.accessor('price', {
+      columnHelper.accessor('cost_price', {
         header: 'Price',
-        cell: ({ row }) => <Typography>{row.original.price ?? '-'}</Typography>
+        cell: ({ row }) => <Typography>{row.original.cost_price ?? '-'}</Typography>
       }),
       columnHelper.accessor('commision_rate', {
         header: 'Commission',
