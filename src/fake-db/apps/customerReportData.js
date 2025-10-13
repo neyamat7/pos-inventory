@@ -47,6 +47,7 @@ export const salesReports = [
   {
     date: '2025-09-25',
     lotName: 'SA-250925-RICE-01',
+    customerName: 'Stanfield Baser',
     salesStatus: 'Completed',
     paymentStatus: 'Paid',
     grandTotal: 18500,
@@ -58,6 +59,7 @@ export const salesReports = [
   {
     date: '2025-09-26',
     lotName: 'RI-260925-BANANA-05',
+    customerName: 'Rafael Ivanov',
     salesStatus: 'Completed',
     paymentStatus: 'Paid',
     grandTotal: 4200,
@@ -69,6 +71,7 @@ export const salesReports = [
   {
     date: '2025-09-27',
     lotName: 'MH-270925-PINEAPPLE-03',
+    customerName: 'Mina Hurst',
     salesStatus: 'Completed',
     paymentStatus: 'Partially Paid',
     grandTotal: 6000,
@@ -80,6 +83,7 @@ export const salesReports = [
   {
     date: '2025-09-28',
     lotName: 'NA-280925-APPLE-10',
+    customerName: 'Nash Alford',
     salesStatus: 'Completed',
     paymentStatus: 'Paid',
     grandTotal: 10500,
@@ -91,6 +95,7 @@ export const salesReports = [
   {
     date: '2025-09-29',
     lotName: 'FY-290925-ORANGE-15',
+    customerName: 'Floyd Young',
     salesStatus: 'Completed',
     paymentStatus: 'Paid',
     grandTotal: 8250,
@@ -102,6 +107,7 @@ export const salesReports = [
   {
     date: '2025-09-30',
     lotName: 'SA-300925-MANGO-20',
+    customerName: 'Stanfield Baser',
     salesStatus: 'Completed',
     paymentStatus: 'Unpaid',
     grandTotal: 12000,
@@ -113,6 +119,7 @@ export const salesReports = [
   {
     date: '2025-10-01',
     lotName: 'AR-011025-MANGO-50',
+    customerName: 'Ava Riley',
     salesStatus: 'Completed',
     paymentStatus: 'Paid',
     grandTotal: 28500,
@@ -124,6 +131,7 @@ export const salesReports = [
   {
     date: '2025-10-02',
     lotName: 'HR-021025-BANANA-10',
+    customerName: 'Hugo Richards',
     salesStatus: 'Completed',
     paymentStatus: 'Partially Paid',
     grandTotal: 4800,
@@ -135,6 +143,7 @@ export const salesReports = [
   {
     date: '2025-10-03',
     lotName: 'MA-031025-APPLE-25',
+    customerName: 'Mia Adams',
     salesStatus: 'Completed',
     paymentStatus: 'Paid',
     grandTotal: 14250,
@@ -146,6 +155,7 @@ export const salesReports = [
   {
     date: '2025-10-04',
     lotName: 'NJ-041025-PINEAPPLE-12',
+    customerName: 'Nora James',
     salesStatus: 'Completed',
     paymentStatus: 'Paid',
     grandTotal: 7800,
@@ -153,9 +163,11 @@ export const salesReports = [
     due: 0,
     addedBy: 'Nusrat Jahan'
   },
+
   {
     date: '2025-10-05',
     lotName: 'RB-051025-ORANGE-08',
+    customerName: 'Ryan Brooks',
     salesStatus: 'Completed',
     paymentStatus: 'Partially Paid',
     grandTotal: 5200,
@@ -163,9 +175,11 @@ export const salesReports = [
     due: 1200,
     addedBy: 'Rokeya Begum'
   },
+
   {
     date: '2025-10-06',
     lotName: 'TA-061025-MANGO-30',
+    customerName: 'Thomas Allen',
     salesStatus: 'Completed',
     paymentStatus: 'Paid',
     grandTotal: 16800,
@@ -179,109 +193,145 @@ export const customerReturns = [
   {
     date: '2025-09-28',
     customerId: 'SUP-001',
+    customerName: 'Stanfield Baser',
     product: 'Mango',
-    lotName: 'SA-270925-MANGO-02',
+    lot_name: 'SA-270925-MANGO-02',
     quantity: 20,
     amount: 1500,
+    paid: 1000,
+    returnAmount: 500,
     reason: 'Overripe / damaged during transport'
   },
   {
     date: '2025-09-29',
     customerId: 'SUP-002',
+    customerName: 'Rafael Ivanov',
     product: 'Banana',
-    lotName: 'RI-290925-BANANA-04',
+    lot_name: 'RI-290925-BANANA-04',
     quantity: 15,
     amount: 900,
+    paid: 600,
+    returnAmount: 300,
     reason: 'Spoiled due to delayed delivery'
   },
   {
     date: '2025-09-30',
     customerId: 'SUP-003',
+    customerName: 'Nash Alford',
     product: 'Apple',
-    lotName: 'NA-300925-APPLE-03',
+    lot_name: 'NA-300925-APPLE-03',
     quantity: 10,
     amount: 1200,
+    paid: 900,
+    returnAmount: 300,
     reason: 'Bruised and soft texture'
   },
   {
     date: '2025-10-01',
     customerId: 'SUP-004',
+    customerName: 'Mina Hurst',
     product: 'Pineapple',
-    lotName: 'MH-011025-PINEAPPLE-01',
+    lot_name: 'MH-011025-PINEAPPLE-01',
     quantity: 5,
     amount: 850,
+    paid: 500,
+    returnAmount: 350,
     reason: 'Damaged outer skin and sour smell'
   },
   {
     date: '2025-10-02',
     customerId: 'SUP-005',
+    customerName: 'Floyd Young',
     product: 'Orange',
-    lotName: 'FY-021025-ORANGE-05',
+    lot_name: 'FY-021025-ORANGE-05',
     quantity: 12,
     amount: 960,
+    paid: 700,
+    returnAmount: 260,
     reason: 'Rotten pieces inside the batch'
   },
   {
     date: '2025-10-03',
     customerId: 'SUP-006',
+    customerName: 'Lara Andrews',
     product: 'Watermelon',
-    lotName: 'LA-031025-WATERMELON-02',
+    lot_name: 'LA-031025-WATERMELON-02',
     quantity: 8,
     amount: 1600,
+    paid: 1000,
+    returnAmount: 600,
     reason: 'Cracked during handling'
   },
   {
     date: '2025-10-04',
     customerId: 'SUP-007',
+    customerName: 'Ava Riley',
     product: 'Mango',
-    lotName: 'AR-041025-MANGO-03',
+    lot_name: 'AR-041025-MANGO-03',
     quantity: 25,
     amount: 2000,
+    paid: 1500,
+    returnAmount: 500,
     reason: 'Unripe and sour flavor reported by customer'
   },
   {
     date: '2025-10-05',
     customerId: 'SUP-008',
+    customerName: 'Hugo Richards',
     product: 'Banana',
-    lotName: 'HR-051025-BANANA-06',
+    lot_name: 'HR-051025-BANANA-06',
     quantity: 10,
     amount: 600,
+    paid: 400,
+    returnAmount: 200,
     reason: 'Black spots and soft peel'
   },
   {
     date: '2025-10-06',
     customerId: 'SUP-009',
+    customerName: 'Mia Adams',
     product: 'Apple',
-    lotName: 'MA-061025-APPLE-04',
+    lot_name: 'MA-061025-APPLE-04',
     quantity: 7,
     amount: 950,
+    paid: 700,
+    returnAmount: 250,
     reason: 'Moldy smell detected after delivery'
   },
   {
     date: '2025-10-07',
     customerId: 'SUP-010',
+    customerName: 'Ryan Brooks',
     product: 'Orange',
-    lotName: 'RB-071025-ORANGE-03',
+    lot_name: 'RB-071025-ORANGE-03',
     quantity: 9,
     amount: 750,
+    paid: 500,
+    returnAmount: 250,
     reason: 'Incorrect size / smaller than ordered'
   },
   {
     date: '2025-10-08',
     customerId: 'SUP-011',
+    customerName: 'Nora James',
     product: 'Pineapple',
-    lotName: 'NJ-081025-PINEAPPLE-02',
+    lot_name: 'NJ-081025-PINEAPPLE-02',
     quantity: 4,
     amount: 680,
+    paid: 400,
+    returnAmount: 280,
     reason: 'Fermented odor indicating early spoilage'
   },
   {
     date: '2025-10-09',
     customerId: 'SUP-012',
+    customerName: 'Thomas Allen',
     product: 'Mango',
-    lotName: 'TA-091025-MANGO-05',
+    lot_name: 'TA-091025-MANGO-05',
     quantity: 18,
     amount: 1350,
+    paid: 900,
+    returnAmount: 450,
     reason: 'Customer complaint: inconsistent ripeness'
   }
 ]

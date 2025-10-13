@@ -99,6 +99,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
         transportation: 0,
         moshjid: 0,
         van_vara: 0,
+        kg: 0,
         total: 0,
         cost: product.price,
         commission_rate: product?.commission_rate || 0,
@@ -201,7 +202,8 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
             <input
               type='number'
               min='0'
-              value={product.crate?.type_one ?? 0}
+              value={product.crate?.type_one === 0 ? '' : (product.crate?.type_one ?? '')}
+              placeholder='0'
               onChange={e => {
                 const value = parseInt(e.target.value) || 0
 
@@ -222,13 +224,43 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
             <input
               type='number'
               min='0'
-              value={product.crate?.type_two ?? 0}
+              value={product.crate?.type_two === 0 ? '' : (product.crate?.type_two ?? '')}
+              placeholder='0'
               onChange={e => {
                 const value = parseInt(e.target.value) || 0
 
                 handleCrateCount(setCartProducts, product.product_id, product.supplier_id, 'type_two', value)
               }}
               className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
+            />
+          )
+        }
+      },
+      {
+        accessorKey: 'kg',
+        header: 'KG',
+        cell: ({ row }) => {
+          const product = row.original
+
+          return (
+            <input
+              type='number'
+              min='0'
+              value={product.kg === 0 ? '' : (product.kg ?? '')}
+              onChange={e => {
+                const value = parseFloat(e.target.value) || 0
+
+                // update the kg value for this product
+                setCartProducts(prev =>
+                  prev.map(item =>
+                    item.product_id === product.product_id && item.supplier_id === product.supplier_id
+                      ? { ...item, kg: value }
+                      : item
+                  )
+                )
+              }}
+              placeholder='0'
+              className='w-24 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
             />
           )
         }
@@ -342,8 +374,26 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
   })
 
   const onSubmitPayment = data => {
+    // Generate lot names for each product before building payload
+    const updatedCartProducts = cartProducts.map(item => {
+      const supplierName = item.supplier_name?.trim() || ''
+      const supplierParts = supplierName.split(' ').filter(Boolean)
+
+      const firstLetter = supplierParts[0]?.[0]?.toUpperCase() || ''
+      const lastLetter = supplierParts.length > 1 ? supplierParts[supplierParts.length - 1][0]?.toUpperCase() : ''
+      const initials = `${firstLetter}${lastLetter}`
+
+      const formattedDate = date.split('-').reverse().join('').slice(0, 6) // e.g. 2025-10-11 → 111025
+      const cleanProductName = item.product_name?.replace(/\s+/g, '_').toUpperCase() || 'ITEM'
+      const totalKg = item.kg || 0
+
+      const lotName = `${initials}-${formattedDate}-${cleanProductName}-${totalKg}`
+
+      return { ...item, lot_name: lotName }
+    })
+
     // Group by supplier with only IDs + totals
-    const suppliersMap = cartProducts.reduce((acc, item) => {
+    const suppliersMap = updatedCartProducts.reduce((acc, item) => {
       const key = item.supplier_id ?? 'unknown'
 
       if (!acc[key]) {

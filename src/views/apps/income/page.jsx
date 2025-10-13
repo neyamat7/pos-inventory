@@ -188,24 +188,32 @@ export default function ShowIncomePage() {
         <TableContainer
           component={Paper}
           sx={{
-            borderRadius: 3,
             overflow: 'hidden',
             boxShadow: '0px 2px 8px rgba(0,0,0,0.1)',
             marginTop: 15
           }}
         >
-          <Table>
+          <Table
+            sx={{
+              border: '1px solid #ddd',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              '& th, & td': {
+                border: '1px solid #e0e0e0'
+              }
+            }}
+          >
             <TableHead>
               {table.getHeaderGroups().map(headerGroup => (
-                <TableRow key={headerGroup.id} sx={{ backgroundColor: '#8b81f3' }}>
+                <TableRow key={headerGroup.id} sx={{ backgroundColor: '#' }}>
                   {headerGroup.headers.map(header => (
                     <TableCell
                       key={header.id}
                       sx={{
-                        color: 'white',
+                        color: '',
                         fontWeight: 600,
                         fontSize: '18px',
-                        borderRight: '1px solid rgba(255,255,255,0.2)'
+                        border: '1px solid rgba(255,255,255,0.2)'
                       }}
                     >
                       {flexRender(header.column.columnDef.header, header.getContext())}
@@ -228,7 +236,7 @@ export default function ShowIncomePage() {
                     key={row.id}
                     sx={{
                       backgroundColor: i % 2 === 0 ? 'rgba(0,0,0,0.02)' : 'white',
-                      '&:hover': { backgroundColor: 'rgba(25,118,210,0.08)' }
+                       
                     }}
                   >
                     {row.getVisibleCells().map(cell => (

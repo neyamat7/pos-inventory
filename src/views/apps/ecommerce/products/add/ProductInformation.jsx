@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect } from 'react'
+
 import MenuItem from '@mui/material/MenuItem'
 
 import Grid from '@mui/material/Grid2'
@@ -27,6 +29,17 @@ const ProductInformation = (mode = 'create') => {
   const isEdit = mode === 'edit'
 
   const preview = useWatch({ control, name: 'imagePreview' })
+
+  console.log('preview', preview)
+
+  useEffect(() => {
+    const existingImage = getValues('images')
+
+    if (existingImage && typeof existingImage === 'string') {
+      // Only set preview if not already set (avoids overwrite when uploading new file)
+      setValue('imagePreview', existingImage, { shouldDirty: false })
+    }
+  }, [isEdit, getValues, setValue])
 
   return (
     <Card>

@@ -48,7 +48,8 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
       const cratePrice = Number((typeOneQty * typeOnePrice + typeTwoQty * typeTwoPrice).toFixed(2))
 
       // --- base product total before crate ---
-      const productBase = Number(item.cost || 0) * (typeOneQty + typeTwoQty) + expenses
+      // const productBase = Number(item.cost || 0) * (typeOneQty + typeTwoQty) + expenses
+      const productBase = Number(item.cost || 0) * Number(item.kg || 0) + expenses + cratePrice
 
       // --- total calculation ---
       // const total = Number((productBase + cratePrice).toFixed(2))

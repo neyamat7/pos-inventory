@@ -106,16 +106,13 @@ const SalesListTable = ({ salesData }) => {
   const mastercard = '/images/apps/ecommerce/mastercard.png'
 
   const columns = [
-    { accessorKey: 'sl', header: 'SL' },
     { accessorKey: 'date', header: 'Date' },
-    { accessorKey: 'invoiceNo', header: 'Invoice No' },
-    { accessorKey: 'partyName', header: 'Party Name' },
-    { accessorKey: 'total', header: 'Total' },
-    { accessorKey: 'discount', header: 'Discount' },
-    { accessorKey: 'paid', header: 'Paid' },
+    { accessorKey: 'lotName', header: 'Lot' },
+    { accessorKey: 'customerName', header: 'Customer' },
+    { accessorKey: 'grandTotal', header: 'Total' },
+    { accessorKey: 'paidAmount', header: 'Paid' },
     { accessorKey: 'due', header: 'Due' },
-    { accessorKey: 'payment', header: 'Payment' },
-    { accessorKey: 'status', header: 'Status' },
+    { accessorKey: 'paymentStatus', header: 'Payment' },
 
     // Action column using your existing OptionMenu
     {
@@ -178,20 +175,6 @@ const SalesListTable = ({ salesData }) => {
     getFacetedMinMaxValues: getFacetedMinMaxValues()
   })
 
-  const getAvatar = params => {
-    const { avatar, customer } = params
-
-    if (avatar) {
-      return <CustomAvatar src={avatar} skin='light' size={34} />
-    } else {
-      return (
-        <CustomAvatar skin='light' size={34}>
-          {getInitials(customer)}
-        </CustomAvatar>
-      )
-    }
-  }
-
   return (
     <Card>
       <CardContent className='flex justify-between max-sm:flex-col sm:items-center gap-4'>
@@ -221,7 +204,7 @@ const SalesListTable = ({ salesData }) => {
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
-                  <th key={header.id}>
+                  <th key={header.id} className='whitespace-nowrap border-r'>
                     {header.isPlaceholder ? null : (
                       <>
                         <div
@@ -262,7 +245,7 @@ const SalesListTable = ({ salesData }) => {
                   return (
                     <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                       {row.getVisibleCells().map(cell => (
-                        <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                        <td className='whitespace-nowrap border-r' key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
                       ))}
                     </tr>
                   )

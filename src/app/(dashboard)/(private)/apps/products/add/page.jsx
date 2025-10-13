@@ -46,32 +46,6 @@ const eCommerceProductsAdd = () => {
         <Grid size={{ xs: 12 }}>
           <ProductInformation mode='create' />
         </Grid>
-
-        {/* <Grid size={{ xs: 12, md: 8 }}>
-          <Grid container spacing={6}>
-            <Grid size={{ xs: 12 }}>
-              <ProductInformation mode='create' />
-            </Grid>
-            <Grid size={{ xs: 12 }}>
-              <ProductImage mode='create' />
-            </Grid>
-            <Grid size={{ xs: 12 }}>
-              <ProductVariants mode='create' />
-            </Grid>
-          </Grid>
-        </Grid> */}
-
-        {/* <Grid size={{ xs: 12, md: 4 }}>
-          <Grid container spacing={6}>
-            <Grid size={{ xs: 12 }}>
-              <ProductPricing mode='create' />
-            </Grid>
-
-            <Grid size={{ xs: 12 }}>
-              <ProductOrganize mode='create' />
-            </Grid>
-          </Grid>
-        </Grid> */}
       </Grid>
     </ProductFormProvider>
   )
