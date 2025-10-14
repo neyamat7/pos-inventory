@@ -117,8 +117,8 @@ const PurchaseListTable = ({ PurchaseReportData = [], onFilterByDate }) => {
   const columns = [
     { accessorKey: 'sl', header: 'SL' },
     { accessorKey: 'date', header: 'Date' },
-    { accessorKey: 'invoiceNo', header: 'Invoice No' },
-    { accessorKey: 'partyName', header: 'Party Name' },
+    { accessorKey: 'lot_name', header: 'Lot' },
+    { accessorKey: 'supplier_name', header: 'Supplier' },
     { accessorKey: 'total', header: 'Total' },
     { accessorKey: 'discount', header: 'Discount' },
     { accessorKey: 'paid', header: 'Paid' },
@@ -126,7 +126,7 @@ const PurchaseListTable = ({ PurchaseReportData = [], onFilterByDate }) => {
     { accessorKey: 'payment', header: 'Payment' },
     { accessorKey: 'status', header: 'Status' },
 
-    // ✅ Action column
+    // Action column
     {
       id: 'action',
       header: 'Action',
@@ -300,7 +300,9 @@ const PurchaseListTable = ({ PurchaseReportData = [], onFilterByDate }) => {
                     return (
                       <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                         {row.getVisibleCells().map(cell => (
-                          <td className='whitespace-nowrap border-r'  key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                          <td className='whitespace-nowrap border-r' key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
                         ))}
                       </tr>
                     )

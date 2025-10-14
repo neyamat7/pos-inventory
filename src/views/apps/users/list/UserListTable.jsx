@@ -37,6 +37,8 @@ import {
 } from '@tanstack/react-table'
 
 // Component Imports
+import Swal from 'sweetalert2'
+
 import TableFilters from './TableFilters'
 import AddUserDrawer from './AddUserDrawer'
 import OptionMenu from '@core/components/option-menu'
@@ -52,7 +54,6 @@ import { getLocalizedUrl } from '@/utils/i18n'
 import tableStyles from '@core/styles/table.module.css'
 import ViewUserModal from './ViewUserModal'
 import EditUserModal from './EditUserModal'
-import Swal from 'sweetalert2'
 
 // Styled Components
 const Icon = styled('i')({})
@@ -312,7 +313,7 @@ const UserListTable = ({ tableData }) => {
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => (
-                    <th key={header.id}>
+                    <th key={header.id} className='whitespace-nowrap border-r'>
                       {header.isPlaceholder ? null : (
                         <>
                           <div
@@ -352,7 +353,9 @@ const UserListTable = ({ tableData }) => {
                     return (
                       <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                         {row.getVisibleCells().map(cell => (
-                          <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                          <td className='whitespace-nowrap border-r' key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
                         ))}
                       </tr>
                     )

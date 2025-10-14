@@ -104,13 +104,6 @@ const LowStockListTable = ({ lowStockData = [] }) => {
   const [data, setData] = useState(...[lowStockData])
   const [globalFilter, setGlobalFilter] = useState('')
 
-  // Hooks
-  const { lang: locale } = useParams()
-
-  // Vars
-  const paypal = '/images/apps/ecommerce/paypal.png'
-  const mastercard = '/images/apps/ecommerce/mastercard.png'
-
   const columns = [
     { accessorKey: 'sl', header: 'SL' },
     { accessorKey: 'product', header: 'Product' },
@@ -238,7 +231,7 @@ const LowStockListTable = ({ lowStockData = [] }) => {
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
-                  <th key={header.id}>
+                  <th key={header.id} className='whitespace-nowrap border-r text-sm'>
                     {header.isPlaceholder ? null : (
                       <>
                         <div
@@ -271,7 +264,7 @@ const LowStockListTable = ({ lowStockData = [] }) => {
               </tr>
             </tbody>
           ) : (
-            <tbody>     
+            <tbody>
               {table
                 .getRowModel()
                 .rows.slice(0, table.getState().pagination.pageSize)
@@ -279,7 +272,9 @@ const LowStockListTable = ({ lowStockData = [] }) => {
                   return (
                     <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                       {row.getVisibleCells().map(cell => (
-                        <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                        <td className='whitespace-nowrap border-r' key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
                       ))}
                     </tr>
                   )
@@ -298,7 +293,6 @@ const LowStockListTable = ({ lowStockData = [] }) => {
           table.setPageIndex(page)
         }}
       />
-      
     </Card>
   )
 }

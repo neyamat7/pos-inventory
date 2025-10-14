@@ -107,18 +107,11 @@ const SalesListTable = ({ salesReportData = [], onFilterByDate }) => {
     setData(salesReportData)
   }, [salesReportData])
 
-  // Hooks
-  const { lang: locale } = useParams()
-
-  // Vars
-  const paypal = '/images/apps/ecommerce/paypal.png'
-  const mastercard = '/images/apps/ecommerce/mastercard.png'
-
   const columns = [
     { accessorKey: 'sl', header: 'SL' },
     { accessorKey: 'date', header: 'Date' },
-    { accessorKey: 'invoiceNo', header: 'Invoice No' },
-    { accessorKey: 'partyName', header: 'Party Name' },
+    { accessorKey: 'lot_name', header: 'Lot' },
+    { accessorKey: 'customer_name', header: 'Customer' },
     { accessorKey: 'total', header: 'Total' },
     { accessorKey: 'discount', header: 'Discount' },
     { accessorKey: 'paid', header: 'Paid' },

@@ -146,7 +146,7 @@ export const db = {
       price: 200,
       cost_price: 160,
       selling_price: 200,
-      image: 'https://i.postimg.cc/nrcL64qc/pexels-mahmoud-yahyaoui-27863683.jpg',
+      image: 'https://i.postimg.cc/26b3kt6k/Chat-GPT-Image-Oct-11-2025-11-24-14-AM.png',
       category: 'Fruits',
       brand: 'Green Fields'
     },
@@ -3719,8 +3719,8 @@ export const db = {
     {
       sl: 1,
       date: '2025-09-01',
-      invoiceNo: 'INV-1001',
-      partyName: 'Alpha Traders',
+      lot_name: 'SA-010925-RICE-01',
+      supplier_name: 'Saiful Alam',
       total: 1500,
       discount: 100,
       paid: 1200,
@@ -3731,8 +3731,8 @@ export const db = {
     {
       sl: 2,
       date: '2025-09-01',
-      invoiceNo: 'INV-1002',
-      partyName: 'Beta Enterprises',
+      lot_name: 'RI-010925-BANANA-02',
+      supplier_name: 'Rafiqul Islam',
       total: 2500,
       discount: 200,
       paid: 2300,
@@ -3743,8 +3743,8 @@ export const db = {
     {
       sl: 3,
       date: '2025-09-02',
-      invoiceNo: 'INV-1003',
-      partyName: 'Gamma Supplies',
+      lot_name: 'MH-020925-PINEAPPLE-03',
+      supplier_name: 'Mehedi Hasan',
       total: 3200,
       discount: 150,
       paid: 1500,
@@ -3755,8 +3755,8 @@ export const db = {
     {
       sl: 4,
       date: '2025-09-02',
-      invoiceNo: 'INV-1004',
-      partyName: 'Delta Distributors',
+      lot_name: 'NA-020925-APPLE-04',
+      supplier_name: 'Nasrin Akter',
       total: 1800,
       discount: 100,
       paid: 0,
@@ -3767,8 +3767,8 @@ export const db = {
     {
       sl: 5,
       date: '2025-09-03',
-      invoiceNo: 'INV-1005',
-      partyName: 'Omega Mart',
+      lot_name: 'FY-030925-ORANGE-05',
+      supplier_name: 'Farhana Yasmin',
       total: 4500,
       discount: 300,
       paid: 4200,
@@ -3779,8 +3779,8 @@ export const db = {
     {
       sl: 6,
       date: '2025-09-03',
-      invoiceNo: 'INV-1006',
-      partyName: 'Sunrise Foods',
+      lot_name: 'AR-030925-MANGO-06',
+      supplier_name: 'Abdur Rahman',
       total: 2700,
       discount: 200,
       paid: 1000,
@@ -3791,8 +3791,8 @@ export const db = {
     {
       sl: 7,
       date: '2025-09-04',
-      invoiceNo: 'INV-1007',
-      partyName: 'City Wholesale',
+      lot_name: 'TA-040925-GUAVA-07',
+      supplier_name: 'Tanvir Alam',
       total: 3000,
       discount: 100,
       paid: 2900,
@@ -3803,8 +3803,8 @@ export const db = {
     {
       sl: 8,
       date: '2025-09-04',
-      invoiceNo: 'INV-1008',
-      partyName: 'Fresh Mart',
+      lot_name: 'SA-040925-WATERMELON-08',
+      supplier_name: 'Shahidul Alam',
       total: 2200,
       discount: 200,
       paid: 0,
@@ -3815,8 +3815,8 @@ export const db = {
     {
       sl: 9,
       date: '2025-09-05',
-      invoiceNo: 'INV-1009',
-      partyName: 'Everest Supplies',
+      lot_name: 'HR-050925-LEMON-09',
+      supplier_name: 'Habibur Rahman',
       total: 3300,
       discount: 300,
       paid: 3000,
@@ -3827,8 +3827,8 @@ export const db = {
     {
       sl: 10,
       date: '2025-09-05',
-      invoiceNo: 'INV-1010',
-      partyName: 'Golden Traders',
+      lot_name: 'MA-050925-PAPAYA-10',
+      supplier_name: 'Mahfuz Alam',
       total: 2000,
       discount: 100,
       paid: 500,
@@ -3839,8 +3839,8 @@ export const db = {
     {
       sl: 11,
       date: '2025-09-06',
-      invoiceNo: 'INV-1011',
-      partyName: 'Super Bazaar',
+      lot_name: 'NJ-060925-BANANA-11',
+      supplier_name: 'Nusrat Jahan',
       total: 5000,
       discount: 500,
       paid: 0,
@@ -3851,8 +3851,8 @@ export const db = {
     {
       sl: 12,
       date: '2025-09-06',
-      invoiceNo: 'INV-1012',
-      partyName: 'Silverline Co.',
+      lot_name: 'RB-060925-PINEAPPLE-12',
+      supplier_name: 'Rokeya Begum',
       total: 2800,
       discount: 100,
       paid: 2700,
@@ -3863,8 +3863,8 @@ export const db = {
     {
       sl: 13,
       date: '2025-09-07',
-      invoiceNo: 'INV-1013',
-      partyName: 'Market Hub',
+      lot_name: 'AA-070925-RICE-13',
+      supplier_name: 'Ahsan Alam',
       total: 3100,
       discount: 200,
       paid: 1500,
@@ -3875,8 +3875,8 @@ export const db = {
     {
       sl: 14,
       date: '2025-09-07',
-      invoiceNo: 'INV-1014',
-      partyName: 'Oceanic Traders',
+      lot_name: 'SR-070925-MANGO-14',
+      supplier_name: 'Samiur Rahman',
       total: 3500,
       discount: 300,
       paid: 3200,
@@ -3887,8 +3887,8 @@ export const db = {
     {
       sl: 15,
       date: '2025-09-08',
-      invoiceNo: 'INV-1015',
-      partyName: 'Bright Stores',
+      lot_name: 'FY-080925-GUAVA-15',
+      supplier_name: 'Farhana Yasmin',
       total: 2700,
       discount: 200,
       paid: 0,
@@ -3899,8 +3899,8 @@ export const db = {
     {
       sl: 16,
       date: '2025-09-08',
-      invoiceNo: 'INV-1016',
-      partyName: 'Nova Enterprises',
+      lot_name: 'AR-080925-APPLE-16',
+      supplier_name: 'Abdur Rahman',
       total: 4100,
       discount: 300,
       paid: 4100,
@@ -3911,8 +3911,8 @@ export const db = {
     {
       sl: 17,
       date: '2025-09-09',
-      invoiceNo: 'INV-1017',
-      partyName: 'Starline Co.',
+      lot_name: 'HR-090925-BANANA-17',
+      supplier_name: 'Habibur Rahman',
       total: 2900,
       discount: 100,
       paid: 1000,
@@ -3923,8 +3923,8 @@ export const db = {
     {
       sl: 18,
       date: '2025-09-09',
-      invoiceNo: 'INV-1018',
-      partyName: 'Greenfield Traders',
+      lot_name: 'MA-090925-ORANGE-18',
+      supplier_name: 'Mahfuz Alam',
       total: 2600,
       discount: 200,
       paid: 2400,
@@ -3935,8 +3935,8 @@ export const db = {
     {
       sl: 19,
       date: '2025-09-09',
-      invoiceNo: 'INV-1019',
-      partyName: 'Horizon Mart',
+      lot_name: 'NJ-090925-PINEAPPLE-19',
+      supplier_name: 'Nusrat Jahan',
       total: 3800,
       discount: 300,
       paid: 0,
@@ -3947,8 +3947,8 @@ export const db = {
     {
       sl: 20,
       date: '2025-09-09',
-      invoiceNo: 'INV-1020',
-      partyName: 'Prime Distributors',
+      lot_name: 'RB-090925-MANGO-20',
+      supplier_name: 'Rokeya Begum',
       total: 4200,
       discount: 200,
       paid: 2000,
@@ -3962,8 +3962,8 @@ export const db = {
     {
       sl: 1,
       date: '2025-09-01',
-      invoiceNo: 'INV-1001',
-      partyName: 'Alpha Traders',
+      lot_name: 'SA-010925-RICE-01',
+      supplier_name: 'Saiful Alam',
       total: 1500,
       discount: 100,
       paid: 1200,
@@ -3974,8 +3974,8 @@ export const db = {
     {
       sl: 2,
       date: '2025-09-01',
-      invoiceNo: 'INV-1002',
-      partyName: 'Beta Enterprises',
+      lot_name: 'RI-010925-BANANA-02',
+      supplier_name: 'Rafiqul Islam',
       total: 2500,
       discount: 200,
       paid: 2300,
@@ -3986,8 +3986,8 @@ export const db = {
     {
       sl: 3,
       date: '2025-09-02',
-      invoiceNo: 'INV-1003',
-      partyName: 'Gamma Supplies',
+      lot_name: 'MH-020925-PINEAPPLE-03',
+      supplier_name: 'Mehedi Hasan',
       total: 3200,
       discount: 150,
       paid: 1500,
@@ -3998,8 +3998,8 @@ export const db = {
     {
       sl: 4,
       date: '2025-09-02',
-      invoiceNo: 'INV-1004',
-      partyName: 'Delta Wholesalers',
+      lot_name: 'NA-020925-APPLE-04',
+      supplier_name: 'Nasrin Akter',
       total: 1800,
       discount: 0,
       paid: 1800,
@@ -4010,8 +4010,8 @@ export const db = {
     {
       sl: 5,
       date: '2025-09-03',
-      invoiceNo: 'INV-1005',
-      partyName: 'Epsilon Traders',
+      lot_name: 'FY-030925-ORANGE-05',
+      supplier_name: 'Farhana Yasmin',
       total: 2200,
       discount: 200,
       paid: 1000,
@@ -4022,8 +4022,8 @@ export const db = {
     {
       sl: 6,
       date: '2025-09-03',
-      invoiceNo: 'INV-1006',
-      partyName: 'Zeta Corporation',
+      lot_name: 'AR-030925-MANGO-06',
+      supplier_name: 'Abdur Rahman',
       total: 5000,
       discount: 500,
       paid: 4500,
@@ -4034,8 +4034,8 @@ export const db = {
     {
       sl: 7,
       date: '2025-09-04',
-      invoiceNo: 'INV-1007',
-      partyName: 'Eta Distributors',
+      lot_name: 'TA-040925-GUAVA-07',
+      supplier_name: 'Tanvir Alam',
       total: 2750,
       discount: 250,
       paid: 1000,
@@ -4046,8 +4046,8 @@ export const db = {
     {
       sl: 8,
       date: '2025-09-04',
-      invoiceNo: 'INV-1008',
-      partyName: 'Theta Imports',
+      lot_name: 'SA-040925-WATERMELON-08',
+      supplier_name: 'Shahidul Alam',
       total: 3500,
       discount: 300,
       paid: 3200,
@@ -4058,8 +4058,8 @@ export const db = {
     {
       sl: 9,
       date: '2025-09-05',
-      invoiceNo: 'INV-1009',
-      partyName: 'Iota Suppliers',
+      lot_name: 'HR-050925-LEMON-09',
+      supplier_name: 'Habibur Rahman',
       total: 4200,
       discount: 400,
       paid: 2000,
@@ -4070,8 +4070,8 @@ export const db = {
     {
       sl: 10,
       date: '2025-09-05',
-      invoiceNo: 'INV-1010',
-      partyName: 'Kappa Traders',
+      lot_name: 'MA-050925-PAPAYA-10',
+      supplier_name: 'Mahfuz Alam',
       total: 3100,
       discount: 100,
       paid: 3000,
@@ -4082,8 +4082,8 @@ export const db = {
     {
       sl: 11,
       date: '2025-09-06',
-      invoiceNo: 'INV-1011',
-      partyName: 'Lambda Enterprises',
+      lot_name: 'NJ-060925-BANANA-11',
+      supplier_name: 'Nusrat Jahan',
       total: 2600,
       discount: 200,
       paid: 1000,
@@ -4094,8 +4094,8 @@ export const db = {
     {
       sl: 12,
       date: '2025-09-06',
-      invoiceNo: 'INV-1012',
-      partyName: 'Mu Wholesalers',
+      lot_name: 'RB-060925-PINEAPPLE-12',
+      supplier_name: 'Rokeya Begum',
       total: 4800,
       discount: 300,
       paid: 4500,
@@ -4109,8 +4109,8 @@ export const db = {
     {
       sl: 1,
       date: '2025-09-01',
-      invoiceNo: 'SAL-2001',
-      partyName: 'Orion Retailers',
+      lot_name: 'RB-010925-RICE-01',
+      customer_name: 'Ruhul Basar',
       total: 1800,
       discount: 100,
       paid: 1500,
@@ -4121,8 +4121,8 @@ export const db = {
     {
       sl: 2,
       date: '2025-09-01',
-      invoiceNo: 'SAL-2002',
-      partyName: 'Nova Mart',
+      lot_name: 'SH-010925-BANANA-02',
+      customer_name: 'Shakil Hasan',
       total: 2800,
       discount: 150,
       paid: 2650,
@@ -4133,8 +4133,8 @@ export const db = {
     {
       sl: 3,
       date: '2025-09-02',
-      invoiceNo: 'SAL-2003',
-      partyName: 'Stellar Supplies',
+      lot_name: 'MS-020925-PINEAPPLE-03',
+      customer_name: 'Mithila Sultana',
       total: 3400,
       discount: 200,
       paid: 2000,
@@ -4145,8 +4145,8 @@ export const db = {
     {
       sl: 4,
       date: '2025-09-02',
-      invoiceNo: 'SAL-2004',
-      partyName: 'Galaxy Wholesales',
+      lot_name: 'NI-020925-APPLE-04',
+      customer_name: 'Naimul Islam',
       total: 2100,
       discount: 0,
       paid: 2100,
@@ -4157,8 +4157,8 @@ export const db = {
     {
       sl: 5,
       date: '2025-09-03',
-      invoiceNo: 'SAL-2005',
-      partyName: 'Cosmos Traders',
+      lot_name: 'FT-030925-ORANGE-05',
+      customer_name: 'Farzana Tasnim',
       total: 2600,
       discount: 200,
       paid: 1200,
@@ -4169,8 +4169,8 @@ export const db = {
     {
       sl: 6,
       date: '2025-09-03',
-      invoiceNo: 'SAL-2006',
-      partyName: 'Apex Corporation',
+      lot_name: 'AA-030925-MANGO-06',
+      customer_name: 'Ashraful Alam',
       total: 5200,
       discount: 300,
       paid: 4900,
@@ -4181,8 +4181,8 @@ export const db = {
     {
       sl: 7,
       date: '2025-09-04',
-      invoiceNo: 'SAL-2007',
-      partyName: 'Zenith Distributors',
+      lot_name: 'TJ-040925-GUAVA-07',
+      customer_name: 'Tanima Jahan',
       total: 2950,
       discount: 150,
       paid: 1400,
@@ -4193,8 +4193,8 @@ export const db = {
     {
       sl: 8,
       date: '2025-09-04',
-      invoiceNo: 'SAL-2008',
-      partyName: 'Vertex Imports',
+      lot_name: 'HK-040925-WATERMELON-08',
+      customer_name: 'Hasibul Karim',
       total: 3700,
       discount: 250,
       paid: 3450,
@@ -4205,8 +4205,8 @@ export const db = {
     {
       sl: 9,
       date: '2025-09-05',
-      invoiceNo: 'SAL-2009',
-      partyName: 'Aurora Suppliers',
+      lot_name: 'SF-050925-LEMON-09',
+      customer_name: 'Sadia Farhin',
       total: 4100,
       discount: 200,
       paid: 2500,
@@ -4217,8 +4217,8 @@ export const db = {
     {
       sl: 10,
       date: '2025-09-05',
-      invoiceNo: 'SAL-2010',
-      partyName: 'Nimbus Traders',
+      lot_name: 'MR-050925-PAPAYA-10',
+      customer_name: 'Moinul Rahman',
       total: 3300,
       discount: 100,
       paid: 3200,
@@ -4229,8 +4229,8 @@ export const db = {
     {
       sl: 11,
       date: '2025-09-06',
-      invoiceNo: 'SAL-2011',
-      partyName: 'Pioneer Enterprises',
+      lot_name: 'NS-060925-BANANA-11',
+      customer_name: 'Nusrat Sultana',
       total: 2800,
       discount: 150,
       paid: 1300,
@@ -4241,8 +4241,8 @@ export const db = {
     {
       sl: 12,
       date: '2025-09-06',
-      invoiceNo: 'SAL-2012',
-      partyName: 'Summit Wholesalers',
+      lot_name: 'RJ-060925-PINEAPPLE-12',
+      customer_name: 'Rakibul Jahan',
       total: 4900,
       discount: 400,
       paid: 4500,
@@ -4251,6 +4251,7 @@ export const db = {
       status: 'Paid'
     }
   ],
+
   stockProductsData: [
     {
       sl: 1,
@@ -4453,6 +4454,7 @@ export const db = {
       supplier_name: 'Noman Agro'
     }
   ],
+
   expiredProducts: [
     {
       sl: 1,
@@ -4844,7 +4846,7 @@ export const db = {
       of: 'Cash',
       returnAmount: 300
     },
-    
+
     {
       sl: 2,
       invoiceNumber: 'INV-1002',
@@ -4946,164 +4948,166 @@ export const db = {
       returnAmount: 400
     }
   ],
+
   purchaseReturnData: [
     {
       id: 101,
       productId: 'P001',
       productName: 'Organic Apples',
-      sku: 'APL-ORG-500G',
+      lot_name: 'SA-010925-APPLE-01',
       quantityPurchased: 50,
       quantityReturned: 5,
       unitPrice: 2.5,
       returnAmount: 12.5,
       reason: 'Damaged on delivery',
       returnDate: '2025-09-01',
-      supplier: 'FreshFarms Ltd'
+      supplier: 'Saiful Alam'
     },
     {
       id: 102,
       productId: 'P002',
       productName: 'Whole Wheat Flour',
-      sku: 'FLR-WHT-1KG',
+      lot_name: 'RI-020925-FLOUR-02',
       quantityPurchased: 100,
       quantityReturned: 10,
       unitPrice: 1.2,
       returnAmount: 12,
       reason: 'Expired stock',
       returnDate: '2025-09-02',
-      supplier: 'GrainHub Supplies'
+      supplier: 'Rafiqul Islam'
     },
     {
       id: 103,
       productId: 'P003',
       productName: 'Olive Oil',
-      sku: 'OIL-OLV-1L',
+      lot_name: 'MH-030925-OIL-03',
       quantityPurchased: 40,
       quantityReturned: 2,
       unitPrice: 8.5,
       returnAmount: 17,
       reason: 'Leaking bottles',
       returnDate: '2025-09-03',
-      supplier: 'Mediterranean Traders'
+      supplier: 'Mehedi Hasan'
     },
     {
       id: 104,
       productId: 'P004',
       productName: 'Brown Rice',
-      sku: 'RCE-BRN-5KG',
+      lot_name: 'NA-040925-RICE-04',
       quantityPurchased: 60,
       quantityReturned: 6,
       unitPrice: 4,
       returnAmount: 24,
       reason: 'Wrong packaging',
       returnDate: '2025-09-04',
-      supplier: 'HealthyHarvest'
+      supplier: 'Nasrin Akter'
     },
     {
       id: 105,
       productId: 'P005',
       productName: 'Almonds',
-      sku: 'ALM-RAW-250G',
+      lot_name: 'FY-050925-ALMOND-05',
       quantityPurchased: 30,
       quantityReturned: 3,
       unitPrice: 6,
       returnAmount: 18,
       reason: 'Customer rejection',
       returnDate: '2025-09-05',
-      supplier: 'NutriWorld'
+      supplier: 'Farhana Yasmin'
     },
     {
       id: 106,
       productId: 'P006',
       productName: 'Milk - Full Cream',
-      sku: 'MLK-FCR-1L',
+      lot_name: 'AR-060925-MILK-06',
       quantityPurchased: 80,
       quantityReturned: 8,
       unitPrice: 1.5,
       returnAmount: 12,
       reason: 'Spoiled product',
       returnDate: '2025-09-06',
-      supplier: 'DairyPure'
+      supplier: 'Abdur Rahman'
     },
     {
       id: 107,
       productId: 'P007',
       productName: 'Cheddar Cheese',
-      sku: 'CHS-CHD-500G',
+      lot_name: 'TA-070925-CHEESE-07',
       quantityPurchased: 25,
       quantityReturned: 1,
       unitPrice: 7,
       returnAmount: 7,
       reason: 'Damaged packaging',
       returnDate: '2025-09-07',
-      supplier: 'CheeseHouse'
+      supplier: 'Tanvir Alam'
     },
     {
       id: 108,
       productId: 'P008',
       productName: 'Canned Tuna',
-      sku: 'TUN-CND-185G',
+      lot_name: 'SA-080925-TUNA-08',
       quantityPurchased: 90,
       quantityReturned: 9,
       unitPrice: 2,
       returnAmount: 18,
       reason: 'Rusty cans',
       returnDate: '2025-09-08',
-      supplier: 'OceanCatch Ltd'
+      supplier: 'Shahidul Alam'
     },
     {
       id: 109,
       productId: 'P009',
       productName: 'Orange Juice',
-      sku: 'JCE-ORG-1L',
+      lot_name: 'HR-090925-JUICE-09',
       quantityPurchased: 45,
       quantityReturned: 4,
       unitPrice: 3,
       returnAmount: 12,
       reason: 'Leakage issue',
       returnDate: '2025-09-09',
-      supplier: 'CitrusFresh'
+      supplier: 'Habibur Rahman'
     },
     {
       id: 110,
       productId: 'P010',
       productName: 'Green Tea Bags',
-      sku: 'TEA-GRN-100PK',
+      lot_name: 'MA-100925-TEA-10',
       quantityPurchased: 70,
       quantityReturned: 5,
       unitPrice: 5,
       returnAmount: 25,
       reason: 'Wrong flavor delivered',
       returnDate: '2025-09-10',
-      supplier: 'TeaWorld'
+      supplier: 'Mahfuz Alam'
     },
     {
       id: 111,
       productId: 'P011',
       productName: 'Tomato Ketchup',
-      sku: 'KTC-TMT-500ML',
+      lot_name: 'NJ-110925-KETCHUP-11',
       quantityPurchased: 55,
       quantityReturned: 2,
       unitPrice: 2.8,
       returnAmount: 5.6,
       reason: 'Broken seal',
       returnDate: '2025-09-11',
-      supplier: 'Foodies Ltd'
+      supplier: 'Nusrat Jahan'
     },
     {
       id: 112,
       productId: 'P012',
       productName: 'Basmati Rice',
-      sku: 'RCE-BSM-5KG',
+      lot_name: 'RB-120925-RICE-12',
       quantityPurchased: 40,
       quantityReturned: 4,
       unitPrice: 6.5,
       returnAmount: 26,
       reason: 'Expired stock',
       returnDate: '2025-09-12',
-      supplier: 'GoldenFields'
+      supplier: 'Rokeya Begum'
     }
   ],
+
   customerData: [
     {
       id: 1,

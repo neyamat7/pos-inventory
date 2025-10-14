@@ -41,7 +41,6 @@ import TablePaginationComponent from '@components/TablePaginationComponent'
 
 // Util Imports
 import { getInitials } from '@/utils/getInitials'
-import { getLocalizedUrl } from '@/utils/i18n'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
@@ -100,13 +99,13 @@ const SupplierListTable = ({ supplierData = [] }) => {
   noStore()
 
   const getCrateSummary = crate => {
-    if (!crate) return '—'
-    const entries = Object.values(crate)
-    const totalQty = entries.reduce((sum, c) => sum + Number(c?.qty || 0), 0)
-    const totalValue = entries.reduce((sum, c) => sum + Number(c?.qty || 0) * Number(c?.price || 0), 0)
+  if (!crate) return '—'
 
-    return `Qty: ${totalQty} | Value: ${totalValue.toLocaleString()}`
-  }
+  // show each crate type with qty only
+  return Object.entries(crate)
+    .map(([key, val]) => `${key.replace('_', ' ')}: ${val.qty}`)
+    .join(' | ')
+}
 
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
@@ -121,8 +120,6 @@ const SupplierListTable = ({ supplierData = [] }) => {
   const [newBalance, setNewBalance] = useState('')
   const [crateForm, setCrateForm] = useState({})
 
-  // Hooks
-  const { lang: locale } = useParams()
 
   const columns = useMemo(
     () => [
@@ -356,7 +353,7 @@ const SupplierListTable = ({ supplierData = [] }) => {
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => (
-                    <th key={header.id}>
+                    <th key={header.id} className='whitespace-nowrap border-r'>
                       {header.isPlaceholder ? null : (
                         <>
                           <div
@@ -394,9 +391,9 @@ const SupplierListTable = ({ supplierData = [] }) => {
                   .rows.slice(0, table.getState().pagination.pageSize)
                   .map(row => {
                     return (
-                      <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
+                      <tr  key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                         {row.getVisibleCells().map(cell => (
-                          <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                          <td className='whitespace-nowrap border-r' key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
                         ))}
                       </tr>
                     )

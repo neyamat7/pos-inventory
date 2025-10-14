@@ -32,6 +32,10 @@ import {
 } from '@tanstack/react-table'
 
 // Component Imports
+import { IconButton } from '@mui/material'
+
+import Swal from 'sweetalert2'
+
 import CustomAvatar from '@core/components/mui/Avatar'
 import OptionMenu from '@core/components/option-menu'
 import CustomTextField from '@core/components/mui/TextField'
@@ -98,13 +102,6 @@ const SalesListTable = ({ salesData }) => {
   const [data, setData] = useState(...[salesData])
   const [globalFilter, setGlobalFilter] = useState('')
 
-  // Hooks
-  const { lang: locale } = useParams()
-
-  // Vars
-  const paypal = '/images/apps/ecommerce/paypal.png'
-  const mastercard = '/images/apps/ecommerce/mastercard.png'
-
   const columns = [
     { accessorKey: 'date', header: 'Date' },
     { accessorKey: 'lotName', header: 'Lot' },
@@ -120,26 +117,34 @@ const SalesListTable = ({ salesData }) => {
       header: 'Action',
       cell: ({ row }) => (
         <div className='flex items-center'>
-          <OptionMenu
-            iconButtonProps={{ size: 'medium' }}
-            iconClassName='text-textSecondary'
-            options={[
-              {
-                text: 'View',
-                icon: 'tabler-eye',
-                href: `/invoices/${row.original.invoiceNo}`, // link to view invoice
-                linkProps: { className: 'flex items-center gap-2 w-full px-2 py-1' }
-              },
-              {
-                text: 'Delete',
-                icon: 'tabler-trash',
-                menuItemProps: {
-                  onClick: () => setData(prev => prev.filter(item => item.sl !== row.original.sl)),
-                  className: 'flex items-center gap-2 w-full px-2 py-1 text-red-500'
+          <IconButton
+            aria-label='Delete'
+            onClick={() => {
+              Swal.fire({
+                title: 'Are you sure?',
+                text: `You are about to delete this product. This action cannot be undone.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+              }).then(result => {
+                if (result.isConfirmed) {
+                  setData(prev => prev.filter(item => item.id !== row.original.id))
+                  Swal.fire({
+                    title: 'Deleted!',
+                    text: 'This product has been removed successfully.',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 1100,
+                    timerProgressBar: true
+                  })
                 }
-              }
-            ]}
-          />
+              })
+            }}
+          >
+            <i className='tabler-trash text-textSecondary' />
+          </IconButton>
         </div>
       ),
       enableSorting: false
@@ -177,6 +182,7 @@ const SalesListTable = ({ salesData }) => {
 
   return (
     <Card>
+      <h1 className='text-2xl xl:text-3xl font-semibold mt-3 ml-4'>Sales List</h1>
       <CardContent className='flex justify-between max-sm:flex-col sm:items-center gap-4'>
         <DebouncedInput
           value={globalFilter ?? ''}
@@ -184,6 +190,7 @@ const SalesListTable = ({ salesData }) => {
           placeholder='Search Order'
           className='sm:is-auto'
         />
+
         <div className='flex items-center max-sm:flex-col gap-4 max-sm:is-full is-auto'>
           <CustomTextField
             select
@@ -198,6 +205,7 @@ const SalesListTable = ({ salesData }) => {
           </CustomTextField>
         </div>
       </CardContent>
+
       <div className='overflow-x-auto'>
         <table className={tableStyles.table}>
           <thead>
@@ -245,7 +253,9 @@ const SalesListTable = ({ salesData }) => {
                   return (
                     <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                       {row.getVisibleCells().map(cell => (
-                        <td className='whitespace-nowrap border-r' key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                        <td className='whitespace-nowrap border-r' key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
                       ))}
                     </tr>
                   )
@@ -254,6 +264,7 @@ const SalesListTable = ({ salesData }) => {
           )}
         </table>
       </div>
+
       <TablePagination
         component={() => <TablePaginationComponent table={table} />}
         count={table.getFilteredRowModel().rows.length}

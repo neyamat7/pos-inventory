@@ -188,24 +188,24 @@ export default function ShowIncomePage() {
         <TableContainer
           component={Paper}
           sx={{
-            overflow: 'hidden',
-            boxShadow: '0px 2px 8px rgba(0,0,0,0.1)',
-            marginTop: 15
+            overflowX: 'auto',
+            overflowY: 'hidden',
+            boxShadow: 'none',
+            marginTop: 15,
+            borderRadius: 0,
+            border: '1px solid #ddd'
           }}
         >
           <Table
             sx={{
-              border: '1px solid #ddd',
-              borderRadius: '8px',
-              overflow: 'hidden',
-              '& th, & td': {
-                border: '1px solid #e0e0e0'
-              }
+              borderCollapse: 'collapse',
+              '& th, & td': { border: '1px solid #e0e0e0' },
+              whiteSpace: 'nowrap'
             }}
           >
             <TableHead>
               {table.getHeaderGroups().map(headerGroup => (
-                <TableRow key={headerGroup.id} sx={{ backgroundColor: '#' }}>
+                <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map(header => (
                     <TableCell
                       key={header.id}
@@ -213,7 +213,8 @@ export default function ShowIncomePage() {
                         color: '',
                         fontWeight: 600,
                         fontSize: '18px',
-                        border: '1px solid rgba(255,255,255,0.2)'
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        whiteSpace: 'nowrap'
                       }}
                     >
                       {flexRender(header.column.columnDef.header, header.getContext())}
@@ -236,7 +237,7 @@ export default function ShowIncomePage() {
                     key={row.id}
                     sx={{
                       backgroundColor: i % 2 === 0 ? 'rgba(0,0,0,0.02)' : 'white',
-                       
+                      whiteSpace: 'nowrap'
                     }}
                   >
                     {row.getVisibleCells().map(cell => (
@@ -266,34 +267,6 @@ export default function ShowIncomePage() {
         handleClose={() => setOpenDetailModal(false)}
         incomeData={selectedIncome}
       />
-      {/* <Dialog open={openDetailModal} onClose={() => setOpenDetailModal(false)} fullWidth maxWidth='md'>
-        <DialogTitle>
-          <Typography variant='h5' fontWeight={700}>
-            Income Details
-          </Typography>
-        </DialogTitle>
-        <Divider />
-        <DialogContent>
-          {selectedIncome && selectedIncome.length > 0 ? (
-            selectedIncome.map((sale, idx) => (
-              <Box key={idx} mb={3} p={2} border='1px solid #eee' borderRadius={2}>
-                <Typography variant='h6'>
-                  Customer: {sale.customer?.name || 'N/A'} ({sale.customer?.phone})
-                </Typography>
-                <Typography variant='body2' color='text.secondary'>
-                  Total: ৳{sale.summary.sub_total} | Profit: ৳{sale.summary.profit_total} | Received: ৳
-                  {sale.payment.receiveAmount}
-                </Typography>
-              </Box>
-            ))
-          ) : (
-            <Typography>No income details found.</Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDetailModal(false)}>Close</Button>
-        </DialogActions>
-      </Dialog> */}
     </Card>
   )
 }

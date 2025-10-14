@@ -15,6 +15,7 @@ import {
   Button,
   Typography
 } from '@mui/material'
+
 import CloseIcon from '@mui/icons-material/Close'
 
 export default function ViewUserModal({ open, user, onClose, onEdit }) {

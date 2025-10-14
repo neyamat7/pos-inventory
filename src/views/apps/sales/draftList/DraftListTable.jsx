@@ -32,9 +32,9 @@ import {
 } from '@tanstack/react-table'
 
 // Component Imports
-import Swal from 'sweetalert2'
-
 import { IconButton } from '@mui/material'
+
+import Swal from 'sweetalert2'
 
 import CustomAvatar from '@core/components/mui/Avatar'
 import OptionMenu from '@core/components/option-menu'
@@ -96,49 +96,42 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const ExpiredListTable = ({ expiredProducts = [] }) => {
+const DraftListTable = ({ draftProducts }) => {
   // States
   const [rowSelection, setRowSelection] = useState({})
-  const [data, setData] = useState(...[expiredProducts])
+  const [data, setData] = useState(...[draftProducts])
   const [globalFilter, setGlobalFilter] = useState('')
 
   const columns = [
-    { accessorKey: 'sl', header: 'SL' },
-    { accessorKey: 'productName', header: 'Product Name' },
-    { accessorKey: 'code', header: 'Code' },
-    { accessorKey: 'brand', header: 'Brand' },
-    { accessorKey: 'category', header: 'Category' },
-    { accessorKey: 'unit', header: 'Unit' },
-    { accessorKey: 'purchasePrice', header: 'Purchase Price' },
-    { accessorKey: 'salePrice', header: 'Sale Price' },
-    { accessorKey: 'stock', header: 'Stock' },
-    { accessorKey: 'expiredDate', header: 'Expired Date' },
-
-    // Stock Value column = purchasePrice * stock
     {
-      id: 'stockValue',
-      header: 'Stock Value',
-      cell: ({ row }) => {
-        const price = row.original.purchasePrice
-        const stock = row.original.stock
+      accessorKey: 'date',
+      header: 'Date',
+      cell: ({ getValue }) => {
+        const date = getValue()
 
-        return price * stock
+        return new Date(date).toLocaleDateString()
       }
     },
+    { accessorKey: 'customer_name', header: 'Customer' },
+    { accessorKey: 'contact_number', header: 'Contact' },
+    { accessorKey: 'lot_name', header: 'Lot' },
+    { accessorKey: 'product_name', header: 'Product' },
+    { accessorKey: 'kg', header: 'Kg' },
+    { accessorKey: 'location', header: 'Location' },
+    { accessorKey: 'added_by', header: 'Added By' },
 
-    // Action column
+    // Action column using your existing OptionMenu
     {
       id: 'action',
       header: 'Action',
       cell: ({ row }) => (
         <div className='flex items-center'>
-          {/* Delete Button with SweetAlert2 Confirm */}
           <IconButton
             aria-label='Delete'
             onClick={() => {
               Swal.fire({
                 title: 'Are you sure?',
-                text: `You are about to delete "${row.original.product}". This action cannot be undone.`,
+                text: `You are about to delete this product. This action cannot be undone.`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
@@ -146,8 +139,15 @@ const ExpiredListTable = ({ expiredProducts = [] }) => {
                 confirmButtonText: 'Yes, delete it!'
               }).then(result => {
                 if (result.isConfirmed) {
-                  setData(prev => prev.filter(item => item.sl !== row.original.sl))
-                  Swal.fire('Deleted!', `"${row.original.product}" has been deleted successfully.`, 'success')
+                  setData(prev => prev.filter(item => item.id !== row.original.id))
+                  Swal.fire({
+                    title: 'Deleted!',
+                    text: 'This product has been removed successfully.',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 1100,
+                    timerProgressBar: true
+                  })
                 }
               })
             }}
@@ -191,6 +191,8 @@ const ExpiredListTable = ({ expiredProducts = [] }) => {
 
   return (
     <Card>
+      <h1 className='text-2xl xl:text-3xl font-semibold mt-3 ml-4'>Draft Product List</h1>
+
       <CardContent className='flex justify-between max-sm:flex-col sm:items-center gap-4'>
         <DebouncedInput
           value={globalFilter ?? ''}
@@ -198,6 +200,7 @@ const ExpiredListTable = ({ expiredProducts = [] }) => {
           placeholder='Search Order'
           className='sm:is-auto'
         />
+
         <div className='flex items-center max-sm:flex-col gap-4 max-sm:is-full is-auto'>
           <CustomTextField
             select
@@ -212,13 +215,14 @@ const ExpiredListTable = ({ expiredProducts = [] }) => {
           </CustomTextField>
         </div>
       </CardContent>
+
       <div className='overflow-x-auto'>
         <table className={tableStyles.table}>
           <thead>
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
-                  <th key={header.id} className='whitespace-nowrap border-r text-sm'>
+                  <th key={header.id} className='whitespace-nowrap border-r'>
                     {header.isPlaceholder ? null : (
                       <>
                         <div
@@ -270,6 +274,7 @@ const ExpiredListTable = ({ expiredProducts = [] }) => {
           )}
         </table>
       </div>
+
       <TablePagination
         component={() => <TablePaginationComponent table={table} />}
         count={table.getFilteredRowModel().rows.length}
@@ -283,4 +288,4 @@ const ExpiredListTable = ({ expiredProducts = [] }) => {
   )
 }
 
-export default ExpiredListTable
+export default DraftListTable

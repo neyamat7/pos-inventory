@@ -6,9 +6,6 @@ import { salesReports } from '@/fake-db/apps/customerReportData'
 import SalesList from '@/views/apps/sales/list'
 
 const SalesListPage = async () => {
-  // Vars
-  const data = await getEcommerceData()
-
   return <SalesList salesData={salesReports} />
 }
 

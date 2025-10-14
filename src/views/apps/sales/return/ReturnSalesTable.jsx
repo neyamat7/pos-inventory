@@ -45,6 +45,7 @@ import { getLocalizedUrl } from '@/utils/i18n'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
+import Swal from 'sweetalert2'
 
 export const paymentStatus = {
   1: { text: 'Paid', color: 'success', colorClassName: 'text-success' },
@@ -233,7 +234,30 @@ const ReturnSalesTable = ({ salesReturnData = [] }) => {
               text: 'Delete',
               icon: 'tabler-trash',
               menuItemProps: {
-                onClick: () => setData(prev => prev.filter(item => item.lot_name !== row.original.lot_name)),
+                onClick: () => {
+                  Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'You won’t be able to revert this!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                  }).then(result => {
+                    if (result.isConfirmed) {
+                      setData(prev => prev.filter(item => item.lot_name !== row.original.lot_name))
+
+                      Swal.fire({
+                        title: 'Deleted!',
+                        text: 'This product has been removed successfully.',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1500,
+                        timerProgressBar: true
+                      })
+                    }
+                  })
+                },
                 className: 'flex items-center gap-2 w-full px-2 py-1 text-red-500'
               }
             }

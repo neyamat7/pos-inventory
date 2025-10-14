@@ -108,11 +108,11 @@ const CustomerListTable = ({ customerData }) => {
 
   const getCrateSummary = crate => {
     if (!crate) return '—'
-    const entries = Object.values(crate)
-    const totalQty = entries.reduce((sum, c) => sum + Number(c?.qty || 0), 0)
-    const totalValue = entries.reduce((sum, c) => sum + Number(c?.qty || 0) * Number(c?.price || 0), 0)
 
-    return `Qty: ${totalQty} | Value: ${totalValue.toLocaleString()}`
+    // show each crate type with qty only
+    return Object.entries(crate)
+      .map(([key, val]) => `${key.replace('_', ' ')}: ${val.qty}`)
+      .join(' | ')
   }
 
   // Columns
@@ -334,7 +334,7 @@ const CustomerListTable = ({ customerData }) => {
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => (
-                    <th key={header.id}>
+                    <th key={header.id} className='whitespace-nowrap border-r text-sm'>
                       {header.isPlaceholder ? null : (
                         <div
                           className={classnames({
@@ -372,7 +372,9 @@ const CustomerListTable = ({ customerData }) => {
                   .map(row => (
                     <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                       {row.getVisibleCells().map(cell => (
-                        <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                        <td className='whitespace-nowrap border-r' key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
                       ))}
                     </tr>
                   ))}

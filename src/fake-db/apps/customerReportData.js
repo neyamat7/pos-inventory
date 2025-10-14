@@ -45,6 +45,7 @@ export const customerReportData = [
 
 export const salesReports = [
   {
+    id: 1,
     date: '2025-09-25',
     lotName: 'SA-250925-RICE-01',
     customerName: 'Stanfield Baser',
@@ -57,6 +58,7 @@ export const salesReports = [
   },
 
   {
+    id: 2,
     date: '2025-09-26',
     lotName: 'RI-260925-BANANA-05',
     customerName: 'Rafael Ivanov',
@@ -69,6 +71,7 @@ export const salesReports = [
   },
 
   {
+    id: 3,
     date: '2025-09-27',
     lotName: 'MH-270925-PINEAPPLE-03',
     customerName: 'Mina Hurst',
@@ -81,6 +84,7 @@ export const salesReports = [
   },
 
   {
+    id: 4,
     date: '2025-09-28',
     lotName: 'NA-280925-APPLE-10',
     customerName: 'Nash Alford',
@@ -93,6 +97,7 @@ export const salesReports = [
   },
 
   {
+    id: 5,
     date: '2025-09-29',
     lotName: 'FY-290925-ORANGE-15',
     customerName: 'Floyd Young',
@@ -105,6 +110,7 @@ export const salesReports = [
   },
 
   {
+    id: 6,
     date: '2025-09-30',
     lotName: 'SA-300925-MANGO-20',
     customerName: 'Stanfield Baser',
@@ -117,6 +123,7 @@ export const salesReports = [
   },
 
   {
+    id: 7,
     date: '2025-10-01',
     lotName: 'AR-011025-MANGO-50',
     customerName: 'Ava Riley',
@@ -129,6 +136,7 @@ export const salesReports = [
   },
 
   {
+    id: 8,
     date: '2025-10-02',
     lotName: 'HR-021025-BANANA-10',
     customerName: 'Hugo Richards',
@@ -141,6 +149,7 @@ export const salesReports = [
   },
 
   {
+    id: 9,
     date: '2025-10-03',
     lotName: 'MA-031025-APPLE-25',
     customerName: 'Mia Adams',
@@ -153,6 +162,7 @@ export const salesReports = [
   },
 
   {
+    id: 10,
     date: '2025-10-04',
     lotName: 'NJ-041025-PINEAPPLE-12',
     customerName: 'Nora James',
@@ -165,6 +175,7 @@ export const salesReports = [
   },
 
   {
+    id: 11,
     date: '2025-10-05',
     lotName: 'RB-051025-ORANGE-08',
     customerName: 'Ryan Brooks',
@@ -177,6 +188,7 @@ export const salesReports = [
   },
 
   {
+    id: 12,
     date: '2025-10-06',
     lotName: 'TA-061025-MANGO-30',
     customerName: 'Thomas Allen',
@@ -432,5 +444,140 @@ export const customerPayments = [
     ref: 'PAY-061025-012',
     note: 'Full payment for Mango Lot TA-061025-MANGO-30',
     customerId: 'SUP-012'
+  }
+]
+
+export const draftProducts = [
+  {
+    id: 1,
+    date: '2025-09-25',
+    customer_name: 'Saiful Alam',
+    contact_number: '+8801711000001',
+    lot_name: 'SA-250925-RICE-01',
+    product_name: 'Rice',
+    kg: 1200,
+    location: 'Dhaka',
+    added_by: 'Rafiqul Islam'
+  },
+  {
+    id: 2,
+    date: '2025-09-26',
+    customer_name: 'Rafiqul Islam',
+    contact_number: '+8801722000002',
+    lot_name: 'RI-260925-BANANA-02',
+    product_name: 'Banana',
+    kg: 850,
+    location: 'Chattogram',
+    added_by: 'Mehedi Hasan'
+  },
+  {
+    id: 3,
+    date: '2025-09-27',
+    customer_name: 'Mehedi Hasan',
+    contact_number: '+8801733000003',
+    lot_name: 'MH-270925-PINEAPPLE-03',
+    product_name: 'Pineapple',
+    kg: 640,
+    location: 'Sylhet',
+    added_by: 'Nasrin Akter'
+  },
+  {
+    id: 4,
+    date: '2025-09-28',
+    customer_name: 'Nasrin Akter',
+    contact_number: '+8801744000004',
+    lot_name: 'NA-280925-APPLE-04',
+    product_name: 'Apple',
+    kg: 900,
+    location: 'Rajshahi',
+    added_by: 'Farhana Yasmin'
+  },
+  {
+    id: 5,
+    date: '2025-09-29',
+    customer_name: 'Farhana Yasmin',
+    contact_number: '+8801755000005',
+    lot_name: 'FY-290925-ORANGE-05',
+    product_name: 'Orange',
+    kg: 1050,
+    location: 'Khulna',
+    added_by: 'Abdur Rahman'
+  },
+  {
+    id: 6,
+    date: '2025-09-30',
+    customer_name: 'Abdur Rahman',
+    contact_number: '+8801766000006',
+    lot_name: 'AR-300925-MANGO-06',
+    product_name: 'Mango',
+    kg: 700,
+    location: 'Barishal',
+    added_by: 'Tanvir Alam'
+  },
+  {
+    id: 7,
+    date: '2025-10-01',
+    customer_name: 'Tanvir Alam',
+    contact_number: '+8801777000007',
+    lot_name: 'TA-011025-GUAVA-07',
+    product_name: 'Guava',
+    kg: 550,
+    location: 'Rangpur',
+    added_by: 'Shahidul Alam'
+  },
+  {
+    id: 8,
+    date: '2025-10-02',
+    customer_name: 'Shahidul Alam',
+    contact_number: '+8801788000008',
+    lot_name: 'SA-021025-WATERMELON-08',
+    product_name: 'Watermelon',
+    kg: 1500,
+    location: 'Mymensingh',
+    added_by: 'Habibur Rahman'
+  },
+  {
+    id: 9,
+    date: '2025-10-03',
+    customer_name: 'Habibur Rahman',
+    contact_number: '+8801799000009',
+    lot_name: 'HR-031025-LEMON-09',
+    product_name: 'Lemon',
+    kg: 420,
+    location: 'Cumilla',
+    added_by: 'Mahfuz Alam'
+  },
+  {
+    id: 10,
+    date: '2025-10-04',
+    customer_name: 'Mahfuz Alam',
+    contact_number: '+8801700000010',
+    lot_name: 'MA-041025-MANGO-10',
+    product_name: 'Mango',
+    kg: 950,
+    location: 'Gazipur',
+    added_by: 'Nusrat Jahan'
+  },
+  {
+    id: 11,
+    date: '2025-10-05',
+    customer_name: 'Nusrat Jahan',
+    contact_number: '+8801711000011',
+    lot_name: 'NJ-051025-BANANA-11',
+    product_name: 'Banana',
+    kg: 870,
+    location: 'Bogura',
+    added_by: 'Rokeya Begum'
+  },
+  {
+    id: 12,
+    date: '2025-10-06',
+    customer_name: 'Rokeya Begum',
+    contact_number: '+8801722000012',
+    lot_name: 'RB-061025-PINEAPPLE-12',
+    product_name: 'Pineapple',
+    kg: 1120,
+    location: 'Jessore',
+    added_by: 'Saiful Alam'
   }
 ]

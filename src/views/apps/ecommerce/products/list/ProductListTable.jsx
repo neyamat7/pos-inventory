@@ -211,7 +211,7 @@ const ProductListTable = ({ productData }) => {
         enableSorting: false
       })
     ],
-    [data, filteredData]
+    []
   )
 
   const table = useReactTable({
@@ -275,7 +275,7 @@ const ProductListTable = ({ productData }) => {
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => (
-                    <th key={header.id}>
+                    <th key={header.id} className='whitespace-nowrap border-r'>
                       {header.isPlaceholder ? null : (
                         <div
                           className={classnames({
@@ -312,7 +312,7 @@ const ProductListTable = ({ productData }) => {
                   .map(row => (
                     <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                       {row.getVisibleCells().map(cell => (
-                        <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                        <td className='whitespace-nowrap border-r' key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
                       ))}
                     </tr>
                   ))}

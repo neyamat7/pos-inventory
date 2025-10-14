@@ -34,6 +34,8 @@ import {
 // Component Imports
 import Swal from 'sweetalert2'
 
+import { IconButton } from '@mui/material'
+
 import CustomAvatar from '@core/components/mui/Avatar'
 import OptionMenu from '@core/components/option-menu'
 import CustomTextField from '@core/components/mui/TextField'
@@ -44,8 +46,7 @@ import { getInitials } from '@/utils/getInitials'
 import { getLocalizedUrl } from '@/utils/i18n'
 
 // Style Imports
-import tableStyles from '@core/styles/table.module.css'
-import ViewPurchaseModal from './ViewPurchaseModal'
+import tableStyles from '@core/styles/table.module.css' 
 
 export const paymentStatus = {
   1: { text: 'Paid', color: 'success', colorClassName: 'text-success' },
@@ -95,25 +96,45 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const PurchaseListTable = ({ purchaseData = [] }) => {
+const ItemReportListTable = ({ itemsReportData = [], onFilterByDate }) => {
   // States
   const [rowSelection, setRowSelection] = useState({})
-  const [data, setData] = useState(...[purchaseData])
+  const [data, setData] = useState(itemsReportData)
   const [globalFilter, setGlobalFilter] = useState('')
   const [viewOpen, setViewOpen] = useState(false)
   const [selectedRow, setSelectedRow] = useState(null)
 
+  useEffect(() => {
+    setData(itemsReportData)
+  }, [itemsReportData])
+
   const columns = [
-    { accessorKey: 'sl', header: 'SL' },
-    { accessorKey: 'date', header: 'Date' },
+    {
+      accessorKey: 'purchase_date',
+      header: 'Purchase Date',
+      cell: ({ getValue }) => {
+        const date = getValue()
+
+        return new Date(date).toLocaleDateString()
+      }
+    },
+    { accessorKey: 'product', header: 'Product' },
     { accessorKey: 'lot_name', header: 'Lot' },
-    { accessorKey: 'supplier_name', header: 'Supplier' },
-    { accessorKey: 'total', header: 'Total' },
-    { accessorKey: 'discount', header: 'Discount' },
-    { accessorKey: 'paid', header: 'Paid' },
-    { accessorKey: 'due', header: 'Due' },
-    { accessorKey: 'payment', header: 'Payment' },
-    { accessorKey: 'status', header: 'Status' },
+    { accessorKey: 'supplier', header: 'Supplier' },
+    {
+      accessorKey: 'sale_date',
+      header: 'Sale Date',
+      cell: ({ getValue }) => {
+        const date = getValue()
+
+        return new Date(date).toLocaleDateString()
+      }
+    },
+    { accessorKey: 'customer', header: 'Customer' },
+    { accessorKey: 'quantity', header: 'Quantity' },
+    { accessorKey: 'cost', header: 'Cost' },
+    { accessorKey: 'selling_price', header: 'Selling Price' },
+    { accessorKey: 'subtotal', header: 'Subtotal' },
 
     // Action column
     {
@@ -121,46 +142,34 @@ const PurchaseListTable = ({ purchaseData = [] }) => {
       header: 'Action',
       cell: ({ row }) => (
         <div className='flex items-center'>
-          <OptionMenu
-            iconButtonProps={{ size: 'medium' }}
-            iconClassName='text-textSecondary'
-            options={[
-              {
-                text: 'View',
-                icon: 'tabler-eye',
-                menuItemProps: {
-                  onClick: () => {
-                    setSelectedRow(row.original)
-                    setViewOpen(true)
-                  },
-                  className: 'flex items-center'
+          <IconButton
+            aria-label='Delete'
+            onClick={() => {
+              Swal.fire({
+                title: 'Are you sure?',
+                text: `You are about to delete this product. This action cannot be undone.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+              }).then(result => {
+                if (result.isConfirmed) {
+                  setData(prev => prev.filter(item => item.id !== row.original.id))
+                  Swal.fire({
+                    title: 'Deleted!',
+                    text: 'This product has been removed successfully.',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 1100,
+                    timerProgressBar: true
+                  })
                 }
-              },
-              {
-                text: 'Delete',
-                icon: 'tabler-trash',
-                menuItemProps: {
-                  onClick: () => {
-                    Swal.fire({
-                      title: 'Are you sure?',
-                      text: 'This action cannot be undone!',
-                      icon: 'warning',
-                      showCancelButton: true,
-                      confirmButtonColor: '#3085d6',
-                      cancelButtonColor: '#d33',
-                      confirmButtonText: 'Yes, delete it!'
-                    }).then(result => {
-                      if (result.isConfirmed) {
-                        setData(prev => prev.filter(item => item.sl !== row.original.sl))
-                        Swal.fire('Deleted!', 'The record has been deleted.', 'success')
-                      }
-                    })
-                  },
-                  className: 'flex items-center text-red-500'
-                }
-              }
-            ]}
-          />
+              })
+            }}
+          >
+            <i className='tabler-trash text-textSecondary' />
+          </IconButton>
         </div>
       ),
       enableSorting: false
@@ -213,7 +222,7 @@ const PurchaseListTable = ({ purchaseData = [] }) => {
   return (
     <>
       <Card>
-        <h1 className='mt-3 ml-4 text-3xl font-semibold'>Purchase List</h1>
+        <h1 className='mt-3 ml-4 text-3xl font-semibold'>Sales Report</h1>
         <CardContent className='flex justify-between max-sm:flex-col sm:items-center gap-4'>
           <DebouncedInput
             value={globalFilter ?? ''}
@@ -221,7 +230,14 @@ const PurchaseListTable = ({ purchaseData = [] }) => {
             placeholder='Search Order'
             className='sm:is-auto'
           />
+
           <div className='flex items-center max-sm:flex-col gap-4 max-sm:is-full is-auto'>
+            <CustomTextField
+              type='date'
+              onChange={e => onFilterByDate(e.target.value)} // ⬅ call filter function
+              className='is-auto max-sm:is-full'
+            />
+
             <CustomTextField
               select
               value={table.getState().pagination.pageSize}
@@ -293,7 +309,6 @@ const PurchaseListTable = ({ purchaseData = [] }) => {
             )}
           </table>
         </div>
-
         <TablePagination
           component={() => <TablePaginationComponent table={table} />}
           count={table.getFilteredRowModel().rows.length}
@@ -305,9 +320,9 @@ const PurchaseListTable = ({ purchaseData = [] }) => {
         />
       </Card>
 
-      <ViewPurchaseModal open={viewOpen} handleClose={() => setViewOpen(false)} data={selectedRow} />
+    
     </>
   )
 }
 
-export default PurchaseListTable
+export default ItemReportListTable

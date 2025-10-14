@@ -76,9 +76,6 @@ const ReturnPurchaseTable = ({ purchaseReturnData = [] }) => {
   const [openModal, setOpenModal] = useState(false)
   const [editData, setEditData] = useState(null)
 
-  // Hooks
-  const { lang: locale } = useParams()
-
   // Delete with SweetAlert
   const handleDelete = id => {
     Swal.fire({
@@ -115,14 +112,14 @@ const ReturnPurchaseTable = ({ purchaseReturnData = [] }) => {
   const columns = [
     { accessorKey: 'id', header: 'SL' },
     { accessorKey: 'productName', header: 'Product Name' },
-    { accessorKey: 'sku', header: 'SKU' },
+    { accessorKey: 'supplier', header: 'Supplier' },
+    { accessorKey: 'lot_name', header: 'Lot' },
     { accessorKey: 'quantityPurchased', header: 'Qty Purchased' },
     { accessorKey: 'quantityReturned', header: 'Qty Returned' },
     { accessorKey: 'unitPrice', header: 'Unit Price' },
     { accessorKey: 'returnAmount', header: 'Return Amount' },
     { accessorKey: 'reason', header: 'Reason' },
     { accessorKey: 'returnDate', header: 'Date' },
-    { accessorKey: 'supplier', header: 'Supplier' },
 
     {
       id: 'action',
@@ -219,7 +216,7 @@ const ReturnPurchaseTable = ({ purchaseReturnData = [] }) => {
             {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
-                  <th key={header.id}>
+                  <th key={header.id} className='whitespace-nowrap border-r'>
                     {header.isPlaceholder ? null : (
                       <div
                         className={classnames({
@@ -257,7 +254,9 @@ const ReturnPurchaseTable = ({ purchaseReturnData = [] }) => {
                 .map(row => (
                   <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                     {row.getVisibleCells().map(cell => (
-                      <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                      <td className='whitespace-nowrap border-r' key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
                     ))}
                   </tr>
                 ))}

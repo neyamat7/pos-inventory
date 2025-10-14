@@ -129,6 +129,7 @@ const VerticalMenu = ({ scrollMenu }) => {
           <MenuItem href='/apps/sales/pos'>POS</MenuItem>
           <MenuItem href='/apps/sales/list'>Sales List</MenuItem>
           <MenuItem href='/apps/sales/return'>Sales Return</MenuItem>
+          <MenuItem href='/apps/draftList'>Draft List</MenuItem>
         </SubMenu>
 
         <MenuItem href='/apps/branches' icon={<i className='tabler-hierarchy' />}>
@@ -158,6 +159,7 @@ const VerticalMenu = ({ scrollMenu }) => {
           <MenuItem href='/apps/reports/sales'>Sales Report</MenuItem>
           <MenuItem href='/apps/reports/suppliers'>Suppliers Report</MenuItem>
           <MenuItem href='/apps/reports/customers'>Customers Report</MenuItem>
+          <MenuItem href='/apps/reports/items'>Items Report</MenuItem>
           <MenuItem href='/apps/reports/activityLog'>Activity Log</MenuItem>
         </SubMenu>
       </Menu>

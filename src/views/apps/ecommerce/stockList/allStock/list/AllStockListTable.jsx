@@ -97,8 +97,6 @@ const AllStockListTable = ({ stockProductsData = [] }) => {
     Swal.fire('Updated!', 'Product information updated successfully.', 'success')
   }
 
-  const { lang: locale } = useParams()
-
   const handleDelete = row => {
     Swal.fire({
       title: 'Are you sure?',
@@ -217,7 +215,7 @@ const AllStockListTable = ({ stockProductsData = [] }) => {
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => (
-                    <th key={header.id}>
+                    <th key={header.id} className='whitespace-nowrap border-r text-sm'>
                       {header.isPlaceholder ? null : (
                         <div
                           className={classnames({
@@ -238,6 +236,7 @@ const AllStockListTable = ({ stockProductsData = [] }) => {
                 </tr>
               ))}
             </thead>
+
             {table.getFilteredRowModel().rows.length === 0 ? (
               <tbody>
                 <tr>
@@ -254,7 +253,9 @@ const AllStockListTable = ({ stockProductsData = [] }) => {
                   .map(row => (
                     <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                       {row.getVisibleCells().map(cell => (
-                        <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                        <td className='whitespace-nowrap border-r' key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
                       ))}
                     </tr>
                   ))}
