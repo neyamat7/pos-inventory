@@ -24,14 +24,21 @@ const CATEGORIES = [
   { value: 'grains', label: 'Grains' }
 ]
 
+const ALLOW_COMMISSION = [
+  { value: 'yes', label: 'Yes' },
+  { value: 'no', label: 'No' }
+]
+
 const ProductInformation = (mode = 'create') => {
   const { control, setValue, getValues, formMode } = useFormContext()
-  
+
   const isEdit = mode === 'edit'
 
   const preview = useWatch({ control, name: 'imagePreview' })
 
-  console.log('preview', preview)
+  const allowCommission = useWatch({ control, name: 'isCommissionable', defaultValue: 'no' })
+
+  // console.log('preview', preview)
 
   useEffect(() => {
     const existingImage = getValues('images')
@@ -47,25 +54,6 @@ const ProductInformation = (mode = 'create') => {
       <CardHeader title='Product Information' />
       <CardContent>
         <Grid container spacing={6} className='mbe-6'>
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <Controller
-              name='id'
-              control={control}
-              rules={{ required: 'ID is required' }}
-              render={({ field, fieldState }) => (
-                <CustomTextField
-                  fullWidth
-                  label='ID'
-                  placeholder='p1001'
-                  {...field}
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message}
-                  disabled={isEdit}
-                />
-              )}
-            />
-          </Grid>
-
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Controller
               name='name'
@@ -124,6 +112,30 @@ const ProductInformation = (mode = 'create') => {
 
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Controller
+              name='isCommissionable'
+              control={control}
+              defaultValue='no'
+              rules={{ required: 'This field is required' }}
+              render={({ field }) => (
+                <CustomTextField
+                  select
+                  fullWidth
+                  label='Allow Commission?'
+                  {...field}
+                  value={field.value ? 'yes' : 'no'}
+                >
+                  {ALLOW_COMMISSION.map(opt => (
+                    <MenuItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </MenuItem>
+                  ))}
+                </CustomTextField>
+              )}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <Controller
               name='commision_rate'
               control={control}
               defaultValue=''
@@ -139,13 +151,14 @@ const ProductInformation = (mode = 'create') => {
                   placeholder='10'
                   type='number'
                   inputProps={{ step: '0.01', min: 0, max: 100 }}
-                  className='mbe-6'
+                  className='mbe-6 disabled:cursor-not-allowed disabled:opacity-70'
                   {...field}
                   value={field.value ?? ''}
                   onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
                   inputMode='decimal'
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message}
+                  disabled={allowCommission === 'no'}
                 />
               )}
             />
@@ -154,6 +167,7 @@ const ProductInformation = (mode = 'create') => {
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Controller
               name='category'
+              defaultValue='fruits'
               control={control}
               render={({ field }) => (
                 <CustomTextField select fullWidth label='Category' {...field} value={field.value ?? ''}>
@@ -165,6 +179,28 @@ const ProductInformation = (mode = 'create') => {
                 </CustomTextField>
               )}
             />
+          </Grid>
+
+          <Grid size={{ xs: 12 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <Controller
+                name='isCrated'
+                control={control}
+                defaultValue='no'
+                render={({ field }) => (
+                  <CustomTextField select fullWidth label='Is Crated?' {...field} value={field.value ? 'yes' : 'no'}>
+                    {[
+                      { value: 'yes', label: 'Yes' },
+                      { value: 'no', label: 'No' }
+                    ].map(opt => (
+                      <MenuItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </MenuItem>
+                    ))}
+                  </CustomTextField>
+                )}
+              />
+            </Grid>
           </Grid>
 
           {/* Image Upload & Description */}

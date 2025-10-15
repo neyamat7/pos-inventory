@@ -4,17 +4,12 @@
 import Grid from '@mui/material/Grid2'
 
 // Component Imports
-import ProductAddHeader from '@views/apps/ecommerce/products/add/ProductAddHeader'
-import ProductInformation from '@views/apps/ecommerce/products/add/ProductInformation'
-import ProductImage from '@views/apps/ecommerce/products/add/ProductImage'
-import ProductVariants from '@views/apps/ecommerce/products/add/ProductVariants'
-import ProductInventory from '@views/apps/ecommerce/products/add/ProductInventory'
-import ProductPricing from '@views/apps/ecommerce/products/add/ProductPricing'
-import ProductOrganize from '@views/apps/ecommerce/products/add/ProductOrganize'
-import ProductFormProvider from '@/views/apps/ecommerce/products/add/ProductFormProvider'
 import { products } from '@/fake-db/apps/products'
+import ProductFormProvider from '@/views/apps/products/add/ProductFormProvider'
+import ProductAddHeader from '@/views/apps/products/add/ProductAddHeader'
+import ProductInformation from '@/views/apps/products/add/ProductInformation'
 
-const eCommerceProductsAdd = () => {
+const addProductPage = () => {
   const handleAddProduct = async values => {
     // const form = new FormData()
 
@@ -51,4 +46,4 @@ const eCommerceProductsAdd = () => {
   )
 }
 
-export default eCommerceProductsAdd
+export default addProductPage

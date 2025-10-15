@@ -1,21 +1,18 @@
 'use client'
 
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { FormProvider, useForm } from 'react-hook-form'
 
 const BASE_DEFAULTS = {
-  id: '',
   sku: '',
-  barcode: '',
   name: '',
   description: '',
-  variants: [],
   price: 0,
+  isCommissionable: 'no',
   commision_rate: 0,
-  category: '',
-  image: '',
-  status: ''
+  category: 'fruits',
+  image: ''
 }
 
 const normalizeImages = val => {
@@ -61,7 +58,6 @@ export default function ProductFormProvider({
   })
 
   const { handleSubmit, reset } = methods
- 
 
   const onValid = async (values, e) => {
     try {
@@ -72,7 +68,6 @@ export default function ProductFormProvider({
   }
 
   const ctx = useMemo(() => ({ ...methods, formMode: mode }), [methods, mode])
- 
 
   return (
     <FormProvider {...ctx}>

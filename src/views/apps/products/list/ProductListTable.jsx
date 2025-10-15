@@ -41,9 +41,6 @@ import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
 import ProductViewModal from './ProductViewModal'
 
-// Util Imports
-import { getLocalizedUrl } from '@/utils/i18n'
-
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
 
@@ -132,46 +129,29 @@ const ProductListTable = ({ productData }) => {
         header: 'SKU',
         cell: ({ row }) => <Typography>{row.original.sku || '-'}</Typography>
       }),
-      columnHelper.accessor('variants', {
-        id: 'variant',
-        header: 'Variant',
-        cell: ({ row }) => {
-          const v = Array.isArray(row.original.variants) && row.original.variants[0]
-          const text = v ? `${v.option ?? ''}${v.value ? `: ${v.value}` : ''}`.trim() : '-'
 
-          return <Typography>{text || '-'}</Typography>
-        },
-        enableSorting: false
-      }),
       columnHelper.accessor('cost_price', {
         header: 'Price',
         cell: ({ row }) => <Typography>{row.original.cost_price ?? '-'}</Typography>
       }),
+
       columnHelper.accessor('commision_rate', {
         header: 'Commission',
         cell: ({ row }) => {
           const c = row.original.commision_rate
 
-          return <Typography>{c !== undefined && c !== null ? `${c}%` : '-'}</Typography>
+          return <Typography>{c !== undefined && c !== null ? (c < 1 ? 'N/A' : `${c}%`) : '-'}</Typography>
         }
       }),
       columnHelper.accessor('category', {
         header: 'Category',
         cell: ({ row }) => <Typography>{row.original.category || '-'}</Typography>
       }),
-      columnHelper.accessor('status', {
-        header: 'Status',
-        cell: ({ row }) => {
-          const statusKey = row.original.status || 'unknown'
-          const map = productStatusObj?.[statusKey]
-
-          return map ? (
-            <Chip label={map.title} variant='tonal' color={map.color} size='small' />
-          ) : (
-            <Chip label={String(statusKey)} variant='tonal' size='small' />
-          )
-        }
+      columnHelper.accessor('isCrated', {
+        header: 'Crated',
+        cell: ({ row }) => <Typography>{row.original.isCrated ? 'Yes' : 'No'}</Typography>
       }),
+
       columnHelper.accessor('actions', {
         header: 'Actions',
         cell: ({ row }) => (
@@ -312,7 +292,9 @@ const ProductListTable = ({ productData }) => {
                   .map(row => (
                     <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                       {row.getVisibleCells().map(cell => (
-                        <td className='whitespace-nowrap border-r' key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                        <td className='whitespace-nowrap border-r' key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
                       ))}
                     </tr>
                   ))}

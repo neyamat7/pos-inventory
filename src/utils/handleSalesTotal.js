@@ -38,13 +38,16 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
         ? Number((productBase * (1 + commissionRate)).toFixed(2))
         : productBase
 
+      const subtotal = Number((productBase + cratePrice).toFixed(2))
+
       // Final total = productAfterCommission + cratePrice
-      const total = Number((productBase + cratePrice).toFixed(2))
+      const total = Number((productAfterCommission + cratePrice).toFixed(2))
 
       return {
         ...item,
         kg,
         cratePrice,
+        subtotal,
         total,
         profit
       }

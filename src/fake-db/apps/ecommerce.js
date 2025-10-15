@@ -1,5 +1,3 @@
-import purchaseListPage from '@/app/(dashboard)/(private)/apps/purchase/list/page'
-
 export const db = {
   products: [
     {
@@ -14,7 +12,9 @@ export const db = {
       commision_rate: 0,
       category: 'fruits',
       images: 'https://i.postimg.cc/DfsDFWyh/images.jpg',
-      status: 'active'
+      status: 'active',
+      isCommissionable: false,
+      isCrated: true
     },
     {
       id: 'p002',
@@ -28,7 +28,9 @@ export const db = {
       commision_rate: 0,
       category: 'fruits',
       images: 'https://i.postimg.cc/cLd3d3ZF/pexels-jibarofoto-2238309.jpg',
-      status: 'active'
+      status: 'active',
+      isCommissionable: false,
+      isCrated: false
     },
     {
       id: 'p003',
@@ -42,7 +44,9 @@ export const db = {
       commision_rate: 0,
       category: 'fruits',
       images: 'https://i.postimg.cc/QdDzsfH4/pexels-quang-nguyen-vinh-222549-2135677.jpg',
-      status: 'active'
+      status: 'active',
+      isCommissionable: false,
+      isCrated: true
     },
     {
       id: 'p005',
@@ -56,7 +60,9 @@ export const db = {
       commision_rate: 10,
       category: 'fruits',
       images: 'https://i.postimg.cc/2yhsJDLj/Mangoes.jpg',
-      status: 'active'
+      status: 'active',
+      isCommissionable: false,
+      isCrated: false
     },
     {
       id: 'p007',
@@ -70,7 +76,9 @@ export const db = {
       commision_rate: 10,
       category: 'fruits',
       images: 'https://i.postimg.cc/X7phQrt9/pexels-psco-1071882.jpg',
-      status: 'active'
+      status: 'active',
+      isCommissionable: false,
+      isCrated: true
     },
     {
       id: 'p009',
@@ -84,9 +92,12 @@ export const db = {
       commision_rate: 0,
       category: 'fruits',
       images: 'https://i.postimg.cc/nrcL64qc/pexels-mahmoud-yahyaoui-27863683.jpg',
-      status: 'active'
+      status: 'active',
+      isCommissionable: false,
+      isCrated: false
     }
   ],
+
   productsData: [
     {
       id: 1,
@@ -97,7 +108,9 @@ export const db = {
       image: 'https://i.postimg.cc/4y0HNNp5/Chat-GPT-Image-Oct-9-2025-06-54-36-PM.png',
       category: 'Fruits',
       brand: 'Fresh Farm',
-      commission_rate: 10
+      commission_rate: 10,
+      isCommissionable: true,
+      isCrated: true
     },
     {
       id: 2,
@@ -108,7 +121,9 @@ export const db = {
       image: 'https://i.postimg.cc/Y2T1HbRX/Chat-GPT-Image-Oct-9-2025-07-01-22-PM.png',
       category: 'Fruits',
       brand: 'Tropical Fresh',
-      commission_rate: 20
+      commission_rate: 20,
+      isCommissionable: true,
+      isCrated: false
     },
     {
       id: 3,
@@ -118,7 +133,9 @@ export const db = {
       selling_price: 60,
       image: 'https://i.postimg.cc/q72FsNRC/Chat-GPT-Image-Oct-9-2025-07-05-58-PM.png',
       category: 'Fruits',
-      brand: 'Nature Organic'
+      brand: 'Nature Organic',
+      isCommissionable: false,
+      isCrated: false
     },
     {
       id: 4,
@@ -128,7 +145,9 @@ export const db = {
       selling_price: 150,
       image: 'https://i.postimg.cc/90j6KK62/Chat-GPT-Image-Oct-11-2025-10-57-06-AM.png',
       category: 'Fruits',
-      brand: 'Fresh Orchard'
+      brand: 'Fresh Orchard',
+      isCommissionable: false,
+      isCrated: true
     },
     {
       id: 5,
@@ -138,7 +157,9 @@ export const db = {
       selling_price: 100,
       image: 'https://i.postimg.cc/qqdPSSP0/Chat-GPT-Image-Oct-11-2025-11-05-15-AM.png',
       category: 'Fruits',
-      brand: 'Citrus Co'
+      brand: 'Citrus Co',
+      isCommissionable: false,
+      isCrated: false
     },
     {
       id: 8,
@@ -148,7 +169,9 @@ export const db = {
       selling_price: 200,
       image: 'https://i.postimg.cc/26b3kt6k/Chat-GPT-Image-Oct-11-2025-11-24-14-AM.png',
       category: 'Fruits',
-      brand: 'Green Fields'
+      brand: 'Green Fields',
+      isCommissionable: false,
+      isCrated: true
     },
 
     // Vegetables
@@ -160,7 +183,9 @@ export const db = {
       selling_price: 50,
       image: 'https://i.postimg.cc/CL0CK5V4/pexels-rauf-allahverdiyev-561368-1367242.jpg',
       category: 'Vegetables',
-      brand: 'Green Fresh'
+      brand: 'Green Fresh',
+      isCommissionable: false,
+      isCrated: true
     },
     {
       id: 12,
@@ -170,7 +195,9 @@ export const db = {
       selling_price: 40,
       image: 'https://i.postimg.cc/Yq7NS0wR/pexels-victorino-2286776.jpg',
       category: 'Vegetables',
-      brand: 'Farm Fresh'
+      brand: 'Farm Fresh',
+      isCommissionable: false,
+      isCrated: false
     },
     {
       id: 13,
@@ -180,7 +207,9 @@ export const db = {
       selling_price: 60,
       image: 'https://i.postimg.cc/BQ35vbGR/onion-1-kg-product-images-o590003515-p590003515-0-202509221825.webp',
       category: 'Vegetables',
-      brand: 'Daily Harvest'
+      brand: 'Daily Harvest',
+      isCommissionable: false,
+      isCrated: true
     },
 
     // Grains & Spices
@@ -192,7 +221,9 @@ export const db = {
       selling_price: 450,
       image: 'https://i.postimg.cc/qRjtMJcj/9fd402e1470f3fca485e5fe6b317db58cbea003f951871c1.jpg',
       category: 'Grains',
-      brand: 'Rice Valley'
+      brand: 'Rice Valley',
+      isCommissionable: false,
+      isCrated: false
     },
     {
       id: 42,
@@ -202,7 +233,9 @@ export const db = {
       selling_price: 400,
       image: 'https://i.postimg.cc/k4n6m6Ss/istockphoto-172876049-612x612.jpg',
       category: 'Grains',
-      brand: 'Healthy Grain'
+      brand: 'Healthy Grain',
+      isCommissionable: false,
+      isCrated: true
     },
     {
       id: 43,
@@ -213,7 +246,9 @@ export const db = {
       image:
         'https://i.postimg.cc/zB0LXzwK/Lentils-Are-Your-Ticket-to-Quick-and-Hearty-Meals-FT-BLOG0125-83a85aa4ddcf47f4ac0a5a71870a379d.jpg',
       category: 'Grains',
-      brand: 'Pulse Fresh'
+      brand: 'Pulse Fresh',
+      isCommissionable: false,
+      isCrated: false
     }
   ],
 
@@ -1619,6 +1654,7 @@ export const db = {
       para: 'In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id nulla ultrices aliquet.'
     }
   ],
+
   referrals: [
     {
       id: 1,
@@ -2071,6 +2107,7 @@ export const db = {
       earning: '$900.25'
     }
   ],
+
   orderData: [
     {
       id: 1,

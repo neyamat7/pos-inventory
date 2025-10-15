@@ -79,6 +79,7 @@ const VerticalMenu = ({ scrollMenu }) => {
         </SubMenu>
 
         <SubMenu label='Stock List' icon={<i className='tabler-packages' />}>
+          <MenuItem href='/apps/stockList/lot'>All Lots</MenuItem>
           <MenuItem href='/apps/stockList/allStock'>All Stock</MenuItem>
           <MenuItem href='/apps/stockList/lowStock'>Low Stock</MenuItem>
           <MenuItem href='/apps/stockList/expiredProducts'>Expired Products</MenuItem>

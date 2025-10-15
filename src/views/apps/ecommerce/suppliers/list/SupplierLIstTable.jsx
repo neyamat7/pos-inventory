@@ -99,13 +99,13 @@ const SupplierListTable = ({ supplierData = [] }) => {
   noStore()
 
   const getCrateSummary = crate => {
-  if (!crate) return '—'
+    if (!crate) return '—'
 
-  // show each crate type with qty only
-  return Object.entries(crate)
-    .map(([key, val]) => `${key.replace('_', ' ')}: ${val.qty}`)
-    .join(' | ')
-}
+    // show each crate type with qty only
+    return Object.entries(crate)
+      .map(([key, val]) => `${key.replace('_', ' ')}: ${val.qty}`)
+      .join(' | ')
+  }
 
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
@@ -119,7 +119,12 @@ const SupplierListTable = ({ supplierData = [] }) => {
   const [selectedSupplier, setSelectedSupplier] = useState(null)
   const [newBalance, setNewBalance] = useState('')
   const [crateForm, setCrateForm] = useState({})
+  const [openProfitModal, setOpenProfitModal] = useState(false)
+  const [profitPercentage, setProfitPercentage] = useState('')
+  const [balanceNote, setBalanceNote] = useState('')
+  const [balanceFile, setBalanceFile] = useState('')
 
+  // console.log('balanceFile', balanceFile)
 
   const columns = useMemo(
     () => [
@@ -212,6 +217,18 @@ const SupplierListTable = ({ supplierData = [] }) => {
                       setOpenBalanceModal(true)
                     },
                     className: 'flex items-center'
+                  }
+                },
+                {
+                  text: 'Adjust Profit',
+                  icon: 'tabler-percentage',
+                  menuItemProps: {
+                    onClick: () => {
+                      setSelectedSupplier(row.original)
+                      setProfitPercentage('')
+                      setOpenProfitModal(true)
+                    },
+                    className: 'flex items-center text-blue-600'
                   }
                 },
                 {
@@ -391,9 +408,11 @@ const SupplierListTable = ({ supplierData = [] }) => {
                   .rows.slice(0, table.getState().pagination.pageSize)
                   .map(row => {
                     return (
-                      <tr  key={row.id} className={classnames({ selected: row.getIsSelected() })}>
+                      <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                         {row.getVisibleCells().map(cell => (
-                          <td className='whitespace-nowrap border-r' key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                          <td className='whitespace-nowrap border-r' key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
                         ))}
                       </tr>
                     )
@@ -420,17 +439,19 @@ const SupplierListTable = ({ supplierData = [] }) => {
       />
 
       {/* Add Balance Modal */}
+      {/* Add Balance Modal */}
       {openBalanceModal && selectedSupplier && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4'>
-          <div className='w-full max-w-md bg-white text-gray-800 rounded-2xl shadow-2xl p-6 transition-all duration-300'>
-            <Typography variant='h6' className='mb-4 font-semibold text-gray-900'>
+          <div className='w-full max-w-md bg-white/80 backdrop-blur-lg text-gray-800 rounded-2xl shadow-2xl p-6 transition-all duration-300'>
+            <Typography variant='h6' className='mb-4 font-semibold text-gray-900 text-center'>
               Add Balance for <span className='text-primary'>{selectedSupplier.name}</span>
             </Typography>
 
-            <Typography variant='body2' className='text-gray-600 mb-3'>
-              Enter the amount you want to add to this supplier’s balance.
+            <Typography variant='body2' className='text-gray-600 mb-3 text-center'>
+              Enter the amount, attach a note, and upload a document (optional).
             </Typography>
 
+            {/* Amount Input */}
             <CustomTextField
               fullWidth
               label='Amount (৳)'
@@ -438,39 +459,99 @@ const SupplierListTable = ({ supplierData = [] }) => {
               value={newBalance}
               onChange={e => setNewBalance(e.target.value)}
               InputProps={{
-                style: {
-                  backgroundColor: '#f9fafb',
-                  borderRadius: '8px',
-                  color: '#111827'
-                }
+                style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
               }}
               sx={{
                 '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
                 '& input': { color: '#111827' },
                 '& label': { color: '#6b7280' }
               }}
+              className='mb-4'
             />
 
-            <div className='flex justify-end gap-3 mt-6'>
+            {/* Note Text Area */}
+            <CustomTextField
+              fullWidth
+              label='Note'
+              multiline
+              minRows={3}
+              value={balanceNote}
+              onChange={e => setBalanceNote(e.target.value)}
+              placeholder='Write any additional notes here...'
+              InputProps={{
+                style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
+              }}
+              sx={{
+                '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
+                '& textarea': { color: '#111827' },
+                '& label': { color: '#6b7280' }
+              }}
+              className='mb-4'
+            />
+
+            {/* Upload Document */}
+            <div className='flex flex-col gap-2 mb-4'>
+              <label className='text-sm font-medium text-gray-700'>Upload Document (optional)</label>
+              <input
+                type='file'
+                accept='image/*'
+                onChange={e => {
+                  const file = e.target.files[0]
+
+                  if (file) {
+                    const reader = new FileReader()
+
+                    reader.onload = () => setBalanceFile(reader.result)
+                    reader.readAsDataURL(file)
+                  }
+                }}
+                className='w-full rounded-lg border border-gray-300 p-2 text-sm bg-gray-50 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition'
+              />
+              {balanceFile && (
+                <div className='mt-2 flex justify-center'>
+                  <img
+                    src={balanceFile}
+                    alt='Uploaded Document'
+                    className='max-h-40 rounded-lg shadow-md object-contain border border-gray-200'
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Buttons */}
+            <div className='flex justify-end gap-3 mt-6 max-sm:flex-col'>
               <Button
                 variant='outlined'
-                onClick={() => setOpenBalanceModal(false)}
-                className='px-4 py-2 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100 transition'
+                onClick={() => {
+                  setOpenBalanceModal(false)
+                  setBalanceFile('')
+                  setBalanceNote('')
+                }}
+                className='px-4 py-2 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100 transition w-full sm:w-auto'
               >
                 Cancel
               </Button>
               <Button
                 variant='contained'
                 color='primary'
-                className='px-5 py-2 rounded-lg shadow-md'
+                className='px-5 py-2 rounded-lg shadow-md w-full sm:w-auto'
                 onClick={() => {
                   if (!newBalance) return
                   setData(prev =>
                     prev.map(item =>
-                      item.sl === selectedSupplier.sl ? { ...item, balance: item.balance + Number(newBalance) } : item
+                      item.sl === selectedSupplier.sl
+                        ? {
+                            ...item,
+                            balance: item.balance + Number(newBalance),
+                            note: balanceNote,
+                            document: balanceFile
+                          }
+                        : item
                     )
                   )
                   setOpenBalanceModal(false)
+                  setBalanceFile('')
+                  setBalanceNote('')
                 }}
               >
                 Save
@@ -562,6 +643,73 @@ const SupplierListTable = ({ supplierData = [] }) => {
                     prev.map(item => (item.sl === selectedSupplier.sl ? { ...item, crate: crateForm } : item))
                   )
                   setOpenCrateModal(false)
+                }}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Adjust Profit Modal */}
+      {openProfitModal && selectedSupplier && (
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4'>
+          <div className='w-full max-w-md bg-white/80 backdrop-blur-lg text-gray-800 rounded-2xl shadow-2xl border border-gray-200 p-6 animate-fadeIn scale-100 transition-all duration-300'>
+            <div className='text-center mb-5'>
+              <div className='w-14 h-14 mx-auto mb-3 rounded-full bg-blue-100 flex items-center justify-center'>
+                <i className='tabler-percentage text-3xl text-blue-600'></i>
+              </div>
+              <Typography variant='h6' className='font-semibold text-gray-900'>
+                Adjust Profit Share
+              </Typography>
+              <Typography variant='body2' className='text-gray-600 mt-1'>
+                Enter the profit percentage you want to share with{' '}
+                <span className='font-medium text-blue-600'>{selectedSupplier.name}</span>.
+              </Typography>
+            </div>
+
+            <CustomTextField
+              fullWidth
+              label='Profit Share (%)'
+              type='number'
+              value={profitPercentage}
+              onChange={e => setProfitPercentage(e.target.value)}
+              placeholder='e.g. 10'
+              InputProps={{
+                style: {
+                  backgroundColor: '#f9fafb',
+                  borderRadius: '10px',
+                  color: '#111827'
+                }
+              }}
+              sx={{
+                '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '10px' },
+                '& input': { color: '#111827', textAlign: 'center', fontWeight: 500, fontSize: '18px' },
+                '& label': { color: '#6b7280' }
+              }}
+            />
+
+            <div className='flex justify-end gap-3 mt-6 max-sm:flex-col'>
+              <Button
+                variant='outlined'
+                onClick={() => setOpenProfitModal(false)}
+                className='px-4 py-2 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100 transition w-full sm:w-auto'
+              >
+                Cancel
+              </Button>
+              <Button
+                variant='contained'
+                color='primary'
+                className='px-5 py-2 rounded-lg shadow-md w-full sm:w-auto'
+                onClick={() => {
+                  if (!profitPercentage) return
+                  setData(prev =>
+                    prev.map(item =>
+                      item.sl === selectedSupplier.sl ? { ...item, profitShare: Number(profitPercentage) } : item
+                    )
+                  )
+                  setOpenProfitModal(false)
                 }}
               >
                 Save

@@ -7,9 +7,9 @@ const ProductAddHeader = ({ mode = 'create' }) => {
   const isEdit = mode === 'edit'
 
   return (
-    <div className='flex flex-wrap sm:items-center justify-between max-sm:flex-col gap-6'>
+    <div className='flex flex-wrap sm:items-center justify-between max-sm:flex-col gap-6 ml-5'>
       <div>
-        <Typography variant='h4' className='mbe-1'>
+        <Typography variant='h4' className='mbe-1 text-3xl mt-3'>
           {isEdit ? 'Edit product' : 'Add a new product'}
         </Typography>
         <Typography>

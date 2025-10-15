@@ -1,12 +1,9 @@
 // MUI Imports
 import Grid from '@mui/material/Grid2'
 
-// Component Imports
-import ProductListTable from '@views/apps/ecommerce/products/list/ProductListTable'
-import ProductCard from '@views/apps/ecommerce/products/list/ProductCard'
-
 // Data Imports
 import { getEcommerceData } from '@/app/server/actions'
+import ProductListTable from '@/views/apps/products/list/ProductListTable'
 
 const ProductsList = async () => {
   // Vars

@@ -4,14 +4,10 @@ import { useRouter } from 'next/navigation'
 
 import Grid from '@mui/material/Grid2'
 
-import { getEcommerceData } from '@/app/server/actions'
 import ProductFormProvider from '../add/ProductFormProvider'
 import ProductAddHeader from '../add/ProductAddHeader'
 import ProductInformation from '../add/ProductInformation'
-import ProductImage from '../add/ProductImage'
-import ProductVariants from '../add/ProductVariants'
-import ProductPricing from '../add/ProductPricing'
-import ProductOrganize from '../add/ProductOrganize'
+
 import { showAlert } from '@/utils/showAlert'
 
 export default function EditProduct({ id, productData }) {
@@ -47,8 +43,7 @@ export default function EditProduct({ id, productData }) {
         </Grid>
         <Grid size={{ xs: 12 }}>
           <ProductInformation mode='edit' />
-        </Grid> 
-         
+        </Grid>
       </Grid>
     </ProductFormProvider>
   )
