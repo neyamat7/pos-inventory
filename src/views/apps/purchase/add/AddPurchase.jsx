@@ -99,8 +99,9 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
         transportation: 0,
         moshjid: 0,
         van_vara: 0,
-        kg: 0,
-        total: 0,
+
+        // kg: 0,
+        // total: 0,
         cost: product.price,
         commission_rate: product?.commission_rate || 0,
         trading_post: 0,
@@ -236,35 +237,36 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
           )
         }
       },
-      {
-        accessorKey: 'kg',
-        header: 'KG',
-        cell: ({ row }) => {
-          const product = row.original
 
-          return (
-            <input
-              type='number'
-              min='0'
-              value={product.kg === 0 ? '' : (product.kg ?? '')}
-              onChange={e => {
-                const value = parseFloat(e.target.value) || 0
+      // {
+      //   accessorKey: 'kg',
+      //   header: 'KG',
+      //   cell: ({ row }) => {
+      //     const product = row.original
 
-                // update the kg value for this product
-                setCartProducts(prev =>
-                  prev.map(item =>
-                    item.product_id === product.product_id && item.supplier_id === product.supplier_id
-                      ? { ...item, kg: value }
-                      : item
-                  )
-                )
-              }}
-              placeholder='0'
-              className='w-24 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
-            />
-          )
-        }
-      },
+      //     return (
+      //       <input
+      //         type='number'
+      //         min='0'
+      //         value={product.kg === 0 ? '' : (product.kg ?? '')}
+      //         onChange={e => {
+      //           const value = parseFloat(e.target.value) || 0
+
+      //           // update the kg value for this product
+      //           setCartProducts(prev =>
+      //             prev.map(item =>
+      //               item.product_id === product.product_id && item.supplier_id === product.supplier_id
+      //                 ? { ...item, kg: value }
+      //                 : item
+      //             )
+      //           )
+      //         }}
+      //         placeholder='0'
+      //         className='w-24 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
+      //       />
+      //     )
+      //   }
+      // },
 
       {
         accessorKey: 'cost',
@@ -334,17 +336,17 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
         }
       },
 
-      {
-        accessorKey: 'total',
-        header: 'Total',
-        cell: ({ row }) => {
-          const product = row.original
+      // {
+      //   accessorKey: 'total',
+      //   header: 'Total',
+      //   cell: ({ row }) => {
+      //     const product = row.original
 
-          return (
-            <span title={`Commission: ${product.commission ?? 0}`}>{(parseFloat(product.total) || 0).toFixed(2)}</span>
-          )
-        }
-      },
+      //     return (
+      //       <span title={`Commission: ${product.commission ?? 0}`}>{(parseFloat(product.total) || 0).toFixed(2)}</span>
+      //     )
+      //   }
+      // },
       {
         id: 'actions',
         header: 'Action',
@@ -455,7 +457,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
 
       <div className='flex flex-col lg:flex-row gap-6'>
         {/* Left Side - Form */}
-        <div className='w-full lg:w-8/12 xl:w-9/12 bg-white rounded-lg p-6 flex flex-col'>
+        <div className='w-full lg:w-8/12 xl:w-8/12 bg-white rounded-lg p-6 flex flex-col'>
           {/* Order Details */}
           <div className='grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6'>
             <input

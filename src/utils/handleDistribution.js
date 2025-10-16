@@ -49,11 +49,12 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
 
       // --- base product total before crate ---
       // const productBase = Number(item.cost || 0) * (typeOneQty + typeTwoQty) + expenses
-      const productBase = Number(item.cost || 0) * Number(item.kg || 0) + expenses + cratePrice
+
+      // const productBase = Number(item.cost || 0) * Number(item.kg || 0) + expenses + cratePrice
 
       // --- total calculation ---
       // const total = Number((productBase + cratePrice).toFixed(2))
-      const total = Number(productBase.toFixed(2))
+      // const total = Number(productBase.toFixed(2))
 
       return {
         ...item,
@@ -63,8 +64,9 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
         trading_post: tradingPostValue,
         labour: labourValue,
         expenses: Number(expenses.toFixed(2)),
-        cratePrice,
-        total
+        cratePrice
+
+        // total
       }
     })
   )

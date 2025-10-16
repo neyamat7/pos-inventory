@@ -269,7 +269,7 @@ const AllLotListTable = ({ lotData = [] }) => {
           onPageChange={(_, page) => table.setPageIndex(page)}
         />
       </Card>
-      {/* Edit Product Modal */}
+      {/* Edit lot Modal */}
       <Dialog
         open={editModalOpen}
         onClose={() => setEditModalOpen(false)}
@@ -283,7 +283,7 @@ const AllLotListTable = ({ lotData = [] }) => {
           }
         }}
       >
-        <DialogTitle className='text-lg font-semibold border-b pb-2'>Edit Product Details</DialogTitle>
+        <DialogTitle className='text-lg font-semibold border-b pb-2'>Edit Lot Details</DialogTitle>
 
         <DialogContent dividers>
           {editFormData && (
