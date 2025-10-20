@@ -105,6 +105,7 @@ const SalesListTable = ({ salesData }) => {
   const columns = [
     { accessorKey: 'date', header: 'Date' },
     { accessorKey: 'lotName', header: 'Lot' },
+    { accessorKey: 'qty', header: 'Quantity (kg)' },
     { accessorKey: 'customerName', header: 'Customer' },
     { accessorKey: 'grandTotal', header: 'Total' },
     { accessorKey: 'paidAmount', header: 'Paid' },

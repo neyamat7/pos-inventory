@@ -54,6 +54,7 @@ export const salesReports = [
     grandTotal: 18500,
     paidAmount: 18500,
     due: 0,
+    qty: 25,
     addedBy: 'Shahidul Alam'
   },
 
@@ -67,6 +68,7 @@ export const salesReports = [
     grandTotal: 4200,
     paidAmount: 4200,
     due: 0,
+    qty: 12,
     addedBy: 'Rafiqul Islam'
   },
 
@@ -80,6 +82,7 @@ export const salesReports = [
     grandTotal: 6000,
     paidAmount: 4000,
     due: 2000,
+    qty: 18,
     addedBy: 'Mehedi Hasan'
   },
 
@@ -93,6 +96,7 @@ export const salesReports = [
     grandTotal: 10500,
     paidAmount: 10500,
     due: 0,
+    qty: 20,
     addedBy: 'Nasrin Akter'
   },
 
@@ -106,6 +110,7 @@ export const salesReports = [
     grandTotal: 8250,
     paidAmount: 8250,
     due: 0,
+    qty: 15,
     addedBy: 'Farhana Yasmin'
   },
 
@@ -119,6 +124,7 @@ export const salesReports = [
     grandTotal: 12000,
     paidAmount: 0,
     due: 12000,
+    qty: 28,
     addedBy: 'Shahidul Alam'
   },
 
@@ -132,6 +138,7 @@ export const salesReports = [
     grandTotal: 28500,
     paidAmount: 28500,
     due: 0,
+    qty: 30,
     addedBy: 'Abdur Rahman'
   },
 
@@ -145,6 +152,7 @@ export const salesReports = [
     grandTotal: 4800,
     paidAmount: 3000,
     due: 1800,
+    qty: 9,
     addedBy: 'Habibur Rahman'
   },
 
@@ -158,6 +166,7 @@ export const salesReports = [
     grandTotal: 14250,
     paidAmount: 14250,
     due: 0,
+    qty: 23,
     addedBy: 'Mahfuz Alam'
   },
 
@@ -171,6 +180,7 @@ export const salesReports = [
     grandTotal: 7800,
     paidAmount: 7800,
     due: 0,
+    qty: 11,
     addedBy: 'Nusrat Jahan'
   },
 
@@ -184,6 +194,7 @@ export const salesReports = [
     grandTotal: 5200,
     paidAmount: 4000,
     due: 1200,
+    qty: 17,
     addedBy: 'Rokeya Begum'
   },
 
@@ -197,6 +208,7 @@ export const salesReports = [
     grandTotal: 16800,
     paidAmount: 16800,
     due: 0,
+    qty: 26,
     addedBy: 'Tanvir Alam'
   }
 ]
