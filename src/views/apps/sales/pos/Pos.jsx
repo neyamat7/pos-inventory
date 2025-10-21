@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import Link from 'next/link'
 
@@ -18,7 +18,7 @@ import PosHeader from './PosHeader'
 import SearchProduct from './SearchProduct'
 
 import CategoryModal from '@/components/layout/shared/CategoryModal'
-import { categories, brands } from '@/data/productsCategory/productsCategory'
+import { categories } from '@/data/productsCategory/productsCategory'
 import { customers } from '@/data/customerData/customerData'
 import { filteredProductsData } from '@/utils/filteredProductsData'
 import { handleCrateCount } from '@/utils/handleCrateCount'
@@ -283,7 +283,7 @@ export default function POSSystem({ productsData = [] }) {
                     l => `
               <div class='flex justify-between gap-3 whitespace-nowrap'>
                 <span>${l.lot_name}</span>
-                <span class='text-gray-300 ml-3'>${l.use_qty || 0} kg</span>
+                <span class='text-gray-300 ml-3'>${l.sell_qty || 0} kg</span>
               </div>`
                   )
                   .join('')
@@ -581,10 +581,10 @@ export default function POSSystem({ productsData = [] }) {
 
   // Handle confirm click
   const handleLotConfirm = () => {
-    const validLots = lotModal.selectedLots.filter(l => l.use_qty && l.use_qty > 0)
+    const validLots = lotModal.selectedLots.filter(l => l.sell_qty && l.sell_qty > 0)
 
     // Validate each lot’s total usage
-    const invalidLot = validLots.find(l => l.used + l.use_qty > 30)
+    const invalidLot = validLots.find(l => l.sold + l.sell_qty > 30)
 
     if (invalidLot) {
       toast.error(`You can’t use more than 30 kg from lot ${invalidLot.lot_name}.`)
@@ -593,7 +593,7 @@ export default function POSSystem({ productsData = [] }) {
     }
 
     // Calculate total
-    const totalQty = validLots.reduce((sum, l) => sum + (l.use_qty || 0), 0)
+    const totalQty = validLots.reduce((sum, l) => sum + (l.sell_qty || 0), 0)
 
     // Update cart product (lots, total_from_lots, kg)
     setCartProducts(prev =>
@@ -605,7 +605,7 @@ export default function POSSystem({ productsData = [] }) {
                 supplier_name: l.supplier_name,
                 supplier_id: l.supplier_id,
                 product: l.product,
-                used: l.used + l.use_qty,
+                sold: l.sold + l.sell_qty,
                 lot_name: l.lot_name
               })),
               total_from_lots: totalQty,
@@ -748,133 +748,6 @@ export default function POSSystem({ productsData = [] }) {
           </div>
 
           <div className='mt-20'>
-            {/* Expense Distribution */}
-            {/* {cartProducts.length > 0 && (
-              <form className='space-y-4 mb-6' onSubmit={handleSubmit(handleDistributeSubmit)}>
-                <h1 className='text-2xl font-medium'>Expense Distribution</h1>
-
-                 
-
-                <div className='flex flex-col lg:flex-row gap-2 lg:gap-5'>
-                  <label className='w-32 text-sm'>Transportation</label>
-                  <div className='flex gap-1 lg:gap-5 w-full'>
-                    <input
-                      type='number'
-                      defaultValue='0'
-                      {...register('transportationAmount')}
-                      className='lg:flex-1 px-3 py-2 border border-gray-300 rounded w-1/2'
-                    />
-                    <div className='w-1/2 lg:w-1/4'>
-                      <select
-                        {...register('transportationType')}
-                        className='flex-1 px-3 py-2 border border-gray-300 focus:outline-none rounded w-full'
-                      >
-                        <option value='divided'>Divided</option>
-                        <option value='each'>Each</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-       
-                <div className='flex flex-col lg:flex-row gap-2 lg:gap-5'>
-                  <label className='w-32 text-sm'>Moshjid</label>
-                  <div className='flex gap-1 lg:gap-5 w-full'>
-                    <input
-                      type='number'
-                      defaultValue='0'
-                      {...register('moshjidAmount')}
-                      className='flex-1 px-3 py-2 border border-gray-300 rounded w-1/2'
-                    />
-
-                    <div className='w-1/2 lg:w-1/4'>
-                      <select
-                        {...register('moshjidType')}
-                        className='flex-1 px-3 py-2 border border-gray-300 focus:outline-none rounded w-full'
-                      >
-                        <option value='divided'>Divided</option>
-                        <option value='each'>Each</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
- 
-                <div className='flex flex-col lg:flex-row gap-2 lg:gap-5'>
-                  <label className='w-32 text-sm'>Van Vara</label>
-                  <div className='flex gap-1 lg:gap-5 w-full'>
-                    <input
-                      type='number'
-                      defaultValue='0'
-                      {...register('vanVaraAmount')}
-                      className='flex-1 px-3 py-2 border border-gray-300 rounded w-1/2'
-                    />
-
-                    <div className='w-1/2 lg:w-1/4'>
-                      <select
-                        {...register('vanVaraType')}
-                        className='flex-1 px-3 py-2 border border-gray-300 focus:outline-none rounded w-full'
-                      >
-                        <option value='divided'>Divided</option>
-                        <option value='each'>Each</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
- 
-                <div className='flex flex-col lg:flex-row gap-2 lg:gap-5'>
-                  <label className='w-32 text-sm'>Trading Post</label>
-                  <div className='flex gap-1 lg:gap-5 w-full'>
-                    <input
-                      type='number'
-                      defaultValue='0'
-                      {...register('tradingPostAmount')}
-                      className='flex-1 px-3 py-2 border border-gray-300 rounded w-1/2'
-                    />
-
-                    <div className='w-1/2 lg:w-1/4'>
-                      <select
-                        {...register('tradingPostType')}
-                        className='flex-1 px-3 py-2 border border-gray-300 focus:outline-none rounded w-full'
-                      >
-                        <option value='divided'>Divided</option>
-                        <option value='each'>Each</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-          
-                <div className='flex flex-col lg:flex-row gap-2 lg:gap-5'>
-                  <label className='w-32 text-sm'>Labour</label>
-                  <div className='flex gap-1 lg:gap-5 w-full'>
-                    <input
-                      type='number'
-                      defaultValue='0'
-                      {...register('labourAmount')}
-                      className='flex-1 px-3 py-2 border border-gray-300 rounded w-1/2'
-                    />
-
-                    <div className='w-1/2 lg:w-1/4'>
-                      <select
-                        {...register('labourType')}
-                        className='flex-1 px-3 py-2 border border-gray-300 focus:outline-none rounded w-full'
-                      >
-                        <option value='divided'>Divided</option>
-                        <option value='each'>Each</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  type='submit'
-                  className='w-52 py-3 bg-[#7367f0] text-white rounded-lg hover:bg-[#4e43c5] font-medium'
-                >
-                  Distribute Expenses
-                </button>
-              </form>
-            )} */}
-
             {/* Payment Details */}
             <form onSubmit={handleSubmitPayment(onSubmitPayment)} className='mt-auto'>
               <h1 className='mb-4'>Payment Details</h1>
@@ -882,6 +755,18 @@ export default function POSSystem({ productsData = [] }) {
               <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
                 {/* Left Side */}
                 <div className='space-y-4'>
+                  <div className='flex items-center'>
+                    <label className='w-32 text-sm'>Payment Type</label>
+                    <select
+                      {...registerPayment('paymentType')}
+                      className='flex-1 px-3 py-2 border border-gray-300 rounded'
+                    >
+                      <option value='cash'>Cash</option>
+                      <option value='card'>Card</option>
+                      <option value='bkash'>Bkash</option>
+                    </select>
+                  </div>
+
                   <div className='flex items-center'>
                     <label className='w-32 text-sm'>Receive Amount</label>
                     <input
@@ -908,17 +793,7 @@ export default function POSSystem({ productsData = [] }) {
                       className='flex-1 px-3 py-2 border border-gray-300 rounded bg-gray-100'
                     />
                   </div>
-                  <div className='flex items-center'>
-                    <label className='w-32 text-sm'>Payment Type</label>
-                    <select
-                      {...registerPayment('paymentType')}
-                      className='flex-1 px-3 py-2 border border-gray-300 rounded'
-                    >
-                      <option value='cash'>Cash</option>
-                      <option value='card'>Card</option>
-                      <option value='bkash'>Bkash</option>
-                    </select>
-                  </div>
+
                   <div className='flex items-start'>
                     <label className='w-32 text-sm pt-2'>Note</label>
                     <textarea
@@ -950,31 +825,16 @@ export default function POSSystem({ productsData = [] }) {
                       <span className='text-sm'>{vatAmount}</span>
                     </div>
                   </div>
-                  {/* <div className='flex items-center justify-between'>
-                  <span className='text-sm'>Discount</span>
-                  <div className='flex items-center space-x-2'>
-                    <select
-                      {...registerPayment('discountType')}
-                      className='px-2 py-1 border border-gray-300 rounded text-sm'
-                    >
-                      <option value='Flat (৳)'>Flat (৳)</option>
-                      <option value='Percentage (%)'>Percentage (%)</option>
-                    </select>
-                    <span className='text-sm'>0</span>
-                  </div>
-                </div> */}
+
                   <div className='flex items-center justify-between'>
-                    <span className='text-sm'>Shipping Charge</span>
-                    <span className='text-sm'>0</span>
+                    <span className='text-sm'>Commission Amount</span>
+                    <span className='text-sm'>৳ 0</span>
                   </div>
                   <div className='flex items-center justify-between font-medium'>
                     <span className='text-sm'>Total Amount</span>
                     <span>৳ {totalDueAmount}</span>
                   </div>
-                  {/* <div className='flex items-center justify-between'>
-                  <span className='text-sm'>Rounding(+/-)</span>
-                  <span className='text-sm'>৳ 0</span>
-                </div> */}
+
                   <div className='flex items-center justify-between font-bold text-lg'>
                     <span>Payable Amount</span>
                     <span>৳ {payableAmount}</span>
@@ -1082,7 +942,7 @@ export default function POSSystem({ productsData = [] }) {
         </div>
       )}
 
-      {/* UPDATED: Modern multi-lot selection modal with dropdown, cards, and summary */}
+      {/* multi-lot selection modal with dropdown, cards, and summary */}
       {lotModal.open && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4'>
           <div className='bg-white w-full max-w-2xl rounded-xl shadow-lg p-6 relative overflow-y-auto max-h-[90vh]'>
@@ -1103,7 +963,7 @@ export default function POSSystem({ productsData = [] }) {
                       // Prevent duplicates
                       if (prev.selectedLots.some(l => l.lot_name === selectedLot.lot_name)) return prev
 
-                      return { ...prev, selectedLots: [...prev.selectedLots, { ...selectedLot, use_qty: 0 }] }
+                      return { ...prev, selectedLots: [...prev.selectedLots, { ...selectedLot, sell_qty: 0 }] }
                     })
                   }
                 }}
@@ -1114,16 +974,16 @@ export default function POSSystem({ productsData = [] }) {
                   .filter(
                     l =>
                       l.product.toLowerCase() === lotModal.productName.toLowerCase() &&
-                      l.used < 31 &&
                       !lotModal.selectedLots.some(s => s.lot_name === l.lot_name)
                   )
                   .map(l => (
                     <option
                       key={l.lot_name}
                       value={l.lot_name}
-                      className={l.used >= 25 ? 'text-red-500 font-semibold' : ''}
+
+                      // className={l.used >= 25 ? 'text-red-500 font-semibold' : ''}
                     >
-                      {l.lot_name} — {l.used} kg used
+                      {l.lot_name} — {l.sold} kg used
                     </option>
                   ))}
               </select>
@@ -1134,55 +994,37 @@ export default function POSSystem({ productsData = [] }) {
               {lotModal.selectedLots.map(l => (
                 <div
                   key={l.lot_name}
-                  className={`border  rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm hover:shadow-md transition-all duration-150 ${l.used >= 25 ? 'border-orange-400 focus:ring-orange-300' : l.error ? 'border-red-500' : 'border-gray-200'}`}
+                  className={`border  rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm hover:shadow-md transition-all border-gray-200 duration-150`}
                 >
                   {/* Left Info */}
                   <div className='flex flex-col sm:flex-row sm:items-center sm:gap-6'>
                     <div>
                       <p className='font-semibold text-gray-800'>{l.lot_name}</p>
                       <p className='text-sm text-gray-600'>Supplier: {l.supplier_name}</p>
-                      <p className='text-sm text-gray-600'>Already Used: {l.used} kg</p>
+                      <p className='text-sm text-gray-600'>Already Sold: {l.sold} kg</p>
                     </div>
 
                     {/* Updated: Use (kg) input with live validation + toast error */}
                     <div className='flex items-center gap-2 mt-2 sm:mt-0'>
-                      <label className='text-sm text-gray-600'>Use:</label>
+                      <label className='text-sm text-gray-600'>Sell:</label>
                       <input
                         type='number'
                         min='0'
                         placeholder='0'
-                        value={l.use_qty === 0 ? '' : l.use_qty}
-                        max={30 - l.used}
+                        value={l.sell_qty === 0 ? '' : l.sell_qty}
                         onChange={e => {
                           const val = parseFloat(e.target.value) || 0
-                          const maxAllowed = 30 - l.used
-
-                          if (val > maxAllowed) {
-                            requestAnimationFrame(() => {
-                              toast.dismiss()
-                              toast.error('You can’t use more than 30 kg from a lot.', {
-                                position: 'top-center',
-                                autoClose: 1000
-                              })
-                            })
-
-                            return
-                          }
 
                           requestAnimationFrame(() => {
                             setLotModal(prev => ({
                               ...prev,
                               selectedLots: prev.selectedLots.map(s =>
-                                s.lot_name === l.lot_name ? { ...s, use_qty: val } : s
+                                s.lot_name === l.lot_name ? { ...s, sell_qty: val } : s
                               )
                             }))
                           })
                         }}
-                        className={`w-20 px-2 py-1 border rounded-md text-center focus:ring-2 outline-none ${
-                          l.used >= 25
-                            ? 'border-orange-400 focus:ring-orange-300'
-                            : 'border-gray-300 focus:ring-indigo-500'
-                        }`}
+                        className={`w-20 px-2 py-1 border rounded-md text-center focus:ring-2 outline-none border-gray-300 focus:ring-indigo-500`}
                       />
                       <span className='text-sm'>kg</span>
                     </div>
@@ -1213,14 +1055,14 @@ export default function POSSystem({ productsData = [] }) {
                   {lotModal.selectedLots.map(l => (
                     <li key={l.lot_name} className='flex justify-between'>
                       <span>{l.lot_name}</span>
-                      <span className='font-semibold'>{l.use_qty || 0} kg</span>
+                      <span className='font-semibold'>{l.sell_qty || 0} kg</span>
                     </li>
                   ))}
                 </ul>
 
                 <div className='border-t mt-3 pt-2 flex justify-between font-medium text-gray-800'>
                   <span>Total Qty:</span>
-                  <span>{lotModal.selectedLots.reduce((s, l) => s + (l.use_qty || 0), 0)} kg</span>
+                  <span>{lotModal.selectedLots.reduce((s, l) => s + (l.sell_qty || 0), 0)} kg</span>
                 </div>
               </div>
             )}
@@ -1236,7 +1078,7 @@ export default function POSSystem({ productsData = [] }) {
 
               <button
                 disabled={
-                  lotModal.selectedLots.length === 0 || lotModal.selectedLots.every(l => !l.use_qty || l.use_qty <= 0)
+                  lotModal.selectedLots.length === 0 || lotModal.selectedLots.every(l => !l.sell_qty || l.sell_qty <= 0)
                 }
                 onClick={handleLotConfirm}
                 className={`px-4 py-2 rounded-md font-medium text-white disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed ${
