@@ -19,7 +19,7 @@ import { handleBoxCount } from '@/utils/handleCrateCount'
 import { calculateTotalDue } from '@/utils/calculateTotalDue'
 import { usePaymentCalculation } from '@/utils/usePaymentCalculation'
 import { showAlert } from '@/utils/showAlert'
-import ShowProductList from '@/components/layout/shared/ShowProductList'
+import ShowProductList from '@/components/layout/shared/ShowProductList' 
 
 export default function PosCopy({ productsData = [] }) {
   const [searchTerm, setSearchTerm] = useState('')
@@ -64,15 +64,15 @@ export default function PosCopy({ productsData = [] }) {
       return
     }
 
-    const isAlreadyAdded = cartProducts.some(
-      item => item.product_id === product.id && item.customer_id === selectedCustomer.id
-    )
+    // const isAlreadyAdded = cartProducts.some(
+    //   item => item.product_id === product.id && item.customer_id === selectedCustomer.id
+    // )
 
-    if (isAlreadyAdded) {
-      showAlert('This product is already added to the cart.', 'warning')
+    // if (isAlreadyAdded) {
+    //   showAlert('This product is already added to the cart.', 'warning')
 
-      return
-    }
+    //   return
+    // }
 
     setCartProducts(prevCart => {
       // Add product with additional properties

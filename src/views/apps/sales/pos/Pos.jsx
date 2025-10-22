@@ -51,9 +51,9 @@ export default function POSSystem({ productsData = [] }) {
 
   const [lotModal, setLotModal] = useState({
     open: false,
-    productId: null,
+    cartIndex: null,
     productName: '',
-    selectedLots: []
+    selectedLot: null
   })
 
   useEffect(() => {
@@ -93,15 +93,15 @@ export default function POSSystem({ productsData = [] }) {
       return
     }
 
-    const isAlreadyAdded = cartProducts.some(item => item.product_id === product.id)
+    // const isAlreadyAdded = cartProducts.some(item => item.product_id === product.id)
 
-    if (isAlreadyAdded) {
-      toast.warning('This product is already added to the cart.', {
-        position: 'top-center'
-      })
+    // if (isAlreadyAdded) {
+    //   toast.warning('This product is already added to the cart.', {
+    //     position: 'top-center'
+    //   })
 
-      return
-    }
+    //   return
+    // }
 
     setCartProducts(prevCart => {
       // Add product with additional properties
@@ -127,8 +127,7 @@ export default function POSSystem({ productsData = [] }) {
         commission_rate: product.commission_rate || 0,
         selling_date: date,
         expiry_date: '',
-        lots_selected: [],
-        total_from_lots: 0
+        lots_selected: null
       }
 
       return [...prevCart, newCartItem]
@@ -222,18 +221,27 @@ export default function POSSystem({ productsData = [] }) {
         header: 'Lot',
         cell: ({ row }) => {
           const product = row.original
-          const totalLots = product.lots_selected?.length || 0
 
-          if (totalLots === 0) {
+          // Get the cart index for this specific row
+          const cartIndex = cartProducts.findIndex(p => p === product)
+
+          // Check if cartIndex is valid
+          if (cartIndex === -1) return null
+
+          // Check if this row has a lot selected
+          const hasLot = product.lot_selected && product.lot_selected.lot_name
+
+          if (!hasLot) {
+            // No lot selected - show "Select Lot" button
             return (
               <button
                 type='button'
                 onClick={() =>
                   setLotModal({
                     open: true,
-                    productId: product.product_id,
-                    productName: product.product_name,
-                    selectedLots: product.lots_selected || []
+                    cartIndex: cartIndex, // Pass cart row index
+                    productName: product.product_name || '',
+                    selectedLot: null // Start with no selection
                   })
                 }
                 className='text-indigo-600 hover:text-indigo-800 font-medium underline cursor-pointer'
@@ -243,56 +251,20 @@ export default function POSSystem({ productsData = [] }) {
             )
           }
 
-          if (totalLots === 1) {
-            const lot = product.lots_selected[0]
-
-            return (
-              <span
-                onClick={() =>
-                  setLotModal({
-                    open: true,
-                    productId: product.product_id,
-                    productName: product.product_name,
-                    selectedLots: product.lots_selected
-                  })
-                }
-                className='text-gray-800 font-semibold cursor-pointer hover:text-indigo-600 transition-colors'
-              >
-                {lot.lot_name}
-              </span>
-            )
-          }
-
-          // Multiple lots with tooltip
+          // Lot is selected - show lot name (clickable to change)
           return (
             <span
-              className='text-gray-800 font-semibold cursor-pointer hover:text-indigo-600 transition-colors relative'
               onClick={() =>
                 setLotModal({
                   open: true,
-                  productId: product.product_id,
-                  productName: product.product_name,
-                  selectedLots: product.lots_selected
+                  cartIndex: cartIndex, // Pass cart row index
+                  productName: product.product_name || '',
+                  selectedLot: product.lot_selected // Pre-populate with current selection
                 })
               }
-              onMouseEnter={e => {
-                const rect = e.currentTarget.getBoundingClientRect()
-
-                const content = product.lots_selected
-                  .map(
-                    l => `
-              <div class='flex justify-between gap-3 whitespace-nowrap'>
-                <span>${l.lot_name}</span>
-                <span class='text-gray-300 ml-3'>${l.sell_qty || 0} kg</span>
-              </div>`
-                  )
-                  .join('')
-
-                showTooltip({ rect, content })
-              }}
-              onMouseLeave={() => showTooltip(null)}
+              className='text-gray-800 font-semibold cursor-pointer hover:text-indigo-600 transition-colors'
             >
-              {totalLots} lots selected
+              {product.lot_selected.lot_name}
             </span>
           )
         }
@@ -533,12 +505,13 @@ export default function POSSystem({ productsData = [] }) {
   // submit payment
   const onSubmitPayment = data => {
     // Validate that kg and lot total match before submit
-    const hasMismatch = cartProducts.some(p => (p.total_from_lots || 0) !== (p.kg || 0))
+    // Validate that every product has a lot selected
+    const missingLot = cartProducts.find(p => !p.lot_selected || !p.lot_selected.lot_name)
 
-    if (hasMismatch) {
-      toast.error('Please select enough kg from supplier lots before submitting.', {
+    if (missingLot) {
+      toast.error(`Please select a lot for "${missingLot.product_name}" before submitting.`, {
         position: 'top-center',
-        autoClose: 1100
+        autoClose: 2000
       })
 
       return
@@ -579,44 +552,69 @@ export default function POSSystem({ productsData = [] }) {
     setCartProducts([])
   }
 
-  // Handle confirm click
+  // Handle confirm click - save the selected lot to the specific cart row
+  // Handle confirm click - save the selected lot to the specific cart row
   const handleLotConfirm = () => {
-    const validLots = lotModal.selectedLots.filter(l => l.sell_qty && l.sell_qty > 0)
-
-    // Validate each lot’s total usage
-    const invalidLot = validLots.find(l => l.sold + l.sell_qty > 30)
-
-    if (invalidLot) {
-      toast.error(`You can’t use more than 30 kg from lot ${invalidLot.lot_name}.`)
+    // Ensure a lot is selected
+    if (!lotModal.selectedLot || !lotModal.selectedLot.lot_name) {
+      toast.error('Please select a lot before confirming.')
 
       return
     }
 
-    // Calculate total
-    const totalQty = validLots.reduce((sum, l) => sum + (l.sell_qty || 0), 0)
+    const lot = lotModal.selectedLot
+    const sellQty = parseFloat(lot.sell_qty) || 0 // Ensure it's a number
+    const currentSold = parseFloat(lot.sold) || 0 // Ensure it's a number
 
-    // Update cart product (lots, total_from_lots, kg)
-    setCartProducts(prev =>
-      prev.map(item =>
-        item.product_id === lotModal.productId
-          ? {
-              ...item,
-              lots_selected: validLots.map(l => ({
-                supplier_name: l.supplier_name,
-                supplier_id: l.supplier_id,
-                product: l.product,
-                sold: l.sold + l.sell_qty,
-                lot_name: l.lot_name
-              })),
-              total_from_lots: totalQty,
-              kg: totalQty
-            }
-          : item
-      )
-    )
+    // Validate: must enter a quantity
+    if (sellQty <= 0) {
+      toast.error('Please enter a valid quantity to sell.')
 
-    // Close modal
-    setLotModal({ open: false, productId: null, productName: '', selectedLots: [] })
+      return
+    }
+
+    // Validate: check if total usage exceeds limit
+    if (currentSold + sellQty > 30) {
+      toast.error(`You can't use more than 30 kg from lot ${lot.lot_name}. Available: ${30 - currentSold} kg`)
+
+      return
+    }
+
+    // Update ONLY the specific cart row identified by cartIndex
+    setCartProducts(prev => {
+      const updated = prev.map((item, idx) => {
+        // Only update the row we're editing
+        if (idx === lotModal.cartIndex) {
+          return {
+            ...item,
+            lot_selected: {
+              supplier_name: lot.supplier_name,
+              supplier_id: lot.supplier_id,
+              product: lot.product,
+              sold: currentSold + sellQty, // Track total sold from this lot
+              lot_name: lot.lot_name,
+              sell_qty: sellQty // Store quantity for this sale
+            },
+            kg: sellQty // Auto-fill kg field with lot quantity
+          }
+        }
+
+        return item // Don't modify other rows
+      })
+
+      // IMPORTANT: Trigger recalculation after state update
+      setTimeout(() => {
+        handleSalesTotal(setCartProducts, selectedCustomer)
+      }, 0)
+
+      return updated
+    })
+
+    // Show success message
+    toast.success(`Added ${sellQty} kg from ${lot.lot_name}`)
+
+    // Close modal and reset
+    setLotModal({ open: false, cartIndex: null, productName: '', selectedLot: null })
   }
 
   return (
@@ -942,150 +940,102 @@ export default function POSSystem({ productsData = [] }) {
         </div>
       )}
 
-      {/* multi-lot selection modal with dropdown, cards, and summary */}
+      {/* Single lot selection modal */}
       {lotModal.open && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4'>
           <div className='bg-white w-full max-w-2xl rounded-xl shadow-lg p-6 relative overflow-y-auto max-h-[90vh]'>
             {/* Header */}
             <h3 className='text-xl font-semibold mb-4 text-center'>
-              Select Lots for <span className='text-indigo-600'>{lotModal.productName}</span>
+              Select Lot for <span className='text-indigo-600'>{lotModal.productName}</span>
             </h3>
 
-            {/* NEW: Dropdown for selecting related lots */}
+            {/* Dropdown to select ONE lot */}
             <div className='mb-5'>
               <select
-                value=''
+                value={lotModal.selectedLot?.lot_name || ''}
                 onChange={e => {
+                  // Find the selected lot from the lots data
                   const selectedLot = lots.find(l => l.lot_name === e.target.value)
 
                   if (selectedLot) {
-                    setLotModal(prev => {
-                      // Prevent duplicates
-                      if (prev.selectedLots.some(l => l.lot_name === selectedLot.lot_name)) return prev
-
-                      return { ...prev, selectedLots: [...prev.selectedLots, { ...selectedLot, sell_qty: 0 }] }
-                    })
+                    // Ensure all numeric fields exist with defaults
+                    setLotModal(prev => ({
+                      ...prev,
+                      selectedLot: {
+                        ...selectedLot,
+                        sell_qty: 0, // Initialize to 0
+                        sold: selectedLot.sold || 0 // Ensure sold has a default value
+                      }
+                    }))
+                  } else {
+                    // User selected "Select a lot..." - clear selection
+                    setLotModal(prev => ({ ...prev, selectedLot: null }))
                   }
                 }}
                 className='w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none'
               >
                 <option value=''>Select a lot...</option>
+                {/* Filter lots matching this product name */}
                 {lots
-                  .filter(
-                    l =>
-                      l.product.toLowerCase() === lotModal.productName.toLowerCase() &&
-                      !lotModal.selectedLots.some(s => s.lot_name === l.lot_name)
-                  )
+                  .filter(l => l.product.toLowerCase() === lotModal.productName.toLowerCase())
                   .map(l => (
-                    <option
-                      key={l.lot_name}
-                      value={l.lot_name}
-
-                      // className={l.used >= 25 ? 'text-red-500 font-semibold' : ''}
-                    >
-                      {l.lot_name} — {l.sold} kg used
+                    <option key={l.lot_name} value={l.lot_name}>
+                      {l.lot_name} — {l.sold} kg sold
                     </option>
                   ))}
               </select>
             </div>
 
-            {/* NEW: Selected lot cards */}
-            <div className='space-y-4 mb-6'>
-              {lotModal.selectedLots.map(l => (
-                <div
-                  key={l.lot_name}
-                  className={`border  rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm hover:shadow-md transition-all border-gray-200 duration-150`}
-                >
-                  {/* Left Info */}
-                  <div className='flex flex-col sm:flex-row sm:items-center sm:gap-6'>
-                    <div>
-                      <p className='font-semibold text-gray-800'>{l.lot_name}</p>
-                      <p className='text-sm text-gray-600'>Supplier: {l.supplier_name}</p>
-                      <p className='text-sm text-gray-600'>Already Sold: {l.sold} kg</p>
-                    </div>
-
-                    {/* Updated: Use (kg) input with live validation + toast error */}
-                    <div className='flex items-center gap-2 mt-2 sm:mt-0'>
-                      <label className='text-sm text-gray-600'>Sell:</label>
-                      <input
-                        type='number'
-                        min='0'
-                        placeholder='0'
-                        value={l.sell_qty === 0 ? '' : l.sell_qty}
-                        onChange={e => {
-                          const val = parseFloat(e.target.value) || 0
-
-                          requestAnimationFrame(() => {
-                            setLotModal(prev => ({
-                              ...prev,
-                              selectedLots: prev.selectedLots.map(s =>
-                                s.lot_name === l.lot_name ? { ...s, sell_qty: val } : s
-                              )
-                            }))
-                          })
-                        }}
-                        className={`w-20 px-2 py-1 border rounded-md text-center focus:ring-2 outline-none border-gray-300 focus:ring-indigo-500`}
-                      />
-                      <span className='text-sm'>kg</span>
-                    </div>
+            {/* Show selected lot details (if any) */}
+            {lotModal.selectedLot && (
+              <div className='border border-gray-200 rounded-lg p-4 mb-6 shadow-sm'>
+                <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3'>
+                  {/* Lot info */}
+                  <div>
+                    <p className='font-semibold text-gray-800'>{lotModal.selectedLot.lot_name}</p>
+                    <p className='text-sm text-gray-600'>Supplier: {lotModal.selectedLot.supplier_name}</p>
+                    <p className='text-sm text-gray-600'>Already Sold: {lotModal.selectedLot.sold} kg</p>
                   </div>
 
-                  {/* Remove Button */}
-                  <button
-                    onClick={() =>
-                      setLotModal(prev => ({
-                        ...prev,
-                        selectedLots: prev.selectedLots.filter(s => s.lot_name !== l.lot_name)
-                      }))
-                    }
-                    className='text-red-400 hover:text-red-500 transition-colors bg-transparent'
-                    title='Remove this lot'
-                  >
-                    <FiX size={20} />
-                  </button>
-                </div>
-              ))}
-            </div>
+                  {/* Quantity input */}
+                  <div className='flex items-center gap-2'>
+                    <label className='text-sm text-gray-600'>Qty:</label>
+                    <input
+                      type='number'
+                      min='0'
+                      placeholder='0'
+                      value={lotModal.selectedLot.sell_qty === 0 ? '' : lotModal.selectedLot.sell_qty}
+                      onChange={e => {
+                        const val = parseFloat(e.target.value) || 0
 
-            {/* NEW: Summary section */}
-            {lotModal.selectedLots.length > 0 && (
-              <div className='bg-gray-50 border-t border-gray-200 rounded-lg p-4 mb-5'>
-                <h4 className='text-base font-medium text-gray-700 mb-3'>Selected Lots Summary</h4>
-                <ul className='space-y-1 text-sm text-gray-700'>
-                  {lotModal.selectedLots.map(l => (
-                    <li key={l.lot_name} className='flex justify-between'>
-                      <span>{l.lot_name}</span>
-                      <span className='font-semibold'>{l.sell_qty || 0} kg</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className='border-t mt-3 pt-2 flex justify-between font-medium text-gray-800'>
-                  <span>Total Qty:</span>
-                  <span>{lotModal.selectedLots.reduce((s, l) => s + (l.sell_qty || 0), 0)} kg</span>
+                        // Update the sell_qty for this lot
+                        setLotModal(prev => ({
+                          ...prev,
+                          selectedLot: { ...prev.selectedLot, sell_qty: val }
+                        }))
+                      }}
+                      className='w-24 px-2 py-1 border border-gray-300 rounded-md text-center focus:ring-2 focus:ring-indigo-500 outline-none'
+                    />
+                    <span className='text-sm'>kg</span>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Buttons */}
+            {/* Action buttons */}
             <div className='flex justify-end gap-3'>
               <button
-                onClick={() => setLotModal({ open: false, productId: null, productName: '', selectedLots: [] })}
+                onClick={() => setLotModal({ open: false, cartIndex: null, productName: '', selectedLot: null })}
                 className='px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md font-medium'
               >
                 Cancel
               </button>
 
               <button
-                disabled={
-                  lotModal.selectedLots.length === 0 || lotModal.selectedLots.every(l => !l.sell_qty || l.sell_qty <= 0)
-                }
+                // Disable if no lot selected or no quantity entered
+                disabled={!lotModal.selectedLot || !lotModal.selectedLot.sell_qty || lotModal.selectedLot.sell_qty <= 0}
                 onClick={handleLotConfirm}
-                className={`px-4 py-2 rounded-md font-medium text-white disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed ${
-                  lotModal.selectedLots.length > 0
-                    ? 'bg-indigo-600 hover:bg-indigo-700'
-                    : 'bg-gray-400 cursor-not-allowed'
-                }`}
+                className='px-4 py-2 rounded-md font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed bg-indigo-600 hover:bg-indigo-700 cursor-pointer'
               >
                 Confirm
               </button>
