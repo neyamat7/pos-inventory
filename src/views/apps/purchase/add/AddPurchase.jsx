@@ -18,10 +18,26 @@ import { handleDistributionExpense } from '@/utils/handleDistribution'
 import CategoryModal from '@/components/layout/shared/CategoryModal'
 import { categories } from '@/data/productsCategory/productsCategory'
 import { filteredProductsData } from '@/utils/filteredProductsData'
-import { handleCrateCount } from '@/utils/handleCrateCount'
+
+// import { handleCrateCount } from '@/utils/handleCrateCount'
 import { calculateTotalDue } from '@/utils/calculateTotalDue'
 import { showAlert } from '@/utils/showAlert'
 import ShowProductList from '@/components/layout/shared/ShowProductList'
+
+const handleCrateCount = (setCartProducts, productId, personId, type, value) => {
+  setCartProducts(prevCart =>
+    prevCart.map(item => {
+      if (item.product_id === productId && (item.supplier_id === personId || item.customer_id === personId)) {
+        return {
+          ...item,
+          [`crate_type_${type}`]: value < 0 ? 0 : value
+        }
+      }
+
+      return item
+    })
+  )
+}
 
 export default function AddPurchase({ productsData = [], suppliersData = [] }) {
   const skipNextEffect = useRef(false)
@@ -91,24 +107,18 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
         product_name: product.name,
         supplier_id: selectedSupplier.sl,
         supplier_name: selectedSupplier.name,
-        crate: {
-          type_one: 0,
-          type_two: 0
-        },
+        crate_type_one: 0,
+        crate_type_two: 0,
         cratePrice: 0,
+        cost: product.price,
+        commission_rate: product?.commission_rate || 0,
         transportation: 0,
         moshjid: 0,
         van_vara: 0,
-
-        // kg: 0,
-        // total: 0,
-        cost: product.price,
-        commission_rate: product?.commission_rate || 0,
         trading_post: 0,
         labour: 0,
         expenses: 0,
-        purchase_date: date,
-        expiry_date: ''
+        other_expenses: 0
       }
 
       return [...prevCart, newCartItem]
@@ -138,9 +148,6 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
     return () => clearTimeout(timeout)
   }, [cartProducts, setCartProducts, suppliersData])
 
-  // calculate total due amount
-  const totalDueAmount = calculateTotalDue(cartProducts)
-
   // Open the commission editor for a row
   const openCommissionEditor = item => {
     setCommissionModal({
@@ -165,9 +172,6 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
 
     setCommissionModal({ open: false, productId: null, supplierId: null, value: 0 })
   }
-
-  // Auto calculate due and change amounts
-  // usePaymentCalculation(receiveAmount, totalDueAmount, setPaymentValue)
 
   const columns = useMemo(
     () => [
@@ -203,12 +207,12 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
             <input
               type='number'
               min='0'
-              value={product.crate?.type_one === 0 ? '' : (product.crate?.type_one ?? '')}
+              value={product.crate_type_one === 0 ? '' : (product.crate_type_one ?? '')}
               placeholder='0'
               onChange={e => {
                 const value = parseInt(e.target.value) || 0
 
-                handleCrateCount(setCartProducts, product.product_id, product.supplier_id, 'type_one', value)
+                handleCrateCount(setCartProducts, product.product_id, product.supplier_id, 'one', value)
               }}
               className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
             />
@@ -225,48 +229,18 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
             <input
               type='number'
               min='0'
-              value={product.crate?.type_two === 0 ? '' : (product.crate?.type_two ?? '')}
+              value={product.crate_type_two === 0 ? '' : (product.crate_type_two ?? '')}
               placeholder='0'
               onChange={e => {
                 const value = parseInt(e.target.value) || 0
 
-                handleCrateCount(setCartProducts, product.product_id, product.supplier_id, 'type_two', value)
+                handleCrateCount(setCartProducts, product.product_id, product.supplier_id, 'two', value)
               }}
               className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
             />
           )
         }
       },
-
-      // {
-      //   accessorKey: 'kg',
-      //   header: 'KG',
-      //   cell: ({ row }) => {
-      //     const product = row.original
-
-      //     return (
-      //       <input
-      //         type='number'
-      //         min='0'
-      //         value={product.kg === 0 ? '' : (product.kg ?? '')}
-      //         onChange={e => {
-      //           const value = parseFloat(e.target.value) || 0
-
-      //           // update the kg value for this product
-      //           setCartProducts(prev =>
-      //             prev.map(item =>
-      //               item.product_id === product.product_id && item.supplier_id === product.supplier_id
-      //                 ? { ...item, kg: value }
-      //                 : item
-      //             )
-      //           )
-      //         }}
-      //         placeholder='0'
-      //         className='w-24 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
-      //       />
-      //     )
-      //   }
-      // },
 
       {
         accessorKey: 'cost',
@@ -387,49 +361,81 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
 
       const formattedDate = date.split('-').reverse().join('').slice(0, 6) // e.g. 2025-10-11 → 111025
       const cleanProductName = item.product_name?.replace(/\s+/g, '_').toUpperCase() || 'ITEM'
-      const totalKg = item.kg || 0
 
-      const lotName = `${initials}-${formattedDate}-${cleanProductName}-${totalKg}`
+      // Use total crates instead of totalKg
+      const totalCrates = (item.crate_type_one || 0) + (item.crate_type_two || 0)
+
+      const lotName = `${initials}-${formattedDate}-${cleanProductName}-${totalCrates}`
 
       return { ...item, lot_name: lotName }
     })
 
-    // Group by supplier with only IDs + totals
+    // Group products by supplier - each supplier gets an object with lots array
     const suppliersMap = updatedCartProducts.reduce((acc, item) => {
       const key = item.supplier_id ?? 'unknown'
 
       if (!acc[key]) {
         acc[key] = {
-          supplier_id: item.supplier_id,
-          items: [],
-          sub_total: 0,
-          commission_total: 0
+          supplier: item.supplier_id,
+          lots: []
         }
       }
 
-      acc[key].items.push(item)
-
-      acc[key].sub_total += Number(item.total) || 0
-      acc[key].commission_total += Number(item.commission) || 0
+      // Add product as a lot with all required fields
+      acc[key].lots.push({
+        productId: item.product_id,
+        lot_name: item.lot_name,
+        unitCost: item.cost,
+        commission_rate: item.commission_rate,
+        crate_type_1: item.crate_type_one,
+        crate_type_2: item.crate_type_two,
+        labour: item.labour || 0,
+        transportation: item.transportation || 0,
+        van_vara: item.van_vara || 0,
+        moshjid: item.moshjid || 0,
+        trading_post: item.trading_post || 0,
+        other_expenses: item.other_expenses || 0
+      })
 
       return acc
     }, {})
 
-    const suppliers = Object.values(suppliersMap)
+    // Convert suppliers map to array
+    const items = Object.values(suppliersMap)
 
-    // Grand totals
-    const grandSubTotal = suppliers.reduce((s, sup) => s + sup.sub_total, 0)
-
-    const payload = {
-      summary: {
-        date,
-        sub_total: grandSubTotal
+    // Calculate total expenses across ALL products
+    const totalExpenses = updatedCartProducts.reduce(
+      (acc, item) => {
+        return {
+          labour: Number((acc.labour + (item.labour || 0)).toFixed(2)),
+          transportation: Number((acc.transportation + (item.transportation || 0)).toFixed(2)),
+          van_vara: Number((acc.van_vara + (item.van_vara || 0)).toFixed(2)),
+          moshjid: Number((acc.moshjid + (item.moshjid || 0)).toFixed(2)),
+          trading_post: Number((acc.trading_post + (item.trading_post || 0)).toFixed(2)),
+          other_expenses: Number((acc.other_expenses + (item.other_expenses || 0)).toFixed(2))
+        }
       },
-      suppliers
+      {
+        labour: 0,
+        transportation: 0,
+        van_vara: 0,
+        moshjid: 0,
+        trading_post: 0,
+        other_expenses: 0
+      }
+    )
+
+    // Build final payload
+    const payload = {
+      _id: '',
+      purchase_date: date,
+      status: 'on the way',
+      items: items,
+      expenses: totalExpenses
     }
 
-    console.log('Purchase payload (multi-supplier):', payload)
-    showAlert('Purchased prouducts successfully added to the stock list', 'success')
+    console.log('Purchase payload:', payload)
+    showAlert('Purchased products successfully added to the stock list', 'success')
     setCartProducts([])
   }
 
@@ -664,8 +670,8 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
                     <h2 className='text-2xl font-bold'>{[...new Set(cartProducts.map(p => p.supplier_id))].length}</h2>
                   </div>
                   <div>
-                    <p className='text-base opacity-80'>Total Amount</p>
-                    <h2 className='text-2xl font-bold'>৳ {totalDueAmount}</h2>
+                    {/* <p className='text-base opacity-80'>Total Amount</p>
+                    <h2 className='text-2xl font-bold'>৳ {totalDueAmount}</h2> */}
                   </div>
                 </div>
 

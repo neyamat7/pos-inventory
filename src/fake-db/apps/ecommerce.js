@@ -3784,7 +3784,7 @@ export const db = {
       purchase_date: '2025-09-01',
       expiry_date: ''
     },
-    
+
     {
       sl: 2,
       date: '2025-09-01',
@@ -5437,11 +5437,15 @@ export const db = {
       balance: 5000,
       due: 3875,
       crate: { type_one: { qty: 10, price: 100 }, type_two: { qty: 5, price: 150 } },
+
+      // crate_type_one: 10,
+      // crate_type_two: 10,
       cost: 0,
       orders: 23,
       totalSpent: 22040,
       location: 'Chandpur'
     },
+
     {
       sl: 2,
       image: 'https://i.postimg.cc/05MFsKCZ/images-4.jpg',

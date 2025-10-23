@@ -1,36 +1,110 @@
-const calculateExpenseValue = (amount, type, totalItems) => {
+const calculateExpenseValue = (amount, type, totalCrates, itemCrates) => {
   if (type === 'divided') {
-    return Number((Number(amount) / totalItems).toFixed(2))
+    // Divide proportionally based on crate count
+    if (totalCrates === 0) return 0
+
+    return Number(((Number(amount) * itemCrates) / totalCrates).toFixed(2))
   }
 
+  // For 'each' type, return the full amount (will be handled per supplier)
   return Number(Number(amount).toFixed(2))
 }
 
 export const handleDistributionExpense = (data = {}, cartProducts, setCartProducts, suppliersData = []) => {
   const isDataEmpty = !data || Object.keys(data).length === 0
 
+  // Calculate total crates across all products
+  const totalCrates = cartProducts.reduce((sum, item) => {
+    const typeOne = item.crate_type_one || 0
+    const typeTwo = item.crate_type_two || 0
+
+    return sum + typeOne + typeTwo
+  }, 0)
+
+  // Group products by supplier to handle "each" type expenses
+  const supplierGroups = {}
+
+  cartProducts.forEach(item => {
+    const supplierId = item.supplier_id
+
+    if (!supplierGroups[supplierId]) {
+      supplierGroups[supplierId] = []
+    }
+
+    supplierGroups[supplierId].push(item.product_id)
+  })
+
+  // Helper function to calculate expense for any type
+  const getExpenseValue = (expenseKey, amountKey, typeKey, item, itemCrates, isFirstProductForSupplier) => {
+    if (isDataEmpty) {
+      return item[expenseKey] || 0
+    }
+
+    const amount = data[amountKey]
+    const type = data[typeKey]
+
+    if (type === 'divided') {
+      return calculateExpenseValue(amount, 'divided', totalCrates, itemCrates)
+    } else if (type === 'each' && isFirstProductForSupplier) {
+      return calculateExpenseValue(amount, 'each', totalCrates, itemCrates)
+    }
+
+    return 0
+  }
+
   setCartProducts(prevCart =>
     prevCart.map(item => {
-      // calculate distributed expense values
-      const transportationValue = isDataEmpty
-        ? item.transportation || 0
-        : calculateExpenseValue(data.transportationAmount, data.transportationType, cartProducts.length) || 0
+      // Calculate item's crate count
+      const itemCrates = (item.crate_type_one || 0) + (item.crate_type_two || 0)
 
-      const moshjidValue = isDataEmpty
-        ? item.moshjid || 0
-        : calculateExpenseValue(data.moshjidAmount, data.moshjidType, cartProducts.length) || 0
+      // Check if this is the first product for this supplier (for "each" type)
+      const isFirstProductForSupplier = supplierGroups[item.supplier_id]?.[0] === item.product_id
 
-      const vanVaraValue = isDataEmpty
-        ? item.van_vara || 0
-        : calculateExpenseValue(data.vanVaraAmount, data.vanVaraType, cartProducts.length) || 0
+      // Calculate all expenses using helper
+      const transportationValue = getExpenseValue(
+        'transportation',
+        'transportationAmount',
+        'transportationType',
+        item,
+        itemCrates,
+        isFirstProductForSupplier
+      )
 
-      const tradingPostValue = isDataEmpty
-        ? item.trading_post || 0
-        : calculateExpenseValue(data.tradingPostAmount, data.tradingPostType, cartProducts.length) || 0
+      const moshjidValue = getExpenseValue(
+        'moshjid',
+        'moshjidAmount',
+        'moshjidType',
+        item,
+        itemCrates,
+        isFirstProductForSupplier
+      )
 
-      const labourValue = isDataEmpty
-        ? item.labour || 0
-        : calculateExpenseValue(data.labourAmount, data.labourType, cartProducts.length) || 0
+      const vanVaraValue = getExpenseValue(
+        'van_vara',
+        'vanVaraAmount',
+        'vanVaraType',
+        item,
+        itemCrates,
+        isFirstProductForSupplier
+      )
+
+      const tradingPostValue = getExpenseValue(
+        'trading_post',
+        'tradingPostAmount',
+        'tradingPostType',
+        item,
+        itemCrates,
+        isFirstProductForSupplier
+      )
+
+      const labourValue = getExpenseValue(
+        'labour',
+        'labourAmount',
+        'labourType',
+        item,
+        itemCrates,
+        isFirstProductForSupplier
+      )
 
       const expenses = transportationValue + moshjidValue + vanVaraValue + tradingPostValue + labourValue
 
@@ -42,19 +116,10 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
       const typeOnePrice = supplierCrate.type_one?.price || 0
       const typeTwoPrice = supplierCrate.type_two?.price || 0
 
-      const typeOneQty = item.crate?.type_one || 0
-      const typeTwoQty = item.crate?.type_two || 0
+      const typeOneQty = item.crate_type_one || 0
+      const typeTwoQty = item.crate_type_two || 0
 
       const cratePrice = Number((typeOneQty * typeOnePrice + typeTwoQty * typeTwoPrice).toFixed(2))
-
-      // --- base product total before crate ---
-      // const productBase = Number(item.cost || 0) * (typeOneQty + typeTwoQty) + expenses
-
-      // const productBase = Number(item.cost || 0) * Number(item.kg || 0) + expenses + cratePrice
-
-      // --- total calculation ---
-      // const total = Number((productBase + cratePrice).toFixed(2))
-      // const total = Number(productBase.toFixed(2))
 
       return {
         ...item,
@@ -65,8 +130,6 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
         labour: labourValue,
         expenses: Number(expenses.toFixed(2)),
         cratePrice
-
-        // total
       }
     })
   )
