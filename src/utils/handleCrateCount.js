@@ -15,7 +15,7 @@ export const handleBoxCount = (setCartProducts, productId, personId, increment =
 export const handleCrateCount = (setCartProducts, productId, personId, type, value) => {
   setCartProducts(prevCart =>
     prevCart.map(item => {
-      if (item.product_id === productId && (item.supplier_id === personId || item.customer_id === personId)) {
+      if (item.cart_item_id === productId && (item.supplier_id === personId || item.customer_id === personId)) {
         return {
           ...item,
           crate: {

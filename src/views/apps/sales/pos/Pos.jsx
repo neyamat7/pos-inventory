@@ -51,7 +51,7 @@ export default function POSSystem({ productsData = [] }) {
 
   const [lotModal, setLotModal] = useState({
     open: false,
-    cartIndex: null,
+    cartItemId: null,
     productName: '',
     selectedLot: null
   })
@@ -72,16 +72,13 @@ export default function POSSystem({ productsData = [] }) {
     category.name.toLowerCase().includes(categorySearch.toLowerCase())
   )
 
-  // const filteredBrands = brands.filter(brand => brand.name.toLowerCase().includes(brandSearch.toLowerCase()))
-
-  // Function to remove item from cart
-  const handleRemoveCartItem = productId => {
-    setCartProducts(prevCart => prevCart.filter(item => item.product_id !== productId))
-  }
-
   // Function to remove category
   const handleRemoveCategory = categoryToRemove => {
     setSelectedCategory(prev => prev.filter(category => category !== categoryToRemove))
+  }
+
+  const handleRemoveCartItem = cartItemId => {
+    setCartProducts(prevCart => prevCart.filter(item => item.cart_item_id !== cartItemId))
   }
 
   const handleCartProductClick = product => {
@@ -93,21 +90,12 @@ export default function POSSystem({ productsData = [] }) {
       return
     }
 
-    // const isAlreadyAdded = cartProducts.some(item => item.product_id === product.id)
-
-    // if (isAlreadyAdded) {
-    //   toast.warning('This product is already added to the cart.', {
-    //     position: 'top-center'
-    //   })
-
-    //   return
-    // }
-
     setCartProducts(prevCart => {
       // Add product with additional properties
       const newCartItem = {
         ...product,
         product_id: product.id,
+        cart_item_id: `${product.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         isCrated: product.isCrated,
         crate: {
           type_one: 0,
@@ -127,7 +115,7 @@ export default function POSSystem({ productsData = [] }) {
         commission_rate: product.commission_rate || 0,
         selling_date: date,
         expiry_date: '',
-        lots_selected: null
+        lot_selected: null
       }
 
       return [...prevCart, newCartItem]
@@ -222,11 +210,8 @@ export default function POSSystem({ productsData = [] }) {
         cell: ({ row }) => {
           const product = row.original
 
-          // Get the cart index for this specific row
-          const cartIndex = cartProducts.findIndex(p => p === product)
-
-          // Check if cartIndex is valid
-          if (cartIndex === -1) return null
+          // Use cart_item_id to identify this specific cart row
+          const cartItemId = product.cart_item_id
 
           // Check if this row has a lot selected
           const hasLot = product.lot_selected && product.lot_selected.lot_name
@@ -239,7 +224,7 @@ export default function POSSystem({ productsData = [] }) {
                 onClick={() =>
                   setLotModal({
                     open: true,
-                    cartIndex: cartIndex, // Pass cart row index
+                    cartItemId: cartItemId, // Pass unique cart item ID
                     productName: product.product_name || '',
                     selectedLot: null // Start with no selection
                   })
@@ -257,9 +242,12 @@ export default function POSSystem({ productsData = [] }) {
               onClick={() =>
                 setLotModal({
                   open: true,
-                  cartIndex: cartIndex, // Pass cart row index
+                  cartItemId: cartItemId, // Pass unique cart item ID
                   productName: product.product_name || '',
-                  selectedLot: product.lot_selected // Pre-populate with current selection
+                  selectedLot: {
+                    ...product.lot_selected,
+                    sell_qty: product.lot_selected.sell_qty || 0 // Pre-fill with existing quantity
+                  }
                 })
               }
               className='text-gray-800 font-semibold cursor-pointer hover:text-indigo-600 transition-colors'
@@ -287,7 +275,7 @@ export default function POSSystem({ productsData = [] }) {
 
                 setCartProducts(prev =>
                   prev.map(item =>
-                    item.product_id === product.product_id
+                    item.cart_item_id === product.cart_item_id
                       ? { ...item, selling_price: val === '' ? 0 : parseFloat(val) }
                       : item
                   )
@@ -317,7 +305,7 @@ export default function POSSystem({ productsData = [] }) {
                 const parsed = val === '' ? 0 : parseFloat(val) || 0
 
                 setCartProducts(prev =>
-                  prev.map(item => (item.product_id === product.product_id ? { ...item, kg: parsed } : item))
+                  prev.map(item => (item.cart_item_id === product.cart_item_id ? { ...item, kg: parsed } : item))
                 )
               }}
               placeholder='0'
@@ -369,7 +357,9 @@ export default function POSSystem({ productsData = [] }) {
                 const parsed = val === '' ? 0 : parseFloat(val)
 
                 setCartProducts(prev =>
-                  prev.map(item => (item.product_id === product.product_id ? { ...item, discount_kg: parsed } : item))
+                  prev.map(item =>
+                    item.cart_item_id === product.cart_item_id ? { ...item, discount_kg: parsed } : item
+                  )
                 )
               }}
               placeholder='0'
@@ -396,7 +386,7 @@ export default function POSSystem({ productsData = [] }) {
                 const parsed = val === '' ? 0 : parseFloat(val)
 
                 setCartProducts(prev =>
-                  prev.map(item => (item.product_id === product.product_id ? { ...item, total: parsed } : item))
+                  prev.map(item => (item.cart_item_id === product.cart_item_id ? { ...item, total: parsed } : item))
                 )
               }}
               placeholder='0'
@@ -414,7 +404,7 @@ export default function POSSystem({ productsData = [] }) {
 
           return (
             <button
-              onClick={() => handleRemoveCartItem(product.product_id)}
+              onClick={() => handleRemoveCartItem(product.cart_item_id)}
               className='text-red-500 bg-transparent border-none outline-none w-full h-full'
             >
               <FaTimes />
@@ -444,7 +434,7 @@ export default function POSSystem({ productsData = [] }) {
               onChange={e => {
                 const parsed = e.target.value === '' ? 0 : parseInt(e.target.value) || 0
 
-                handleCrateCount(setCartProducts, product.product_id, product.customer_id, 'type_one', parsed)
+                handleCrateCount(setCartProducts, product.cart_item_id, product.customer_id, 'type_one', parsed)
               }}
               placeholder='0'
               className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
@@ -470,7 +460,7 @@ export default function POSSystem({ productsData = [] }) {
               onChange={e => {
                 const parsed = e.target.value === '' ? 0 : parseInt(e.target.value) || 0
 
-                handleCrateCount(setCartProducts, product.product_id, product.customer_id, 'type_two', parsed)
+                handleCrateCount(setCartProducts, product.cart_item_id, product.customer_id, 'type_two', parsed)
               }}
               placeholder='0'
               className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
@@ -553,7 +543,6 @@ export default function POSSystem({ productsData = [] }) {
   }
 
   // Handle confirm click - save the selected lot to the specific cart row
-  // Handle confirm click - save the selected lot to the specific cart row
   const handleLotConfirm = () => {
     // Ensure a lot is selected
     if (!lotModal.selectedLot || !lotModal.selectedLot.lot_name) {
@@ -580,11 +569,11 @@ export default function POSSystem({ productsData = [] }) {
       return
     }
 
-    // Update ONLY the specific cart row identified by cartIndex
+    // Update ONLY the specific cart row identified by cart_item_id
     setCartProducts(prev => {
-      const updated = prev.map((item, idx) => {
-        // Only update the row we're editing
-        if (idx === lotModal.cartIndex) {
+      const updated = prev.map(item => {
+        // Only update the row matching this unique cart_item_id
+        if (item.cart_item_id === lotModal.cartItemId) {
           return {
             ...item,
             lot_selected: {
@@ -602,11 +591,6 @@ export default function POSSystem({ productsData = [] }) {
         return item // Don't modify other rows
       })
 
-      // IMPORTANT: Trigger recalculation after state update
-      setTimeout(() => {
-        handleSalesTotal(setCartProducts, selectedCustomer)
-      }, 0)
-
       return updated
     })
 
@@ -614,7 +598,7 @@ export default function POSSystem({ productsData = [] }) {
     toast.success(`Added ${sellQty} kg from ${lot.lot_name}`)
 
     // Close modal and reset
-    setLotModal({ open: false, cartIndex: null, productName: '', selectedLot: null })
+    setLotModal({ open: false, cartItemId: null, productName: '', selectedLot: null })
   }
 
   return (
@@ -980,7 +964,7 @@ export default function POSSystem({ productsData = [] }) {
                   .filter(l => l.product.toLowerCase() === lotModal.productName.toLowerCase())
                   .map(l => (
                     <option key={l.lot_name} value={l.lot_name}>
-                      {l.lot_name} — {l.sold} kg sold
+                      {l.lot_name}
                     </option>
                   ))}
               </select>
@@ -1025,7 +1009,7 @@ export default function POSSystem({ productsData = [] }) {
             {/* Action buttons */}
             <div className='flex justify-end gap-3'>
               <button
-                onClick={() => setLotModal({ open: false, cartIndex: null, productName: '', selectedLot: null })}
+                onClick={() => setLotModal({ open: false, cartItemId: null, productName: '', selectedLot: null })}
                 className='px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md font-medium'
               >
                 Cancel
