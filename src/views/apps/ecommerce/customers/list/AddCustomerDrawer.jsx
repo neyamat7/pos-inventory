@@ -16,13 +16,8 @@ import { useForm, Controller } from 'react-hook-form'
 import CustomTextField from '@core/components/mui/TextField'
 import { createCustomer } from '@/actions/customerActions'
 
-const initialCrateRow = () => ({ id: crypto.randomUUID(), type: '', qty: '', price: '' })
-
 const AddCustomerDrawer = props => {
   const { open, handleClose, setData, customerData } = props
-
-  // Local state for dynamic crate rows
-  const [crateRows, setCrateRows] = useState([initialCrateRow()])
 
   const {
     control,
@@ -36,39 +31,22 @@ const AddCustomerDrawer = props => {
       email: '',
       image: '',
       phone: '',
+      location: '',
+      account_number: '',
       balance: '',
       due: '',
       cost: '',
-      location: ''
+      type_1_qty: '',
+      type_1_price: '',
+      type_2_qty: '',
+      type_2_price: ''
     }
   })
-
-  const addCrateRow = () => setCrateRows(prev => [...prev, initialCrateRow()])
-  const removeCrateRow = id => setCrateRows(prev => prev.filter(r => r.id !== id))
-
-  const updateCrateRow = (id, field, value) =>
-    setCrateRows(prev => prev.map(r => (r.id === id ? { ...r, [field]: value } : r)))
-
-  const buildCrateInfo = () => {
-    const crateInfo = {}
-
-    crateRows.forEach((row, index) => {
-      if (row.type && row.type.trim()) {
-        const typeKey = `type_${index + 1}`
-
-        crateInfo[typeKey] = Number(row.qty || 0)
-        crateInfo[`${typeKey}_price`] = Number(row.price || 0)
-      }
-    })
-
-    return crateInfo
-  }
 
   const onSubmit = async data => {
     try {
       // Prepare customer data according to MongoDB model structure
       const customerPayload = {
-        // ← Rename this variable to avoid conflict
         // Basic Information
         basic_info: {
           sl: data.sl.toString(),
@@ -86,18 +64,23 @@ const AddCustomerDrawer = props => {
 
         // Account & Balance Information
         account_info: {
-          account_number: '',
+          account_number: data.account_number?.trim() || '',
           balance: Number(data.balance || 0),
           due: Number(data.due || 0),
           return_amount: Number(data.cost || 0)
         },
 
         // Crate Information
-        crate_info: buildCrateInfo()
+        crate_info: {
+          type_1: Number(data.type_1_qty || 0),
+          type_1_price: Number(data.type_1_price || 0),
+          type_2: Number(data.type_2_qty || 0),
+          type_2_price: Number(data.type_2_price || 0)
+        }
       }
 
       // Call the server action
-      const result = await createCustomer(customerPayload) // ← Use the renamed variable
+      const result = await createCustomer(customerPayload)
 
       if (result.success) {
         // Update local state with new customer data
@@ -110,9 +93,8 @@ const AddCustomerDrawer = props => {
           createdAt: new Date().toISOString()
         }
 
-        setData([...(customerData ?? []), newCustomer]) // ← Now this works
+        setData([...(customerData ?? []), newCustomer])
         reset()
-        setCrateRows([initialCrateRow()])
         handleClose()
 
         console.log('Customer created successfully!', result.data)
@@ -128,7 +110,6 @@ const AddCustomerDrawer = props => {
 
   const handleReset = () => {
     reset()
-    setCrateRows([initialCrateRow()])
     handleClose()
   }
 
@@ -152,8 +133,9 @@ const AddCustomerDrawer = props => {
       <PerfectScrollbar options={{ wheelPropagation: false, suppressScrollX: true }}>
         <div className='p-6'>
           <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-5'>
+            {/* Basic Information Section */}
             <Typography color='text.primary' className='font-medium'>
-              Basic Info
+              Basic Information
             </Typography>
 
             <Controller
@@ -188,6 +170,20 @@ const AddCustomerDrawer = props => {
             />
 
             <Controller
+              name='image'
+              control={control}
+              rules={{ required: false }}
+              render={({ field }) => (
+                <CustomTextField {...field} label='Avatar URL' placeholder='https://example.com/avatar.jpg' fullWidth />
+              )}
+            />
+
+            {/* Contact Information Section */}
+            <Typography color='text.primary' className='font-medium'>
+              Contact Information
+            </Typography>
+
+            <Controller
               name='email'
               control={control}
               rules={{ required: true }}
@@ -200,15 +196,6 @@ const AddCustomerDrawer = props => {
                   fullWidth
                   {...(errors.email && { error: true, helperText: 'Required' })}
                 />
-              )}
-            />
-
-            <Controller
-              name='image'
-              control={control}
-              rules={{ required: false }}
-              render={({ field }) => (
-                <CustomTextField {...field} label='Avatar URL' placeholder='https://example.com/avatar.jpg' fullWidth />
               )}
             />
 
@@ -227,6 +214,25 @@ const AddCustomerDrawer = props => {
               )}
             />
 
+            <Controller
+              name='location'
+              control={control}
+              render={({ field }) => <CustomTextField {...field} label='Location' placeholder='Australia' fullWidth />}
+            />
+
+            {/* Account Information Section */}
+            <Typography color='text.primary' className='font-medium'>
+              Account Information
+            </Typography>
+
+            <Controller
+              name='account_number'
+              control={control}
+              render={({ field }) => (
+                <CustomTextField {...field} label='Account Number' placeholder='ACC001' fullWidth />
+              )}
+            />
+
             <div className='grid grid-cols-2 gap-4'>
               <Controller
                 name='balance'
@@ -239,7 +245,7 @@ const AddCustomerDrawer = props => {
                 name='due'
                 control={control}
                 render={({ field }) => (
-                  <CustomTextField {...field} type='number' label='Due (Dua)' placeholder='2000' fullWidth />
+                  <CustomTextField {...field} type='number' label='Due' placeholder='2000' fullWidth />
                 )}
               />
             </div>
@@ -248,63 +254,55 @@ const AddCustomerDrawer = props => {
               name='cost'
               control={control}
               render={({ field }) => (
-                <CustomTextField {...field} type='number' label='Cost (Return Amount)' placeholder='0' fullWidth />
+                <CustomTextField {...field} type='number' label='Return Amount' placeholder='0' fullWidth />
               )}
             />
 
-            <Controller
-              name='location'
-              control={control}
-              render={({ field }) => <CustomTextField {...field} label='Location' placeholder='Australia' fullWidth />}
-            />
+            {/* Crate Information Section */}
+            <Typography color='text.primary' className='font-medium'>
+              Crate Information
+            </Typography>
 
-            {/* Crate Editor */}
-            <div className='flex items-center justify-between'>
-              <Typography color='text.primary' className='font-medium'>
-                Crate Information
-              </Typography>
-              <Button size='small' variant='tonal' onClick={addCrateRow} startIcon={<i className='tabler-plus' />}>
-                Add Type
-              </Button>
-            </div>
+            <div className='grid grid-cols-2 gap-4'>
+              <div className='flex flex-col gap-3'>
+                <Typography variant='body2' color='text.secondary'>
+                  Type 1
+                </Typography>
+                <Controller
+                  name='type_1_qty'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField {...field} type='number' label='Quantity' placeholder='0' fullWidth />
+                  )}
+                />
+                <Controller
+                  name='type_1_price'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField {...field} type='number' label='Price' placeholder='0' fullWidth />
+                  )}
+                />
+              </div>
 
-            <div className='flex flex-col gap-3'>
-              {crateRows.map((row, idx) => (
-                <div key={row.id} className='grid grid-cols-12 gap-3 items-end'>
-                  <CustomTextField
-                    className='col-span-5'
-                    label='Type'
-                    placeholder={`type_${idx + 1}`}
-                    value={row.type}
-                    onChange={e => updateCrateRow(row.id, 'type', e.target.value)}
-                  />
-                  <CustomTextField
-                    className='col-span-3'
-                    type='number'
-                    label='Qty'
-                    placeholder='0'
-                    value={row.qty}
-                    onChange={e => updateCrateRow(row.id, 'qty', e.target.value)}
-                  />
-                  <CustomTextField
-                    className='col-span-3'
-                    type='number'
-                    label='Price'
-                    placeholder='0'
-                    value={row.price}
-                    onChange={e => updateCrateRow(row.id, 'price', e.target.value)}
-                  />
-                  <Button
-                    className='col-span-1'
-                    color='error'
-                    variant='tonal'
-                    onClick={() => removeCrateRow(row.id)}
-                    disabled={crateRows.length === 1}
-                  >
-                    <i className='tabler-trash' />
-                  </Button>
-                </div>
-              ))}
+              <div className='flex flex-col gap-3'>
+                <Typography variant='body2' color='text.secondary'>
+                  Type 2
+                </Typography>
+                <Controller
+                  name='type_2_qty'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField {...field} type='number' label='Quantity' placeholder='0' fullWidth />
+                  )}
+                />
+                <Controller
+                  name='type_2_price'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField {...field} type='number' label='Price' placeholder='0' fullWidth />
+                  )}
+                />
+              </div>
             </div>
 
             <div className='flex items-center gap-4 mt-2'>
