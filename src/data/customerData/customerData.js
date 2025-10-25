@@ -9,6 +9,8 @@ export const customers = [
     balance: 0,
     due: 2000,
     crate: { type_one: { qty: 0, price: 100 }, type_two: { qty: 0, price: 150 } },
+    crate_type_one_price: 100,
+    crate_type_two_price: 120,
     cost: 0,
     orders: 157,
     totalSpent: 2074.22,
@@ -27,7 +29,9 @@ export const customers = [
     cost: 0,
     orders: 663,
     totalSpent: 2404.19,
-    location: 'Australia'
+    location: 'Australia',
+    crate_type_one_price: 100,
+    crate_type_two_price: 120
   },
   {
     sl: 3,
@@ -42,7 +46,9 @@ export const customers = [
     cost: 0,
     orders: 64,
     totalSpent: 8821.4,
-    location: 'Australia'
+    location: 'Australia',
+    crate_type_one_price: 100,
+    crate_type_two_price: 120
   },
   {
     sl: 4,
@@ -57,7 +63,9 @@ export const customers = [
     cost: 0,
     orders: 640,
     totalSpent: 5294.35,
-    location: 'United States'
+    location: 'United States',
+    crate_type_one_price: 100,
+    crate_type_two_price: 120
   },
 
   {
@@ -73,7 +81,9 @@ export const customers = [
     cost: 0,
     orders: 184,
     totalSpent: 1003.3,
-    location: 'France'
+    location: 'France',
+    crate_type_one_price: 100,
+    crate_type_two_price: 120
   },
   {
     sl: 6,
@@ -88,7 +98,9 @@ export const customers = [
     cost: 0,
     orders: 965,
     totalSpent: 3876.92,
-    location: 'China'
+    location: 'China',
+    crate_type_one_price: 100,
+    crate_type_two_price: 120
   },
   {
     sl: 7,
@@ -103,7 +115,9 @@ export const customers = [
     cost: 0,
     orders: 514,
     totalSpent: 7936.85,
-    location: 'Brazil'
+    location: 'Brazil',
+    crate_type_one_price: 100,
+    crate_type_two_price: 120
   },
   {
     sl: 8,
@@ -118,7 +132,9 @@ export const customers = [
     cost: 0,
     orders: 584,
     totalSpent: 4150.97,
-    location: 'Australia'
+    location: 'Australia',
+    crate_type_one_price: 100,
+    crate_type_two_price: 120
   },
   {
     sl: 9,
@@ -133,7 +149,9 @@ export const customers = [
     cost: 0,
     orders: 539,
     totalSpent: 3430.05,
-    location: 'Australia'
+    location: 'Australia',
+    crate_type_one_price: 100,
+    crate_type_two_price: 120
   },
   {
     sl: 10,
@@ -148,7 +166,9 @@ export const customers = [
     cost: 0,
     orders: 4,
     totalSpent: 8646.75,
-    location: 'Australia'
+    location: 'Australia',
+    crate_type_one_price: 100,
+    crate_type_two_price: 120
   },
   {
     sl: 11,
@@ -163,6 +183,8 @@ export const customers = [
     cost: 0,
     orders: 602,
     totalSpent: 5807.99,
-    location: 'China'
+    location: 'China',
+    crate_type_one_price: 100,
+    crate_type_two_price: 120
   }
 ]

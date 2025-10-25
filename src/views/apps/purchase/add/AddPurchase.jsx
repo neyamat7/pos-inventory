@@ -60,11 +60,17 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
     value: 0
   })
 
+  const [hasExpenseChanges, setHasExpenseChanges] = useState(false)
+
   const filteredProducts = filteredProductsData(productsData, searchTerm, selectedCategory)
 
   const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(categorySearch.toLowerCase())
   )
+
+  const handleExpenseChange = () => {
+    setHasExpenseChanges(true)
+  }
 
   // Function to remove item from cart
   const handleRemoveCartItem = (productId, supplierId) => {
@@ -130,6 +136,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
     skipNextEffect.current = true
 
     handleDistributionExpense(data, cartProducts, setCartProducts, suppliersData)
+    setHasExpenseChanges(false)
   }
 
   useEffect(() => {
@@ -213,6 +220,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
                 const value = parseInt(e.target.value) || 0
 
                 handleCrateCount(setCartProducts, product.product_id, product.supplier_id, 'one', value)
+                handleExpenseChange()
               }}
               className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
             />
@@ -235,6 +243,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
                 const value = parseInt(e.target.value) || 0
 
                 handleCrateCount(setCartProducts, product.product_id, product.supplier_id, 'two', value)
+                handleExpenseChange()
               }}
               className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
             />
@@ -310,17 +319,6 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
         }
       },
 
-      // {
-      //   accessorKey: 'total',
-      //   header: 'Total',
-      //   cell: ({ row }) => {
-      //     const product = row.original
-
-      //     return (
-      //       <span title={`Commission: ${product.commission ?? 0}`}>{(parseFloat(product.total) || 0).toFixed(2)}</span>
-      //     )
-      //   }
-      // },
       {
         id: 'actions',
         header: 'Action',
@@ -534,7 +532,11 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
 
           {/* Expense Distribution< */}
           {cartProducts.length > 0 && (
-            <form className='space-y-4 mb-6' onSubmit={handleSubmit(handleDistributeSubmit)}>
+            <form
+              className='space-y-4 mb-6'
+              onSubmit={handleSubmit(handleDistributeSubmit)}
+              onChange={handleExpenseChange}
+            >
               <h1>Expense Distribution</h1>
 
               {/* Transportation */}
@@ -649,7 +651,8 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
 
               <button
                 type='submit'
-                className='w-52 py-3 bg-[#7367f0] text-white rounded-lg hover:bg-[#4e43c5] font-medium'
+                className='w-52 py-3 bg-[#7367f0] text-white rounded-lg hover:bg-[#4e43c5] font-medium disabled:opacity-55 disabled:cursor-not-allowed'
+                disabled={!hasExpenseChanges || cartProducts.length === 0}
               >
                 Distribute Expenses
               </button>
@@ -679,7 +682,8 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
                   <button
                     type='button'
                     onClick={onSubmitPayment}
-                    className='bg-white text-indigo-600 font-semibold px-6 py-3 rounded-lg hover:bg-gray-100 transition-all duration-200 w-full sm:w-auto cursor-pointer'
+                    className='bg-white text-indigo-600 font-semibold px-6 py-3 rounded-lg hover:bg-gray-100 transition-all duration-200 w-full sm:w-auto cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed'
+                    disabled={hasExpenseChanges || cartProducts.length === 0}
                   >
                     Purchase
                   </button>

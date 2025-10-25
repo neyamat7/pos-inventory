@@ -97,13 +97,14 @@ export default function POSSystem({ productsData = [] }) {
         product_id: product.id,
         cart_item_id: `${product.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         isCrated: product.isCrated,
-        crate: {
-          type_one: 0,
-          type_two: 0
-        },
+        crate_type_one: 0,
+        crate_type_one_price: 0,
+        crate_type_two: 0,
+        crate_type_two_price: 0,
         cratePrice: 0,
         kg: 0,
         discount_kg: 0,
+        discount_amount: 0,
         subtotal: 0,
         total: 0,
         profit: 0,
@@ -111,8 +112,8 @@ export default function POSSystem({ productsData = [] }) {
         selling_price: product.selling_price ?? 0,
         product_name: product.name,
         isCommissionable: product.isCommissionable,
-        commission: 0,
         commission_rate: product.commission_rate || 0,
+        commission: 0,
         selling_date: date,
         expiry_date: '',
         lot_selected: null
@@ -155,7 +156,15 @@ export default function POSSystem({ productsData = [] }) {
 
   const vatRate = parsePercent(vatType)
   const vatAmount = +(totalDueAmount * vatRate).toFixed(2)
-  const payableAmount = +(totalDueAmount + vatAmount).toFixed(2)
+
+  // Calculate total discounted amount across all products
+  const totalDiscountedAmount = cartProducts.reduce((sum, item) => sum + (Number(item.discount_amount) || 0), 0)
+
+  // Calculate total crate price across all products
+  const totalCratePrice = cartProducts.reduce((sum, item) => sum + (Number(item.cratePrice) || 0), 0)
+
+  // Update payable amount calculation
+  const payableAmount = +(totalDueAmount - totalDiscountedAmount + vatAmount).toFixed(2)
 
   // Open the commission editor for a row
   const openCommissionEditor = item => {
@@ -423,7 +432,7 @@ export default function POSSystem({ productsData = [] }) {
           const product = row.original
 
           if (!product.isCrated) return null
-          const val = product.crate?.type_one || 0
+          const val = product.crate_type_one || 0
 
           return (
             <input
@@ -449,7 +458,7 @@ export default function POSSystem({ productsData = [] }) {
           const product = row.original
 
           if (!product.isCrated) return null
-          const val = product.crate?.type_two || 0
+          const val = product.crate_type_two || 0
 
           return (
             <input
@@ -494,51 +503,65 @@ export default function POSSystem({ productsData = [] }) {
 
   // submit payment
   const onSubmitPayment = data => {
-    // Validate that kg and lot total match before submit
-    // Validate that every product has a lot selected
-    const missingLot = cartProducts.find(p => !p.lot_selected || !p.lot_selected.lot_name)
+    // Validate
+    const missingLot = cartProducts.find(p => !p.lot_selected?.lot_name)
 
     if (missingLot) {
-      toast.error(`Please select a lot for "${missingLot.product_name}" before submitting.`, {
-        position: 'top-center',
-        autoClose: 2000
-      })
+      toast.error(`Please select a lot for "${missingLot.product_name}"`)
 
       return
     }
 
-    const payment = {
-      receiveAmount: Number(data.receiveAmount) || 0,
-      changeAmount: Number(data.changeAmount) || 0,
-      dueAmount: Number(data.dueAmount) || 0,
-      paymentType: data.paymentType,
-      note: data.note || '',
-      vatType: data.vatType || ''
-    }
+    // Transform cart item to lot
+    const toLot = item => ({
+      lot_id: item.product_id,
+      kg: item.kg || 0,
+      discount_kg: item.discount_kg || 0,
+      unit_price: item.cost_price || 0,
+      total_price: Number((((item.kg || 0) - (item.discount_kg || 0)) * (item.selling_price || 0)).toFixed(2)),
+      discount_amount: item.discount_amount || 0,
+      selling_price: item.selling_price || 0,
+      lot_commission_rate: item.commission_rate || 0,
+      lot_commission_amount: item.commission || 0,
+      crate_type_one: item.crate_type_one || 0,
+      crate_type_two: item.crate_type_two || 0
+    })
 
-    const sub_total = cartProducts.reduce((sum, item) => sum + (Number(item.total) || 0), 0)
-    const commission_total = cartProducts.reduce((sum, item) => sum + (Number(item.commission) || 0), 0)
+    // Group by product
+    const grouped = cartProducts.reduce((acc, item) => {
+      if (!acc[item.product_id]) acc[item.product_id] = []
+      acc[item.product_id].push(item)
 
-    const profit_total = cartProducts.reduce((sum, item) => {
-      // If profit is negative, count as 0
-      return sum + Math.max(0, item.profit)
-    }, 0)
+      return acc
+    }, {})
 
+    // Build items
+    const items = Object.entries(grouped).map(([pid, items]) => ({
+      product_id: pid,
+      customer_commission_rate: selectedCustomer.commission_rate || 0,
+      customer_commission_amount: Number(items.reduce((s, i) => s + (i.commission || 0), 0).toFixed(2)),
+      selected_lots: items.map(toLot)
+    }))
+
+    // Payload
     const payload = {
-      customer: selectedCustomer,
-      summary: {
-        date,
-        sub_total,
-        commission_total,
-        profit_total
-      },
-      payment,
-      items: cartProducts
+      sale_date: date,
+      customer_id: selectedCustomer.sl,
+      total_customer_commission: Number(cartProducts.reduce((s, i) => s + (i.commission || 0), 0).toFixed(2)),
+      items,
+      payment_details: {
+        payable_amount: payableAmount || 0,
+        received_amount: Number(data.receiveAmount) || 0,
+        change_amount: Math.max(0, Number(data.receiveAmount) - payableAmount),
+        due_amount: Number(data.dueAmount) || 0,
+        payment_type: data.paymentType || 'cash',
+        vat: vatAmount || 0,
+        note: data.note || ''
+      }
     }
 
-    console.log('Customer sell payload (multi-customer):', payload)
+    console.log('Sales payload:', payload)
     toast.success('Product sold successfully!')
-
     setCartProducts([])
   }
 
@@ -794,6 +817,16 @@ export default function POSSystem({ productsData = [] }) {
                   </div>
 
                   <div className='flex items-center justify-between'>
+                    <span className='text-sm'>Crate Charges</span>
+                    <span className='text-sm'>৳ {totalCratePrice.toFixed(2)}</span>
+                  </div>
+
+                  <div className='flex items-center justify-between'>
+                    <span className='text-sm'>Total Discount</span>
+                    <span className='text-sm'>৳ {totalDiscountedAmount}</span>
+                  </div>
+
+                  <div className='flex items-center justify-between'>
                     <span className='text-sm'>Vat</span>
                     <div className='flex items-center space-x-2'>
                       <select
@@ -810,12 +843,15 @@ export default function POSSystem({ productsData = [] }) {
 
                   <div className='flex items-center justify-between'>
                     <span className='text-sm'>Commission Amount</span>
-                    <span className='text-sm'>৳ 0</span>
+                    <span className='text-sm'>
+                      ৳ {cartProducts.reduce((sum, item) => sum + (Number(item.commission) || 0), 0)}
+                    </span>
                   </div>
-                  <div className='flex items-center justify-between font-medium'>
+
+                  {/* <div className='flex items-center justify-between font-medium'>
                     <span className='text-sm'>Total Amount</span>
                     <span>৳ {totalDueAmount}</span>
-                  </div>
+                  </div> */}
 
                   <div className='flex items-center justify-between font-bold text-lg'>
                     <span>Payable Amount</span>
@@ -848,7 +884,10 @@ export default function POSSystem({ productsData = [] }) {
                   <div className='flex justify-center sm:justify-end w-full sm:w-auto'>
                     <button
                       type='submit'
-                      className='bg-white text-base text-indigo-600 font-semibold px-6 py-2 rounded-lg hover:bg-gray-100 transition-all duration-200 w-full sm:w-auto cursor-pointer'
+                      disabled={totalDueAmount < 1}
+                      className={`bg-white text-base text-indigo-600 font-semibold px-6 py-2 rounded-lg transition-all duration-200 w-full sm:w-auto ${
+                        totalDueAmount < 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 cursor-pointer'
+                      }`}
                     >
                       Sell
                     </button>

@@ -1,7 +1,6 @@
 import { getEcommerceData } from '@/app/server/actions'
 import POSSystem from '@/views/apps/sales/pos/Pos'
-
-// import Pos from '@/views/apps/sales/pos/Pos'
+ 
 
 const posPage = async () => {
   const data = await getEcommerceData()

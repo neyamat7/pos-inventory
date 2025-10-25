@@ -80,17 +80,18 @@ const VerticalMenu = ({ scrollMenu }) => {
 
         <SubMenu label='Stock List' icon={<i className='tabler-packages' />}>
           <MenuItem href='/apps/stockList/lot'>All Lots</MenuItem>
-          <MenuItem href='/apps/stockList/allStock'>All Stock</MenuItem>
+          {/* <MenuItem href='/apps/stockList/allStock'>All Stock</MenuItem> */}
           <MenuItem href='/apps/stockList/lowStock'>Low Stock</MenuItem>
           <MenuItem href='/apps/stockList/expiredProducts'>Expired Products</MenuItem>
         </SubMenu>
 
-        <MenuItem href='/apps/stockTransfers' icon={<i className='tabler-truck' />}>
+        {/* <MenuItem href='/apps/stockTransfers' icon={<i className='tabler-truck' />}>
           Stock Transfers
-        </MenuItem>
-        <MenuItem href='/apps/stockAdjustments' icon={<i className='tabler-adjustments' />}>
+        </MenuItem> */}
+
+        {/* <MenuItem href='/apps/stockAdjustments' icon={<i className='tabler-adjustments' />}>
           Stock Adjustments
-        </MenuItem>
+        </MenuItem> */}
 
         <SubMenu label='Customers' icon={<i className='tabler-user-circle' />}>
           <MenuItem href='/apps/customers/list'>All Customers</MenuItem>

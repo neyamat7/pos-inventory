@@ -14,6 +14,7 @@ import { useForm, Controller } from 'react-hook-form'
 
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
+import { createCustomer } from '@/actions/customerActions'
 
 const initialCrateRow = () => ({ id: crypto.randomUUID(), type: '', qty: '', price: '' })
 
@@ -48,45 +49,81 @@ const AddCustomerDrawer = props => {
   const updateCrateRow = (id, field, value) =>
     setCrateRows(prev => prev.map(r => (r.id === id ? { ...r, [field]: value } : r)))
 
-  const buildCrateObject = () => {
-    const crate = {}
+  const buildCrateInfo = () => {
+    const crateInfo = {}
 
-    crateRows.forEach(r => {
-      const t = (r.type || '').trim()
+    crateRows.forEach((row, index) => {
+      if (row.type && row.type.trim()) {
+        const typeKey = `type_${index + 1}`
 
-      if (!t) return
-      crate[t] = {
-        qty: Number(r.qty || 0),
-        price: Number(r.price || 0)
+        crateInfo[typeKey] = Number(row.qty || 0)
+        crateInfo[`${typeKey}_price`] = Number(row.price || 0)
       }
     })
 
-    return crate
+    return crateInfo
   }
 
-  const onSubmit = data => {
-    const newCustomer = {
-      sl: Number(data.sl),
-      image: data.image?.trim() || '',
-      name: data.name?.trim(),
-      email: data.email?.trim(),
-      type: 'Customer',
-      phone: data.phone?.trim(),
-      balance: Number(data.balance || 0),
-      due: Number(data.due || 0),
-      crate: buildCrateObject(),
-      cost: Number(data.cost || 0),
+  const onSubmit = async data => {
+    try {
+      // Prepare customer data according to MongoDB model structure
+      const customerPayload = {
+        // ← Rename this variable to avoid conflict
+        // Basic Information
+        basic_info: {
+          sl: data.sl.toString(),
+          name: data.name.trim(),
+          role: 'customer',
+          avatar: data.image?.trim() || ''
+        },
 
-      // optional fields you didn't request, set sanely or drop:
-      orders: 0,
-      totalSpent: 0,
-      location: data.location?.trim() || ''
+        // Contact Information
+        contact_info: {
+          email: data.email.trim().toLowerCase(),
+          phone: data.phone.trim(),
+          location: data.location?.trim() || ''
+        },
+
+        // Account & Balance Information
+        account_info: {
+          account_number: '',
+          balance: Number(data.balance || 0),
+          due: Number(data.due || 0),
+          return_amount: Number(data.cost || 0)
+        },
+
+        // Crate Information
+        crate_info: buildCrateInfo()
+      }
+
+      // Call the server action
+      const result = await createCustomer(customerPayload) // ← Use the renamed variable
+
+      if (result.success) {
+        // Update local state with new customer data
+        const newCustomer = {
+          id: result.data._id || Date.now(),
+          basic_info: customerPayload.basic_info,
+          contact_info: customerPayload.contact_info,
+          account_info: customerPayload.account_info,
+          crate_info: customerPayload.crate_info,
+          createdAt: new Date().toISOString()
+        }
+
+        setData([...(customerData ?? []), newCustomer]) // ← Now this works
+        reset()
+        setCrateRows([initialCrateRow()])
+        handleClose()
+
+        console.log('Customer created successfully!', result.data)
+      } else {
+        console.error('Failed to create customer:', result.error)
+        alert(`Error: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('Error in onSubmit:', error)
+      alert('Failed to create customer. Please try again.')
     }
-
-    setData([...(customerData ?? []), newCustomer])
-    reset()
-    setCrateRows([initialCrateRow()])
-    handleClose()
   }
 
   const handleReset = () => {
@@ -171,12 +208,7 @@ const AddCustomerDrawer = props => {
               control={control}
               rules={{ required: false }}
               render={({ field }) => (
-                <CustomTextField
-                  {...field}
-                  label='Image URL'
-                  placeholder='https://i.postimg.cc/GpXVckNg/images-3.jpg'
-                  fullWidth
-                />
+                <CustomTextField {...field} label='Avatar URL' placeholder='https://example.com/avatar.jpg' fullWidth />
               )}
             />
 
@@ -207,7 +239,7 @@ const AddCustomerDrawer = props => {
                 name='due'
                 control={control}
                 render={({ field }) => (
-                  <CustomTextField {...field} type='number' label='Due' placeholder='2000' fullWidth />
+                  <CustomTextField {...field} type='number' label='Due (Dua)' placeholder='2000' fullWidth />
                 )}
               />
             </div>
@@ -216,7 +248,7 @@ const AddCustomerDrawer = props => {
               name='cost'
               control={control}
               render={({ field }) => (
-                <CustomTextField {...field} type='number' label='Cost' placeholder='0' fullWidth />
+                <CustomTextField {...field} type='number' label='Cost (Return Amount)' placeholder='0' fullWidth />
               )}
             />
 
@@ -229,7 +261,7 @@ const AddCustomerDrawer = props => {
             {/* Crate Editor */}
             <div className='flex items-center justify-between'>
               <Typography color='text.primary' className='font-medium'>
-                Crate
+                Crate Information
               </Typography>
               <Button size='small' variant='tonal' onClick={addCrateRow} startIcon={<i className='tabler-plus' />}>
                 Add Type
@@ -242,7 +274,7 @@ const AddCustomerDrawer = props => {
                   <CustomTextField
                     className='col-span-5'
                     label='Type'
-                    placeholder={`type${idx + 1}`}
+                    placeholder={`type_${idx + 1}`}
                     value={row.type}
                     onChange={e => updateCrateRow(row.id, 'type', e.target.value)}
                   />
@@ -277,7 +309,7 @@ const AddCustomerDrawer = props => {
 
             <div className='flex items-center gap-4 mt-2'>
               <Button variant='contained' type='submit'>
-                Add
+                Add Customer
               </Button>
               <Button variant='tonal' color='error' type='button' onClick={handleReset}>
                 Discard

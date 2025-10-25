@@ -18,10 +18,7 @@ export const handleCrateCount = (setCartProducts, productId, personId, type, val
       if (item.cart_item_id === productId && (item.supplier_id === personId || item.customer_id === personId)) {
         return {
           ...item,
-          crate: {
-            ...item.crate,
-            [type]: value < 0 ? 0 : value
-          }
+          [`crate_${type}`]: value < 0 ? 0 : value
         }
       }
 
