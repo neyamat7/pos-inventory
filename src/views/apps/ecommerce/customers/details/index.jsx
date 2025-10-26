@@ -18,12 +18,14 @@ const CustomerDetails = ({ customerData, customerId }) => {
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12 }}>
-        <CustomerDetailsHeader customerId={customerId} />
+        <CustomerDetailsHeader customerId={customerId} customerData={customerData} />
       </Grid>
+
       <Grid size={{ xs: 12 }}>
         <CustomerLeftOverview customerData={customerData} />
       </Grid>
-      <Grid size={{ xs: 12}}>
+
+      <Grid size={{ xs: 12 }}>
         {/* Directly render overview content */}
         <CustomerRight>
           <OverViewTab customerId={customerId} />

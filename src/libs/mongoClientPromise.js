@@ -7,7 +7,7 @@ if (!process.env.MONGODB_CONNECTION_STRING) {
 
 const uri = process.env.MONGODB_CONNECTION_STRING
 
-const options = {
+const options = { 
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,

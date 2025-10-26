@@ -1,21 +1,47 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+
 import { getAllSuppliers } from '@/app/server/actions'
 import SupplierListTable from '@/views/apps/ecommerce/suppliers/list/SupplierLIstTable'
+import { getSuppliers } from '@/actions/supplierAction'
 
-const SupplierListTablePage = async () => {
-  // const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/business/suppliers`, {
-  //   cache: 'no-store'
-  // })
+const SupplierListTablePage = () => {
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [data, setData] = useState([])
+  const [paginationData, setPaginationData] = useState(null)
 
-  // const data = await res.json()
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await getSuppliers(currentPage, pageSize)
 
-  // console.log('after updating', data)
+      if (result.success) {
+        setData(result.data.suppliers || [])
+        setPaginationData({
+          total: result.data.total,
+          totalPages: result.data.totalPages,
+          currentPage: result.data.page,
+          limit: result.data.limit
+        })
+      }
+    }
 
-  const suppliers = await getAllSuppliers()
+    fetchData()
+  }, [currentPage, pageSize])
 
-  // console.log('suppliers by actions', suppliers)
-  const data = suppliers || []
+  const handlePageChange = newPage => {
+    setCurrentPage(newPage)
+  }
 
-  return <SupplierListTable supplierData={data} />
+  return (
+    <SupplierListTable
+      supplierData={data}
+      paginationData={paginationData}
+      onPageChange={handlePageChange}
+      onPageSizeChange={setPageSize}
+    />
+  )
 }
 
 export default SupplierListTablePage

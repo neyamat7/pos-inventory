@@ -109,6 +109,7 @@ const userStatusObj = {
 const columnHelper = createColumnHelper()
 
 const UserListTable = ({ tableData }) => {
+
   // States
   const [addUserOpen, setAddUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
@@ -118,9 +119,6 @@ const UserListTable = ({ tableData }) => {
   const [userModal, setUserModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState({})
-
-  // Hooks
-  // const { lang: locale } = useParams()
 
   const handleSaveUser = updated => {
     setData(prev => prev.map(u => (u.id === updated.id ? updated : u)))

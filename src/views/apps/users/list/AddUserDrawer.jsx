@@ -15,17 +15,12 @@ import { useForm, Controller } from 'react-hook-form'
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
 
-// Vars
-const initialData = {
-  contact: ''
-}
-
 const AddUserDrawer = props => {
   // Props
   const { open, handleClose, userData, setData } = props
 
   // States
-  const [formData, setFormData] = useState(initialData)
+  const [loading, setLoading] = useState(false)
 
   // Hooks
   const {
@@ -37,29 +32,60 @@ const AddUserDrawer = props => {
     defaultValues: {
       name: '',
       email: '',
-      role: ''
+      password: '',
+      role: '',
+      imageUrl: ''
     }
   })
 
-  const onSubmit = data => {
-    const newUser = {
-      id: Date.now(), // unique id
-      name: data.name,
-      email: data.email,
-      role: data.role,
-      contact: formData.contact,
-      image: `https://randomuser.me/api/portraits/men/${Math.floor(Math.random() * 99)}.jpg`
-    }
+  const onSubmit = async data => {
+    setLoading(true)
 
-    setData([...(userData ?? []), newUser])
-    handleClose()
-    setFormData(initialData)
-    resetForm({ name: '', email: '', role: '' })
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          role: data.role,
+          imageUrl: data.imageUrl
+        })
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        // Add new user to local state
+        const newUser = {
+          id: Date.now(),
+          name: data.name,
+          email: data.email,
+          role: data.role,
+          image: data.imageUrl || `https://randomuser.me/api/portraits/men/${Math.floor(Math.random() * 99)}.jpg`
+        }
+
+        setData([...(userData ?? []), newUser])
+        handleClose()
+        resetForm({ name: '', email: '', password: '', role: '', imageUrl: '' })
+        alert('User created successfully!')
+      } else {
+        alert(`Error: ${result.message}`)
+      }
+    } catch (error) {
+      alert('Error creating user. Please try again.')
+      console.error('Registration error:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleReset = () => {
     handleClose()
-    setFormData(initialData)
+    resetForm({ name: '', email: '', password: '', role: '', imageUrl: '' })
   }
 
   return (
@@ -113,6 +139,23 @@ const AddUserDrawer = props => {
             )}
           />
 
+          {/* Password */}
+          <Controller
+            name='password'
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <CustomTextField
+                {...field}
+                fullWidth
+                type='password'
+                label='Password'
+                placeholder='Enter password'
+                {...(errors.password && { error: true, helperText: 'This field is required.' })}
+              />
+            )}
+          />
+
           {/* Role */}
           <Controller
             name='role'
@@ -122,36 +165,38 @@ const AddUserDrawer = props => {
               <CustomTextField
                 select
                 fullWidth
-                id='select-role'
                 label='Select Role'
                 {...field}
                 {...(errors.role && { error: true, helperText: 'This field is required.' })}
               >
-                <MenuItem value='Software Engineer'>Software Engineer</MenuItem>
                 <MenuItem value='admin'>Admin</MenuItem>
                 <MenuItem value='manager'>Manager</MenuItem>
                 <MenuItem value='operator'>Operator</MenuItem>
-                <MenuItem value='stuff'>Stuff</MenuItem>
+                <MenuItem value='staff'>Staff</MenuItem>
               </CustomTextField>
             )}
           />
 
-          {/* Contact */}
-          <CustomTextField
-            label='Contact'
-            type='text'
-            fullWidth
-            placeholder='0171-2345678'
-            value={formData.contact}
-            onChange={e => setFormData({ ...formData, contact: e.target.value })}
+          {/* Image URL */}
+          <Controller
+            name='imageUrl'
+            control={control}
+            render={({ field }) => (
+              <CustomTextField
+                {...field}
+                fullWidth
+                label='Image URL (Optional)'
+                placeholder='https://example.com/avatar.jpg'
+              />
+            )}
           />
 
           {/* Actions */}
           <div className='flex items-center gap-4'>
-            <Button variant='contained' type='submit'>
-              Submit
+            <Button variant='contained' type='submit' disabled={loading}>
+              {loading ? 'Creating...' : 'Create User'}
             </Button>
-            <Button variant='tonal' color='error' type='reset' onClick={handleReset}>
+            <Button variant='tonal' color='error' type='button' onClick={handleReset} disabled={loading}>
               Cancel
             </Button>
           </div>

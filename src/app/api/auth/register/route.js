@@ -1,37 +1,29 @@
-import { NextResponse } from 'next/server' // Import NextResponse to handle the response
+import { NextResponse } from 'next/server'
+
+import bcrypt from 'bcryptjs'
 
 import { userModel } from '@/models/user-model'
 import { connectToMongoDB } from '@/libs/mongo'
 
 export async function POST(request) {
   try {
-    const { name, email, password, imageUrl = '' } = await request.json()
+    const { name, email, password, imageUrl = '', role } = await request.json()
+
+    console.log('Received data:', { name, email, role })
 
     // Validate required fields
-    if (!name || !email || !password) {
-      return NextResponse.json({ message: 'Name, email, and password are required' }, { status: 400 })
+    if (!name || !email || !password || !role) {
+      return NextResponse.json({ message: 'Name, email, password and role are required' }, { status: 400 })
     }
 
-    // Validate email format using a regular expression
+    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
     if (!emailRegex.test(email)) {
       return NextResponse.json({ message: 'Invalid email format' }, { status: 400 })
     }
 
-    // Validate password strength using a regular expression
-    // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/
-
-    // if (!passwordRegex.test(password)) {
-    //   return NextResponse.json(
-    //     {
-    //       message: 'Password must be at least 8 characters with uppercase, lowercase, number, and special character'
-    //     },
-    //     { status: 400 }
-    //   )
-    // }
-
-    await connectToMongoDB() // Ensure the database is connected
+    await connectToMongoDB()
 
     // Check if user already exists
     const existingUser = await userModel.findOne({ email })
@@ -40,21 +32,32 @@ export async function POST(request) {
       return NextResponse.json({ message: 'User already exists with this email' }, { status: 400 })
     }
 
-    // Create new user
-    const user = new userModel({
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 12)
+
+    // Create user object
+    const userData = {
       name,
       email,
-      password,
-      image: imageUrl || null
-    })
+      password: hashedPassword,
+      image: imageUrl || null,
+      role
+    }
 
-    // console.log('new user', user)
+    console.log('User data to save:', userData)
 
-    // Save the new user to the database
+    // Create and save user
+    const user = new userModel(userData)
+
+    console.log('User object before save:', user.toObject())
+
     try {
-      await user.save()
+      const savedUser = await user.save()
     } catch (err) {
       console.error('Error saving user:', err)
+      console.error('Error details:', err.message)
+
+      return NextResponse.json({ message: 'Error saving user to database: ' + err.message }, { status: 500 })
     }
 
     return NextResponse.json({ message: 'User created successfully' }, { status: 201 })
@@ -64,4 +67,3 @@ export async function POST(request) {
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
   }
 }
-

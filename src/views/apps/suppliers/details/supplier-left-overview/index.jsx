@@ -2,13 +2,13 @@
 import Grid from '@mui/material/Grid2'
 
 // Component Imports
-import CustomerDetails from './CustomerDetails'
+import SupplierDetails from './SuppllierDetails'
 
-const CustomerLeftOverview = ({ customerData }) => {
+const CustomerLeftOverview = ({ supplierData }) => {
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12 }}>
-        <CustomerDetails customerData={customerData} />
+        <SupplierDetails supplierData={supplierData} />
       </Grid>
     </Grid>
   )

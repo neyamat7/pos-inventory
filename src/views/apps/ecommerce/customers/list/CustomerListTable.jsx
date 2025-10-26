@@ -3,9 +3,6 @@
 // React Imports
 import { useState, useEffect, useMemo } from 'react'
 
-// Next Imports
-import { useParams } from 'next/navigation'
-
 // MUI Imports
 import Link from 'next/link'
 
@@ -29,7 +26,6 @@ import {
   getFacetedRowModel,
   getFacetedUniqueValues,
   getFacetedMinMaxValues,
-  getPaginationRowModel,
   getSortedRowModel
 } from '@tanstack/react-table'
 
@@ -73,11 +69,11 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 const columnHelper = createColumnHelper()
 
 // -------------------- component --------------------
-const CustomerListTable = ({ customerData }) => {
+const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageSizeChange }) => {
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
-  const [data, setData] = useState(...[customerData]) // keep your pattern
+  const [data, setData] = useState([])
   const [globalFilter, setGlobalFilter] = useState('')
 
   // For modals
@@ -85,18 +81,24 @@ const CustomerListTable = ({ customerData }) => {
   const [openCrateModal, setOpenCrateModal] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState(null)
   const [newBalance, setNewBalance] = useState('')
-  const [crateForm, setCrateForm] = useState({})
-
-  // Hooks
-  const { lang: locale } = useParams()
+  const [crateForm, setCrateForm] = useState({ type_1: 0, type_1_price: 0, type_2: 0, type_2_price: 0 })
 
   // Re-sync data if prop changes
   useEffect(() => {
-    setData(customerData || [])
+    if (customerData && customerData.customers) {
+      setData(customerData.customers)
+    } else if (Array.isArray(customerData)) {
+      setData(customerData)
+    } else {
+      setData([])
+    }
   }, [customerData])
 
   // Helpers
-  const getAvatar = ({ image, name }) => {
+  const getAvatar = customer => {
+    const image = customer?.basic_info?.avatar
+    const name = customer?.basic_info?.name
+
     if (image) return <CustomAvatar src={image} skin='light' size={34} />
 
     return (
@@ -106,13 +108,15 @@ const CustomerListTable = ({ customerData }) => {
     )
   }
 
-  const getCrateSummary = crate => {
-    if (!crate) return '—'
+  const getCrateSummary = crateInfo => {
+    if (!crateInfo) return '—'
 
-    // show each crate type with qty only
-    return Object.entries(crate)
-      .map(([key, val]) => `${key.replace('_', ' ')}: ${val.qty}`)
-      .join(' | ')
+    const summary = []
+
+    if (crateInfo.type_1 > 0) summary.push(`Type 1: ${crateInfo.type_1}`)
+    if (crateInfo.type_2 > 0) summary.push(`Type 2: ${crateInfo.type_2}`)
+
+    return summary.length > 0 ? summary.join(' | ') : 'No crates'
   }
 
   // Columns
@@ -141,22 +145,23 @@ const CustomerListTable = ({ customerData }) => {
         )
       },
 
-      columnHelper.accessor('sl', {
+      columnHelper.accessor('basic_info.sl', {
         header: 'SL',
-        cell: ({ row }) => <Typography color='text.primary'>{row.original.sl}</Typography>
+        cell: ({ row }) => <Typography color='text.primary'>{row.original.basic_info?.sl}</Typography>
       }),
 
-      columnHelper.accessor('name', {
+      columnHelper.accessor('basic_info.name', {
         header: 'NAME',
-        cell: ({ row, getValue }) => {
-          const name = getValue()
-          const { image, email } = row.original
+        cell: ({ row }) => {
+          const name = row.original.basic_info?.name
+          const email = row.original.contact_info?.email
+          const id = row.original._id
 
           return (
             <div className='flex items-center gap-3'>
-              {getAvatar({ image, name })}
+              {getAvatar(row.original)}
               <div className='flex flex-col'>
-                <Link href={`/apps/customers/details/${row.original.sl}`}>
+                <Link href={`/apps/customers/details/${id || row.original.basic_info?.sl}`}>
                   <Typography className='font-medium hover:text-blue-500 hover:underline' color='text.primary'>
                     {name}
                   </Typography>
@@ -168,33 +173,38 @@ const CustomerListTable = ({ customerData }) => {
         }
       }),
 
-      columnHelper.accessor('phone', {
+      columnHelper.accessor('contact_info.phone', {
         header: 'PHONE',
         cell: info => <Typography>{info.getValue()}</Typography>
       }),
 
-      columnHelper.accessor('balance', {
+      columnHelper.accessor('account_info.balance', {
         header: 'BALANCE',
-        cell: info => <Typography>{Number(info.getValue() || 0).toLocaleString()}</Typography>
+        cell: info => <Typography>{Number(info.getValue() || 0).toLocaleString()} ৳</Typography>
       }),
 
-      columnHelper.accessor('crate', {
+      columnHelper.accessor('crate_info', {
         header: 'CRATE',
-        cell: ({ row }) => <Typography>{getCrateSummary(row.original.crate)}</Typography>
+        cell: ({ row }) => <Typography>{getCrateSummary(row.original.crate_info)}</Typography>
       }),
 
-      columnHelper.accessor('cost', {
-        header: 'COST',
-        cell: info => <Typography>{Number(info.getValue() || 0).toLocaleString()}</Typography>
+      columnHelper.accessor('account_info.return_amount', {
+        header: 'RETURN AMOUNT',
+        cell: info => <Typography>{Number(info.getValue() || 0).toLocaleString()} ৳</Typography>
       }),
 
-      columnHelper.accessor('due', {
+      columnHelper.accessor('account_info.due', {
         header: 'DUE',
         cell: info => {
           const val = Number(info.getValue() || 0)
 
-          return <Typography className={val > 0 ? 'text-error font-medium' : ''}>{val.toLocaleString()}</Typography>
+          return <Typography className={val > 0 ? 'text-error font-medium' : ''}>{val.toLocaleString()} ৳</Typography>
         }
+      }),
+
+      columnHelper.accessor('contact_info.location', {
+        header: 'LOCATION',
+        cell: info => <Typography>{info.getValue() || '—'}</Typography>
       }),
 
       columnHelper.display({
@@ -219,20 +229,19 @@ const CustomerListTable = ({ customerData }) => {
                   }
                 },
                 {
-                  text: 'Add Crate',
+                  text: 'Update Crate',
                   icon: 'tabler-box',
                   menuItemProps: {
                     onClick: () => {
                       setSelectedCustomer(row.original)
-                      const crateObj = row.original.crate || {}
+                      const crateInfo = row.original.crate_info || {}
 
-                      const form = Object.keys(crateObj).reduce((acc, key) => {
-                        acc[key] = { qty: crateObj[key].qty, price: crateObj[key].price }
-
-                        return acc
-                      }, {})
-
-                      setCrateForm(form)
+                      setCrateForm({
+                        type_1: crateInfo.type_1 || 0,
+                        type_1_price: crateInfo.type_1_price || 0,
+                        type_2: crateInfo.type_2 || 0,
+                        type_2_price: crateInfo.type_2_price || 0
+                      })
                       setOpenCrateModal(true)
                     },
                     className: 'flex items-center'
@@ -247,7 +256,7 @@ const CustomerListTable = ({ customerData }) => {
 
                       Swal.fire({
                         title: 'Are you sure?',
-                        text: `You are about to delete ${row.original.name}. This action cannot be undone.`,
+                        text: `You are about to delete ${row.original.basic_info?.name}. This action cannot be undone.`,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#d33',
@@ -255,8 +264,8 @@ const CustomerListTable = ({ customerData }) => {
                         confirmButtonText: 'Yes, delete it!'
                       }).then(result => {
                         if (result.isConfirmed) {
-                          setData(prev => prev.filter(item => item.sl !== row.original.sl))
-                          Swal.fire('Deleted!', `${row.original.name} has been removed.`, 'success')
+                          setData(prev => prev.filter(item => item._id !== row.original._id))
+                          Swal.fire('Deleted!', `${row.original.basic_info?.name} has been removed.`, 'success')
                         }
                       })
                     },
@@ -278,16 +287,21 @@ const CustomerListTable = ({ customerData }) => {
     data,
     columns,
     filterFns: { fuzzy: fuzzyFilter },
-    state: { rowSelection, globalFilter },
-    initialState: { pagination: { pageSize: 10 } },
+    state: {
+      rowSelection,
+      globalFilter
+    },
+
     enableRowSelection: true,
     globalFilterFn: fuzzyFilter,
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
+    manualPagination: true,
+    pageCount: paginationData?.totalPages || 1,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues()
@@ -384,11 +398,13 @@ const CustomerListTable = ({ customerData }) => {
         </div>
 
         <TablePagination
-          component={() => <TablePaginationComponent table={table} />}
-          count={table.getFilteredRowModel().rows.length}
-          rowsPerPage={table.getState().pagination.pageSize}
-          page={table.getState().pagination.pageIndex}
-          onPageChange={(_, page) => table.setPageIndex(page)}
+          component={() => (
+            <TablePaginationComponent table={table} paginationData={paginationData} onPageChange={onPageChange} />
+          )}
+          count={paginationData?.total || 0}
+          rowsPerPage={paginationData?.limit || 10}
+          page={(paginationData?.currentPage || 1) - 1}
+          onPageChange={(_, page) => onPageChange(page + 1)}
         />
       </Card>
 
@@ -404,11 +420,11 @@ const CustomerListTable = ({ customerData }) => {
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4'>
           <div className='w-full max-w-md bg-white text-gray-800 rounded-2xl shadow-2xl p-6 transition-all duration-300'>
             <Typography variant='h6' className='mb-4 font-semibold text-gray-900'>
-              Add Balance for <span className='text-primary'>{selectedCustomer.name}</span>
+              Add Balance for <span className='text-primary'>{selectedCustomer.basic_info?.name}</span>
             </Typography>
 
             <Typography variant='body2' className='text-gray-600 mb-3'>
-              Enter the amount you want to add to this customer&aposs balance.
+              Enter the amount you want to add to this customer&apos;s balance.
             </Typography>
 
             <CustomTextField
@@ -443,7 +459,15 @@ const CustomerListTable = ({ customerData }) => {
                   if (!newBalance) return
                   setData(prev =>
                     prev.map(item =>
-                      item.sl === selectedCustomer.sl ? { ...item, balance: item.balance + Number(newBalance) } : item
+                      item._id === selectedCustomer._id
+                        ? {
+                            ...item,
+                            account_info: {
+                              ...item.account_info,
+                              balance: (item.account_info?.balance || 0) + Number(newBalance)
+                            }
+                          }
+                        : item
                     )
                   )
                   setOpenBalanceModal(false)
@@ -456,61 +480,82 @@ const CustomerListTable = ({ customerData }) => {
         </div>
       )}
 
-      {/* Add Crate Modal */}
+      {/* Update Crate Modal */}
       {openCrateModal && selectedCustomer && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4'>
-          <div className='w-full max-w-lg bg-white text-gray-800 rounded-2xl shadow-2xl p-6 transition-all duration-300'>
+          <div className='w-full max-w-md bg-white text-gray-800 rounded-2xl shadow-2xl p-6 transition-all duration-300'>
             <Typography variant='h6' className='mb-4 font-semibold text-gray-900'>
-              Update Crates for <span className='text-primary'>{selectedCustomer.name}</span>
+              Update Crates for <span className='text-primary'>{selectedCustomer.basic_info?.name}</span>
             </Typography>
 
             <Typography variant='body2' className='text-gray-600 mb-3'>
-              You can adjust the quantity and price for each crate type.
+              Update crate quantities and prices.
             </Typography>
 
             <div className='space-y-4 max-h-[60vh] overflow-y-auto pr-2'>
-              {Object.entries(crateForm).map(([key, val]) => (
-                <div key={key} className='grid grid-cols-2 gap-4 p-3 rounded-lg bg-gray-50 border border-gray-200'>
-                  <CustomTextField
-                    label={`${key.replace('_', ' ')} Qty`}
-                    type='number'
-                    value={val.qty}
-                    onChange={e =>
-                      setCrateForm(prev => ({
-                        ...prev,
-                        [key]: { ...prev[key], qty: Number(e.target.value) }
-                      }))
-                    }
-                    InputProps={{
-                      style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
-                    }}
-                    sx={{
-                      '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
-                      '& input': { color: '#111827' },
-                      '& label': { color: '#6b7280' }
-                    }}
-                  />
-                  <CustomTextField
-                    label={`${key.replace('_', ' ')} Price`}
-                    type='number'
-                    value={val.price}
-                    onChange={e =>
-                      setCrateForm(prev => ({
-                        ...prev,
-                        [key]: { ...prev[key], price: Number(e.target.value) }
-                      }))
-                    }
-                    InputProps={{
-                      style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
-                    }}
-                    sx={{
-                      '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
-                      '& input': { color: '#111827' },
-                      '& label': { color: '#6b7280' }
-                    }}
-                  />
-                </div>
-              ))}
+              {/* Type 1 */}
+              <div className='grid grid-cols-2 gap-4 p-3 rounded-lg bg-gray-50 border border-gray-200'>
+                <CustomTextField
+                  label='Type 1 Quantity'
+                  type='number'
+                  value={crateForm.type_1}
+                  onChange={e => setCrateForm(prev => ({ ...prev, type_1: Number(e.target.value) }))}
+                  InputProps={{
+                    style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
+                  }}
+                  sx={{
+                    '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
+                    '& input': { color: '#111827' },
+                    '& label': { color: '#6b7280' }
+                  }}
+                />
+                <CustomTextField
+                  label='Type 1 Price'
+                  type='number'
+                  value={crateForm.type_1_price}
+                  onChange={e => setCrateForm(prev => ({ ...prev, type_1_price: Number(e.target.value) }))}
+                  InputProps={{
+                    style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
+                  }}
+                  sx={{
+                    '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
+                    '& input': { color: '#111827' },
+                    '& label': { color: '#6b7280' }
+                  }}
+                />
+              </div>
+
+              {/* Type 2 */}
+              <div className='grid grid-cols-2 gap-4 p-3 rounded-lg bg-gray-50 border border-gray-200'>
+                <CustomTextField
+                  label='Type 2 Quantity'
+                  type='number'
+                  value={crateForm.type_2}
+                  onChange={e => setCrateForm(prev => ({ ...prev, type_2: Number(e.target.value) }))}
+                  InputProps={{
+                    style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
+                  }}
+                  sx={{
+                    '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
+                    '& input': { color: '#111827' },
+                    '& label': { color: '#6b7280' }
+                  }}
+                />
+                <CustomTextField
+                  label='Type 2 Price'
+                  type='number'
+                  value={crateForm.type_2_price}
+                  onChange={e => setCrateForm(prev => ({ ...prev, type_2_price: Number(e.target.value) }))}
+                  InputProps={{
+                    style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
+                  }}
+                  sx={{
+                    '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
+                    '& input': { color: '#111827' },
+                    '& label': { color: '#6b7280' }
+                  }}
+                />
+              </div>
             </div>
 
             <div className='flex justify-end gap-3 mt-6'>
@@ -527,7 +572,7 @@ const CustomerListTable = ({ customerData }) => {
                 className='px-5 py-2 rounded-lg shadow-md'
                 onClick={() => {
                   setData(prev =>
-                    prev.map(item => (item.sl === selectedCustomer.sl ? { ...item, crate: crateForm } : item))
+                    prev.map(item => (item._id === selectedCustomer._id ? { ...item, crate_info: crateForm } : item))
                   )
                   setOpenCrateModal(false)
                 }}

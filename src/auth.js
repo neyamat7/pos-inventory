@@ -85,6 +85,7 @@ export const {
           id: token.id,
           email: token.email
         }
+        session.accessToken = token
       }
 
       return session

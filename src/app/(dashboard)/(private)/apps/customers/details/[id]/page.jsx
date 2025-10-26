@@ -3,27 +3,24 @@ import { redirect } from 'next/navigation'
 
 // Component Imports
 import CustomerDetails from '@/views/apps/ecommerce/customers/details'
-import { customers } from '@/data/customerData/customerData'
-
-// Data Imports
-import { getEcommerceData } from '@/app/server/actions'
+import { getCustomerById } from '@/actions/customerActions'
 
 const CustomerDetailsPage = async props => {
   const params = await props.params
 
   console.log('params in customer page', params.id)
 
-  // Vars
-  // const data = await getEcommerceData()
-  const filteredData = customers.filter(item => item.sl === Number(params.id))[0]
+  // Fetch customer data from backend
+  const result = await getCustomerById(params.id)
 
-  console.log('filteredData', filteredData)
-
-  if (!filteredData) {
+  if (!result.success || !result.data) {
+    console.error('Failed to fetch customer:', result.error)
     redirect('/not-found')
   }
 
-  return filteredData ? <CustomerDetails customerData={filteredData} customerId={params.id} /> : null
+  console.log('customer data', result.data)
+
+  return result.data ? <CustomerDetails customerData={result.data} customerId={params.id} /> : null
 }
 
 export default CustomerDetailsPage

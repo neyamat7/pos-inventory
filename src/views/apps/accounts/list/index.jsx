@@ -3,22 +3,14 @@
 // React Imports
 import { useState, useEffect, useMemo } from 'react'
 
-import { useParams } from 'next/navigation'
-
-import { MdMoreVert, MdDeleteOutline, MdOutlineEdit } from 'react-icons/md'
-
-// Next Imports
-// import Link from 'next/link'
-
 // MUI Imports
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Button from '@mui/material/Button'
-
-// import Typography from '@mui/material/Typography'
 import Checkbox from '@mui/material/Checkbox'
 import TablePagination from '@mui/material/TablePagination'
 import MenuItem from '@mui/material/MenuItem'
+import Typography from '@mui/material/Typography'
 
 // Third-party Imports
 import classnames from 'classnames'
@@ -32,21 +24,15 @@ import {
   getFacetedRowModel,
   getFacetedUniqueValues,
   getFacetedMinMaxValues,
-  getPaginationRowModel,
   getSortedRowModel
 } from '@tanstack/react-table'
 
 // Component Imports
 import Swal from 'sweetalert2'
 
-import CustomAvatar from '@core/components/mui/Avatar'
 import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
-
-// Util Imports
-import { getInitials } from '@/utils/getInitials'
-
-// import { getLocalizedUrl } from '@/utils/i18n'
+import OptionMenu from '@/@core/components/option-menu'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
@@ -54,48 +40,28 @@ import { showAlert } from '@/utils/showAlert'
 
 import EditAccounts from './EditAccounts'
 import AddAccounts from './AddAccounts'
-import OptionMenu from '@/@core/components/option-menu'
-
-export const paymentStatus = {
-  1: { text: 'Paid', color: 'success' },
-  2: { text: 'Pending', color: 'warning' },
-  3: { text: 'Cancelled', color: 'secondary' },
-  4: { text: 'Failed', color: 'error' }
-}
-export const statusChipColor = {
-  Delivered: { color: 'success' },
-  'Out for Delivery': { color: 'primary' },
-  'Ready to Pickup': { color: 'info' },
-  Dispatched: { color: 'warning' }
-}
 
 const fuzzyFilter = (row, columnId, value, addMeta) => {
-  // Rank the item
   const itemRank = rankItem(row.getValue(columnId), value)
 
-  // Store the itemRank info
-  addMeta({
-    itemRank
-  })
+  addMeta({ itemRank })
 
-  // Return if the item should be filtered in/out
   return itemRank.passed
 }
 
 const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...props }) => {
-  // States
   const [value, setValue] = useState(initialValue)
 
   useEffect(() => {
     setValue(initialValue)
   }, [initialValue])
+
   useEffect(() => {
     const timeout = setTimeout(() => {
       onChange(value)
     }, debounce)
 
     return () => clearTimeout(timeout)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])
 
   return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
@@ -104,21 +70,22 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const AccountList = ({ accountsData = [] }) => {
+const AccountList = ({ accountsData = [], paginationData, onPageChange, onPageSizeChange }) => {
   const [editOpenRow, setEditOpenRow] = useState(null)
-
-  // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
-  const [data, setData] = useState(...[accountsData])
+  const [data, setData] = useState(accountsData)
   const [globalFilter, setGlobalFilter] = useState('')
 
-  // Hooks
-  const { lang: locale } = useParams()
+  // Update data when accountsData prop changes
+  useEffect(() => {
+    setData(accountsData)
+  }, [accountsData])
+
+  console.log('accounts data', accountsData)
 
   const columns = useMemo(
     () => [
-      // Checkbox column
       {
         id: 'select',
         header: ({ table }) => (
@@ -137,24 +104,36 @@ const AccountList = ({ accountsData = [] }) => {
           />
         )
       },
-
-      // Bank Accounts fields
-      { accessorKey: 'name', header: 'Account Name' },
-      { accessorKey: 'accountType', header: 'Type' },
-      { accessorKey: 'accountNumber', header: 'Account Number' },
+      {
+        accessorKey: 'name',
+        header: 'Account Name',
+        cell: ({ row }) => <Typography>{row.original.name || '-'}</Typography>
+      },
+      {
+        accessorKey: 'account_type',
+        header: 'Type',
+        cell: ({ row }) => <Typography>{row.original.account_type || '-'}</Typography>
+      },
+      {
+        accessorKey: 'account_name',
+        header: 'Account Holder Name',
+        cell: ({ row }) => <Typography>{row.original.account_name || '-'}</Typography>
+      },
+      {
+        accessorKey: 'account_number',
+        header: 'Account Number',
+        cell: ({ row }) => <Typography>{row.original.account_number || '-'}</Typography>
+      },
       {
         accessorKey: 'balance',
         header: 'Balance',
-        cell: ({ row }) => (
-          <span>
-            {row.original.balance.toLocaleString()} {/* formatted with commas */}
-          </span>
-        )
+        cell: ({ row }) => <Typography>৳{(row.original.balance || 0).toLocaleString()}</Typography>
       },
-      { accessorKey: 'accountDetails', header: 'Details' },
-      { accessorKey: 'addedBy', header: 'Added By' },
-
-      // Action column
+      {
+        accessorKey: 'account_details',
+        header: 'Details',
+        cell: ({ row }) => <Typography>{row.original.account_details || '-'}</Typography>
+      },
       {
         id: 'action',
         header: 'Action',
@@ -180,7 +159,7 @@ const AccountList = ({ accountsData = [] }) => {
                   onClick: () => {
                     Swal.fire({
                       title: 'Are you sure?',
-                      text: `You are about to delete transfer: ${row.original.referenceNo}`,
+                      text: `You are about to delete account: ${row.original.name}`,
                       icon: 'warning',
                       showCancelButton: true,
                       confirmButtonColor: '#3085d6',
@@ -188,7 +167,7 @@ const AccountList = ({ accountsData = [] }) => {
                       confirmButtonText: 'Yes, delete it!'
                     }).then(result => {
                       if (result.isConfirmed) {
-                        setData(prev => prev.filter(item => item.id !== row.original.id))
+                        setData(prev => prev.filter(item => item._id !== row.original._id))
                         showAlert('Deleted Successfully!', 'success')
                       }
                     })
@@ -202,7 +181,7 @@ const AccountList = ({ accountsData = [] }) => {
         enableSorting: false
       }
     ],
-    [setData]
+    []
   )
 
   const table = useReactTable({
@@ -215,24 +194,27 @@ const AccountList = ({ accountsData = [] }) => {
       rowSelection,
       globalFilter
     },
-    initialState: {
-      pagination: {
-        pageSize: 10
-      }
-    },
-    enableRowSelection: true, //enable row selection for all rows
-    // enableRowSelection: row => row.original.age > 18, // or enable row selection conditionally per row
+    enableRowSelection: true,
     globalFilterFn: fuzzyFilter,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     onGlobalFilterChange: setGlobalFilter,
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues()
+    getFacetedMinMaxValues: getFacetedMinMaxValues(),
+
+    // Server-side pagination configuration
+    manualPagination: true,
+    pageCount: paginationData?.totalPages || 1
   })
+
+  const handlePageSizeChange = newSize => {
+    if (onPageSizeChange) {
+      onPageSizeChange(newSize)
+    }
+  }
 
   return (
     <>
@@ -241,14 +223,14 @@ const AccountList = ({ accountsData = [] }) => {
           <DebouncedInput
             value={globalFilter ?? ''}
             onChange={value => setGlobalFilter(String(value))}
-            placeholder='Search'
+            placeholder='Search accounts...'
             className='max-sm:is-full'
           />
           <div className='flex max-sm:flex-col items-start sm:items-center gap-4 max-sm:is-full'>
             <CustomTextField
               select
-              value={table.getState().pagination.pageSize}
-              onChange={e => table.setPageSize(Number(e.target.value))}
+              value={paginationData?.limit || 10}
+              onChange={e => handlePageSizeChange(Number(e.target.value))}
               className='is-full sm:is-[70px]'
             >
               <MenuItem value='10'>10</MenuItem>
@@ -276,21 +258,19 @@ const AccountList = ({ accountsData = [] }) => {
                   {headerGroup.headers.map(header => (
                     <th key={header.id} className='whitespace-nowrap border-r text-base'>
                       {header.isPlaceholder ? null : (
-                        <>
-                          <div
-                            className={classnames({
-                              'flex items-center': header.column.getIsSorted(),
-                              'cursor-pointer select-none': header.column.getCanSort()
-                            })}
-                            onClick={header.column.getToggleSortingHandler()}
-                          >
-                            {flexRender(header.column.columnDef.header, header.getContext())}
-                            {{
-                              asc: <i className='tabler-chevron-up text-xl' />,
-                              desc: <i className='tabler-chevron-down text-xl' />
-                            }[header.column.getIsSorted()] ?? null}
-                          </div>
-                        </>
+                        <div
+                          className={classnames({
+                            'flex items-center': header.column.getIsSorted(),
+                            'cursor-pointer select-none': header.column.getCanSort()
+                          })}
+                          onClick={header.column.getToggleSortingHandler()}
+                        >
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                          {{
+                            asc: <i className='tabler-chevron-up text-xl' />,
+                            desc: <i className='tabler-chevron-down text-xl' />
+                          }[header.column.getIsSorted()] ?? null}
+                        </div>
                       )}
                     </th>
                   ))}
@@ -298,7 +278,7 @@ const AccountList = ({ accountsData = [] }) => {
               ))}
             </thead>
 
-            {table.getFilteredRowModel().rows.length === 0 ? (
+            {data.length === 0 ? (
               <tbody>
                 <tr>
                   <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
@@ -306,36 +286,28 @@ const AccountList = ({ accountsData = [] }) => {
                   </td>
                 </tr>
               </tbody>
-            ) : (  
+            ) : (
               <tbody>
-                {table
-                  .getRowModel()
-                  .rows.slice(0, table.getState().pagination.pageSize)
-                  .map(row => {
-                    return (
-                      <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
-                        {row.getVisibleCells().map(cell => (
-                          <td className='whitespace-nowrap border-r' key={cell.id}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </td>
-                        ))}
-                      </tr>
-                    )
-                  })}
+                {table.getRowModel().rows.map(row => {
+                  return (
+                    <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
+                      {row.getVisibleCells().map(cell => (
+                        <td className='whitespace-nowrap border-r' key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                  )
+                })}
               </tbody>
             )}
           </table>
         </div>
-        <TablePagination
-          component={() => <TablePaginationComponent table={table} />}
-          count={table.getFilteredRowModel().rows.length}
-          rowsPerPage={table.getState().pagination.pageSize}
-          page={table.getState().pagination.pageIndex}
-          onPageChange={(_, page) => {
-            table.setPageIndex(page)
-          }}
-        />
+
+        {/* Server-side pagination */}
+        <TablePaginationComponent table={table} paginationData={paginationData} onPageChange={onPageChange} />
       </Card>
+
       <AddAccounts
         open={customerUserOpen}
         handleClose={() => setCustomerUserOpen(!customerUserOpen)}

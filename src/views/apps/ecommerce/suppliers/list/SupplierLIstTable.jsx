@@ -48,7 +48,6 @@ import { getInitials } from '@/utils/getInitials'
 import tableStyles from '@core/styles/table.module.css'
 import AddSupplierDrawer from './AddSupplierDrawer'
 import OptionMenu from '@/@core/components/option-menu'
-import { fetchLotsBySupplier } from '@/actions/supplierAction'
 
 export const paymentStatus = {
   1: { text: 'Paid', color: 'success' },
@@ -98,7 +97,7 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const SupplierListTable = ({ supplierData = [] }) => {
+const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, onPageSizeChange }) => {
   noStore()
 
   const getCrateSummary = crate => {
@@ -113,7 +112,7 @@ const SupplierListTable = ({ supplierData = [] }) => {
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
-  const [data, setData] = useState(...[supplierData])
+  const [data, setData] = useState(supplierData)
   const [globalFilter, setGlobalFilter] = useState('')
 
   // For modals
@@ -131,6 +130,18 @@ const SupplierListTable = ({ supplierData = [] }) => {
   const [supplierLots, setSupplierLots] = useState([]) // store fetched lots
   const [selectedLot, setSelectedLot] = useState(null) // selected lot
   const [lotError, setLotError] = useState('') // validation message
+
+  useEffect(() => {
+    setData(supplierData)
+  }, [supplierData])
+
+  const handlePageSizeChange = newSize => {
+    if (onPageSizeChange) {
+      onPageSizeChange(newSize)
+    } else {
+      table.setPageSize(newSize)
+    }
+  }
 
   const columns = useMemo(
     () => [
@@ -314,20 +325,13 @@ const SupplierListTable = ({ supplierData = [] }) => {
       rowSelection,
       globalFilter
     },
-    initialState: {
-      pagination: {
-        pageSize: 10
-      }
-    },
-    enableRowSelection: true, //enable row selection for all rows
-    // enableRowSelection: row => row.original.age > 18, // or enable row selection conditionally per row
+    enableRowSelection: true,
     globalFilterFn: fuzzyFilter,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     onGlobalFilterChange: setGlobalFilter,
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues()
@@ -360,8 +364,8 @@ const SupplierListTable = ({ supplierData = [] }) => {
           <div className='flex max-sm:flex-col items-start sm:items-center gap-4 max-sm:is-full'>
             <CustomTextField
               select
-              value={table.getState().pagination.pageSize}
-              onChange={e => table.setPageSize(Number(e.target.value))}
+              value={paginationData?.limit || table.getState().pagination.pageSize}
+              onChange={e => handlePageSizeChange(Number(e.target.value))}
               className='is-full sm:is-[70px]'
             >
               <MenuItem value='10'>10</MenuItem>
@@ -420,31 +424,34 @@ const SupplierListTable = ({ supplierData = [] }) => {
               </tbody>
             ) : (
               <tbody>
-                {table
-                  .getRowModel()
-                  .rows.slice(0, table.getState().pagination.pageSize)
-                  .map(row => {
-                    return (
-                      <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
-                        {row.getVisibleCells().map(cell => (
-                          <td className='whitespace-nowrap border-r' key={cell.id}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </td>
-                        ))}
-                      </tr>
-                    )
-                  })}
+                {table.getRowModel().rows.map(row => {
+                  return (
+                    <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
+                      {row.getVisibleCells().map(cell => (
+                        <td className='whitespace-nowrap border-r' key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                  )
+                })}
               </tbody>
             )}
           </table>
         </div>
         <TablePagination
-          component={() => <TablePaginationComponent table={table} />}
-          count={table.getFilteredRowModel().rows.length}
-          rowsPerPage={table.getState().pagination.pageSize}
-          page={table.getState().pagination.pageIndex}
+          component={() => (
+            <TablePaginationComponent table={table} paginationData={paginationData} onPageChange={onPageChange} />
+          )}
+          count={paginationData?.total || table.getFilteredRowModel().rows.length}
+          rowsPerPage={paginationData?.limit || table.getState().pagination.pageSize}
+          page={(paginationData?.currentPage || table.getState().pagination.pageIndex + 1) - 1}
           onPageChange={(_, page) => {
-            table.setPageIndex(page)
+            if (onPageChange) {
+              onPageChange(page + 1)
+            } else {
+              table.setPageIndex(page)
+            }
           }}
         />
       </Card>

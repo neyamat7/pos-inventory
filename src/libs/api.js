@@ -1,75 +1,70 @@
-// Base API configuration
+// lib/api.js
+import { auth } from '@/auth'
+
 const BASE_API_URL = process.env.BASE_API_URL || 'http://localhost:8000/api/v1'
 
-// Common headers
-const getHeaders = (token = null, customHeaders = {}) => {
-  const headers = {
-    'Content-Type': 'application/json',
-    ...customHeaders
+async function api(endpoint, options = {}) {
+  const { data, headers = {}, ...config } = options
+
+  // Get the full session from NextAuth
+  const session = await auth()
+
+  // console.log('session in api', session)
+
+  // Get the JWT token - NextAuth stores it in different ways depending on your setup
+  // Option 1: If you store accessToken in session
+  const token = session?.accessToken
+
+  // console.log('token in api', token)
+
+  // Option 2: If your backend needs the NextAuth JWT itself, you'd need to get it differently
+  // This requires accessing the token from cookies or using getToken from next-auth/jwt
+
+  // Build headers
+  const defaultHeaders = {
+    'Content-Type': 'application/json'
   }
 
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`
+    defaultHeaders['Authorization'] = `Bearer ${JSON.stringify(session.accessToken)}`
   }
 
-  return headers
-}
-
-// Handle response
-const handleResponse = async response => {
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({
-      message: `HTTP error! status: ${response.status}`
-    }))
-
-    throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+  // Build request config
+  const fetchConfig = {
+    ...config,
+    headers: { ...defaultHeaders, ...headers }
   }
 
-  return response.json()
-}
-
-// Generic API call function
-const apiCall = async (endpoint, options = {}) => {
-  const { method = 'GET', data = null, token = null, headers: customHeaders = {}, ...fetchOptions } = options
-
-  const url = `${BASE_API_URL}${endpoint}`
-
-  const config = {
-    method,
-    headers: getHeaders(token, customHeaders),
-    ...fetchOptions
-  }
-
-  if (data && method !== 'GET') {
-    config.body = JSON.stringify(data)
+  // Add body if data is provided
+  if (data) {
+    fetchConfig.body = JSON.stringify(data)
   }
 
   try {
-    const response = await fetch(url, config)
+    const response = await fetch(`${BASE_API_URL}${endpoint}`, fetchConfig)
 
-    return await handleResponse(response)
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+
+      throw new Error(error.message || `Error: ${response.status}`)
+    }
+
+    return await response.json()
   } catch (error) {
-    console.error('API call failed:', error)
+    console.error('API Error:', error)
     throw error
   }
 }
 
-// Specific HTTP method functions
-const api = {
-  // GET request
-  get: (endpoint, options = {}) => apiCall(endpoint, { ...options, method: 'GET' }),
+// Convenience methods
+api.get = (endpoint, options = {}) => api(endpoint, { ...options, method: 'GET' })
 
-  // POST request
-  post: (endpoint, data, options = {}) => apiCall(endpoint, { ...options, method: 'POST', data }),
+api.post = (endpoint, data, options = {}) => api(endpoint, { ...options, method: 'POST', data })
 
-  // PUT request
-  put: (endpoint, data, options = {}) => apiCall(endpoint, { ...options, method: 'PUT', data }),
+api.put = (endpoint, data, options = {}) => api(endpoint, { ...options, method: 'PUT', data })
 
-  // PATCH request
-  patch: (endpoint, data, options = {}) => apiCall(endpoint, { ...options, method: 'PATCH', data }),
+api.patch = (endpoint, data, options = {}) => api(endpoint, { ...options, method: 'PATCH', data })
 
-  // DELETE request
-  delete: (endpoint, options = {}) => apiCall(endpoint, { ...options, method: 'DELETE' })
-}
+api.delete = (endpoint, options = {}) => api(endpoint, { ...options, method: 'DELETE' })
 
 export default api

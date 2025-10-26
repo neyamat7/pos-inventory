@@ -40,6 +40,7 @@
     "@tiptap/react": "^3.4.1",
     "@tiptap/starter-kit": "^3.4.1",
     "apexcharts": "^5.3.4",
+    "bcryptjs": "^3.0.2",
     "bootstrap-icons": "^1.13.1",
     "classnames": "2.5.1",
     "dayjs": "^1.11.18",

@@ -15,15 +15,19 @@ import { useForm, Controller } from 'react-hook-form'
 
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
+import { addAccount } from '@/actions/accountActions'
+
+// Action Imports
+// import { addAccount } from '@/app/actions/account-actions'
 
 // Vars
 const initialData = {
   name: '',
-  accountType: '',
-  accountNumber: '',
+  account_type: '',
+  account_name: '',
+  account_number: '',
   balance: '',
-  accountDetails: '',
-  addedBy: ''
+  account_details: ''
 }
 
 const AddAccounts = props => {
@@ -31,6 +35,7 @@ const AddAccounts = props => {
   const { open, handleClose, setData, transferData } = props
 
   // States
+  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState(initialData)
 
   // Hooks
@@ -43,21 +48,52 @@ const AddAccounts = props => {
     defaultValues: initialData
   })
 
-  const onSubmit = data => {
-    const newData = {
-      id: (transferData?.length && transferData?.length + 1) || 1,
-      name: data.name,
-      accountType: data.accountType,
-      accountNumber: data.accountNumber,
-      balance: Number(data.balance),
-      accountDetails: data.accountDetails,
-      addedBy: data.addedBy
-    }
+  const onSubmit = async data => {
+    setLoading(true)
 
-    setData([...(transferData ?? []), newData])
-    resetForm(initialData)
-    setFormData(initialData)
-    handleClose()
+    try {
+      const accountPayload = {
+        name: data.name.trim(),
+        account_type: data.account_type,
+        account_name: data.account_name?.trim() || '',
+        account_number: data.account_number?.trim() || '',
+        balance: Number(data.balance || 0),
+        account_details: data.account_details?.trim() || ''
+
+        // added_by will be handled by backend or you can add it here if needed
+      }
+
+      const result = await addAccount(accountPayload)
+
+      if (result.success) {
+        // Update local state with new account data
+        const newAccount = {
+          id: result.data._id || Date.now(),
+          name: accountPayload.name,
+          account_type: accountPayload.account_type,
+          account_name: accountPayload.account_name,
+          account_number: accountPayload.account_number,
+          balance: accountPayload.balance,
+          account_details: accountPayload.account_details,
+          createdAt: new Date().toISOString()
+        }
+
+        setData([...(transferData ?? []), newAccount])
+        resetForm(initialData)
+        setFormData(initialData)
+        handleClose()
+
+        console.log('Account created successfully!', result.data)
+      } else {
+        console.error('Failed to create account:', result.error)
+        alert(`Error: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('Error in onSubmit:', error)
+      alert('Failed to create account. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleReset = () => {
@@ -84,12 +120,12 @@ const AddAccounts = props => {
       <Divider />
       <PerfectScrollbar options={{ wheelPropagation: false, suppressScrollX: true }}>
         <div className='p-6'>
-          <form onSubmit={handleSubmit(data => onSubmit(data))} className='flex flex-col gap-5'>
+          <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-5'>
             <Typography color='text.primary' className='font-medium'>
               Account Information
             </Typography>
 
-            {/* Account Name */}
+            {/* Account Name (Required) */}
             <Controller
               name='name'
               control={control}
@@ -99,15 +135,15 @@ const AddAccounts = props => {
                   {...field}
                   fullWidth
                   label='Account Name'
-                  placeholder='Cash in Hand'
+                  placeholder='Brac Bank'
                   {...(errors.name && { error: true, helperText: 'This field is required.' })}
                 />
               )}
             />
 
-            {/* Account Type */}
+            {/* Account Type (Required) */}
             <Controller
-              name='accountType'
+              name='account_type'
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
@@ -116,88 +152,64 @@ const AddAccounts = props => {
                   fullWidth
                   label='Account Type'
                   {...field}
-                  {...(errors.accountType && { error: true, helperText: 'This field is required.' })}
+                  {...(errors.account_type && { error: true, helperText: 'This field is required.' })}
                 >
-                  <MenuItem value='Cash'>Cash</MenuItem>
-                  <MenuItem value='Bank'>Bank</MenuItem>
-                  <MenuItem value='Mobile Wallet'>Mobile Wallet</MenuItem>
-                  <MenuItem value='Loan'>Loan</MenuItem>
-                  <MenuItem value='Equity'>Equity</MenuItem>
+                  <MenuItem value='bank'>Bank</MenuItem>
+                  <MenuItem value='mobile_wallet'>Mobile Wallet</MenuItem>
+                  <MenuItem value='cash'>Cash</MenuItem>
                 </CustomTextField>
               )}
             />
 
-            {/* Account Number */}
+            {/* Account Name (Optional) */}
             <Controller
-              name='accountNumber'
+              name='account_name'
               control={control}
-              rules={{ required: true }}
               render={({ field }) => (
-                <CustomTextField
-                  {...field}
-                  fullWidth
-                  label='Account Number'
-                  placeholder='ACC-12345'
-                  {...(errors.accountNumber && { error: true, helperText: 'This field is required.' })}
-                />
+                <CustomTextField {...field} fullWidth label='Account Holder Name' placeholder='John Doe' />
               )}
             />
 
-            {/* Balance */}
+            {/* Account Number (Optional) */}
+            <Controller
+              name='account_number'
+              control={control}
+              render={({ field }) => (
+                <CustomTextField {...field} fullWidth label='Account Number' placeholder='123456789' />
+              )}
+            />
+
+            {/* Balance (Optional) */}
             <Controller
               name='balance'
               control={control}
-              rules={{ required: true }}
               render={({ field }) => (
-                <CustomTextField
-                  {...field}
-                  fullWidth
-                  type='number'
-                  label='Balance'
-                  placeholder='50000'
-                  {...(errors.balance && { error: true, helperText: 'This field is required.' })}
-                />
+                <CustomTextField {...field} fullWidth type='number' label='Initial Balance' placeholder='50000' />
               )}
             />
 
-            {/* Account Details */}
+            {/* Account Details (Optional) */}
             <Controller
-              name='accountDetails'
+              name='account_details'
               control={control}
-              rules={{ required: true }}
               render={({ field }) => (
                 <CustomTextField
                   {...field}
                   fullWidth
+                  multiline
+                  rows={3}
                   label='Account Details'
-                  placeholder='Main Cash'
-                  {...(errors.accountDetails && { error: true, helperText: 'This field is required.' })}
-                />
-              )}
-            />
-
-            {/* Added By */}
-            <Controller
-              name='addedBy'
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <CustomTextField
-                  {...field}
-                  fullWidth
-                  label='Added By'
-                  placeholder='Admin'
-                  {...(errors.addedBy && { error: true, helperText: 'This field is required.' })}
+                  placeholder='Main business account with Brac Bank'
                 />
               )}
             />
 
             {/* Buttons */}
             <div className='flex items-center gap-4'>
-              <Button variant='contained' type='submit'>
-                Add
+              <Button variant='contained' type='submit' disabled={loading}>
+                {loading ? 'Adding...' : 'Add Account'}
               </Button>
-              <Button variant='tonal' color='error' type='reset' onClick={handleReset}>
+              <Button variant='tonal' color='error' type='button' onClick={handleReset} disabled={loading}>
                 Discard
               </Button>
             </div>
