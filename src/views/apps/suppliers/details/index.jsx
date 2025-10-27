@@ -16,7 +16,7 @@ const SupplierDetails = ({ supplierData, supplierId }) => {
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12 }}>
-        <SupplierDetailHeader supplierId={supplierId} />
+        <SupplierDetailHeader supplierId={supplierId} supplierData={supplierData} />
       </Grid>
       <Grid size={{ xs: 12 }}>
         <SupplierLeftOverview supplierData={supplierData} />

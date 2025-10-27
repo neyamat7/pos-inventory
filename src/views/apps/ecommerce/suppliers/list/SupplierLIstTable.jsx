@@ -3,11 +3,8 @@
 // React Imports
 import { useState, useEffect, useMemo } from 'react'
 
-import { unstable_noStore as noStore } from 'next/cache'
-
 // Next Imports
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
 
 import { createPortal } from 'react-dom'
 
@@ -32,7 +29,6 @@ import {
   getFacetedRowModel,
   getFacetedUniqueValues,
   getFacetedMinMaxValues,
-  getPaginationRowModel,
   getSortedRowModel
 } from '@tanstack/react-table'
 
@@ -98,15 +94,28 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 const columnHelper = createColumnHelper()
 
 const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, onPageSizeChange }) => {
-  noStore()
+  const getCrateSummary = crateInfo => {
+    if (!crateInfo) return '—'
 
-  const getCrateSummary = crate => {
-    if (!crate) return '—'
+    // Handle both old and new crate structures
+    const summary = []
 
-    // show each crate type with qty only
-    return Object.entries(crate)
-      .map(([key, val]) => `${key.replace('_', ' ')}: ${val.qty}`)
-      .join(' | ')
+    if (crateInfo.crate1 > 0) {
+      summary.push(`Crate 1: ${crateInfo.crate1}`)
+    }
+
+    if (crateInfo.crate2 > 0) {
+      summary.push(`Crate 2: ${crateInfo.crate2}`)
+    }
+
+    // Handle old dynamic crate format
+    Object.entries(crateInfo).forEach(([key, val]) => {
+      if (typeof val === 'object' && val.qty > 0) {
+        summary.push(`${key.replace('_', ' ')}: ${val.qty}`)
+      }
+    })
+
+    return summary.length > 0 ? summary.join(' | ') : 'No crates'
   }
 
   // States
@@ -167,52 +176,65 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
           />
         )
       },
-      columnHelper.accessor('sl', {
+      columnHelper.accessor('basic_info.sl', {
         header: 'SL',
-        cell: ({ row }) => <Typography color='text.primary'>{row.original.sl}</Typography>
-      }),
-      columnHelper.accessor('name', {
-        header: 'name',
         cell: ({ row }) => (
-          <div className='flex items-center gap-3'>
-            {getAvatar({ avatar: row.original.image, customer: row.original.name })}
-            <div className='flex flex-col items-start'>
-              <Typography
-                component={Link}
-                color='text.primary'
-                href={`/apps/suppliers/details/${row.original.sl}`}
-                className='font-medium hover:text-primary'
-              >
-                {row.original.name}
-              </Typography>
-              <Typography variant='body2'>{row.original.email}</Typography>
-            </div>
-          </div>
+          <Typography color='text.primary'>{row.original.basic_info?.sl || row.original.sl}</Typography>
         )
       }),
-      columnHelper.accessor('phone', {
+      columnHelper.accessor('basic_info.name', {
+        header: 'Name',
+        cell: ({ row }) => {
+          const name = row.original.basic_info?.name || row.original.name
+          const email = row.original.contact_info?.email || row.original.email
+
+          return (
+            <div className='flex items-center gap-3'>
+              {getAvatar(row.original)}
+              <div className='flex flex-col items-start'>
+                <Typography
+                  component={Link}
+                  color='text.primary'
+                  href={`/apps/suppliers/details/${row.original.basic_info?.sl || row.original.sl}`}
+                  className='font-medium hover:text-primary'
+                >
+                  {name || 'No Name'}
+                </Typography>
+                {email && <Typography variant='body2'>{email}</Typography>}
+              </div>
+            </div>
+          )
+        }
+      }),
+      columnHelper.accessor('contact_info.phone', {
         header: 'Phone',
         cell: ({ row }) => (
           <div className='flex items-center gap-2'>
-            <Typography>{row.original.phone}</Typography>
+            <Typography>{row.original.contact_info?.phone || row.original.phone || '-'}</Typography>
           </div>
         )
       }),
-      columnHelper.accessor('balance', {
+      columnHelper.accessor('account_info.balance', {
         header: 'Balance',
-        cell: ({ row }) => <Typography color='text.primary'>৳{row.original.balance}</Typography>
+        cell: ({ row }) => (
+          <Typography color='text.primary'>
+            ৳{row.original.account_info?.balance || row.original.balance || 0}
+          </Typography>
+        )
       }),
-      columnHelper.accessor('crate', {
+      columnHelper.accessor('crate_info', {
         header: 'Crate',
-        cell: ({ row }) => <Typography>{getCrateSummary(row.original.crate)}</Typography>
+        cell: ({ row }) => <Typography>{getCrateSummary(row.original.crate_info || row.original.crate)}</Typography>
       }),
-      columnHelper.accessor('cost', {
+      columnHelper.accessor('account_info.cost', {
         header: 'Cost',
-        cell: ({ row }) => <Typography color='text.primary'>৳{row.original.cost}</Typography>
+        cell: ({ row }) => (
+          <Typography color='text.primary'>৳{row.original.account_info?.cost || row.original.cost || 0}</Typography>
+        )
       }),
-      columnHelper.accessor('due', {
+      columnHelper.accessor('account_info.due', {
         header: 'Due',
-        cell: ({ row }) => <Typography>৳{row.original.due}</Typography>
+        cell: ({ row }) => <Typography>৳{row.original.account_info?.due || row.original.due || 0}</Typography>
       }),
 
       {
@@ -242,6 +264,7 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                   menuItemProps: {
                     onClick: async () => {
                       const supplier = row.original
+                      const sl = supplier.basic_info?.sl || supplier.sl
 
                       setSelectedSupplier(supplier)
                       setProfitPercentage('')
@@ -249,31 +272,33 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                       setLotError('')
 
                       // Fetch last 6 lots for this supplier
-                      const lots = await fetchLotsBySupplier(supplier.sl)
+                      const lots = await fetchLotsBySupplier(sl)
 
                       setSupplierLots(lots)
-
                       setOpenProfitModal(true)
                     },
                     className: 'flex items-center text-blue-600'
                   }
                 },
-
                 {
                   text: 'Add Crate',
                   icon: 'tabler-box',
                   menuItemProps: {
                     onClick: () => {
                       setSelectedSupplier(row.original)
-                      const crateObj = row.original.crate || {}
+                      const crateInfo = row.original.crate_info || {}
 
-                      const newForm = Object.keys(crateObj).reduce((acc, key) => {
-                        acc[key] = { qty: crateObj[key].qty, price: crateObj[key].price }
-
-                        return acc
-                      }, {})
-
-                      setCrateForm(newForm)
+                      // Initialize crateForm with only crate1 and crate2
+                      setCrateForm({
+                        crate1: {
+                          qty: crateInfo.crate1 || 0,
+                          price: crateInfo.crate1Price || 0
+                        },
+                        crate2: {
+                          qty: crateInfo.crate2 || 0,
+                          price: crateInfo.crate2Price || 0
+                        }
+                      })
                       setOpenCrateModal(true)
                     },
                     className: 'flex items-center'
@@ -285,10 +310,12 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                   menuItemProps: {
                     onClick: async () => {
                       const Swal = (await import('sweetalert2')).default
+                      const name = row.original.basic_info?.name || row.original.name
+                      const sl = row.original.basic_info?.sl || row.original.sl
 
                       Swal.fire({
                         title: 'Are you sure?',
-                        text: `You are about to delete ${row.original.name}. This action cannot be undone.`,
+                        text: `You are about to delete ${name}. This action cannot be undone.`,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#d33',
@@ -296,8 +323,8 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                         confirmButtonText: 'Yes, delete it!'
                       }).then(result => {
                         if (result.isConfirmed) {
-                          setData(prev => prev.filter(item => item.sl !== row.original.sl))
-                          Swal.fire('Deleted!', `${row.original.name} has been removed.`, 'success')
+                          setData(prev => prev.filter(item => (item.basic_info?.sl || item.sl) !== sl))
+                          Swal.fire('Deleted!', `${name} has been removed.`, 'success')
                         }
                       })
                     },
@@ -311,7 +338,6 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
         enableSorting: false
       }
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 
@@ -337,15 +363,25 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
     getFacetedMinMaxValues: getFacetedMinMaxValues()
   })
 
-  const getAvatar = params => {
-    const { avatar, customer } = params
+  const getAvatar = supplier => {
+    const avatar = supplier?.basic_info?.avatar || supplier?.image
+    const name = supplier?.basic_info?.name || supplier?.name
+
+    // Add safety check
+    if (!name) {
+      return (
+        <CustomAvatar skin='light' size={34}>
+          S
+        </CustomAvatar>
+      )
+    }
 
     if (avatar) {
       return <CustomAvatar src={avatar} skin='light' size={34} />
     } else {
       return (
         <CustomAvatar skin='light' size={34}>
-          {getInitials(customer)}
+          {getInitials(name)}
         </CustomAvatar>
       )
     }
@@ -564,16 +600,33 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                   onClick={() => {
                     if (!newBalance) return
                     setData(prev =>
-                      prev.map(item =>
-                        item.sl === selectedSupplier.sl
-                          ? {
+                      prev.map(item => {
+                        const itemSl = item.basic_info?.sl || item.sl
+                        const selectedSl = selectedSupplier.basic_info?.sl || selectedSupplier.sl
+
+                        if (itemSl === selectedSl) {
+                          if (item.account_info) {
+                            // New structure
+                            return {
                               ...item,
-                              balance: item.balance + Number(newBalance),
+                              account_info: {
+                                ...item.account_info,
+                                balance: (item.account_info.balance || 0) + Number(newBalance)
+                              }
+                            }
+                          } else {
+                            // Old structure
+                            return {
+                              ...item,
+                              balance: (item.balance || 0) + Number(newBalance),
                               note: balanceNote,
                               document: balanceFile
                             }
-                          : item
-                      )
+                          }
+                        }
+
+                        return item
+                      })
                     )
                     setOpenBalanceModal(false)
                     setBalanceFile('')
@@ -595,7 +648,8 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
           <div className='fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4'>
             <div className='w-full max-w-lg bg-white text-gray-800 rounded-2xl shadow-2xl p-6 transition-all duration-300 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent'>
               <Typography variant='h6' className='mb-4 font-semibold text-gray-900'>
-                Update Crates for <span className='text-primary'>{selectedSupplier.name}</span>
+                Update Crates for{' '}
+                <span className='text-primary'>{selectedSupplier.basic_info?.name || selectedSupplier.name}</span>
               </Typography>
 
               <Typography variant='body2' className='text-gray-600 mb-3'>
@@ -603,18 +657,24 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
               </Typography>
 
               <div className='space-y-4 max-h-[60vh] overflow-y-auto pr-2'>
-                {Object.entries(crateForm).map(([key, val]) => (
-                  <div key={key} className='grid grid-cols-2 gap-4 p-3 rounded-lg bg-gray-50 border border-gray-200'>
+                {/* Crate 1 Section */}
+                <div className='p-3 rounded-lg bg-gray-50 border border-gray-200'>
+                  <Typography variant='subtitle1' className='mb-3 font-medium text-gray-900'>
+                    Crate 1
+                  </Typography>
+                  <div className='grid grid-cols-2 gap-4'>
                     <CustomTextField
-                      label={`${key.replace('_', ' ')} Qty`}
+                      label='Quantity'
                       type='number'
-                      value={val.qty}
-                      onChange={e =>
+                      value={crateForm.crate1?.qty || crateForm.crate1 || 0}
+                      onChange={e => {
+                        const value = Number(e.target.value)
+
                         setCrateForm(prev => ({
                           ...prev,
-                          [key]: { ...prev[key], qty: Number(e.target.value) }
+                          crate1: { ...prev.crate1, qty: value }
                         }))
-                      }
+                      }}
                       InputProps={{
                         style: {
                           backgroundColor: '#f9fafb',
@@ -629,15 +689,17 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                       }}
                     />
                     <CustomTextField
-                      label={`${key.replace('_', ' ')} Price`}
+                      label='Price'
                       type='number'
-                      value={val.price}
-                      onChange={e =>
+                      value={crateForm.crate1?.price || crateForm.crate1Price || 0}
+                      onChange={e => {
+                        const value = Number(e.target.value)
+
                         setCrateForm(prev => ({
                           ...prev,
-                          [key]: { ...prev[key], price: Number(e.target.value) }
+                          crate1: { ...prev.crate1, price: value }
                         }))
-                      }
+                      }}
                       InputProps={{
                         style: {
                           backgroundColor: '#f9fafb',
@@ -652,7 +714,66 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                       }}
                     />
                   </div>
-                ))}
+                </div>
+
+                {/* Crate 2 Section */}
+                <div className='p-3 rounded-lg bg-gray-50 border border-gray-200'>
+                  <Typography variant='subtitle1' className='mb-3 font-medium text-gray-900'>
+                    Crate 2
+                  </Typography>
+                  <div className='grid grid-cols-2 gap-4'>
+                    <CustomTextField
+                      label='Quantity'
+                      type='number'
+                      value={crateForm.crate2?.qty || crateForm.crate2 || 0}
+                      onChange={e => {
+                        const value = Number(e.target.value)
+
+                        setCrateForm(prev => ({
+                          ...prev,
+                          crate2: { ...prev.crate2, qty: value }
+                        }))
+                      }}
+                      InputProps={{
+                        style: {
+                          backgroundColor: '#f9fafb',
+                          borderRadius: '8px',
+                          color: '#111827'
+                        }
+                      }}
+                      sx={{
+                        '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
+                        '& input': { color: '#111827' },
+                        '& label': { color: '#6b7280' }
+                      }}
+                    />
+                    <CustomTextField
+                      label='Price'
+                      type='number'
+                      value={crateForm.crate2?.price || crateForm.crate2Price || 0}
+                      onChange={e => {
+                        const value = Number(e.target.value)
+
+                        setCrateForm(prev => ({
+                          ...prev,
+                          crate2: { ...prev.crate2, price: value }
+                        }))
+                      }}
+                      InputProps={{
+                        style: {
+                          backgroundColor: '#f9fafb',
+                          borderRadius: '8px',
+                          color: '#111827'
+                        }
+                      }}
+                      sx={{
+                        '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
+                        '& input': { color: '#111827' },
+                        '& label': { color: '#6b7280' }
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className='flex justify-end gap-3 mt-6'>
@@ -669,7 +790,37 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                   className='px-5 py-2 rounded-lg shadow-md'
                   onClick={() => {
                     setData(prev =>
-                      prev.map(item => (item.sl === selectedSupplier.sl ? { ...item, crate: crateForm } : item))
+                      prev.map(item => {
+                        const itemSl = item.basic_info?.sl || item.sl
+                        const selectedSl = selectedSupplier.basic_info?.sl || selectedSupplier.sl
+
+                        if (itemSl === selectedSl) {
+                          if (item.crate_info) {
+                            // New structure
+                            return {
+                              ...item,
+                              crate_info: {
+                                ...item.crate_info,
+                                crate1: crateForm.crate1?.qty || 0,
+                                crate1Price: crateForm.crate1?.price || 0,
+                                crate2: crateForm.crate2?.qty || 0,
+                                crate2Price: crateForm.crate2?.price || 0
+                              }
+                            }
+                          } else {
+                            // Old structure
+                            return {
+                              ...item,
+                              crate: {
+                                crate1: { qty: crateForm.crate1?.qty || 0, price: crateForm.crate1?.price || 0 },
+                                crate2: { qty: crateForm.crate2?.qty || 0, price: crateForm.crate2?.price || 0 }
+                              }
+                            }
+                          }
+                        }
+
+                        return item
+                      })
                     )
                     setOpenCrateModal(false)
                   }}
@@ -682,7 +833,6 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
           document.body
         )}
 
-      {/* Adjust Profit Modal */}
       {/* Adjust Profit Modal */}
       {openProfitModal &&
         selectedSupplier &&
@@ -799,15 +949,20 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                     if (!selectedLot) return setLotError('Please select a lot before saving.')
 
                     setData(prev =>
-                      prev.map(item =>
-                        item.sl === selectedSupplier.sl
-                          ? {
-                              ...item,
-                              profitShare: Number(profitPercentage),
-                              selectedLot: selectedLot.lot_name
-                            }
-                          : item
-                      )
+                      prev.map(item => {
+                        const itemSl = item.basic_info?.sl || item.sl
+                        const selectedSl = selectedSupplier.basic_info?.sl || selectedSupplier.sl
+
+                        if (itemSl === selectedSl) {
+                          return {
+                            ...item,
+                            profitShare: Number(profitPercentage),
+                            selectedLot: selectedLot.lot_name
+                          }
+                        }
+
+                        return item
+                      })
                     )
                     setOpenProfitModal(false)
                     setSelectedLot(null)

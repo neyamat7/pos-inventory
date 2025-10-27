@@ -1,5 +1,5 @@
 // React Imports
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 // MUI Imports
 import Button from '@mui/material/Button'
@@ -7,8 +7,10 @@ import Drawer from '@mui/material/Drawer'
 import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
 import MenuItem from '@mui/material/MenuItem'
-import Switch from '@mui/material/Switch'
 import Typography from '@mui/material/Typography'
+import Alert from '@mui/material/Alert'
+import CircularProgress from '@mui/material/CircularProgress'
+import Box from '@mui/material/Box'
 
 // Third-party Imports
 import PerfectScrollbar from 'react-perfect-scrollbar'
@@ -17,22 +19,19 @@ import { useForm, Controller } from 'react-hook-form'
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
 
-// Vars
-const initialData = {
-  amount: '',
-  category: '',
-  expenseFor: '',
-  paymentType: '',
-  referenceNumber: '',
-  expenseDate: ''
-}
+// Action Imports
+import { createExpense } from '@/actions/expenseActions'
+import { getAccounts } from '@/actions/accountActions'
 
 const AddExpenseDrawer = props => {
   // Props
   const { open, handleClose, setData, expenseData } = props
 
   // States
-  const [formData, setFormData] = useState(initialData)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [accounts, setAccounts] = useState([])
+  const [accountsLoading, setAccountsLoading] = useState(false)
 
   // Hooks
   const {
@@ -42,36 +41,92 @@ const AddExpenseDrawer = props => {
     formState: { errors }
   } = useForm({
     defaultValues: {
+      date: '',
       amount: '',
-      category: '',
-      expenseFor: '',
-      paymentType: '',
-      referenceNumber: '',
-      expenseDate: ''
+      expense_for: '',
+      payment_type: '',
+      reference_num: '',
+      choose_account: ''
     }
   })
 
-  const onSubmit = data => {
-    const newData = {
-      sl: (expenseData?.length && expenseData?.length + 1) || 1,
-      amount: Number(data.amount),
-      category: data.category,
-      expenseFor: data.expenseFor,
-      paymentType: data.paymentType,
-      referenceNumber: data.referenceNumber,
-      expenseDate: data.expenseDate
+  // Fetch accounts when drawer opens
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      if (open) {
+        setAccountsLoading(true)
+
+        try {
+          const result = await getAccounts(1, 50) // Get 50 accounts
+
+          if (result.success) {
+            setAccounts(result.data.accounts || [])
+          } else {
+            setError('Failed to load accounts')
+          }
+        } catch (err) {
+          setError('Error loading accounts')
+          console.error('Accounts fetch error:', err)
+        } finally {
+          setAccountsLoading(false)
+        }
+      }
     }
 
-    setData([...(expenseData ?? []), newData])
-    resetForm(initialData)
-    setFormData(initialData)
-    handleClose()
+    fetchAccounts()
+  }, [open])
+
+  const onSubmit = async data => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const expensePayload = {
+        date: data.date,
+        amount: Number(data.amount),
+        expense_for: data.expense_for.trim(),
+        payment_type: data.payment_type,
+        reference_num: data.reference_num?.trim() || '',
+        choose_account: data.choose_account
+
+        // Note: expense_by should be set from the logged-in user's ID on the server side
+      }
+
+      const result = await createExpense(expensePayload)
+
+      if (result.success) {
+        // Update local state if needed
+        if (setData && expenseData) {
+          const newData = {
+            _id: result.data._id, // Use the ID from the response
+            sl: (expenseData?.length && expenseData?.length + 1) || 1,
+            ...expensePayload
+          }
+
+          setData([...(expenseData ?? []), newData])
+        }
+
+        // Reset form and close
+        resetForm()
+        handleClose()
+
+        // Show success message
+        console.log('Expense created successfully')
+      } else {
+        setError(result.error || 'Failed to create expense')
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.')
+      console.error('Create expense error:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleReset = () => {
     handleClose()
-    resetForm(initialData)
-    setFormData(initialData)
+    resetForm()
+    setError('')
   }
 
   return (
@@ -92,16 +147,44 @@ const AddExpenseDrawer = props => {
       <Divider />
       <PerfectScrollbar options={{ wheelPropagation: false, suppressScrollX: true }}>
         <div className='p-6'>
-          <form onSubmit={handleSubmit(data => onSubmit(data))} className='flex flex-col gap-5'>
+          <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-5'>
+            {error && (
+              <Alert severity='error' sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
+
             <Typography color='text.primary' className='font-medium'>
               Expense Information
             </Typography>
+
+            {/* Date */}
+            <Controller
+              name='date'
+              control={control}
+              rules={{ required: 'Date is required' }}
+              render={({ field }) => (
+                <CustomTextField
+                  {...field}
+                  fullWidth
+                  type='date'
+                  label='Date'
+                  InputLabelProps={{ shrink: true }}
+                  error={!!errors.date}
+                  helperText={errors.date?.message}
+                  disabled={loading}
+                />
+              )}
+            />
 
             {/* Amount */}
             <Controller
               name='amount'
               control={control}
-              rules={{ required: true }}
+              rules={{
+                required: 'Amount is required',
+                min: { value: 1, message: 'Amount must be greater than 0' }
+              }}
               render={({ field }) => (
                 <CustomTextField
                   {...field}
@@ -109,122 +192,116 @@ const AddExpenseDrawer = props => {
                   type='number'
                   label='Amount'
                   placeholder='2500'
-                  {...(errors.amount && { error: true, helperText: 'This field is required.' })}
+                  error={!!errors.amount}
+                  helperText={errors.amount?.message}
+                  disabled={loading}
                 />
-              )}
-            />
-
-            {/* Category (dropdown) */}
-            <Controller
-              name='category'
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <CustomTextField
-                  select
-                  fullWidth
-                  id='category'
-                  label='Category'
-                  {...field}
-                  {...(errors.category && { error: true, helperText: 'This field is required.' })}
-                >
-                  <MenuItem value='Purchase'>Purchase</MenuItem>
-                  <MenuItem value='Maintenance'>Maintenance</MenuItem>
-                  <MenuItem value='Transport'>Transport</MenuItem>
-                  <MenuItem value='Salary'>Salary</MenuItem>
-                  <MenuItem value='Other'>Other</MenuItem>
-                </CustomTextField>
               )}
             />
 
             {/* Expense For */}
             <Controller
-              name='expenseFor'
+              name='expense_for'
               control={control}
-              rules={{ required: true }}
+              rules={{ required: 'Expense for is required' }}
               render={({ field }) => (
                 <CustomTextField
                   {...field}
                   fullWidth
                   label='Expense For'
                   placeholder='Raw Materials'
-                  {...(errors.expenseFor && { error: true, helperText: 'This field is required.' })}
+                  error={!!errors.expense_for}
+                  helperText={errors.expense_for?.message}
+                  disabled={loading}
                 />
               )}
             />
 
-            {/* Payment Type (dropdown) */}
+            {/* Payment Type */}
             <Controller
-              name='paymentType'
+              name='payment_type'
               control={control}
-              rules={{ required: true }}
+              rules={{ required: 'Payment type is required' }}
               render={({ field }) => (
                 <CustomTextField
                   select
                   fullWidth
-                  id='paymentType'
                   label='Payment Type'
                   {...field}
-                  {...(errors.paymentType && { error: true, helperText: 'This field is required.' })}
+                  error={!!errors.payment_type}
+                  helperText={errors.payment_type?.message}
+                  disabled={loading}
                 >
-                  <MenuItem value='Cash'>Cash</MenuItem>
-                  <MenuItem value='Bank'>Bank</MenuItem>
-                  <MenuItem value='Card'>Card</MenuItem>
-                  <MenuItem value='UPI'>UPI</MenuItem>
+                  <MenuItem value='cash'>Cash</MenuItem>
+                  <MenuItem value='card'>Card</MenuItem>
+                  <MenuItem value='bank'>Bank</MenuItem>
+                  <MenuItem value='mobile_wallet'>Mobile Wallet</MenuItem>
+                </CustomTextField>
+              )}
+            />
+
+            {/* Choose Account */}
+            <Controller
+              name='choose_account'
+              control={control}
+              rules={{ required: 'Account selection is required' }}
+              render={({ field }) => (
+                <CustomTextField
+                  select
+                  fullWidth
+                  label='Choose Account'
+                  {...field}
+                  error={!!errors.choose_account}
+                  helperText={errors.choose_account?.message}
+                  disabled={loading || accountsLoading}
+                >
+                  {accountsLoading ? (
+                    <MenuItem value='' disabled>
+                      Loading accounts...
+                    </MenuItem>
+                  ) : accounts.length > 0 ? (
+                    accounts.map(account => (
+                      <MenuItem key={account._id} value={account._id}>
+                        {account.account_name || account.accountNumber || `Account ${account._id}`}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem value='' disabled>
+                      No accounts available
+                    </MenuItem>
+                  )}
                 </CustomTextField>
               )}
             />
 
             {/* Reference Number */}
             <Controller
-              name='referenceNumber'
+              name='reference_num'
               control={control}
-              rules={{ required: true }}
               render={({ field }) => (
                 <CustomTextField
                   {...field}
                   fullWidth
                   label='Reference Number'
                   placeholder='REF-1001'
-                  {...(errors.referenceNumber && { error: true, helperText: 'This field is required.' })}
+                  disabled={loading}
                 />
               )}
             />
-
-            {/* Expense Date */}
-            <Controller
-              name='expenseDate'
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <CustomTextField
-                  {...field}
-                  fullWidth
-                  type='date'
-                  label='Expense Date'
-                  InputLabelProps={{ shrink: true }}
-                  {...(errors.expenseDate && { error: true, helperText: 'This field is required.' })}
-                />
-              )}
-            />
-
-            {/* Switch - keep same as before (dummy toggle) */}
-            <div className='flex justify-between'>
-              <div className='flex flex-col items-start gap-1'>
-                <Typography color='text.primary' className='font-medium'>
-                  Mark as Verified?
-                </Typography>
-                <Typography variant='body2'>Please confirm after approval.</Typography>
-              </div>
-              <Switch defaultChecked />
-            </div>
 
             {/* Buttons */}
             <div className='flex items-center gap-4'>
-              <Button variant='contained' type='submit'>
-                Add
+              <Button variant='contained' type='submit' disabled={loading} className='min-w-[100px]'>
+                {loading ? (
+                  <Box className='flex items-center gap-2'>
+                    <CircularProgress size={16} color='inherit' />
+                    Adding...
+                  </Box>
+                ) : (
+                  'Add Expense'
+                )}
               </Button>
-              <Button variant='tonal' color='error' type='reset' onClick={handleReset}>
+              <Button variant='tonal' color='error' type='button' onClick={handleReset} disabled={loading}>
                 Discard
               </Button>
             </div>

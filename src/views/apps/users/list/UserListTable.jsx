@@ -3,20 +3,13 @@
 // React Imports
 import { useEffect, useState, useMemo } from 'react'
 
-// Next Imports
-import Link from 'next/link'
-
-// import { useParams } from 'next/navigation'
-
 // MUI Imports
 import Card from '@mui/material/Card'
 import CardHeader from '@mui/material/CardHeader'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
-import Chip from '@mui/material/Chip'
 import Checkbox from '@mui/material/Checkbox'
 import IconButton from '@mui/material/IconButton'
-import { styled } from '@mui/material/styles'
 import TablePagination from '@mui/material/TablePagination'
 import MenuItem from '@mui/material/MenuItem'
 
@@ -32,7 +25,6 @@ import {
   getFacetedRowModel,
   getFacetedUniqueValues,
   getFacetedMinMaxValues,
-  getPaginationRowModel,
   getSortedRowModel
 } from '@tanstack/react-table'
 
@@ -41,22 +33,13 @@ import Swal from 'sweetalert2'
 
 import TableFilters from './TableFilters'
 import AddUserDrawer from './AddUserDrawer'
-import OptionMenu from '@core/components/option-menu'
 import TablePaginationComponent from '@components/TablePaginationComponent'
 import CustomTextField from '@core/components/mui/TextField'
-import CustomAvatar from '@core/components/mui/Avatar'
-
-// Util Imports
-import { getInitials } from '@/utils/getInitials'
-import { getLocalizedUrl } from '@/utils/i18n'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
 import ViewUserModal from './ViewUserModal'
 import EditUserModal from './EditUserModal'
-
-// Styled Components
-const Icon = styled('i')({})
 
 const fuzzyFilter = (row, columnId, value, addMeta) => {
   // Rank the item
@@ -90,38 +73,25 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
   return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
 }
 
-// Vars
-const userRoleObj = {
-  admin: { icon: 'tabler-crown', color: 'error' },
-  author: { icon: 'tabler-device-desktop', color: 'warning' },
-  editor: { icon: 'tabler-edit', color: 'info' },
-  maintainer: { icon: 'tabler-chart-pie', color: 'success' },
-  subscriber: { icon: 'tabler-user', color: 'primary' }
-}
-
-const userStatusObj = {
-  active: 'success',
-  pending: 'warning',
-  inactive: 'secondary'
-}
-
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const UserListTable = ({ tableData }) => {
-
+const UserListTable = ({ userData, paginationData, loading, onPageChange, onPageSizeChange }) => {
   // States
   const [addUserOpen, setAddUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
-  const [data, setData] = useState(...[tableData])
-  const [filteredData, setFilteredData] = useState(data)
+
+  const [data, setData] = useState([])
+  const [filteredData, setFilteredData] = useState([])
+
   const [globalFilter, setGlobalFilter] = useState('')
   const [userModal, setUserModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState({})
 
   const handleSaveUser = updated => {
-    setData(prev => prev.map(u => (u.id === updated.id ? updated : u)))
+    setData(prev => prev.map(u => (u._id === updated._id ? updated : u)))
+    setFilteredData(prev => prev.map(u => (u._id === updated._id ? updated : u)))
     setEditModal(false)
   }
 
@@ -129,6 +99,31 @@ const UserListTable = ({ tableData }) => {
     setUserModal(false)
     setEditModal(true)
     setSelectedUser(user)
+  }
+
+  useEffect(() => {
+    if (userData) {
+      setData(userData)
+      setFilteredData(userData)
+    }
+  }, [userData])
+
+  const handleDelete = row => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `You are about to delete "${row.original.name}". This action cannot be undone.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then(result => {
+      if (result.isConfirmed) {
+        setData(prev => prev?.filter(user => user._id !== row.original._id))
+        setFilteredData(prev => prev?.filter(user => user._id !== row.original._id))
+        Swal.fire('Deleted!', `"${row.original.name}" has been removed successfully.`, 'success')
+      }
+    })
   }
 
   const columns = useMemo(
@@ -189,24 +184,7 @@ const UserListTable = ({ tableData }) => {
         header: 'Action',
         cell: ({ row }) => (
           <div className='flex items-center'>
-            <IconButton
-              onClick={() => {
-                Swal.fire({
-                  title: 'Are you sure?',
-                  text: `You are about to delete "${row.original.name}". This action cannot be undone.`,
-                  icon: 'warning',
-                  showCancelButton: true,
-                  confirmButtonColor: '#3085d6',
-                  cancelButtonColor: '#d33',
-                  confirmButtonText: 'Yes, delete it!'
-                }).then(result => {
-                  if (result.isConfirmed) {
-                    setData(prev => prev?.filter(product => product.id !== row.original.id))
-                    Swal.fire('Deleted!', `"${row.original.name}" has been removed successfully.`, 'success')
-                  }
-                })
-              }}
-            >
+            <IconButton onClick={() => handleDelete(row)}>
               <i className='tabler-trash text-textSecondary' />
             </IconButton>
 
@@ -241,34 +219,17 @@ const UserListTable = ({ tableData }) => {
       rowSelection,
       globalFilter
     },
-    initialState: {
-      pagination: {
-        pageSize: 10
-      }
-    },
-    enableRowSelection: true, //enable row selection for all rows
-    // enableRowSelection: row => row.original.age > 18, // or enable row selection conditionally per row
+    enableRowSelection: true,
     globalFilterFn: fuzzyFilter,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     onGlobalFilterChange: setGlobalFilter,
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues()
   })
-
-  const getAvatar = params => {
-    const { avatar, fullName } = params
-
-    if (avatar) {
-      return <CustomAvatar src={avatar} size={34} />
-    } else {
-      return <CustomAvatar size={34}>{getInitials(fullName)}</CustomAvatar>
-    }
-  }
 
   return (
     <>
@@ -278,8 +239,8 @@ const UserListTable = ({ tableData }) => {
         <div className='flex justify-between flex-col items-start md:flex-row md:items-center p-6 border-bs gap-4'>
           <CustomTextField
             select
-            value={table.getState().pagination.pageSize}
-            onChange={e => table.setPageSize(Number(e.target.value))}
+            value={paginationData?.limit || 10}
+            onChange={e => onPageSizeChange(Number(e.target.value))}
             className='max-sm:is-full sm:is-[70px]'
           >
             <MenuItem value='10'>10</MenuItem>
@@ -334,41 +295,45 @@ const UserListTable = ({ tableData }) => {
                 </tr>
               ))}
             </thead>
-            {table.getFilteredRowModel().rows.length === 0 ? (
+            {
               <tbody>
-                <tr>
-                  <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
-                    No data available
-                  </td>
-                </tr>
+                {loading ? (
+                  <tr>
+                    <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
+                      Loading...
+                    </td>
+                  </tr>
+                ) : table.getFilteredRowModel().rows.length === 0 ? (
+                  <tr>
+                    <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
+                      No data available
+                    </td>
+                  </tr>
+                ) : (
+                  table.getRowModel().rows.map(row => (
+                    <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
+                      {row.getVisibleCells().map(cell => (
+                        <td className='whitespace-nowrap border-r' key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                )}
               </tbody>
-            ) : (
-              <tbody>
-                {table
-                  .getRowModel()
-                  .rows.slice(0, table.getState().pagination.pageSize)
-                  .map(row => {
-                    return (
-                      <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
-                        {row.getVisibleCells().map(cell => (
-                          <td className='whitespace-nowrap border-r' key={cell.id}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </td>
-                        ))}
-                      </tr>
-                    )
-                  })}
-              </tbody>
-            )}
+            }
           </table>
         </div>
+
         <TablePagination
-          component={() => <TablePaginationComponent table={table} />}
-          count={table.getFilteredRowModel().rows.length}
-          rowsPerPage={table.getState().pagination.pageSize}
-          page={table.getState().pagination.pageIndex}
+          component={() => (
+            <TablePaginationComponent table={table} paginationData={paginationData} onPageChange={onPageChange} />
+          )}
+          count={paginationData?.total || 0}
+          rowsPerPage={paginationData?.limit || 10}
+          page={(paginationData?.currentPage || 1) - 1}
           onPageChange={(_, page) => {
-            table.setPageIndex(page)
+            onPageChange(page + 1)
           }}
         />
       </Card>

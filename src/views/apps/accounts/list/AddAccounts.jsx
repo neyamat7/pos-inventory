@@ -16,9 +16,7 @@ import { useForm, Controller } from 'react-hook-form'
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
 import { addAccount } from '@/actions/accountActions'
-
-// Action Imports
-// import { addAccount } from '@/app/actions/account-actions'
+import { Alert } from '@mui/material'
 
 // Vars
 const initialData = {
@@ -37,6 +35,7 @@ const AddAccounts = props => {
   // States
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState(initialData)
+  const [error, setError] = useState('')
 
   // Hooks
   const {
@@ -50,6 +49,7 @@ const AddAccounts = props => {
 
   const onSubmit = async data => {
     setLoading(true)
+    setError('')
 
     try {
       const accountPayload = {
@@ -59,8 +59,6 @@ const AddAccounts = props => {
         account_number: data.account_number?.trim() || '',
         balance: Number(data.balance || 0),
         account_details: data.account_details?.trim() || ''
-
-        // added_by will be handled by backend or you can add it here if needed
       }
 
       const result = await addAccount(accountPayload)
@@ -85,12 +83,11 @@ const AddAccounts = props => {
 
         console.log('Account created successfully!', result.data)
       } else {
-        console.error('Failed to create account:', result.error)
-        alert(`Error: ${result.error}`)
+        setError(result.error || 'Failed to create account')
       }
     } catch (error) {
+      setError('An unexpected error occurred. Please try again.')
       console.error('Error in onSubmit:', error)
-      alert('Failed to create account. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -100,6 +97,7 @@ const AddAccounts = props => {
     handleClose()
     resetForm(initialData)
     setFormData(initialData)
+    setError('')
   }
 
   return (
@@ -121,6 +119,12 @@ const AddAccounts = props => {
       <PerfectScrollbar options={{ wheelPropagation: false, suppressScrollX: true }}>
         <div className='p-6'>
           <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-5'>
+            {error && (
+              <Alert severity='error' sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
+
             <Typography color='text.primary' className='font-medium'>
               Account Information
             </Typography>

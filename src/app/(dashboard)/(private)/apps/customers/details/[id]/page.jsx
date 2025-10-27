@@ -18,7 +18,7 @@ const CustomerDetailsPage = async props => {
     redirect('/not-found')
   }
 
-  console.log('customer data', result.data)
+  // console.log('customer data', result.data)
 
   return result.data ? <CustomerDetails customerData={result.data} customerId={params.id} /> : null
 }

@@ -2,31 +2,25 @@
 import { redirect } from 'next/navigation'
 
 // Component Imports
+import SupplierDetails from '@/views/apps/suppliers/details'
+import { getSupplierById } from '@/actions/supplierAction'
 
-// Data Imports
-import { getEcommerceData } from '@/app/server/actions'
-import SupplierDetaiils from '@/views/apps/ecommerce/suppliers/details'
-
-const CustomerDetailsPage = async props => {
+const SupplierDetailsPage = async props => {
   const params = await props.params
 
-  // console.log('typeof params', typeof params.id)
+  // console.log('params in supplier page', params.id)
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/business/suppliers`, {
-    cache: 'no-store'
-  })
+  // Fetch supplier data from backend
+  const result = await getSupplierById(params.id)
 
-  const data = await res.json()
-
-  const filteredData = data?.filter(item => item.sl === Number(params.id))[0]
-
-  // console.log('filteredData', filteredData)
-
-  if (!filteredData) {
+  if (!result.success || !result.data) {
+    console.error('Failed to fetch supplier:', result.error)
     redirect('/not-found')
   }
 
-  return filteredData ? <SupplierDetaiils supplierData={filteredData} supplierId={params.id} /> : null
+  console.log('supplier data', result.data)
+
+  return result.data ? <SupplierDetails supplierData={result.data} supplierId={params.id} /> : null
 }
 
-export default CustomerDetailsPage
+export default SupplierDetailsPage

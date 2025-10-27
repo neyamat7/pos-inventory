@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-import { getAllSuppliers } from '@/app/server/actions'
-import SupplierListTable from '@/views/apps/ecommerce/suppliers/list/SupplierLIstTable'
+import SupplierListTable from '@/views/apps/suppliers/list/SupplierLIstTable'
 import { getSuppliers } from '@/actions/supplierAction'
 
 const SupplierListTablePage = () => {
@@ -15,6 +14,8 @@ const SupplierListTablePage = () => {
   useEffect(() => {
     const fetchData = async () => {
       const result = await getSuppliers(currentPage, pageSize)
+
+      console.log('result', result)
 
       if (result.success) {
         setData(result.data.suppliers || [])

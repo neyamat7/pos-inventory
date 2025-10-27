@@ -134,9 +134,9 @@ const VerticalMenu = ({ scrollMenu }) => {
           <MenuItem href='/apps/draftList'>Draft List</MenuItem>
         </SubMenu>
 
-        <MenuItem href='/apps/branches' icon={<i className='tabler-hierarchy' />}>
+        {/* <MenuItem href='/apps/branches' icon={<i className='tabler-hierarchy' />}>
           Branches
-        </MenuItem>
+        </MenuItem> */}
 
         <MenuItem href='/apps/dueList' icon={<i className='tabler-receipt' />}>
           Due List

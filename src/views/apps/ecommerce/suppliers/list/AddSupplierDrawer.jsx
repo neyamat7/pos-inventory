@@ -7,6 +7,7 @@ import Drawer from '@mui/material/Drawer'
 import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
+import Grid from '@mui/material/Grid'
 
 // Third-party Imports
 import PerfectScrollbar from 'react-perfect-scrollbar'
@@ -14,20 +15,15 @@ import { useForm, Controller } from 'react-hook-form'
 
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
+import { createSupplier } from '@/actions/supplierAction'
 
-// Helper for crate rows
-const newCrateRow = () => ({
-  id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
-  type: '',
-  qty: '',
-  price: ''
-})
+// Action Imports
+// import { createSupplier } from '@/app/actions/supplier-actions'
 
 const AddSupplierDrawer = props => {
   const { open, handleClose, setData, supplierData } = props
 
-  // Dynamic crate editor rows
-  const [crateRows, setCrateRows] = useState([newCrateRow()])
+  const [loading, setLoading] = useState(false)
 
   const {
     control,
@@ -36,66 +32,104 @@ const AddSupplierDrawer = props => {
     formState: { errors }
   } = useForm({
     defaultValues: {
+      // Basic Info
       sl: '',
       name: '',
+      avatar: '',
+
+      // Contact Info
       email: '',
-      image: '',
       phone: '',
+      location: '',
+
+      // Account Info
+      accountNumber: '',
       balance: '',
       due: '',
       cost: '',
-      location: ''
+
+      // Crate Info
+      crate1: '',
+      crate1Price: '',
+      remainingCrate1: '',
+      crate2: '',
+      crate2Price: '',
+      remainingCrate2: ''
     }
   })
 
-  const addCrateRow = () => setCrateRows(prev => [...prev, newCrateRow()])
-  const removeCrateRow = id => setCrateRows(prev => prev.filter(r => r.id !== id))
+  const onSubmit = async data => {
+    setLoading(true)
 
-  const updateCrateRow = (id, field, value) =>
-    setCrateRows(prev => prev.map(r => (r.id === id ? { ...r, [field]: value } : r)))
+    try {
+      const supplierPayload = {
+        // Basic Information
+        basic_info: {
+          sl: data.sl.toString(),
+          name: data.name.trim(),
+          role: 'supplier',
+          avatar: data.avatar?.trim() || ''
+        },
 
-  const buildCrateObject = () => {
-    const crate = {}
+        // Contact Information
+        contact_info: {
+          email: data.email?.trim() || '',
+          phone: data.phone?.trim() || '',
+          location: data.location?.trim() || ''
+        },
 
-    crateRows.forEach(r => {
-      const key = (r.type || '').trim()
+        // Account & Balance Information
+        account_info: {
+          accountNumber: data.accountNumber?.trim() || '',
+          balance: Number(data.balance || 0),
+          due: Number(data.due || 0),
+          cost: Number(data.cost || 0)
+        },
 
-      if (!key) return
-      crate[key] = {
-        qty: Number(r.qty || 0),
-        price: Number(r.price || 0)
+        // Crate Information
+        crate_info: {
+          crate1: Number(data.crate1 || 0),
+          crate1Price: Number(data.crate1Price || 0),
+          remainingCrate1: Number(data.remainingCrate1 || 0),
+          crate2: Number(data.crate2 || 0),
+          crate2Price: Number(data.crate2Price || 0),
+          remainingCrate2: Number(data.remainingCrate2 || 0)
+        }
       }
-    })
 
-    return crate
-  }
+      // Call the create supplier action
+      const result = await createSupplier(supplierPayload)
 
-  const onSubmit = data => {
-    const newSupplier = {
-      sl: Number(data.sl),
-      image: data.image?.trim() || '',
-      name: data.name?.trim(),
-      email: data.email?.trim(),
-      type: 'Supplier',
-      phone: data.phone?.trim(),
-      balance: Number(data.balance || 0),
-      due: Number(data.due || 0),
-      crate: buildCrateObject(),
-      cost: Number(data.cost || 0),
-      orders: 0,
-      totalSpent: 0,
-      location: data.location?.trim() || ''
+      if (result.success) {
+        // Update local state with new supplier data
+        const newSupplier = {
+          id: result.data._id || Date.now(),
+          basic_info: supplierPayload.basic_info,
+          contact_info: supplierPayload.contact_info,
+          account_info: supplierPayload.account_info,
+          crate_info: supplierPayload.crate_info,
+          createdAt: new Date().toISOString()
+        }
+
+        setData([...(supplierData ?? []), newSupplier])
+        reset()
+        handleClose()
+
+        console.log('Supplier created successfully!', result.data)
+      } else {
+        console.error('Failed to create supplier:', result.error)
+        alert(`Error: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('Error in onSubmit:', error)
+      alert('Failed to create supplier. Please try again.')
+    } finally {
+      setLoading(false)
     }
-
-    setData([...(supplierData ?? []), newSupplier])
-    reset()
-    setCrateRows([newCrateRow()])
-    handleClose()
   }
 
   const handleReset = () => {
     reset()
-    setCrateRows([newCrateRow()])
     handleClose()
   }
 
@@ -106,7 +140,7 @@ const AddSupplierDrawer = props => {
       variant='temporary'
       onClose={handleReset}
       ModalProps={{ keepMounted: true }}
-      sx={{ '& .MuiDrawer-paper': { width: { xs: 300, sm: 420 } } }}
+      sx={{ '& .MuiDrawer-paper': { width: { xs: 300, sm: 500 } } }}
     >
       <div className='flex items-center justify-between pli-6 plb-5'>
         <Typography variant='h5'>Add Supplier</Typography>
@@ -119,170 +153,237 @@ const AddSupplierDrawer = props => {
       <PerfectScrollbar options={{ wheelPropagation: false, suppressScrollX: true }}>
         <div className='p-6'>
           <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-5'>
+            {/* Basic Information Section */}
             <Typography color='text.primary' className='font-medium'>
-              Basic Info
+              Basic Information
             </Typography>
 
-            <Controller
-              name='sl'
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <CustomTextField
-                  {...field}
-                  type='number'
-                  label='SL'
-                  placeholder='1'
-                  fullWidth
-                  {...(errors.sl && { error: true, helperText: 'Required' })}
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <Controller
+                  name='sl'
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      label='SL Number'
+                      placeholder='1'
+                      fullWidth
+                      {...(errors.sl && { error: true, helperText: 'Required' })}
+                    />
+                  )}
                 />
-              )}
-            />
+              </Grid>
 
-            <Controller
-              name='name'
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <CustomTextField
-                  {...field}
-                  label='Name'
-                  placeholder='Rahim Traders'
-                  fullWidth
-                  {...(errors.name && { error: true, helperText: 'Required' })}
+              <Grid item xs={12} sm={6}>
+                <Controller
+                  name='name'
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      label='Supplier Name'
+                      placeholder='Rahim Traders'
+                      fullWidth
+                      {...(errors.name && { error: true, helperText: 'Required' })}
+                    />
+                  )}
                 />
-              )}
-            />
+              </Grid>
 
-            <Controller
-              name='email'
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <CustomTextField
-                  {...field}
-                  type='email'
-                  label='Email'
-                  placeholder='rahimtraders@gmail.com'
-                  fullWidth
-                  {...(errors.email && { error: true, helperText: 'Required' })}
+              <Grid item xs={12}>
+                <Controller
+                  name='avatar'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      label='Avatar URL'
+                      placeholder='https://example.com/avatar.jpg'
+                      fullWidth
+                    />
+                  )}
                 />
-              )}
-            />
+              </Grid>
+            </Grid>
 
-            <Controller
-              name='image'
-              control={control}
-              render={({ field }) => (
-                <CustomTextField
-                  {...field}
-                  label='Image URL'
-                  placeholder='https://i.postimg.cc/GpXVckNg/images-3.jpg'
-                  fullWidth
+            {/* Contact Information Section */}
+            <Typography color='text.primary' className='font-medium'>
+              Contact Information
+            </Typography>
+
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <Controller
+                  name='email'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      type='email'
+                      label='Email'
+                      placeholder='rahimtraders@gmail.com'
+                      fullWidth
+                    />
+                  )}
                 />
-              )}
-            />
+              </Grid>
 
-            <Controller
-              name='phone'
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <CustomTextField
-                  {...field}
-                  label='Phone'
-                  placeholder='+8801711000001'
-                  fullWidth
-                  {...(errors.phone && { error: true, helperText: 'Required' })}
+              <Grid item xs={12} sm={6}>
+                <Controller
+                  name='phone'
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <CustomTextField
+                      {...field}
+                      label='Phone'
+                      placeholder='+8801711000001'
+                      fullWidth
+                      {...(errors.phone && { error: true, helperText: 'Required' })}
+                    />
+                  )}
                 />
-              )}
-            />
+              </Grid>
 
-            <div className='grid grid-cols-2 gap-4'>
-              <Controller
-                name='balance'
-                control={control}
-                render={({ field }) => (
-                  <CustomTextField {...field} type='number' label='Balance' placeholder='5000' fullWidth />
-                )}
-              />
-              <Controller
-                name='due'
-                control={control}
-                render={({ field }) => (
-                  <CustomTextField {...field} type='number' label='Due' placeholder='3875' fullWidth />
-                )}
-              />
-            </div>
+              <Grid item xs={12}>
+                <Controller
+                  name='location'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField {...field} label='Location' placeholder='Chandpur, Bangladesh' fullWidth />
+                  )}
+                />
+              </Grid>
+            </Grid>
 
-            <Controller
-              name='cost'
-              control={control}
-              render={({ field }) => (
-                <CustomTextField {...field} type='number' label='Cost' placeholder='0' fullWidth />
-              )}
-            />
+            {/* Account Information Section */}
+            <Typography color='text.primary' className='font-medium'>
+              Account Information
+            </Typography>
 
-            <Controller
-              name='location'
-              control={control}
-              render={({ field }) => <CustomTextField {...field} label='Location' placeholder='Chandpur' fullWidth />}
-            />
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <Controller
+                  name='accountNumber'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField {...field} label='Account Number' placeholder='ACC123456' fullWidth />
+                  )}
+                />
+              </Grid>
 
-            {/* Crate Editor */}
-            <div className='flex items-center justify-between'>
-              <Typography color='text.primary' className='font-medium'>
-                Crate
-              </Typography>
-              <Button size='small' variant='tonal' onClick={addCrateRow} startIcon={<i className='tabler-plus' />}>
-                Add Type
-              </Button>
-            </div>
+              <Grid item xs={12} sm={4}>
+                <Controller
+                  name='balance'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField {...field} type='number' label='Balance' placeholder='5000' fullWidth />
+                  )}
+                />
+              </Grid>
 
-            <div className='flex flex-col gap-3'>
-              {crateRows.map((row, idx) => (
-                <div key={row.id} className='grid grid-cols-12 gap-3 items-end'>
-                  <CustomTextField
-                    className='col-span-5'
-                    label='Type'
-                    placeholder={`type${idx + 1}`}
-                    value={row.type}
-                    onChange={e => updateCrateRow(row.id, 'type', e.target.value)}
-                  />
-                  <CustomTextField
-                    className='col-span-3'
-                    type='number'
-                    label='Qty'
-                    placeholder='0'
-                    value={row.qty}
-                    onChange={e => updateCrateRow(row.id, 'qty', e.target.value)}
-                  />
-                  <CustomTextField
-                    className='col-span-3'
-                    type='number'
-                    label='Price'
-                    placeholder='0'
-                    value={row.price}
-                    onChange={e => updateCrateRow(row.id, 'price', e.target.value)}
-                  />
-                  <Button
-                    className='col-span-1'
-                    color='error'
-                    variant='tonal'
-                    onClick={() => removeCrateRow(row.id)}
-                    disabled={crateRows.length === 1}
-                  >
-                    <i className='tabler-trash' />
-                  </Button>
-                </div>
-              ))}
-            </div>
+              <Grid item xs={12} sm={4}>
+                <Controller
+                  name='due'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField {...field} type='number' label='Due Amount' placeholder='3875' fullWidth />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={4}>
+                <Controller
+                  name='cost'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField {...field} type='number' label='Cost' placeholder='0' fullWidth />
+                  )}
+                />
+              </Grid>
+            </Grid>
+
+            {/* Crate Information Section */}
+            <Typography color='text.primary' className='font-medium'>
+              Crate Information - Type 1
+            </Typography>
+
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={4}>
+                <Controller
+                  name='crate1'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField {...field} type='number' label='Crate 1 Quantity' placeholder='0' fullWidth />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={4}>
+                <Controller
+                  name='crate1Price'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField {...field} type='number' label='Crate 1 Price' placeholder='0' fullWidth />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={4}>
+                <Controller
+                  name='remainingCrate1'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField {...field} type='number' label='Remaining Crate 1' placeholder='0' fullWidth />
+                  )}
+                />
+              </Grid>
+            </Grid>
+
+            <Typography color='text.primary' className='font-medium'>
+              Crate Information - Type 2
+            </Typography>
+
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={4}>
+                <Controller
+                  name='crate2'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField {...field} type='number' label='Crate 2 Quantity' placeholder='0' fullWidth />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={4}>
+                <Controller
+                  name='crate2Price'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField {...field} type='number' label='Crate 2 Price' placeholder='0' fullWidth />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={4}>
+                <Controller
+                  name='remainingCrate2'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField {...field} type='number' label='Remaining Crate 2' placeholder='0' fullWidth />
+                  )}
+                />
+              </Grid>
+            </Grid>
 
             <div className='flex items-center gap-4 mt-2'>
-              <Button variant='contained' type='submit'>
-                Add
+              <Button variant='contained' type='submit' disabled={loading}>
+                {loading ? 'Adding...' : 'Add Supplier'}
               </Button>
-              <Button variant='tonal' color='error' type='button' onClick={handleReset}>
+              <Button variant='tonal' color='error' type='button' onClick={handleReset} disabled={loading}>
                 Discard
               </Button>
             </div>

@@ -15,7 +15,7 @@ async function api(endpoint, options = {}) {
   // Option 1: If you store accessToken in session
   const token = session?.accessToken
 
-  // console.log('token in api', token)
+  console.log('token in api', session)
 
   // Option 2: If your backend needs the NextAuth JWT itself, you'd need to get it differently
   // This requires accessing the token from cookies or using getToken from next-auth/jwt

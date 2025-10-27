@@ -1,14 +1,13 @@
 // React Imports
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 
 // MUI Imports
 import Button from '@mui/material/Button'
 import Drawer from '@mui/material/Drawer'
 import IconButton from '@mui/material/IconButton'
-import MenuItem from '@mui/material/MenuItem'
 import Typography from '@mui/material/Typography'
 import Divider from '@mui/material/Divider'
-import InputAdornment from '@mui/material/InputAdornment'
+import Alert from '@mui/material/Alert'
 
 // Third-party Imports
 import { useForm, Controller } from 'react-hook-form'
@@ -16,18 +15,16 @@ import { useForm, Controller } from 'react-hook-form'
 // Components Imports
 import CustomTextField from '@core/components/mui/TextField'
 
+// Action Imports
+import { createCategory } from '@/actions/categoryActions'
+
 const AddCategoryDrawer = props => {
   // Props
-  const { open, handleClose, categoryData, setData } = props
+  const { open, handleClose } = props
 
   // States
-  const [fileName, setFileName] = useState('')
-  const [category, setCategory] = useState('')
-  const [comment, setComment] = useState('')
-  const [status, setStatus] = useState('')
-
-  // Refs
-  const fileInputRef = useRef(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   // Hooks
   const {
@@ -37,43 +34,54 @@ const AddCategoryDrawer = props => {
     formState: { errors }
   } = useForm({
     defaultValues: {
-      title: '',
-      description: ''
+      categoryName: '',
+      slug: '',
+      description: '',
+      comment: ''
     }
   })
 
   // Handle Form Submit
-  const handleFormSubmit = data => {
-    const newData = {
-      id: categoryData.length + 1,
-      categoryTitle: data.title,
-      description: data.description,
-      totalProduct: Math.floor(Math.random() * 9000) + 1000,
-      totalEarning: Math.floor(Math.random() * 90000) + 10000,
-      image: `/images/apps/ecommerce/product-${Math.floor(Math.random() * 20) + 1}.png`
-    }
+  const handleFormSubmit = async data => {
+    setLoading(true)
+    setError('')
 
-    setData([...categoryData, newData])
-    handleReset()
+    try {
+      const categoryPayload = {
+        categoryName: data.categoryName.trim(),
+        slug: data.slug.trim(),
+        description: data.description?.trim() || '',
+        comment: data.comment?.trim() || ''
+      }
+
+      const result = await createCategory(categoryPayload)
+
+      if (result.success) {
+        handleReset()
+
+        // You can add a success callback here if needed
+        console.log('Category created successfully')
+      } else {
+        setError(result.error)
+      }
+    } catch (err) {
+      setError('Failed to create category. Please try again.')
+      console.error('Create category error:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   // Handle Form Reset
   const handleReset = () => {
     handleClose()
-    resetForm({ title: '', description: '' })
-    setFileName('')
-    setCategory('')
-    setComment('')
-    setStatus('')
-  }
-
-  // Handle File Upload
-  const handleFileUpload = event => {
-    const { files } = event.target
-
-    if (files && files.length !== 0) {
-      setFileName(files[0].name)
-    }
+    resetForm({
+      categoryName: '',
+      slug: '',
+      description: '',
+      comment: ''
+    })
+    setError('')
   }
 
   return (
@@ -93,97 +101,82 @@ const AddCategoryDrawer = props => {
       </div>
       <Divider />
       <div className='p-6'>
-        <form onSubmit={handleSubmit(data => handleFormSubmit(data))} className='flex flex-col gap-5'>
+        <form onSubmit={handleSubmit(handleFormSubmit)} className='flex flex-col gap-5'>
+          {error && (
+            <Alert severity='error' sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+
           <Controller
-            name='title'
+            name='categoryName'
             control={control}
-            rules={{ required: true }}
+            rules={{ required: 'Category name is required' }}
             render={({ field }) => (
               <CustomTextField
                 {...field}
                 fullWidth
-                label='Title'
-                placeholder='Fashion'
-                {...(errors.title && { error: true, helperText: 'This field is required.' })}
+                label='Category Name'
+                placeholder='Electronics'
+                error={!!errors.categoryName}
+                helperText={errors.categoryName?.message}
               />
             )}
           />
+
+          <Controller
+            name='slug'
+            control={control}
+            rules={{
+              required: 'Slug is required'
+            }}
+            render={({ field }) => (
+              <CustomTextField
+                {...field}
+                fullWidth
+                label='Slug'
+                placeholder='electronics'
+                error={!!errors.slug}
+                helperText={errors.slug?.message}
+              />
+            )}
+          />
+
           <Controller
             name='description'
             control={control}
-            rules={{ required: true }}
             render={({ field }) => (
               <CustomTextField
                 {...field}
                 fullWidth
                 label='Description'
-                placeholder='Enter a description...'
-                {...(errors.description && { error: true, helperText: 'This field is required.' })}
+                placeholder='Enter category description...'
+                multiline
+                rows={3}
               />
             )}
           />
-          <div className='flex items-end gap-4'>
-            <CustomTextField
-              label='Attachment'
-              placeholder='No file chosen'
-              value={fileName}
-              className='flex-auto'
-              slotProps={{
-                input: {
-                  readOnly: true,
-                  endAdornment: fileName ? (
-                    <InputAdornment position='end'>
-                      <IconButton size='small' edge='end' onClick={() => setFileName('')}>
-                        <i className='tabler-x' />
-                      </IconButton>
-                    </InputAdornment>
-                  ) : null
-                }
-              }}
-            />
-            <Button component='label' variant='tonal' htmlFor='contained-button-file' className='min-is-fit'>
-              Choose
-              <input hidden id='contained-button-file' type='file' onChange={handleFileUpload} ref={fileInputRef} />
-            </Button>
-          </div>
-          <CustomTextField
-            select
-            fullWidth
-            label='Parent Category'
-            value={category}
-            onChange={e => setCategory(e.target.value)}
-          >
-            <MenuItem value='HouseHold'>HouseHold</MenuItem>
-            <MenuItem value='Management'>Management</MenuItem>
-            <MenuItem value='Electronics'>Electronics</MenuItem>
-            <MenuItem value='Office'>Office</MenuItem>
-            <MenuItem value='Accessories'>Accessories</MenuItem>
-          </CustomTextField>
-          <CustomTextField
-            fullWidth
-            label='Comment'
-            value={comment}
-            onChange={e => setComment(e.target.value)}
-            multiline
-            rows={4}
-            placeholder='Write a Comment...'
+
+          <Controller
+            name='comment'
+            control={control}
+            render={({ field }) => (
+              <CustomTextField
+                {...field}
+                fullWidth
+                label='Comment'
+                placeholder='Additional comments...'
+                multiline
+                rows={3}
+              />
+            )}
           />
-          <CustomTextField
-            select
-            fullWidth
-            label='Category Status'
-            value={status}
-            onChange={e => setStatus(e.target.value)}
-          >
-            <MenuItem value='Published'>Published</MenuItem>
-            <MenuItem value='Inactive'>Inactive</MenuItem>
-            <MenuItem value='Scheduled'>Scheduled</MenuItem>
-          </CustomTextField>
+
           <div className='flex items-center gap-4'>
-            <Button variant='contained' type='submit'>
-              Add
+            <Button variant='contained' type='submit' disabled={loading}>
+              {loading ? 'Creating...' : 'Add Category'}
             </Button>
-            <Button variant='tonal' color='error' type='reset' onClick={handleReset}>
+            <Button variant='tonal' color='error' type='button' onClick={handleReset} disabled={loading}>
               Discard
             </Button>
           </div>

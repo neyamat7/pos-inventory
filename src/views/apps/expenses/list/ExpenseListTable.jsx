@@ -3,10 +3,6 @@
 // React Imports
 import { useState, useEffect, useMemo } from 'react'
 
-// Next Imports
-import Link from 'next/link'
-import { useParams } from 'next/navigation'
-
 import { MdMoreVert, MdDeleteOutline, MdOutlineEdit } from 'react-icons/md'
 
 import { useForm } from 'react-hook-form'
@@ -24,7 +20,6 @@ import MenuItem from '@mui/material/MenuItem'
 import classnames from 'classnames'
 import { rankItem } from '@tanstack/match-sorter-utils'
 import {
-  createColumnHelper,
   flexRender,
   getCoreRowModel,
   useReactTable,
@@ -40,13 +35,8 @@ import {
 import Swal from 'sweetalert2'
 
 import AddExpenseDrawer from './AddExpenseDrawer'
-import CustomAvatar from '@core/components/mui/Avatar'
 import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
-
-// Util Imports
-import { getInitials } from '@/utils/getInitials'
-import { getLocalizedUrl } from '@/utils/i18n'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
@@ -98,24 +88,23 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
   return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
 }
 
-// Column Definitions
-const columnHelper = createColumnHelper()
-
-const ExpenseListTable = ({ expenseData }) => {
+const ExpenseListTable = ({ expenseData, paginationData, loading, onPageChange, onPageSizeChange }) => {
   const [editOpen, setEditOpen] = useState(null)
 
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
-  const [data, setData] = useState(...[expenseData])
+  const [data, setData] = useState([])
   const [globalFilter, setGlobalFilter] = useState('')
 
-  // Hooks
-  const { lang: locale } = useParams()
+  useEffect(() => {
+    if (expenseData) {
+      setData(expenseData)
+    }
+  }, [expenseData])
 
   const columns = useMemo(
     () => [
-      // Checkbox column
       {
         id: 'select',
         header: ({ table }) => (
@@ -135,16 +124,16 @@ const ExpenseListTable = ({ expenseData }) => {
         )
       },
 
-      // Expense data fields
-      { accessorKey: 'sl', header: 'SL' },
+      // Updated columns to match API schema
+      { accessorKey: 'date', header: 'Date' },
       { accessorKey: 'amount', header: 'Amount' },
-      { accessorKey: 'category', header: 'Category' },
-      { accessorKey: 'expenseFor', header: 'Expense For' },
-      { accessorKey: 'paymentType', header: 'Payment Type' },
-      { accessorKey: 'referenceNumber', header: 'Reference Number' },
-      { accessorKey: 'expenseDate', header: 'Expense Date' },
-
-      // Action column
+      { accessorKey: 'expense_for', header: 'Expense For' },
+      {
+        accessorKey: 'payment_type',
+        header: 'Payment Type',
+        cell: ({ row }) => <Typography className='capitalize'>{row.original.payment_type}</Typography>
+      },
+      { accessorKey: 'reference_num', header: 'Reference Number' },
       {
         id: 'action',
         header: 'Action',
@@ -152,7 +141,7 @@ const ExpenseListTable = ({ expenseData }) => {
           const handleDelete = () => {
             Swal.fire({
               title: 'Are you sure?',
-              text: `You are about to delete expense ${row.original.referenceNumber}. This action cannot be undone.`,
+              text: `You are about to delete expense ${row.original.reference_num}. This action cannot be undone.`,
               icon: 'warning',
               showCancelButton: true,
               confirmButtonColor: '#d33',
@@ -160,8 +149,8 @@ const ExpenseListTable = ({ expenseData }) => {
               confirmButtonText: 'Yes, delete it!'
             }).then(result => {
               if (result.isConfirmed) {
-                setData(prev => prev.filter(item => item.sl !== row.original.sl))
-                Swal.fire('Deleted!', `Expense ${row.original.referenceNumber} has been removed.`, 'success')
+                setData(prev => prev.filter(item => item._id !== row.original._id))
+                Swal.fire('Deleted!', `Expense ${row.original.reference_num} has been removed.`, 'success')
               }
             })
           }
@@ -197,11 +186,11 @@ const ExpenseListTable = ({ expenseData }) => {
         enableSorting: false
       }
     ],
-    [setData]
+    []
   )
 
   const table = useReactTable({
-    data: data,
+    data: data || [],
     columns,
     filterFns: {
       fuzzy: fuzzyFilter
@@ -210,38 +199,17 @@ const ExpenseListTable = ({ expenseData }) => {
       rowSelection,
       globalFilter
     },
-    initialState: {
-      pagination: {
-        pageSize: 10
-      }
-    },
-    enableRowSelection: true, //enable row selection for all rows
-    // enableRowSelection: row => row.original.age > 18, // or enable row selection conditionally per row
+    enableRowSelection: true,
     globalFilterFn: fuzzyFilter,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     onGlobalFilterChange: setGlobalFilter,
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues()
   })
-
-  const getAvatar = params => {
-    const { avatar, customer } = params
-
-    if (avatar) {
-      return <CustomAvatar src={avatar} skin='light' size={34} />
-    } else {
-      return (
-        <CustomAvatar skin='light' size={34}>
-          {getInitials(customer)}
-        </CustomAvatar>
-      )
-    }
-  }
 
   return (
     <>
@@ -256,8 +224,8 @@ const ExpenseListTable = ({ expenseData }) => {
           <div className='flex max-sm:flex-col items-start sm:items-center gap-4 max-sm:is-full'>
             <CustomTextField
               select
-              value={table.getState().pagination.pageSize}
-              onChange={e => table.setPageSize(Number(e.target.value))}
+              value={paginationData?.limit || 10}
+              onChange={e => onPageSizeChange(Number(e.target.value))}
               className='is-full sm:is-[70px]'
             >
               <MenuItem value='10'>10</MenuItem>
@@ -316,31 +284,42 @@ const ExpenseListTable = ({ expenseData }) => {
               </tbody>
             ) : (
               <tbody>
-                {table
-                  .getRowModel()
-                  .rows.slice(0, table.getState().pagination.pageSize)
-                  .map(row => {
-                    return (
-                      <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
-                        {row.getVisibleCells().map(cell => (
-                          <td className='whitespace-nowrap border-r' key={cell.id}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </td>
-                        ))}
-                      </tr>
-                    )
-                  })}
+                {loading ? (
+                  <tr>
+                    <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
+                      Loading...
+                    </td>
+                  </tr>
+                ) : table.getFilteredRowModel().rows.length === 0 ? (
+                  <tr>
+                    <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
+                      No data available
+                    </td>
+                  </tr>
+                ) : (
+                  table.getRowModel().rows.map(row => (
+                    <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
+                      {row.getVisibleCells().map(cell => (
+                        <td className='whitespace-nowrap border-r' key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                )}
               </tbody>
             )}
           </table>
         </div>
         <TablePagination
-          component={() => <TablePaginationComponent table={table} />}
-          count={table.getFilteredRowModel().rows.length}
-          rowsPerPage={table.getState().pagination.pageSize}
-          page={table.getState().pagination.pageIndex}
+          component={() => (
+            <TablePaginationComponent table={table} paginationData={paginationData} onPageChange={onPageChange} />
+          )}
+          count={paginationData?.total || 0}
+          rowsPerPage={paginationData?.limit || 10}
+          page={(paginationData?.currentPage || 1) - 1}
           onPageChange={(_, page) => {
-            table.setPageIndex(page)
+            onPageChange(page + 1)
           }}
         />
       </Card>
@@ -365,120 +344,3 @@ const ExpenseListTable = ({ expenseData }) => {
 }
 
 export default ExpenseListTable
-
-// Updated ActionMenu
-const ActionMenu = ({ row, setData }) => {
-  const [open, setOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
-
-  // React Hook Form setup
-  const { register, handleSubmit, reset } = useForm({
-    defaultValues: row.original
-  })
-
-  // Handle save
-  const onSubmit = values => {
-    setData(prev => prev.map(item => (item.sl === row.original.sl ? { ...item, ...values } : item)))
-    setEditOpen(false)
-    setOpen(false)
-  }
-
-  // Open modal & reset with current data
-  const handleEdit = () => {
-    reset(row.original)
-    setEditOpen(true)
-    setOpen(false)
-  }
-
-  return (
-    <div className='relative'>
-      {/* 3-dot trigger */}
-      <button
-        onClick={() => setOpen(prev => !prev)}
-        className='p-2 rounded hover:bg-gray-100 transition cursor-pointer'
-      >
-        <MdMoreVert size={20} />
-      </button>
-
-      {/* Dropdown Menu */}
-      {open && (
-        <div className='absolute right-0 mt-2 w-36 bg-white border rounded shadow-md z-10'>
-          <button
-            onClick={handleEdit}
-            className='cursor-pointer flex items-center w-full px-3 py-2 text-base hover:bg-gray-100'
-          >
-            <MdOutlineEdit className='mr-1' />
-            Edit
-          </button>
-
-          <button
-            onClick={async () => {
-              Swal.fire({
-                title: 'Are you sure?',
-                text: `You are about to delete expense ${row.original.referenceNumber}. This action cannot be undone.`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!'
-              }).then(result => {
-                if (result.isConfirmed) {
-                  setData(prev => prev.filter(item => item.sl !== row.original.sl))
-                  Swal.fire('Deleted!', `Expense ${row.original.referenceNumber} has been removed.`, 'success')
-                }
-              })
-              setOpen(false)
-            }}
-            className='cursor-pointer flex items-center w-full px-3 py-2 text-base hover:bg-gray-100 text-red-500'
-          >
-            <MdDeleteOutline className='mr-1' /> Delete
-          </button>
-        </div>
-      )}
-
-      {/* Edit Modal */}
-      {editOpen && (
-        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4'>
-          <div className='bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6'>
-            <Typography variant='h6' className='mb-4 font-semibold text-gray-900'>
-              Edit Expense — <span className='text-primary'>{row.original.referenceNumber}</span>
-            </Typography>
-
-            {/* Form */}
-            <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
-              <div className='grid grid-cols-2 gap-4'>
-                <CustomTextField label='Amount' type='number' {...register('amount')} fullWidth />
-                <CustomTextField label='Category' {...register('category')} fullWidth />
-              </div>
-
-              <div className='grid grid-cols-2 gap-4'>
-                <CustomTextField label='Expense For' {...register('expenseFor')} fullWidth />
-                <CustomTextField label='Payment Type' {...register('paymentType')} fullWidth />
-              </div>
-
-              <div className='grid grid-cols-2 gap-4'>
-                <CustomTextField label='Reference Number' {...register('referenceNumber')} fullWidth />
-                <CustomTextField label='Expense Date' type='date' {...register('expenseDate')} fullWidth />
-              </div>
-
-              {/* Actions */}
-              <div className='flex justify-end gap-3 pt-6'>
-                <Button
-                  variant='outlined'
-                  color='inherit'
-                  onClick={() => setEditOpen(false)}
-                  className='px-4 py-2 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100 transition'
-                >
-                  Cancel
-                </Button>
-                <Button variant='contained' color='primary' className='px-5 py-2 rounded-lg shadow-md' type='submit'>
-                  Save Changes
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}

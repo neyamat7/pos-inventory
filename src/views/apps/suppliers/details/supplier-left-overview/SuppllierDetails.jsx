@@ -1,8 +1,9 @@
 'use client'
 
-// MUI Imports
+// React
 import { useState } from 'react'
 
+// MUI Imports
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Chip from '@mui/material/Chip'
@@ -10,25 +11,28 @@ import Divider from '@mui/material/Divider'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 
-// Icons (Lucide)
-import { Wallet, AlertTriangle, Package, ChevronDown } from 'lucide-react'
+// Lucide Icons
+import { Wallet, AlertTriangle, Package, ChevronDown, User, Mail, Phone, MapPin, CreditCard } from 'lucide-react'
 
-// Component Imports
+// Components
 import CustomAvatar from '@core/components/mui/Avatar'
-import EditUserInfo from '@components/dialogs/edit-user-info'
-import OpenDialogOnElementClick from '@components/dialogs/OpenDialogOnElementClick'
+import EditSupplierInfo from './EditSupplierInfo'
 
+// -------------------------------------------------------------
+// Component
+// -------------------------------------------------------------
 const SupplierDetails = ({ supplierData }) => {
   const [isCrateHovered, setIsCrateHovered] = useState(false)
   const [crateLocked, setCrateLocked] = useState(false)
+  const [open, setOpen] = useState(false)
 
   const buttonProps = {
     variant: 'contained',
     children: 'Edit Details'
   }
 
-  // Calculate total crates
-  const totalCrates = (supplierData?.crate?.type_one?.qty || 0) + (supplierData?.crate?.type_two?.qty || 0)
+  // Calculate total crates from supplier data structure
+  const totalCrates = (supplierData?.crate_info?.crate1 || 0) + (supplierData?.crate_info?.crate2 || 0)
 
   const isExpanded = isCrateHovered || crateLocked
 
@@ -36,12 +40,12 @@ const SupplierDetails = ({ supplierData }) => {
     <Card className='w-full'>
       <CardContent className='flex flex-col md:flex-row items-start gap-8 p-6'>
         {/* ----------------------------- */}
-        {/* LEFT SIDE — Profile Summary */}
+        {/* LEFT SIDE — Profile & Contact Summary */}
         {/* ----------------------------- */}
         <div className='flex flex-col items-center gap-4 w-full md:w-1/3'>
           {/* Avatar */}
           <CustomAvatar
-            src={supplierData?.image}
+            src={supplierData?.basic_info?.avatar}
             variant='rounded'
             alt='Supplier Avatar'
             size={120}
@@ -51,22 +55,47 @@ const SupplierDetails = ({ supplierData }) => {
           {/* Name + ID */}
           <div className='text-center'>
             <Typography variant='h5' className='font-semibold'>
-              {supplierData?.name}
+              {supplierData?.basic_info?.name}
             </Typography>
             <Typography variant='body2' color='text.secondary'>
-              Supplier ID #{supplierData?.sl}
+              Supplier ID #{supplierData?.basic_info?.sl}
             </Typography>
+            <Chip label={supplierData?.basic_info?.role || 'supplier'} color='primary' size='small' className='mt-2' />
+          </div>
+
+          {/* Contact Information */}
+          <div className='w-full bg-gray-50 rounded-lg p-4 space-y-3'>
+            <Typography variant='h6' className='font-medium flex items-center gap-2 justify-center'>
+              Contact Information
+            </Typography>
+
+            <div className='space-y-2 flex flex-col items-center'>
+              <div className='flex items-center gap-2'>
+                <Mail size={16} className='text-textSecondary' />
+                <Typography variant='body2'>{supplierData?.contact_info?.email || 'No email'}</Typography>
+              </div>
+
+              <div className='flex items-center gap-2'>
+                <Phone size={16} className='text-textSecondary' />
+                <Typography variant='body2'>{supplierData?.contact_info?.phone || 'No phone'}</Typography>
+              </div>
+
+              <div className='flex items-center gap-2'>
+                <MapPin size={16} className='text-textSecondary' />
+                <Typography variant='body2'>{supplierData?.contact_info?.location || 'No location'}</Typography>
+              </div>
+            </div>
           </div>
 
           {/* Info Section: Balance, Due, Total Crate */}
-          <div className='flex flex-wrap justify-center items-start gap-6 mt-4'>
+          <div className='flex flex-wrap justify-center items-start gap-3 mt-4'>
             {/* Balance */}
             <div className='flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition'>
               <CustomAvatar variant='rounded' skin='light' color='success'>
                 <Wallet size={20} />
               </CustomAvatar>
               <div>
-                <Typography variant='h6'>৳{supplierData?.balance || 0}</Typography>
+                <Typography variant='h6'>৳{supplierData?.account_info?.balance || 0}</Typography>
                 <Typography variant='body2' color='text.secondary'>
                   Balance
                 </Typography>
@@ -79,7 +108,7 @@ const SupplierDetails = ({ supplierData }) => {
                 <AlertTriangle size={20} />
               </CustomAvatar>
               <div>
-                <Typography variant='h6'>৳{supplierData?.due || 0}</Typography>
+                <Typography variant='h6'>৳{supplierData?.account_info?.due || 0}</Typography>
                 <Typography variant='body2' color='text.secondary'>
                   Due
                 </Typography>
@@ -121,8 +150,14 @@ const SupplierDetails = ({ supplierData }) => {
                 }`}
               >
                 <div className='text-sm text-gray-600 ml-10 leading-tight space-y-1'>
-                  <p>• Type 1: {supplierData?.crate?.type_one?.qty || 0} pcs</p>
-                  <p>• Type 2: {supplierData?.crate?.type_two?.qty || 0} pcs</p>
+                  <p>
+                    • Crate 1: {supplierData?.crate_info?.crate1 || 0} pcs (৳
+                    {supplierData?.crate_info?.crate1Price || 0})
+                  </p>
+                  <p>
+                    • Crate 2: {supplierData?.crate_info?.crate2 || 0} pcs (৳
+                    {supplierData?.crate_info?.crate2Price || 0})
+                  </p>
                 </div>
               </div>
 
@@ -136,61 +171,132 @@ const SupplierDetails = ({ supplierData }) => {
           </div>
         </div>
 
-        {/* Divider */}
+        {/* Divider for horizontal layout */}
         <Divider orientation='vertical' flexItem className='hidden md:block mx-2' />
 
         {/* ----------------------------- */}
-        {/* RIGHT SIDE — Supplier Details */}
+        {/* RIGHT SIDE — Account & Crate Information */}
         {/* ----------------------------- */}
-        <div className='flex flex-col flex-1 gap-4'>
+        <div className='flex flex-col flex-1 gap-6'>
           <Typography variant='h5' className='font-semibold'>
-            Details
+            Account & Crate Details
           </Typography>
           <Divider />
 
-          <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
-            {/* Username */}
-            <div>
-              <Typography color='text.primary' className='font-medium'>
-                Username:
-              </Typography>
-              <Typography>{supplierData?.name || '-'}</Typography>
-            </div>
+          {/* Account Information Section */}
+          <div>
+            <Typography variant='h6' className='font-medium mb-3 flex items-center gap-2'>
+              <CreditCard size={18} />
+              Account Information
+            </Typography>
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 pl-6'>
+              <div className='bg-gray-50 p-4 rounded-lg'>
+                <Typography color='text.primary' className='font-medium mb-1'>
+                  Account Number
+                </Typography>
+                <Typography
+                  variant='h6'
+                  className={!supplierData?.account_info?.accountNumber ? 'text-textSecondary' : ''}
+                >
+                  {supplierData?.account_info?.accountNumber || 'Not assigned'}
+                </Typography>
+              </div>
 
-            {/* Email */}
-            <div>
-              <Typography color='text.primary' className='font-medium'>
-                Billing Email:
-              </Typography>
-              <Typography>{supplierData?.email || '-'}</Typography>
-            </div>
+              <div className='bg-gray-50 p-4 rounded-lg'>
+                <Typography color='text.primary' className='font-medium mb-1'>
+                  Current Balance
+                </Typography>
+                <Typography variant='h6' className='text-success'>
+                  ৳{supplierData?.account_info?.balance?.toLocaleString() || 0}
+                </Typography>
+              </div>
 
-            {/* Phone */}
-            <div>
-              <Typography color='text.primary' className='font-medium'>
-                Contact:
-              </Typography>
-              <Typography>{supplierData?.phone || '-'}</Typography>
-            </div>
+              <div className='bg-gray-50 p-4 rounded-lg'>
+                <Typography color='text.primary' className='font-medium mb-1'>
+                  Due Amount
+                </Typography>
+                <Typography
+                  variant='h6'
+                  className={supplierData?.account_info?.due > 0 ? 'text-error' : 'text-textSecondary'}
+                >
+                  ৳{supplierData?.account_info?.due?.toLocaleString() || 0}
+                </Typography>
+              </div>
 
-            {/* Location */}
-            <div className='sm:col-span-2'>
-              <Typography color='text.primary' className='font-medium'>
-                Location:
-              </Typography>
-              <Typography>{supplierData?.location || '-'}</Typography>
+              <div className='bg-gray-50 p-4 rounded-lg'>
+                <Typography color='text.primary' className='font-medium mb-1'>
+                  Cost
+                </Typography>
+                <Typography variant='h6'>৳{supplierData?.account_info?.cost?.toLocaleString() || 0}</Typography>
+              </div>
+            </div>
+          </div>
+
+          <Divider />
+
+          {/* Crate Information Section */}
+          <div>
+            <Typography variant='h6' className='font-medium mb-3 flex items-center gap-2'>
+              <Package size={18} />
+              Crate Information
+            </Typography>
+            <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 pl-6'>
+              <div className='bg-gray-50 p-4 rounded-lg'>
+                <Typography color='text.primary' className='font-medium mb-1'>
+                  Crate 1 Quantity
+                </Typography>
+                <Typography variant='h6'>{supplierData?.crate_info?.crate1 || 0} pcs</Typography>
+                <Typography variant='body2' color='text.secondary'>
+                  Price: ৳{supplierData?.crate_info?.crate1Price || 0}
+                </Typography>
+                <Typography variant='body2' color='text.secondary'>
+                  Remaining: {supplierData?.crate_info?.remainingCrate1 || 0} pcs
+                </Typography>
+              </div>
+
+              <div className='bg-gray-50 p-4 rounded-lg'>
+                <Typography color='text.primary' className='font-medium mb-1'>
+                  Crate 2 Quantity
+                </Typography>
+                <Typography variant='h6'>{supplierData?.crate_info?.crate2 || 0} pcs</Typography>
+                <Typography variant='body2' color='text.secondary'>
+                  Price: ৳{supplierData?.crate_info?.crate2Price || 0}
+                </Typography>
+                <Typography variant='body2' color='text.secondary'>
+                  Remaining: {supplierData?.crate_info?.remainingCrate2 || 0} pcs
+                </Typography>
+              </div>
+
+              <div className='sm:col-span-1 bg-blue-50 p-4 rounded-lg border border-blue-200'>
+                <Typography color='text.primary' className='font-medium mb-1'>
+                  Total Crates Value
+                </Typography>
+                <Typography variant='h6' className='text-primary'>
+                  ৳
+                  {(
+                    (supplierData?.crate_info?.crate1 || 0) * (supplierData?.crate_info?.crate1Price || 0) +
+                    (supplierData?.crate_info?.crate2 || 0) * (supplierData?.crate_info?.crate2Price || 0)
+                  ).toLocaleString()}
+                </Typography>
+                <Typography variant='body2' color='text.secondary'>
+                  Total of {totalCrates} crates
+                </Typography>
+              </div>
             </div>
           </div>
 
           {/* Edit Button */}
-          <div className='mt-6'>
-            <OpenDialogOnElementClick
-              supplierData={supplierData}
-              element={Button}
-              elementProps={buttonProps}
-              dialog={EditUserInfo}
-            />
+          <div className='mt-4'>
+            <Button {...buttonProps} onClick={() => setOpen(true)} />
           </div>
+
+          {/* Edit Dialog */}
+          <EditSupplierInfo
+            open={open}
+            handleClose={() => setOpen(false)}
+            supplierData={supplierData}
+            onSave={() => console.log('Supplier updated')}
+          />
         </div>
       </CardContent>
     </Card>

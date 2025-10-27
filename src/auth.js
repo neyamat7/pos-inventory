@@ -6,6 +6,8 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 
 import GoogleProvider from 'next-auth/providers/google'
 
+import jwt from 'jsonwebtoken'
+
 import clientPromise from './libs/mongoClientPromise'
 import { userModel } from './models/user-model'
 
@@ -85,7 +87,9 @@ export const {
           id: token.id,
           email: token.email
         }
-        session.accessToken = token
+        session.accessToken = jwt.sign({ id: token.id, email: token.email }, process.env.AUTH_SECRET, {
+          expiresIn: '7d'
+        })
       }
 
       return session
