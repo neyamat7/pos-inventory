@@ -1,11 +1,14 @@
-import { getEcommerceData } from '@/app/server/actions'
+import { getProductById } from '@/actions/productActions'
 import EditProduct from '@/views/apps/products/edit/EditProduct'
 
-export default async function Page({ params }) {
-  console.log('params', params.id)
-  const data = await getEcommerceData()
+export default async function UpdateProductPage({ params }) {
+  const result = await getProductById(params.id)
 
-  console.log('data', data.products)
+  // console.log('result in edit page', result)
 
-  return <EditProduct id={params.id} productData={data?.products} />
+  if (!result.success) {
+    console.error('Failed to fetch product:', result.error)
+  }
+
+  return <EditProduct id={params.id} productData={result.data} />
 }

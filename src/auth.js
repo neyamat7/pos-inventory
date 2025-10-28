@@ -8,6 +8,8 @@ import GoogleProvider from 'next-auth/providers/google'
 
 import jwt from 'jsonwebtoken'
 
+import bcrypt from 'bcryptjs'
+
 import clientPromise from './libs/mongoClientPromise'
 import { userModel } from './models/user-model'
 
@@ -34,17 +36,13 @@ export const {
       async authorize(credentials) {
         if (credentials === null) return null
 
-        // console.log('credentials login, line 33 in auth.js', credentials)
-
         await connectToMongoDB()
 
         try {
           const user = await userModel.findOne({ email: credentials.email })
 
-          // console.log('user in auth.js', user)
-
           if (user) {
-            const isMatch = user?.password === credentials.password
+            const isMatch = await bcrypt.compare(credentials.password, user.password)
 
             if (isMatch) {
               return { id: user._id.toString(), email: user.email }

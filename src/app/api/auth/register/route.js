@@ -7,9 +7,9 @@ import { connectToMongoDB } from '@/libs/mongo'
 
 export async function POST(request) {
   try {
-    const { name, email, password, imageUrl = '', role } = await request.json()
+    const { name, email, phone, password, imageUrl = '', role } = await request.json()
 
-    console.log('Received data:', { name, email, role })
+    // console.log('Received data:', { name, email, role, phone })
 
     // Validate required fields
     if (!name || !email || !password || !role) {
@@ -39,12 +39,13 @@ export async function POST(request) {
     const userData = {
       name,
       email,
+      phone,
       password: hashedPassword,
       image: imageUrl || null,
       role
     }
 
-    console.log('User data to save:', userData)
+    // console.log('User data to save:', userData)
 
     // Create and save user
     const user = new userModel(userData)
@@ -63,6 +64,78 @@ export async function POST(request) {
     return NextResponse.json({ message: 'User created successfully' }, { status: 201 })
   } catch (error) {
     console.error('Registration error:', error)
+
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
+  }
+}
+
+export async function PUT(request) {
+  try {
+    const { id, name, email, phone, imageUrl, role } = await request.json()
+
+    console.log('Received updated data', name, email, phone, role)
+
+    // Validate required fields
+    if (!id || !name || !email || !phone || !role) {
+      return NextResponse.json({ message: 'ID, name, email, phone and role are required' }, { status: 400 })
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({ message: 'Invalid email format' }, { status: 400 })
+    }
+
+    await connectToMongoDB()
+
+    // Check if user exists
+    const existingUser = await userModel.findById(id)
+
+    if (!existingUser) {
+      return NextResponse.json({ message: 'User not found' }, { status: 404 })
+    }
+
+    // Check if email is already taken by another user
+    const emailExists = await userModel.findOne({ email, _id: { $ne: id } })
+
+    if (emailExists) {
+      return NextResponse.json({ message: 'Email already taken by another user' }, { status: 400 })
+    }
+
+    // Update user
+    const updatedUser = await userModel.findByIdAndUpdate(
+      id,
+      {
+        name,
+        email,
+        phone,
+        role,
+        image: imageUrl || null
+      },
+      { new: true, runValidators: true }
+    )
+
+    if (!updatedUser) {
+      return NextResponse.json({ message: 'Failed to update user' }, { status: 500 })
+    }
+
+    return NextResponse.json(
+      {
+        message: 'User updated successfully',
+        user: {
+          id: updatedUser._id,
+          name: updatedUser.name,
+          email: updatedUser.email,
+          phone: updatedUser.phone,
+          role: updatedUser.role,
+          image: updatedUser.image
+        }
+      },
+      { status: 200 }
+    )
+  } catch (error) {
+    console.error('Update user error:', error)
 
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
   }

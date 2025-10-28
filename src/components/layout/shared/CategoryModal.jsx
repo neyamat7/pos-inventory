@@ -59,16 +59,16 @@ const CategoryModal = ({
               <div className='grid grid-cols-2 gap-3'>
                 {filteredCategories.map(category => (
                   <div
-                    onClick={() => handleCategoryClick(category.name)}
-                    key={category.id + category.name}
+                    onClick={() => handleCategoryClick(category.categoryName)}
+                    key={category._id}
                     className='bg-gray-50 rounded-lg p-4 hover:bg-gray-100 cursor-pointer transition-colors'
                   >
                     <img
-                      src={category.image || '/placeholder.svg'}
-                      alt={category.name}
-                      className='w-full h-[100px] sobject-cover rounded mb-2 mx-auto'
+                      src={'/placeholder.svg'}
+                      alt={category.categoryName}
+                      className='w-full h-[100px] object-cover rounded mb-2 mx-auto'
                     />
-                    <p className='text-center text-sm font-medium'>{category.name}</p>
+                    <p className='text-center text-sm font-medium'>{category.categoryName}</p>
                   </div>
                 ))}
               </div>

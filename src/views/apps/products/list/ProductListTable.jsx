@@ -69,21 +69,40 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
   return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
 }
 
-const productStatusObj = {
-  Scheduled: { title: 'Scheduled', color: 'warning' },
-  Published: { title: 'Publish', color: 'success' },
-  Inactive: { title: 'Inactive', color: 'error' },
-  active: { title: 'Active', color: 'success' }
-}
-
 const columnHelper = createColumnHelper()
 
-const ProductListTable = ({ productData }) => {
+const ProductListTable = ({ productData, paginationData, loading, onPageChange, onPageSizeChange }) => {
   const [rowSelection, setRowSelection] = useState({})
-  const [data, setData] = useState(...[productData])
-  const [filteredData, setFilteredData] = useState(data)
+  const [data, setData] = useState([])
+  const [filteredData, setFilteredData] = useState([])
+
   const [globalFilter, setGlobalFilter] = useState('')
   const [selectedProduct, setSelectedProduct] = useState(null)
+
+  useEffect(() => {
+    if (productData) {
+      setData(productData)
+      setFilteredData(productData)
+    }
+  }, [productData])
+
+  const handleDelete = row => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `You are about to delete "${row.original.productName}". This action cannot be undone.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then(result => {
+      if (result.isConfirmed) {
+        setData(prev => prev?.filter(p => p._id !== row.original._id))
+        setFilteredData(prev => prev?.filter(p => p._id !== row.original._id))
+        Swal.fire('Deleted!', `"${row.original.productName}" has been removed.`, 'success')
+      }
+    })
+  }
 
   const columns = useMemo(
     () => [
@@ -105,53 +124,67 @@ const ProductListTable = ({ productData }) => {
           />
         )
       },
-      columnHelper.accessor('name', {
+      columnHelper.accessor('productName', {
         header: 'Product',
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
             <img
-              src={row.original.images || row.original.image}
+              src={row.original.productImage}
               width={38}
               height={38}
               className='rounded bg-actionHover object-cover'
-              alt={row.original.name}
+              alt={row.original.productName}
             />
             <div className='flex flex-col'>
               <Typography className='font-medium' color='text.primary'>
-                {row.original.name}
+                {row.original.productName}
               </Typography>
-              <Typography variant='body2'>{row.original.sku}</Typography>
+              <Typography variant='body2' color='text.secondary'>
+                {row.original.description?.substring(0, 30)}...
+              </Typography>
             </div>
           </div>
         )
       }),
-      columnHelper.accessor('sku', {
-        header: 'SKU',
-        cell: ({ row }) => <Typography>{row.original.sku || '-'}</Typography>
-      }),
-
-      columnHelper.accessor('cost_price', {
+      columnHelper.accessor('basePrice', {
         header: 'Price',
-        cell: ({ row }) => <Typography>{row.original.cost_price ?? '-'}</Typography>
+        cell: ({ row }) => <Typography>৳{row.original.basePrice?.toLocaleString() || '0'}</Typography>
       }),
-
-      columnHelper.accessor('commision_rate', {
+      columnHelper.accessor('commissionRate', {
         header: 'Commission',
         cell: ({ row }) => {
-          const c = row.original.commision_rate
+          const commission = row.original.commissionRate
+          const allowCommission = row.original.allowCommission
 
-          return <Typography>{c !== undefined && c !== null ? (c < 1 ? 'N/A' : `${c}%`) : '-'}</Typography>
+          return <Typography>{allowCommission ? `${commission}%` : 'N/A'}</Typography>
         }
       }),
-      columnHelper.accessor('category', {
+      columnHelper.accessor('categoryId', {
         header: 'Category',
-        cell: ({ row }) => <Typography>{row.original.category || '-'}</Typography>
+        cell: ({ row }) => <Typography>{row.original.categoryId?.categoryName || 'No Category'}</Typography>
       }),
       columnHelper.accessor('isCrated', {
         header: 'Crated',
-        cell: ({ row }) => <Typography>{row.original.isCrated ? 'Yes' : 'No'}</Typography>
+        cell: ({ row }) => (
+          <Chip
+            label={row.original.isCrated ? 'Yes' : 'No'}
+            color={row.original.isCrated ? 'success' : 'default'}
+            variant='tonal'
+            size='small'
+          />
+        )
       }),
-
+      columnHelper.accessor('allowCommission', {
+        header: 'Commission Allowed',
+        cell: ({ row }) => (
+          <Chip
+            label={row.original.allowCommission ? 'Yes' : 'No'}
+            color={row.original.allowCommission ? 'success' : 'default'}
+            variant='tonal'
+            size='small'
+          />
+        )
+      }),
       columnHelper.accessor('actions', {
         header: 'Actions',
         cell: ({ row }) => (
@@ -159,31 +192,12 @@ const ProductListTable = ({ productData }) => {
             <IconButton aria-label='View' onClick={() => setSelectedProduct(row.original)}>
               <i className='tabler-eye text-textSecondary' />
             </IconButton>
-            <Link href={`/apps/products/edit/${row.original.id}`}>
+            <Link href={`/apps/products/edit/${row.original._id}`}>
               <IconButton aria-label='Edit'>
                 <i className='tabler-edit text-textSecondary' />
               </IconButton>
             </Link>
-
-            <IconButton
-              aria-label='Delete'
-              onClick={() => {
-                Swal.fire({
-                  title: 'Are you sure?',
-                  text: `You are about to delete "${row.original.name}". This action cannot be undone.`,
-                  icon: 'warning',
-                  showCancelButton: true,
-                  confirmButtonColor: '#3085d6',
-                  cancelButtonColor: '#d33',
-                  confirmButtonText: 'Yes, delete it!'
-                }).then(result => {
-                  if (result.isConfirmed) {
-                    setData(prev => prev?.filter(p => p.id !== row.original.id))
-                    Swal.fire('Deleted!', `"${row.original.name}" has been removed.`, 'success')
-                  }
-                })
-              }}
-            >
+            <IconButton aria-label='Delete' onClick={() => handleDelete(row)}>
               <i className='tabler-trash text-textSecondary' />
             </IconButton>
           </div>
@@ -199,7 +213,6 @@ const ProductListTable = ({ productData }) => {
     columns,
     filterFns: { fuzzy: fuzzyFilter },
     state: { rowSelection, globalFilter },
-    initialState: { pagination: { pageSize: 10 } },
     enableRowSelection: true,
     globalFilterFn: fuzzyFilter,
     onRowSelectionChange: setRowSelection,
@@ -207,7 +220,6 @@ const ProductListTable = ({ productData }) => {
     onGlobalFilterChange: setGlobalFilter,
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues()
@@ -230,8 +242,8 @@ const ProductListTable = ({ productData }) => {
           <div className='flex flex-wrap items-center max-sm:flex-col gap-4 max-sm:is-full is-auto'>
             <CustomTextField
               select
-              value={table.getState().pagination.pageSize}
-              onChange={e => table.setPageSize(Number(e.target.value))}
+              value={paginationData?.limit || 10}
+              onChange={e => onPageSizeChange(Number(e.target.value))}
               className='flex-auto is-[70px] max-sm:is-full'
             >
               <MenuItem value='10'>10</MenuItem>
@@ -276,20 +288,22 @@ const ProductListTable = ({ productData }) => {
                 </tr>
               ))}
             </thead>
-            {table.getFilteredRowModel().rows.length === 0 ? (
+            {
               <tbody>
-                <tr>
-                  <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
-                    No data available
-                  </td>
-                </tr>
-              </tbody>
-            ) : (
-              <tbody>
-                {table
-                  .getRowModel()
-                  .rows.slice(0, table.getState().pagination.pageSize)
-                  .map(row => (
+                {loading ? (
+                  <tr>
+                    <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
+                      Loading...
+                    </td>
+                  </tr>
+                ) : table.getFilteredRowModel().rows.length === 0 ? (
+                  <tr>
+                    <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
+                      No data available
+                    </td>
+                  </tr>
+                ) : (
+                  table.getRowModel().rows.map(row => (
                     <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                       {row.getVisibleCells().map(cell => (
                         <td className='whitespace-nowrap border-r' key={cell.id}>
@@ -297,17 +311,23 @@ const ProductListTable = ({ productData }) => {
                         </td>
                       ))}
                     </tr>
-                  ))}
+                  ))
+                )}
               </tbody>
-            )}
+            }
           </table>
         </div>
+
         <TablePagination
-          component={() => <TablePaginationComponent table={table} />}
-          count={table.getFilteredRowModel().rows.length}
-          rowsPerPage={table.getState().pagination.pageSize}
-          page={table.getState().pagination.pageIndex}
-          onPageChange={(_, page) => table.setPageIndex(page)}
+          component={() => (
+            <TablePaginationComponent table={table} paginationData={paginationData} onPageChange={onPageChange} />
+          )}
+          count={paginationData?.total || 0}
+          rowsPerPage={paginationData?.limit || 10}
+          page={(paginationData?.currentPage || 1) - 1}
+          onPageChange={(_, page) => {
+            onPageChange(page + 1)
+          }}
         />
       </Card>
 

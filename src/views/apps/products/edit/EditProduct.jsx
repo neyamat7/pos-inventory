@@ -1,48 +1,155 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import { useRouter } from 'next/navigation'
 
 import Grid from '@mui/material/Grid2'
+import CircularProgress from '@mui/material/CircularProgress'
+import Box from '@mui/material/Box'
+import Alert from '@mui/material/Alert'
+
+import Swal from 'sweetalert2'
 
 import ProductFormProvider from '../add/ProductFormProvider'
 import ProductAddHeader from '../add/ProductAddHeader'
 import ProductInformation from '../add/ProductInformation'
+import { getProductById, updateProduct } from '@/actions/productActions'
 
-import { showAlert } from '@/utils/showAlert'
-
-export default function EditProduct({ id, productData }) {
-  const product = productData.find(p => String(p.id) === String(id))
+export default function EditProduct({ id, productData: initialProductData }) {
+  const [product, setProduct] = useState(initialProductData)
+  const [loading, setLoading] = useState(!initialProductData)
+  const [error, setError] = useState('')
+  const [updating, setUpdating] = useState(false)
   const router = useRouter()
 
-  console.log('product in edit page', product)
+  // Fetch product if not provided via props
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!initialProductData) {
+        setLoading(true)
 
-  if (!product) return <div>Product not found.</div>
+        try {
+          const result = await getProductById(id)
 
-  const handleUpdateProduct = values => {
-    const idx = productData.findIndex(p => String(p.id) === String(id))
+          if (result.success) {
+            setProduct(result.data)
+          } else {
+            setError(result.error || 'Failed to fetch product')
+          }
+        } catch (err) {
+          setError('An unexpected error occurred')
+          console.error('Fetch product error:', err)
+        } finally {
+          setLoading(false)
+        }
+      }
+    }
 
-    console.log('value', values)
+    fetchProduct()
+  }, [id, initialProductData])
 
-    if (idx !== -1) productData[idx] = { ...productData[idx], ...values }
-    console.log('updated product', productData[idx])
-    router.push('/apps/products/list')
-    showAlert('Product data has been updated successfully.', 'success')
+  const handleUpdateProduct = async values => {
+    setUpdating(true)
+
+    try {
+      // Transform form data to match API schema
+      const productPayload = {
+        productName: values.productName.trim(),
+        basePrice: Number(values.basePrice),
+        productImage: values.productImage?.trim() || '',
+        description: values.description?.trim() || '',
+        categoryId: values.categoryId || null,
+        commissionRate: Number(values.commissionRate),
+        allowCommission: values.allowCommission,
+        isCrated: values.isCrated
+      }
+
+      const result = await updateProduct(id, productPayload)
+
+      if (result.success) {
+        Swal.fire({
+          title: 'Success!',
+          text: 'Product updated successfully',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          router.push('/apps/products/list')
+        })
+      } else {
+        Swal.fire({
+          title: 'Error!',
+          text: result.error || 'Failed to update product',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        })
+      }
+    } catch (err) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'An unexpected error occurred',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      })
+      console.error('Update product error:', err)
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  // Transform product data for form default values
+  const getFormDefaultValues = () => {
+    if (!product) return {}
+
+    return {
+      productName: product.productName || '',
+      basePrice: product.basePrice || 0,
+      productImage: product.productImage || '',
+      description: product.description || '',
+      categoryId: product.categoryId?._id || product.categoryId || '',
+      commissionRate: product.commissionRate || 0,
+      allowCommission: product.allowCommission || false,
+      isCrated: product.isCrated || false
+    }
+  }
+
+  if (loading) {
+    return (
+      <Box display='flex' justifyContent='center' alignItems='center' minHeight='400px'>
+        <CircularProgress />
+      </Box>
+    )
+  }
+
+  if (error) {
+    return (
+      <Alert severity='error' sx={{ m: 2 }}>
+        {error}
+      </Alert>
+    )
+  }
+
+  if (!product) {
+    return (
+      <Alert severity='warning' sx={{ m: 2 }}>
+        Product not found
+      </Alert>
+    )
   }
 
   return (
     <ProductFormProvider
-      mode={product ? 'edit' : 'create'}
-      defaultValues={product || {}}
+      mode='edit'
+      defaultValues={getFormDefaultValues()}
       onSubmit={handleUpdateProduct}
       resetOnSubmit={false}
-      key={product.id || 'create'}
     >
       <Grid container spacing={6}>
         <Grid size={{ xs: 12 }}>
-          <ProductAddHeader mode='edit' />
+          <ProductAddHeader mode='edit' loading={updating} />
         </Grid>
         <Grid size={{ xs: 12 }}>
-          <ProductInformation mode='edit' />
+          <ProductInformation mode='edit' loading={updating} />
         </Grid>
       </Grid>
     </ProductFormProvider>

@@ -1,49 +1,86 @@
 'use client'
 
+import { useState } from 'react'
+
 // MUI Imports
 import Grid from '@mui/material/Grid2'
 
 // Component Imports
-import { products } from '@/fake-db/apps/products'
+import Swal from 'sweetalert2'
+
 import ProductFormProvider from '@/views/apps/products/add/ProductFormProvider'
 import ProductAddHeader from '@/views/apps/products/add/ProductAddHeader'
 import ProductInformation from '@/views/apps/products/add/ProductInformation'
 
-const addProductPage = () => {
+// Action Imports
+import { createProduct } from '@/actions/productActions'
+
+// Component Imports
+
+const AddProductPage = () => {
+  const [loading, setLoading] = useState(false)
+
   const handleAddProduct = async values => {
-    // const form = new FormData()
+    setLoading(true)
 
-    // form.append('name', values.name ?? '')
-    // form.append('sku', values.sku ?? '')
+    try {
+      // Transform form data to match API schema
+      const productPayload = {
+        productName: values.productName.trim(),
+        basePrice: Number(values.basePrice),
+        productImage: values.productImage?.trim() || '',
+        description: values.description?.trim() || '',
+        categoryId: values.categoryId || null,
+        commissionRate: Number(values.commissionRate),
+        allowCommission: values.allowCommission,
+        isCrated: values.isCrated
+      }
 
-    // form.append('barcode', values.barcode ?? '')
-    // form.append('description', values.description ?? '')
+      const result = await createProduct(productPayload)
 
-    // form.append('price', JSON.stringify(values.price ?? {}))
-    // form.append('organize', JSON.stringify(values.organize ?? {}))
+      if (result.success) {
+        Swal.fire({
+          title: 'Success!',
+          text: 'Product created successfully',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        })
 
-    // form.append('variants', JSON.stringify(values.variants ?? []))
-    // ;(values.images ?? []).forEach(f => form.append('images', f))
-
-    console.log(values)
-
-    products.push(values)
-    console.log('products', products)
+        // You can redirect or reset form here
+      } else {
+        Swal.fire({
+          title: 'Error!',
+          text: result.error || 'Failed to create product',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        })
+      }
+    } catch (error) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'An unexpected error occurred',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      })
+      console.error('Create product error:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <ProductFormProvider mode='create' onSubmit={handleAddProduct} resetOnSubmit>
       <Grid container spacing={6}>
         <Grid size={{ xs: 12 }}>
-          <ProductAddHeader mode='create' />
+          <ProductAddHeader mode='create' loading={loading} />
         </Grid>
 
         <Grid size={{ xs: 12 }}>
-          <ProductInformation mode='create' />
+          <ProductInformation mode='create' loading={loading} />
         </Grid>
       </Grid>
     </ProductFormProvider>
   )
 }
 
-export default addProductPage
+export default AddProductPage

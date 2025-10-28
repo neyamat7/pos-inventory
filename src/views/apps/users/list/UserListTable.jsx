@@ -89,12 +89,6 @@ const UserListTable = ({ userData, paginationData, loading, onPageChange, onPage
   const [editModal, setEditModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState({})
 
-  const handleSaveUser = updated => {
-    setData(prev => prev.map(u => (u._id === updated._id ? updated : u)))
-    setFilteredData(prev => prev.map(u => (u._id === updated._id ? updated : u)))
-    setEditModal(false)
-  }
-
   const handleEditUser = user => {
     setUserModal(false)
     setEditModal(true)
@@ -172,9 +166,9 @@ const UserListTable = ({ userData, paginationData, loading, onPageChange, onPage
           </Typography>
         )
       }),
-      columnHelper.accessor('contact', {
-        header: 'Contact',
-        cell: ({ row }) => <Typography color='text.primary'>{row.original.contact}</Typography>
+      columnHelper.accessor('phone', {
+        header: 'Phone',
+        cell: ({ row }) => <Typography color='text.primary'>{row.original.phone}</Typography>
       }),
       columnHelper.accessor('email', {
         header: 'Email',
@@ -352,7 +346,13 @@ const UserListTable = ({ userData, paginationData, loading, onPageChange, onPage
         onEdit={() => handleEditUser(selectedUser)}
       />
 
-      <EditUserModal open={editModal} user={selectedUser} onClose={() => setEditModal(false)} onSave={handleSaveUser} />
+      <EditUserModal
+        open={editModal}
+        user={selectedUser}
+        onClose={() => setEditModal(false)}
+        setFilteredData={setFilteredData}
+        setData={setData}
+      />
     </>
   )
 }

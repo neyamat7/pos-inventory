@@ -17,6 +17,8 @@ const EditExpenseModal = ({ open, handleClose, rowData, setData }) => {
   const [accounts, setAccounts] = useState([])
   const [accountsLoading, setAccountsLoading] = useState(false)
 
+  // console.log('accounts', accounts)
+
   const {
     register,
     handleSubmit,
@@ -30,8 +32,7 @@ const EditExpenseModal = ({ open, handleClose, rowData, setData }) => {
       expense_for: '',
       payment_type: '',
       reference_num: '',
-      choose_account: '',
-      expense_by: ''
+      choose_account: ''
     }
   })
 
@@ -56,8 +57,7 @@ const EditExpenseModal = ({ open, handleClose, rowData, setData }) => {
             expense_for: rowData.expense_for || '',
             payment_type: rowData.payment_type || '',
             reference_num: rowData.reference_num || '',
-            choose_account: rowData.choose_account || '',
-            expense_by: rowData.expense_by || ''
+            choose_account: rowData.choose_account?._id || rowData.choose_account || ''
           })
         } catch (err) {
           console.error('Error fetching accounts:', err)
@@ -78,7 +78,7 @@ const EditExpenseModal = ({ open, handleClose, rowData, setData }) => {
       return
     }
 
-    setLoading(true)
+    setLoading(true) 
     setError('')
 
     try {
@@ -288,19 +288,6 @@ const EditExpenseModal = ({ open, handleClose, rowData, setData }) => {
                   )}
                 </CustomTextField>
               )}
-            />
-
-            {/* Expense By */}
-            <CustomTextField
-              fullWidth
-              label='Expense By'
-              placeholder='Who made this expense?'
-              {...register('expense_by', {
-                required: 'Expense by is required'
-              })}
-              error={!!errors.expense_by}
-              helperText={errors.expense_by?.message}
-              disabled={loading}
             />
 
             {/* Reference Number */}

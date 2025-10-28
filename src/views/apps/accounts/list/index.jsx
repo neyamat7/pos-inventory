@@ -82,7 +82,7 @@ const AccountList = ({ accountsData = [], paginationData, onPageChange, onPageSi
     setData(accountsData)
   }, [accountsData])
 
-  console.log('accounts data', accountsData)
+  // console.log('accounts data', accountsData)
 
   const columns = useMemo(
     () => [

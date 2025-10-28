@@ -73,3 +73,22 @@ export async function getAccounts(page = 1, limit = 10) {
     }
   }
 }
+
+export async function updateAccount(accountId, accountData) {
+  try {
+    const response = await api.put(`/account/update/${accountId}`, accountData)
+
+    return {
+      success: true,
+      data: response,
+      message: 'Account updated successfully'
+    }
+  } catch (error) {
+    console.error('Update account error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to update account'
+    }
+  }
+}

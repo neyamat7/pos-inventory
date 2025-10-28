@@ -32,6 +32,7 @@ const AddUserDrawer = props => {
     defaultValues: {
       name: '',
       email: '',
+      phone: '',
       password: '',
       role: '',
       imageUrl: ''
@@ -50,6 +51,7 @@ const AddUserDrawer = props => {
         body: JSON.stringify({
           name: data.name,
           email: data.email,
+          phone: data.phone,
           password: data.password,
           role: data.role,
           imageUrl: data.imageUrl
@@ -64,13 +66,14 @@ const AddUserDrawer = props => {
           id: Date.now(),
           name: data.name,
           email: data.email,
+          phone: data.phone,
           role: data.role,
           image: data.imageUrl || `https://randomuser.me/api/portraits/men/${Math.floor(Math.random() * 99)}.jpg`
         }
 
         setData([...(userData ?? []), newUser])
         handleClose()
-        resetForm({ name: '', email: '', password: '', role: '', imageUrl: '' })
+        resetForm({ name: '', email: '', phone: '', password: '', role: '', imageUrl: '' })
         alert('User created successfully!')
       } else {
         alert(`Error: ${result.message}`)
@@ -85,7 +88,7 @@ const AddUserDrawer = props => {
 
   const handleReset = () => {
     handleClose()
-    resetForm({ name: '', email: '', password: '', role: '', imageUrl: '' })
+    resetForm({ name: '', email: '', phone: '', password: '', role: '', imageUrl: '' })
   }
 
   return (
@@ -135,6 +138,22 @@ const AddUserDrawer = props => {
                 label='Email'
                 placeholder='johndoe@gmail.com'
                 {...(errors.email && { error: true, helperText: 'This field is required.' })}
+              />
+            )}
+          />
+
+          {/* phone */}
+          <Controller
+            name='phone'
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <CustomTextField
+                {...field}
+                fullWidth
+                label='Phone Number'
+                placeholder='+1 234 567 8900'
+                {...(errors.phone && { error: true, helperText: 'This field is required.' })}
               />
             )}
           />

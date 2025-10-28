@@ -17,6 +17,8 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useForm, Controller } from 'react-hook-form'
 
 // Component Imports
+import { useSession } from 'next-auth/react'
+
 import CustomTextField from '@core/components/mui/TextField'
 
 // Action Imports
@@ -32,6 +34,11 @@ const AddExpenseDrawer = props => {
   const [error, setError] = useState('')
   const [accounts, setAccounts] = useState([])
   const [accountsLoading, setAccountsLoading] = useState(false)
+
+  const { data: session, status } = useSession()
+  const currentUserId = session?.user?.id
+
+  const sessionLoading = status === 'loading'
 
   // Hooks
   const {
@@ -87,9 +94,8 @@ const AddExpenseDrawer = props => {
         expense_for: data.expense_for.trim(),
         payment_type: data.payment_type,
         reference_num: data.reference_num?.trim() || '',
-        choose_account: data.choose_account
-
-        // Note: expense_by should be set from the logged-in user's ID on the server side
+        choose_account: data.choose_account,
+        expense_by: currentUserId
       }
 
       const result = await createExpense(expensePayload)
@@ -154,6 +160,12 @@ const AddExpenseDrawer = props => {
               </Alert>
             )}
 
+            {sessionLoading && (
+              <Alert severity='info' sx={{ mb: 2 }}>
+                Loading user session...
+              </Alert>
+            )}
+
             <Typography color='text.primary' className='font-medium'>
               Expense Information
             </Typography>
@@ -172,7 +184,7 @@ const AddExpenseDrawer = props => {
                   InputLabelProps={{ shrink: true }}
                   error={!!errors.date}
                   helperText={errors.date?.message}
-                  disabled={loading}
+                  disabled={sessionLoading || loading}
                 />
               )}
             />

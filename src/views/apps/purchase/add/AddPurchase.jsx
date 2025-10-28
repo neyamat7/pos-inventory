@@ -16,11 +16,8 @@ import PurchaseHeader from './PurchaseHeader'
 import SearchProduct from './SearchProduct'
 import { handleDistributionExpense } from '@/utils/handleDistribution'
 import CategoryModal from '@/components/layout/shared/CategoryModal'
-import { categories } from '@/data/productsCategory/productsCategory'
 import { filteredProductsData } from '@/utils/filteredProductsData'
 
-// import { handleCrateCount } from '@/utils/handleCrateCount'
-import { calculateTotalDue } from '@/utils/calculateTotalDue'
 import { showAlert } from '@/utils/showAlert'
 import ShowProductList from '@/components/layout/shared/ShowProductList'
 
@@ -39,7 +36,7 @@ const handleCrateCount = (setCartProducts, productId, personId, type, value) => 
   )
 }
 
-export default function AddPurchase({ productsData = [], suppliersData = [] }) {
+export default function AddPurchase({ productsData = [], suppliersData = [], categoriesData = [] }) {
   const skipNextEffect = useRef(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryModalOpen, setCategoryModalOpen] = useState(false)
@@ -64,8 +61,8 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
 
   const filteredProducts = filteredProductsData(productsData, searchTerm, selectedCategory)
 
-  const filteredCategories = categories.filter(category =>
-    category.name.toLowerCase().includes(categorySearch.toLowerCase())
+  const filteredCategories = (categoriesData || []).filter(category =>
+    (category.name || '').toString().toLowerCase().includes(categorySearch.toLowerCase())
   )
 
   const handleExpenseChange = () => {
@@ -85,7 +82,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
   }
 
   const handleCartProductClick = product => {
-    if (!selectedSupplier?.sl) {
+    if (!selectedSupplier?._id) {
       toast.warning('Please select a supplier first.', {
         position: 'top-center'
       })
@@ -94,7 +91,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
     }
 
     const isAlreadyAdded = cartProducts.some(
-      item => item.product_id === product.id && item.supplier_id === selectedSupplier.sl
+      item => item.product_id === product._id && item.supplier_id === selectedSupplier._id
     )
 
     if (isAlreadyAdded) {
@@ -106,18 +103,18 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
     }
 
     setCartProducts(prevCart => {
-      // Add product with additional properties
       const newCartItem = {
         ...product,
-        product_id: product.id,
-        product_name: product.name,
-        supplier_id: selectedSupplier.sl,
-        supplier_name: selectedSupplier.name,
+        product_id: product._id,
+        product_name: product.productName,
+        supplier_id: selectedSupplier._id,
+        supplier_sl: selectedSupplier.basic_info?.sl || '',
+        supplier_name: selectedSupplier.basic_info?.name || '',
         crate_type_one: 0,
         crate_type_two: 0,
         cratePrice: 0,
-        cost: product.price,
-        commission_rate: product?.commission_rate || 0,
+        cost: product.basePrice ?? 0,
+        commission_rate: product.commissionRate ?? 0,
         transportation: 0,
         moshjid: 0,
         van_vara: 0,
@@ -183,7 +180,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'supplier_id',
+        accessorKey: 'supplier_sl',
         header: 'SL'
       },
       {
@@ -476,11 +473,12 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
               className='px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500'
               onChange={e => setDate(e.target.value)}
             />
-            <div className='flex'>
+            <div className='flex items-center'>
               <select
-                value={selectedSupplier.sl || ''}
+                value={selectedSupplier._id || ''}
                 onChange={e => {
-                  const supplier = suppliersData.find(s => s.sl === parseInt(e.target.value))
+                  const supplierId = e.target.value
+                  const supplier = suppliersData.find(s => s._id === supplierId)
 
                   setSelectedSupplier(supplier || {})
                 }}
@@ -488,14 +486,19 @@ export default function AddPurchase({ productsData = [], suppliersData = [] }) {
               >
                 <option value=''>Select Supplier</option>
                 {suppliersData.map(supplier => (
-                  <option key={supplier.sl} value={supplier.sl}>
-                    {supplier.name}
+                  <option key={supplier._id} value={supplier._id}>
+                    {supplier.basic_info?.name}
                   </option>
                 ))}
               </select>
-              <button className='px-3 py-2 bg-[#7367f0] text-white rounded-r'>
-                <span className='text-sm'>+</span>
-              </button>
+
+              {/* {selectedSupplier.basic_info?.avatar && (
+                <img
+                  src={selectedSupplier.basic_info.avatar}
+                  alt={selectedSupplier.basic_info.name}
+                  className='w-10 h-10 rounded-full border ml-2'
+                />
+              )} */}
             </div>
           </div>
 

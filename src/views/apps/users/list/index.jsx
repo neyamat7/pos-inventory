@@ -2,8 +2,7 @@
 import Grid from '@mui/material/Grid2'
 
 // Component Imports
-import UserListTable from './UserListTable'
-import UserListCards from './UserListCards'
+import UserListTable from './UserListTable' 
 
 const UserList = ({ userData, paginationData, loading, onPageChange, onPageSizeChange }) => {
   return (

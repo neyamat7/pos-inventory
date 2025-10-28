@@ -1,33 +1,110 @@
 'use client'
 
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, MenuItem, Grid } from '@mui/material'
+// React Imports
+import { useState } from 'react'
+
+// MUI Imports
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, MenuItem, Alert } from '@mui/material'
+import Grid from '@mui/material/Grid2'
+
+// Third-party Imports
 import { useForm, Controller } from 'react-hook-form'
 
+// Component Imports
 import CustomTextField from '@core/components/mui/TextField'
 
+// Action Imports
+import { updateAccount } from '@/actions/accountActions'
+
 const EditAccounts = ({ open, handleClose, rowData, setData }) => {
+  // States
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  // Form Hook
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors }
   } = useForm({
-    defaultValues: rowData
+    defaultValues: {
+      name: rowData?.name || '',
+      account_type: rowData?.account_type || '',
+      account_name: rowData?.account_name || '',
+      account_number: rowData?.account_number || '',
+      balance: rowData?.balance || 0,
+      account_details: rowData?.account_details || ''
+    }
   })
 
-  const onSubmit = data => {
-    setData(prev => prev.map(item => (item.id === rowData.id ? { ...item, ...data } : item)))
+  // Handle form submission
+  const onSubmit = async data => {
+    if (!rowData?.id) {
+      setError('No account ID provided')
+
+      return
+    }
+
+    setLoading(true)
+    setError('')
+
+    try {
+      const accountPayload = {
+        name: data.name.trim(),
+        account_type: data.account_type,
+        account_name: data.account_name?.trim() || '',
+        account_number: data.account_number?.trim() || '',
+        balance: Number(data.balance || 0),
+        account_details: data.account_details?.trim() || ''
+      }
+
+      const result = await updateAccount(rowData.id, accountPayload)
+
+      if (result.success) {
+        // Update local state with updated account data
+        const updatedAccount = {
+          ...rowData,
+          ...accountPayload,
+          balance: accountPayload.balance
+        }
+
+        setData(prev => prev.map(item => (item.id === rowData.id ? updatedAccount : item)))
+
+        handleClose()
+        console.log('Account updated successfully!', result.data)
+      } else {
+        setError(result.error || 'Failed to update account')
+      }
+    } catch (error) {
+      setError('An unexpected error occurred. Please try again.')
+      console.error('Error in onSubmit:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Handle dialog close
+  const handleDialogClose = () => {
+    reset()
+    setError('')
     handleClose()
   }
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth='sm'>
+    <Dialog open={open} onClose={handleDialogClose} fullWidth maxWidth='sm'>
       <DialogTitle>Edit Account</DialogTitle>
       <DialogContent dividers>
+        {error && (
+          <Alert severity='error' sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
+
         <form id='edit-account-form' onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={3}>
-            {/* Account Name */}
-            <Grid item xs={12} sm={6}>
+            {/* Account Name (Required) */}
+            <Grid xs={12}>
               <Controller
                 name='name'
                 control={control}
@@ -37,18 +114,18 @@ const EditAccounts = ({ open, handleClose, rowData, setData }) => {
                     {...field}
                     fullWidth
                     label='Account Name'
-                    placeholder='Cash in Hand'
+                    placeholder='Brac Bank'
                     error={!!errors.name}
-                    helperText={errors.name && 'Required'}
+                    helperText={errors.name ? 'This field is required.' : ''}
                   />
                 )}
               />
             </Grid>
 
-            {/* Account Type */}
-            <Grid item xs={12} sm={6}>
+            {/* Account Type (Required) */}
+            <Grid xs={12}>
               <Controller
-                name='accountType'
+                name='account_type'
                 control={control}
                 rules={{ required: true }}
                 render={({ field }) => (
@@ -57,91 +134,63 @@ const EditAccounts = ({ open, handleClose, rowData, setData }) => {
                     fullWidth
                     label='Account Type'
                     {...field}
-                    error={!!errors.accountType}
-                    helperText={errors.accountType && 'Required'}
+                    error={!!errors.account_type}
+                    helperText={errors.account_type ? 'This field is required.' : ''}
                   >
-                    <MenuItem value='Cash'>Cash</MenuItem>
-                    <MenuItem value='Bank'>Bank</MenuItem>
-                    <MenuItem value='Mobile Wallet'>Mobile Wallet</MenuItem>
-                    <MenuItem value='Loan'>Loan</MenuItem>
-                    <MenuItem value='Equity'>Equity</MenuItem>
+                    <MenuItem value='bank'>Bank</MenuItem>
+                    <MenuItem value='mobile_wallet'>Mobile Wallet</MenuItem>
+                    <MenuItem value='cash'>Cash</MenuItem>
                   </CustomTextField>
                 )}
               />
             </Grid>
 
-            {/* Account Number */}
-            <Grid item xs={12} sm={6}>
+            {/* Account Holder Name (Optional) */}
+            <Grid xs={12} sm={6}>
               <Controller
-                name='accountNumber'
+                name='account_name'
                 control={control}
-                rules={{ required: true }}
                 render={({ field }) => (
-                  <CustomTextField
-                    {...field}
-                    fullWidth
-                    label='Account Number'
-                    placeholder='ACC-12345'
-                    error={!!errors.accountNumber}
-                    helperText={errors.accountNumber && 'Required'}
-                  />
+                  <CustomTextField {...field} fullWidth label='Account Holder Name' placeholder='John Doe' />
                 )}
               />
             </Grid>
 
-            {/* Balance */}
-            <Grid item xs={12} sm={6}>
+            {/* Account Number (Optional) */}
+            <Grid xs={12} sm={6}>
+              <Controller
+                name='account_number'
+                control={control}
+                render={({ field }) => (
+                  <CustomTextField {...field} fullWidth label='Account Number' placeholder='123456789' />
+                )}
+              />
+            </Grid>
+
+            {/* Balance (Optional) */}
+            <Grid xs={12} sm={6}>
               <Controller
                 name='balance'
                 control={control}
-                rules={{ required: true }}
                 render={({ field }) => (
-                  <CustomTextField
-                    {...field}
-                    fullWidth
-                    type='number'
-                    label='Balance'
-                    placeholder='50000'
-                    error={!!errors.balance}
-                    helperText={errors.balance && 'Required'}
-                  />
+                  <CustomTextField {...field} fullWidth type='number' label='Balance' placeholder='50000' />
                 )}
               />
             </Grid>
 
-            {/* Account Details */}
-            <Grid item xs={12}>
+            {/* Account Details (Optional) */}
+            <Grid xs={12}>
               <Controller
-                name='accountDetails'
+                name='account_details'
                 control={control}
-                rules={{ required: true }}
                 render={({ field }) => (
                   <CustomTextField
                     {...field}
                     fullWidth
+                    multiline
+                    rows={3}
                     label='Account Details'
-                    placeholder='Main Cash'
-                    error={!!errors.accountDetails}
-                    helperText={errors.accountDetails && 'Required'}
-                  />
-                )}
-              />
-            </Grid>
-
-            {/* Added By */}
-            <Grid item xs={12} sm={6}>
-              <Controller
-                name='addedBy'
-                control={control}
-                rules={{ required: true }}
-                render={({ field }) => (
-                  <CustomTextField
-                    {...field}
-                    fullWidth
-                    label='Added By'
-                    placeholder='Admin'
-                    error={!!errors.addedBy}
-                    helperText={errors.addedBy && 'Required'}
+                    placeholder='Main business account with Brac Bank'
                   />
                 )}
               />
@@ -150,11 +199,11 @@ const EditAccounts = ({ open, handleClose, rowData, setData }) => {
         </form>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} color='error' variant='outlined'>
+        <Button onClick={handleDialogClose} color='error' variant='outlined' disabled={loading}>
           Cancel
         </Button>
-        <Button type='submit' form='edit-account-form' color='primary' variant='contained'>
-          Save
+        <Button type='submit' form='edit-account-form' color='primary' variant='contained' disabled={loading}>
+          {loading ? 'Updating...' : 'Save Changes'}
         </Button>
       </DialogActions>
     </Dialog>

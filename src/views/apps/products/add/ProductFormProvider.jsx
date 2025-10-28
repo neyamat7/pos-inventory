@@ -5,34 +5,14 @@ import { useMemo } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 
 const BASE_DEFAULTS = {
-  sku: '',
-  name: '',
+  productName: '',
+  basePrice: 0,
+  productImage: '',
   description: '',
-  price: 0,
-  isCommissionable: 'no',
-  commision_rate: 0,
-  category: 'fruits',
-  image: ''
-}
-
-const normalizeImages = val => {
-  if (!val) return []
-
-  if (Array.isArray(val)) {
-    return val
-      .map(v => {
-        if (typeof v === 'string') return v
-        if (v && typeof v === 'object') return v.url || v.src || v.href || ''
-
-        return ''
-      })
-      .filter(Boolean)
-  }
-
-  if (typeof val === 'string') return [val]
-  if (typeof val === 'object') return [val.url || val.src || val.href].filter(Boolean)
-
-  return []
+  categoryId: '',
+  commissionRate: 0,
+  allowCommission: false,
+  isCrated: false
 }
 
 export default function ProductFormProvider({
@@ -43,12 +23,9 @@ export default function ProductFormProvider({
   resetOnSubmit = false
 }) {
   const mergedDefaults = useMemo(() => {
-    const img = defaultValues.images ?? defaultValues.image ?? defaultValues.image_url ?? defaultValues.media
-
     return {
       ...BASE_DEFAULTS,
-      ...defaultValues,
-      image: normalizeImages(img)
+      ...defaultValues
     }
   }, [defaultValues])
 

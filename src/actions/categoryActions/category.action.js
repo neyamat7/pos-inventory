@@ -22,7 +22,7 @@ export async function createCategory(categoryData) {
       success: false,
       error: error.message || 'Failed to create category'
     }
-  }
+  }  
 }
 
 export async function getAllCategories({ page = 1, limit = 10 } = {}) {

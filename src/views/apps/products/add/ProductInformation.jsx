@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import MenuItem from '@mui/material/MenuItem'
 
@@ -17,105 +17,108 @@ import CustomTextField from '@core/components/mui/TextField'
 
 // Style Imports
 import '@/libs/styles/tiptapEditor.css'
+import { getAllCategories } from '@/actions/categoryActions'
 
-const CATEGORIES = [
-  { value: 'fruits', label: 'Fruits' },
-  { value: 'vegetables', label: 'Vegetables' },
-  { value: 'grains', label: 'Grains' }
-]
+const ProductInformation = ({ mode = 'create', loading = false }) => {
+  const { control, setValue, formMode } = useFormContext()
 
-const ALLOW_COMMISSION = [
-  { value: 'yes', label: 'Yes' },
-  { value: 'no', label: 'No' }
-]
+  const isEdit = formMode === 'edit'
 
-const ProductInformation = (mode = 'create') => {
-  const { control, setValue, getValues, formMode } = useFormContext()
+  const productImage = useWatch({ control, name: 'productImage' })
+  const allowCommission = useWatch({ control, name: 'allowCommission' })
 
-  const isEdit = mode === 'edit'
+  const [imagePreview, setImagePreview] = useState('')
+  const [categories, setCategories] = useState([])
+  const [categoriesLoading, setCategoriesLoading] = useState(false)
 
-  const preview = useWatch({ control, name: 'imagePreview' })
-
-  const allowCommission = useWatch({ control, name: 'isCommissionable', defaultValue: 'no' })
-
-  // console.log('preview', preview)
-
+  // Fetch categories on component mount
   useEffect(() => {
-    const existingImage = getValues('images')
+    const fetchCategories = async () => {
+      setCategoriesLoading(true)
 
-    if (existingImage && typeof existingImage === 'string') {
-      // Only set preview if not already set (avoids overwrite when uploading new file)
-      setValue('imagePreview', existingImage, { shouldDirty: false })
+      try {
+        const result = await getAllCategories({ page: 1, limit: 50 })
+
+        console.log('result of category', result)
+
+        if (result?.categories.length > 0) {
+          setCategories(result.categories || [])
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+        setCategories([])
+      } finally {
+        setCategoriesLoading(false)
+      }
     }
-  }, [isEdit, getValues, setValue])
+
+    fetchCategories()
+  }, [])
+
+  // Update preview when productImage changes
+  useEffect(() => {
+    if (productImage) {
+      setImagePreview(productImage)
+    }
+  }, [productImage])
 
   return (
     <Card>
       <CardHeader title='Product Information' />
       <CardContent>
         <Grid container spacing={6} className='mbe-6'>
+          {/* Product Name */}
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Controller
-              name='name'
+              name='productName'
               control={control}
-              rules={{ required: 'Name is required' }}
+              rules={{ required: 'Product name is required' }}
               render={({ field, fieldState }) => (
                 <CustomTextField
                   fullWidth
                   label='Product Name'
-                  placeholder='Mango'
+                  placeholder='Fresh Mango'
                   {...field}
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message}
+                  disabled={loading}
                 />
               )}
             />
           </Grid>
 
+          {/* Base Price */}
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Controller
-              name='sku'
-              control={control}
-              render={({ field }) => (
-                <CustomTextField fullWidth label='SKU' placeholder='FXSK123U' {...field} disabled={isEdit} />
-              )}
-            />
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <Controller
-              name='price'
+              name='basePrice'
               control={control}
               rules={{
                 required: 'Base price is required',
-                min: { value: 0, message: 'Must be ≥ 0' },
-                setValueAs: v => (v === '' ? '' : Number(v))
+                min: { value: 0, message: 'Must be ≥ 0' }
               }}
               render={({ field, fieldState }) => (
                 <CustomTextField
                   fullWidth
                   label='Base Price'
-                  placeholder='Enter Base Price'
+                  placeholder='150'
                   type='number'
                   inputProps={{ step: '0.01', min: 0 }}
-                  className='mbe-6'
                   {...field}
                   onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
                   value={field.value ?? ''}
-                  inputMode='decimal'
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message}
+                  disabled={loading}
                 />
               )}
             />
           </Grid>
 
+          {/* Allow Commission */}
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Controller
-              name='isCommissionable'
+              name='allowCommission'
               control={control}
-              defaultValue='no'
-              rules={{ required: 'This field is required' }}
               render={({ field }) => (
                 <CustomTextField
                   select
@@ -123,157 +126,134 @@ const ProductInformation = (mode = 'create') => {
                   label='Allow Commission?'
                   {...field}
                   value={field.value ? 'yes' : 'no'}
+                  onChange={e => field.onChange(e.target.value === 'yes')}
+                  disabled={loading}
                 >
-                  {ALLOW_COMMISSION.map(opt => (
-                    <MenuItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </MenuItem>
-                  ))}
+                  <MenuItem value='yes'>Yes</MenuItem>
+                  <MenuItem value='no'>No</MenuItem>
                 </CustomTextField>
               )}
             />
           </Grid>
 
+          {/* Commission Rate */}
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Controller
-              name='commision_rate'
+              name='commissionRate'
               control={control}
-              defaultValue=''
               rules={{
                 min: { value: 0, message: 'Must be ≥ 0' },
-                max: { value: 100, message: 'Must be ≤ 100' },
-                setValueAs: v => (v === '' ? '' : Number(v))
+                max: { value: 100, message: 'Must be ≤ 100' }
               }}
               render={({ field, fieldState }) => (
                 <CustomTextField
                   fullWidth
-                  label='Commission Rate(%)'
+                  label='Commission Rate (%)'
                   placeholder='10'
                   type='number'
                   inputProps={{ step: '0.01', min: 0, max: 100 }}
-                  className='mbe-6 disabled:cursor-not-allowed disabled:opacity-70'
                   {...field}
-                  value={field.value ?? ''}
                   onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
-                  inputMode='decimal'
+                  value={field.value ?? ''}
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message}
-                  disabled={allowCommission === 'no'}
+                  disabled={loading || !allowCommission}
                 />
               )}
             />
           </Grid>
 
+          {/* Category */}
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Controller
-              name='category'
-              defaultValue='fruits'
+              name='categoryId'
               control={control}
               render={({ field }) => (
-                <CustomTextField select fullWidth label='Category' {...field} value={field.value ?? ''}>
-                  {CATEGORIES.map(opt => (
-                    <MenuItem key={opt.value} value={opt.value}>
-                      {opt.label}
+                <CustomTextField select fullWidth label='Category' {...field} disabled={loading || categoriesLoading}>
+                  {categoriesLoading ? (
+                    <MenuItem value='' disabled>
+                      Loading categories...
                     </MenuItem>
-                  ))}
+                  ) : categories.length > 0 ? (
+                    categories.map(category => (
+                      <MenuItem key={category._id} value={category._id}>
+                        {category.categoryName}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem value='' disabled>
+                      No categories available
+                    </MenuItem>
+                  )}
                 </CustomTextField>
               )}
             />
           </Grid>
 
-          <Grid size={{ xs: 12 }}>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <Controller
-                name='isCrated'
-                control={control}
-                defaultValue='no'
-                render={({ field }) => (
-                  <CustomTextField select fullWidth label='Is Crated?' {...field} value={field.value ? 'yes' : 'no'}>
-                    {[
-                      { value: 'yes', label: 'Yes' },
-                      { value: 'no', label: 'No' }
-                    ].map(opt => (
-                      <MenuItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </MenuItem>
-                    ))}
-                  </CustomTextField>
-                )}
-              />
-            </Grid>
-          </Grid>
-
-          {/* Image Upload & Description */}
-          <Grid size={{ xs: 12, md: 6 }}>
+          {/* Is Crated */}
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Controller
-              name='image'
+              name='isCrated'
               control={control}
-              render={({ field }) => {
-                const handleImageChange = e => {
-                  const file = e.target.files?.[0]
-
-                  if (file) {
-                    const previewUrl = URL.createObjectURL(file)
-
-                    field.onChange(file)
-                    setValue('imagePreview', previewUrl)
-                  }
-                }
-
-                return (
-                  <Card variant='outlined' sx={{ textAlign: 'center', p: 3 }}>
-                    <CardHeader title='Product Image' sx={{ textAlign: 'left', pb: 1 }} />
-                    <CardContent>
-                      <label htmlFor='image-upload'>
-                        <input id='image-upload' type='file' accept='image/*' hidden onChange={handleImageChange} />
-                        <div
-                          style={{
-                            border: '2px dashed var(--mui-palette-divider)',
-                            borderRadius: '8px',
-                            padding: '16px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: 'border-color 0.3s ease'
-                          }}
-                          onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--mui-palette-primary-main)')}
-                          onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--mui-palette-divider)')}
-                        >
-                          {preview ? (
-                            <img
-                              src={preview}
-                              alt='Preview'
-                              style={{
-                                width: '100%',
-                                maxWidth: '100px',
-                                maxHeight: '100px',
-                                borderRadius: '8px',
-                                objectFit: 'cover'
-                              }}
-                            />
-                          ) : (
-                            <>
-                              <i className='tabler-camera' style={{ fontSize: '2rem', color: 'gray' }} />
-                              <span style={{ marginTop: '8px', color: 'gray' }}>Click to upload image</span>
-                            </>
-                          )}
-                        </div>
-                      </label>
-                    </CardContent>
-                  </Card>
-                )
-              }}
+              render={({ field }) => (
+                <CustomTextField
+                  select
+                  fullWidth
+                  label='Is Crated?'
+                  {...field}
+                  value={field.value ? 'yes' : 'no'}
+                  onChange={e => field.onChange(e.target.value === 'yes')}
+                  disabled={loading}
+                >
+                  <MenuItem value='yes'>Yes</MenuItem>
+                  <MenuItem value='no'>No</MenuItem>
+                </CustomTextField>
+              )}
             />
           </Grid>
 
+          {/* Product Image URL */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card variant='outlined' sx={{ p: 3 }}>
+              <CardHeader title='Product Image' sx={{ pb: 2 }} />
+              <CardContent className='space-y-4'>
+                <Controller
+                  name='productImage'
+                  control={control}
+                  render={({ field }) => (
+                    <CustomTextField
+                      fullWidth
+                      label='Product Image URL'
+                      placeholder='https://example.com/image.jpg'
+                      {...field}
+                      disabled={loading}
+                    />
+                  )}
+                />
+
+                {/* Image Preview */}
+                {imagePreview && (
+                  <div className='flex justify-center'>
+                    <img
+                      src={imagePreview}
+                      alt='Product preview'
+                      className='rounded-lg max-w-48 max-h-48 object-cover shadow-md'
+                      onError={e => {
+                        e.target.style.display = 'none'
+                      }}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Description */}
           <Grid size={{ xs: 12, md: 6 }}>
             <div className='flex flex-col gap-4'>
               <Controller
                 name='description'
                 control={control}
-                rules={{ required: 'Description is required' }}
                 render={({ field, fieldState }) => (
                   <CustomTextField
                     fullWidth
@@ -284,11 +264,12 @@ const ProductInformation = (mode = 'create') => {
                     {...field}
                     error={!!fieldState.error}
                     helperText={fieldState.error?.message}
+                    disabled={loading}
                   />
                 )}
               />
-              <Button variant='contained' type='submit' className='self-end'>
-                {isEdit ? 'Save Changes' : 'Publish Product'}
+              <Button variant='contained' type='submit' className='self-end' disabled={loading}>
+                {loading ? 'Creating...' : isEdit ? 'Save Changes' : 'Create Product'}
               </Button>
             </div>
           </Grid>

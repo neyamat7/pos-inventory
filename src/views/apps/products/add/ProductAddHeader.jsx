@@ -1,22 +1,25 @@
 'use client'
 
-import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button'
+import Box from '@mui/material/Box'
 
 const ProductAddHeader = ({ mode = 'create' }) => {
-  const isEdit = mode === 'edit'
-
   return (
-    <div className='flex flex-wrap sm:items-center justify-between max-sm:flex-col gap-6 ml-5'>
-      <div>
-        <Typography variant='h4' className='mbe-1 text-3xl mt-3'>
-          {isEdit ? 'Edit product' : 'Add a new product'}
-        </Typography>
-        <Typography>
-          {isEdit ? 'Update details for your existing product' : 'Orders placed across your store'}
-        </Typography>
-      </div>
-    </div>
+    <Card>
+      <CardContent className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4'>
+        <Box>
+          <Typography variant='h4' className='font-semibold'>
+            {mode === 'create' ? 'Add New Product' : 'Edit Product'}
+          </Typography>
+          <Typography variant='body2' color='text.secondary'>
+            {mode === 'create' ? 'Add a new product to your inventory' : 'Update product information'}
+          </Typography>
+        </Box>
+      </CardContent>
+    </Card>
   )
 }
 

@@ -109,12 +109,12 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
       const expenses = transportationValue + moshjidValue + vanVaraValue + tradingPostValue + labourValue
 
       // --- get supplier info ---
-      const supplier = suppliersData?.find(s => s.sl === item.supplier_id)
+      const supplier = suppliersData?.find(s => s._id === item.supplier_id)
 
       // --- calculate crate prices for both types ---
-      const supplierCrate = supplier?.crate || {}
-      const typeOnePrice = supplierCrate.type_one?.price || 0
-      const typeTwoPrice = supplierCrate.type_two?.price || 0
+      const crateInfo = supplier?.crate_info || {}
+      const typeOnePrice = crateInfo.crate1Price || 0
+      const typeTwoPrice = crateInfo.crate2Price || 0
 
       const typeOneQty = item.crate_type_one || 0
       const typeTwoQty = item.crate_type_two || 0

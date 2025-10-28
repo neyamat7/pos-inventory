@@ -3,6 +3,8 @@
 import api from '@/libs/api'
 
 export async function createExpense(expenseData) {
+  console.log('expense data in action', expenseData)
+
   try {
     const response = await api.post('/expenses/add', expenseData)
 

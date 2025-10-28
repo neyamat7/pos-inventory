@@ -32,16 +32,17 @@ const ShowProductList = ({
         {filteredProducts.map(product => (
           <div
             onClick={() => handleCartProductClick(product)}
-            key={product.id}
+            key={product._id}
             className='bg-white rounded-md p-3 border border-gray-200 hover:border-red-400 hover:shadow-md transition-shadow cursor-pointer h-fit'
           >
             <img
-              src={product.image || '/placeholder.svg'}
-              alt={product.name}
+              src={product.productImage || '/placeholder.svg'}
+              alt={product.productName}
               className='w-full h-28 object-contain mb-2'
             />
-            <h3 className='font-medium text-sm mb-1'>{product.name}</h3>
-            <p className='text-lg font-bold'>৳{product.price}</p>
+            <h3 className='font-medium text-sm mb-1'>{product.productName}</h3>
+            <p className='text-lg font-bold'>৳{product.basePrice}</p>
+            <p className='text-xs text-gray-500'>{product.categoryId?.categoryName}</p>
           </div>
         ))}
       </div>
