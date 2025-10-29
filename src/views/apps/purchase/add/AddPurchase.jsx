@@ -20,6 +20,7 @@ import { filteredProductsData } from '@/utils/filteredProductsData'
 
 import { showAlert } from '@/utils/showAlert'
 import ShowProductList from '@/components/layout/shared/ShowProductList'
+import { createPurchase } from '@/actions/purchaseActions'
 
 const handleCrateCount = (setCartProducts, productId, personId, type, value) => {
   setCartProducts(prevCart =>
@@ -344,94 +345,191 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
     getCoreRowModel: getCoreRowModel()
   })
 
-  const onSubmitPayment = data => {
-    // Generate lot names for each product before building payload
+  // const onSubmitPayment = data => {
+  //   // Generate lot names for each product before building payload
+  //   const updatedCartProducts = cartProducts.map(item => {
+  //     const supplierName = item.supplier_name?.trim() || ''
+  //     const supplierParts = supplierName.split(' ').filter(Boolean)
+
+  //     const firstLetter = supplierParts[0]?.[0]?.toUpperCase() || ''
+  //     const lastLetter = supplierParts.length > 1 ? supplierParts[supplierParts.length - 1][0]?.toUpperCase() : ''
+  //     const initials = `${firstLetter}${lastLetter}`
+
+  //     const formattedDate = date.split('-').reverse().join('').slice(0, 6) // e.g. 2025-10-11 → 111025
+  //     const cleanProductName = item.product_name?.replace(/\s+/g, '_').toUpperCase() || 'ITEM'
+
+  //     // Use total crates instead of totalKg
+  //     const totalCrates = (item.crate_type_one || 0) + (item.crate_type_two || 0)
+
+  //     const lotName = `${initials}-${formattedDate}-${cleanProductName}-${totalCrates}`
+
+  //     return { ...item, lot_name: lotName }
+  //   })
+
+  //   // Group products by supplier - each supplier gets an object with lots array
+  //   const suppliersMap = updatedCartProducts.reduce((acc, item) => {
+  //     const key = item.supplier_id ?? 'unknown'
+
+  //     if (!acc[key]) {
+  //       acc[key] = {
+  //         supplier: item.supplier_id,
+  //         lots: []
+  //       }
+  //     }
+
+  //     // Add product as a lot with all required fields
+  //     acc[key].lots.push({
+  //       productId: item.product_id,
+  //       lot_name: item.lot_name,
+  //       unitCost: item.cost,
+  //       commission_rate: item.commission_rate,
+  //       crate_type_1: item.crate_type_one,
+  //       crate_type_2: item.crate_type_two,
+  //       labour: item.labour || 0,
+  //       transportation: item.transportation || 0,
+  //       van_vara: item.van_vara || 0,
+  //       moshjid: item.moshjid || 0,
+  //       trading_post: item.trading_post || 0,
+  //       other_expenses: item.other_expenses || 0
+  //     })
+
+  //     return acc
+  //   }, {})
+
+  //   // Convert suppliers map to array
+  //   const items = Object.values(suppliersMap)
+
+  //   // Calculate total expenses across ALL products
+  //   const totalExpenses = updatedCartProducts.reduce(
+  //     (acc, item) => {
+  //       return {
+  //         labour: Number((acc.labour + (item.labour || 0)).toFixed(2)),
+  //         transportation: Number((acc.transportation + (item.transportation || 0)).toFixed(2)),
+  //         van_vara: Number((acc.van_vara + (item.van_vara || 0)).toFixed(2)),
+  //         moshjid: Number((acc.moshjid + (item.moshjid || 0)).toFixed(2)),
+  //         trading_post: Number((acc.trading_post + (item.trading_post || 0)).toFixed(2)),
+  //         other_expenses: Number((acc.other_expenses + (item.other_expenses || 0)).toFixed(2))
+  //       }
+  //     },
+  //     {
+  //       labour: 0,
+  //       transportation: 0,
+  //       van_vara: 0,
+  //       moshjid: 0,
+  //       trading_post: 0,
+  //       other_expenses: 0
+  //     }
+  //   )
+
+  //   // Build final payload
+  //   const payload = {
+  //     _id: '',
+  //     purchase_date: date,
+  //     status: 'on the way',
+  //     items: items,
+  //     expenses: totalExpenses
+  //   }
+
+  //   console.log('Purchase payload:', payload)
+  //   showAlert('Purchased products successfully added to the stock list', 'success')
+  //   setCartProducts([])
+  // }
+
+  const submitPurchaseOrder = async () => {
+    //  generate lot_name for each cart item 
     const updatedCartProducts = cartProducts.map(item => {
       const supplierName = item.supplier_name?.trim() || ''
       const supplierParts = supplierName.split(' ').filter(Boolean)
-
       const firstLetter = supplierParts[0]?.[0]?.toUpperCase() || ''
       const lastLetter = supplierParts.length > 1 ? supplierParts[supplierParts.length - 1][0]?.toUpperCase() : ''
       const initials = `${firstLetter}${lastLetter}`
 
-      const formattedDate = date.split('-').reverse().join('').slice(0, 6) // e.g. 2025-10-11 → 111025
+      const formattedDate = date.split('-').reverse().join('').slice(0, 6)
       const cleanProductName = item.product_name?.replace(/\s+/g, '_').toUpperCase() || 'ITEM'
-
-      // Use total crates instead of totalKg
       const totalCrates = (item.crate_type_one || 0) + (item.crate_type_two || 0)
 
-      const lotName = `${initials}-${formattedDate}-${cleanProductName}-${totalCrates}`
+      const lot_name = `${initials}-${formattedDate}-${cleanProductName}-${totalCrates}`
 
-      return { ...item, lot_name: lotName }
+      return { ...item, lot_name }
     })
 
-    // Group products by supplier - each supplier gets an object with lots array
+    // 2. group lots by supplier _id
     const suppliersMap = updatedCartProducts.reduce((acc, item) => {
-      const key = item.supplier_id ?? 'unknown'
+      const supplierKey = item.supplier_id ?? 'unknown'
 
-      if (!acc[key]) {
-        acc[key] = {
-          supplier: item.supplier_id,
+      if (!acc[supplierKey]) {
+        acc[supplierKey] = {
+          supplier: supplierKey,
           lots: []
         }
       }
 
-      // Add product as a lot with all required fields
-      acc[key].lots.push({
+      // Build the lot object  
+      acc[supplierKey].lots.push({
         productId: item.product_id,
         lot_name: item.lot_name,
-        unitCost: item.cost,
-        commission_rate: item.commission_rate,
-        crate_type_1: item.crate_type_one,
-        crate_type_2: item.crate_type_two,
-        labour: item.labour || 0,
-        transportation: item.transportation || 0,
-        van_vara: item.van_vara || 0,
-        moshjid: item.moshjid || 0,
-        trading_post: item.trading_post || 0,
-        other_expenses: item.other_expenses || 0
+        unit_Cost: item.cost ?? 0,
+        commission_rate: item.commission_rate ?? 0,
+        carat: {
+          carat_Type_1: item.crate_type_one || 0,
+          carat_Type_2: item.crate_type_two || 0
+        },
+        expenses: {
+          labour: item.labour || 0,
+          transportation: item.transportation || 0,
+          van_vara: item.van_vara || 0,
+          moshjid: item.moshjid || 0,
+          trading_post: item.trading_post || 0,
+          other_expenses: item.other_expenses || 0
+        }
       })
 
       return acc
     }, {})
 
-    // Convert suppliers map to array
+    //   convert suppliersMap to items array
     const items = Object.values(suppliersMap)
 
-    // Calculate total expenses across ALL products
+    //   calculate total_expenses across ALL lots
     const totalExpenses = updatedCartProducts.reduce(
-      (acc, item) => {
+      (acc, it) => {
         return {
-          labour: Number((acc.labour + (item.labour || 0)).toFixed(2)),
-          transportation: Number((acc.transportation + (item.transportation || 0)).toFixed(2)),
-          van_vara: Number((acc.van_vara + (item.van_vara || 0)).toFixed(2)),
-          moshjid: Number((acc.moshjid + (item.moshjid || 0)).toFixed(2)),
-          trading_post: Number((acc.trading_post + (item.trading_post || 0)).toFixed(2)),
-          other_expenses: Number((acc.other_expenses + (item.other_expenses || 0)).toFixed(2))
+          labour: Number((acc.labour + (it.labour || 0)).toFixed(2)),
+          transportation: Number((acc.transportation + (it.transportation || 0)).toFixed(2)),
+          van_vara: Number((acc.van_vara + (it.van_vara || 0)).toFixed(2)),
+          moshjid: Number((acc.moshjid + (it.moshjid || 0)).toFixed(2)),
+          trading_post: Number((acc.trading_post + (it.trading_post || 0)).toFixed(2)),
+          other_expenses: Number((acc.other_expenses + (it.other_expenses || 0)).toFixed(2))
         }
       },
-      {
-        labour: 0,
-        transportation: 0,
-        van_vara: 0,
-        moshjid: 0,
-        trading_post: 0,
-        other_expenses: 0
-      }
+      { labour: 0, transportation: 0, van_vara: 0, moshjid: 0, trading_post: 0, other_expenses: 0 }
     )
 
-    // Build final payload
+    //  build final payload exactly in the requested shape
     const payload = {
-      _id: '',
-      purchase_date: date,
+      purchase_date: new Date(date).toISOString(),  
       status: 'on the way',
-      items: items,
-      expenses: totalExpenses
+      is_lots_created: false,
+      items,
+      total_expenses: totalExpenses
     }
 
     console.log('Purchase payload:', payload)
-    showAlert('Purchased products successfully added to the stock list', 'success')
-    setCartProducts([])
+
+    try {
+      // 6. submit via server action createPurchase
+      const res = await createPurchase(payload)
+
+      if (res?.success) {
+        showAlert('Purchased products successfully added to the stock list', 'success')
+        setCartProducts([])
+      } else {
+        showAlert(res?.error || 'Failed to create purchase', 'error')
+      }
+    } catch (err) {
+      console.error('submitPurchaseOrder error:', err)
+      showAlert('Failed to create purchase', 'error')
+    }
   }
 
   return (
@@ -684,7 +782,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                 <div className='flex justify-center sm:justify-end w-full sm:w-auto'>
                   <button
                     type='button'
-                    onClick={onSubmitPayment}
+                    onClick={submitPurchaseOrder}
                     className='bg-white text-indigo-600 font-semibold px-6 py-3 rounded-lg hover:bg-gray-100 transition-all duration-200 w-full sm:w-auto cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed'
                     disabled={hasExpenseChanges || cartProducts.length === 0}
                   >

@@ -8,11 +8,29 @@ import Typography from '@mui/material/Typography'
 import CustomAvatar from '@core/components/mui/Avatar'
 
 // Utils
-const getTotalAmount = data => data.reduce((sum, item) => sum + (item.total || 0), 0)
+const getTotalSuppliers = data => {
+  const supplierIds = new Set()
+
+  data.forEach(purchase => {
+    purchase.items.forEach(item => {
+      if (item.supplier && item.supplier._id) {
+        supplierIds.add(item.supplier._id)
+      }
+    })
+  })
+
+  return supplierIds.size
+}
+
+const getTotalLots = data =>
+  data.reduce((sum, purchase) => {
+    return sum + purchase.items.reduce((itemSum, item) => itemSum + item.lots.length, 0)
+  }, 0)
 
 const PurchaseCard = ({ purchaseData = [] }) => {
   const totalPurchaseCount = purchaseData.length
-  const totalPurchaseAmount = getTotalAmount(purchaseData)
+  const totalSuppliersCount = getTotalSuppliers(purchaseData)
+  const totalLotsCount = getTotalLots(purchaseData)
 
   const stats = [
     {
@@ -21,9 +39,14 @@ const PurchaseCard = ({ purchaseData = [] }) => {
       icon: 'tabler-shopping-cart'
     },
     {
-      value: totalPurchaseAmount,
-      title: 'Total Amount',
-      icon: 'tabler-currency-dollar'
+      value: totalSuppliersCount,
+      title: 'Total Suppliers',
+      icon: 'tabler-users'
+    },
+    {
+      value: totalLotsCount,
+      title: 'Total Lots',
+      icon: 'tabler-layers-linked'
     }
   ]
 
@@ -32,7 +55,7 @@ const PurchaseCard = ({ purchaseData = [] }) => {
       <CardContent>
         <Grid container spacing={6}>
           {stats.map((item, index) => (
-            <Grid key={index} size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
               <div className='flex justify-between gap-4'>
                 <div className='flex flex-col items-start'>
                   <Typography variant='h4'>{item.value.toLocaleString()}</Typography>
