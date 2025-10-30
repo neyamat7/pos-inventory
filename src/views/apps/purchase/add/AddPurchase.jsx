@@ -21,6 +21,7 @@ import { filteredProductsData } from '@/utils/filteredProductsData'
 import { showAlert } from '@/utils/showAlert'
 import ShowProductList from '@/components/layout/shared/ShowProductList'
 import { createPurchase } from '@/actions/purchaseActions'
+import { checkDuplicateLotName } from '@/actions/lotActions'
 
 const handleCrateCount = (setCartProducts, productId, personId, type, value) => {
   setCartProducts(prevCart =>
@@ -50,6 +51,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
   const [cartProducts, setCartProducts] = useState([])
   const { register, handleSubmit } = useForm()
   const [selectedCategory, setSelectedCategory] = useState([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [commissionModal, setCommissionModal] = useState({
     open: false,
@@ -345,115 +347,43 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
     getCoreRowModel: getCoreRowModel()
   })
 
-  // const onSubmitPayment = data => {
-  //   // Generate lot names for each product before building payload
-  //   const updatedCartProducts = cartProducts.map(item => {
-  //     const supplierName = item.supplier_name?.trim() || ''
-  //     const supplierParts = supplierName.split(' ').filter(Boolean)
+  const handleSubmitPurchaseOrder = async () => {
+    setIsSubmitting(true)
 
-  //     const firstLetter = supplierParts[0]?.[0]?.toUpperCase() || ''
-  //     const lastLetter = supplierParts.length > 1 ? supplierParts[supplierParts.length - 1][0]?.toUpperCase() : ''
-  //     const initials = `${firstLetter}${lastLetter}`
+    //  generate lot_name for each cart item
+    const updatedCartProducts = await Promise.all(
+      cartProducts.map(async item => {
+        const supplierName = item.supplier_name?.trim() || ''
+        const supplierParts = supplierName.split(' ').filter(Boolean)
+        const firstLetter = supplierParts[0]?.[0]?.toUpperCase() || ''
+        const lastLetter = supplierParts.length > 1 ? supplierParts[supplierParts.length - 1][0]?.toUpperCase() : ''
+        const initials = `${firstLetter}${lastLetter}`
 
-  //     const formattedDate = date.split('-').reverse().join('').slice(0, 6) // e.g. 2025-10-11 → 111025
-  //     const cleanProductName = item.product_name?.replace(/\s+/g, '_').toUpperCase() || 'ITEM'
+        const formattedDate = date.split('-').reverse().join('').slice(0, 6)
+        const cleanProductName = item.product_name?.replace(/\s+/g, '_').toUpperCase() || 'ITEM'
+        const totalCrates = (item.crate_type_one || 0) + (item.crate_type_two || 0)
 
-  //     // Use total crates instead of totalKg
-  //     const totalCrates = (item.crate_type_one || 0) + (item.crate_type_two || 0)
+        let lot_name = `${initials}-${formattedDate}-${cleanProductName}-${totalCrates}`
 
-  //     const lotName = `${initials}-${formattedDate}-${cleanProductName}-${totalCrates}`
+        let suffix = 1
+        let isDuplicate = true
 
-  //     return { ...item, lot_name: lotName }
-  //   })
+        while (isDuplicate) {
+          const result = await checkDuplicateLotName(lot_name)
 
-  //   // Group products by supplier - each supplier gets an object with lots array
-  //   const suppliersMap = updatedCartProducts.reduce((acc, item) => {
-  //     const key = item.supplier_id ?? 'unknown'
+          if (result?.isDuplicate) {
+            lot_name = `${initials}-${formattedDate}-${cleanProductName}-${totalCrates}-${String(suffix).padStart(3, '0')}`
+            suffix++
+          } else {
+            isDuplicate = false
+          }
+        }
 
-  //     if (!acc[key]) {
-  //       acc[key] = {
-  //         supplier: item.supplier_id,
-  //         lots: []
-  //       }
-  //     }
+        return { ...item, lot_name }
+      })
+    )
 
-  //     // Add product as a lot with all required fields
-  //     acc[key].lots.push({
-  //       productId: item.product_id,
-  //       lot_name: item.lot_name,
-  //       unitCost: item.cost,
-  //       commission_rate: item.commission_rate,
-  //       crate_type_1: item.crate_type_one,
-  //       crate_type_2: item.crate_type_two,
-  //       labour: item.labour || 0,
-  //       transportation: item.transportation || 0,
-  //       van_vara: item.van_vara || 0,
-  //       moshjid: item.moshjid || 0,
-  //       trading_post: item.trading_post || 0,
-  //       other_expenses: item.other_expenses || 0
-  //     })
-
-  //     return acc
-  //   }, {})
-
-  //   // Convert suppliers map to array
-  //   const items = Object.values(suppliersMap)
-
-  //   // Calculate total expenses across ALL products
-  //   const totalExpenses = updatedCartProducts.reduce(
-  //     (acc, item) => {
-  //       return {
-  //         labour: Number((acc.labour + (item.labour || 0)).toFixed(2)),
-  //         transportation: Number((acc.transportation + (item.transportation || 0)).toFixed(2)),
-  //         van_vara: Number((acc.van_vara + (item.van_vara || 0)).toFixed(2)),
-  //         moshjid: Number((acc.moshjid + (item.moshjid || 0)).toFixed(2)),
-  //         trading_post: Number((acc.trading_post + (item.trading_post || 0)).toFixed(2)),
-  //         other_expenses: Number((acc.other_expenses + (item.other_expenses || 0)).toFixed(2))
-  //       }
-  //     },
-  //     {
-  //       labour: 0,
-  //       transportation: 0,
-  //       van_vara: 0,
-  //       moshjid: 0,
-  //       trading_post: 0,
-  //       other_expenses: 0
-  //     }
-  //   )
-
-  //   // Build final payload
-  //   const payload = {
-  //     _id: '',
-  //     purchase_date: date,
-  //     status: 'on the way',
-  //     items: items,
-  //     expenses: totalExpenses
-  //   }
-
-  //   console.log('Purchase payload:', payload)
-  //   showAlert('Purchased products successfully added to the stock list', 'success')
-  //   setCartProducts([])
-  // }
-
-  const submitPurchaseOrder = async () => {
-    //  generate lot_name for each cart item 
-    const updatedCartProducts = cartProducts.map(item => {
-      const supplierName = item.supplier_name?.trim() || ''
-      const supplierParts = supplierName.split(' ').filter(Boolean)
-      const firstLetter = supplierParts[0]?.[0]?.toUpperCase() || ''
-      const lastLetter = supplierParts.length > 1 ? supplierParts[supplierParts.length - 1][0]?.toUpperCase() : ''
-      const initials = `${firstLetter}${lastLetter}`
-
-      const formattedDate = date.split('-').reverse().join('').slice(0, 6)
-      const cleanProductName = item.product_name?.replace(/\s+/g, '_').toUpperCase() || 'ITEM'
-      const totalCrates = (item.crate_type_one || 0) + (item.crate_type_two || 0)
-
-      const lot_name = `${initials}-${formattedDate}-${cleanProductName}-${totalCrates}`
-
-      return { ...item, lot_name }
-    })
-
-    // 2. group lots by supplier _id
+    // group lots by supplier _id
     const suppliersMap = updatedCartProducts.reduce((acc, item) => {
       const supplierKey = item.supplier_id ?? 'unknown'
 
@@ -464,7 +394,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
         }
       }
 
-      // Build the lot object  
+      // Build the lot object
       acc[supplierKey].lots.push({
         productId: item.product_id,
         lot_name: item.lot_name,
@@ -507,7 +437,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
 
     //  build final payload exactly in the requested shape
     const payload = {
-      purchase_date: new Date(date).toISOString(),  
+      purchase_date: new Date(date).toISOString(),
       status: 'on the way',
       is_lots_created: false,
       items,
@@ -517,7 +447,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
     console.log('Purchase payload:', payload)
 
     try {
-      // 6. submit via server action createPurchase
+      //  submit via server action createPurchase
       const res = await createPurchase(payload)
 
       if (res?.success) {
@@ -527,8 +457,10 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
         showAlert(res?.error || 'Failed to create purchase', 'error')
       }
     } catch (err) {
-      console.error('submitPurchaseOrder error:', err)
+      console.error('handleSubmitPurchaseOrder error:', err)
       showAlert('Failed to create purchase', 'error')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -782,11 +714,11 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                 <div className='flex justify-center sm:justify-end w-full sm:w-auto'>
                   <button
                     type='button'
-                    onClick={submitPurchaseOrder}
+                    onClick={handleSubmitPurchaseOrder}
                     className='bg-white text-indigo-600 font-semibold px-6 py-3 rounded-lg hover:bg-gray-100 transition-all duration-200 w-full sm:w-auto cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed'
-                    disabled={hasExpenseChanges || cartProducts.length === 0}
+                    disabled={isSubmitting || hasExpenseChanges || cartProducts.length === 0}
                   >
-                    Purchase
+                    {isSubmitting ? 'Submitting...' : 'Purchase'}
                   </button>
                 </div>
               </div>

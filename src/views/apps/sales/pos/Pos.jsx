@@ -4,8 +4,6 @@ import { useEffect, useMemo, useState } from 'react'
 
 import Link from 'next/link'
 
-import { FiX } from 'react-icons/fi'
-
 import { useForm } from 'react-hook-form'
 
 import { FaTimes, FaEdit } from 'react-icons/fa'
@@ -17,29 +15,21 @@ import { toast } from 'react-toastify'
 import PosHeader from './PosHeader'
 import SearchProduct from './SearchProduct'
 
-import CategoryModal from '@/components/layout/shared/CategoryModal'
-import { categories } from '@/data/productsCategory/productsCategory'
 import { customers } from '@/data/customerData/customerData'
-import { filteredProductsData } from '@/utils/filteredProductsData'
 import { handleCrateCount } from '@/utils/handleCrateCount'
 import { calculateTotalDue } from '@/utils/calculateTotalDue'
-import { usePaymentCalculation } from '@/utils/usePaymentCalculation'
 import ShowProductList from '@/components/layout/shared/ShowProductList'
 import { handleSalesTotal } from '@/utils/handleSalesTotal'
-import { lots } from '@/fake-db/apps/lotsData'
 import { useGlobalTooltip } from '@/components/layout/shared/useGlobalTooltip'
 
-export default function POSSystem({ productsData = [] }) {
+export default function POSSystem({ productsData = [], customersData = [], categoriesData = [], lotsData = [] }) {
   const [searchTerm, setSearchTerm] = useState('')
-  const [categoryModalOpen, setCategoryModalOpen] = useState(false)
-  const [brandModalOpen, setBrandModalOpen] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState('')
   const [categorySearch, setCategorySearch] = useState('')
-  const [brandSearch, setBrandSearch] = useState('')
 
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [selectedCustomer, setSelectedCustomer] = useState({})
   const [cartProducts, setCartProducts] = useState([])
-  const [selectedCategory, setSelectedCategory] = useState([])
   const showTooltip = useGlobalTooltip()
 
   const [commissionModal, setCommissionModal] = useState({
@@ -52,13 +42,14 @@ export default function POSSystem({ productsData = [] }) {
   const [lotModal, setLotModal] = useState({
     open: false,
     cartItemId: null,
+    productId: null,
     productName: '',
     selectedLot: null
   })
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      if (cartProducts.length > 0 && selectedCustomer?.sl) {
+      if (cartProducts.length > 0 && selectedCustomer?._id) {
         handleSalesTotal(setCartProducts, selectedCustomer)
       }
     }, 100)
@@ -66,23 +57,25 @@ export default function POSSystem({ productsData = [] }) {
     return () => clearTimeout(timeout)
   }, [cartProducts, selectedCustomer])
 
-  const filteredProducts = filteredProductsData(productsData, searchTerm, selectedCategory)
+  // const filteredProducts = filteredProductsData(productsData, searchTerm, selectedCategory)
+  const filteredProducts = useMemo(() => {
+    return productsData.filter(product => {
+      // Search term filter
+      const matchesSearch = product.productName.toLowerCase().includes(searchTerm.toLowerCase())
 
-  const filteredCategories = categories.filter(category =>
-    category.name.toLowerCase().includes(categorySearch.toLowerCase())
-  )
+      // Category filter - compare with categoryId._id
+      const matchesCategory = !selectedCategory || product.categoryId?._id === selectedCategory
 
-  // Function to remove category
-  const handleRemoveCategory = categoryToRemove => {
-    setSelectedCategory(prev => prev.filter(category => category !== categoryToRemove))
-  }
+      return matchesSearch && matchesCategory
+    })
+  }, [productsData, searchTerm, selectedCategory])
 
   const handleRemoveCartItem = cartItemId => {
     setCartProducts(prevCart => prevCart.filter(item => item.cart_item_id !== cartItemId))
   }
 
   const handleCartProductClick = product => {
-    if (!selectedCustomer?.sl) {
+    if (!selectedCustomer?._id) {
       toast.warning('Please select a customer first.', {
         position: 'top-center'
       })
@@ -94,8 +87,8 @@ export default function POSSystem({ productsData = [] }) {
       // Add product with additional properties
       const newCartItem = {
         ...product,
-        product_id: product.id,
-        cart_item_id: `${product.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        product_id: product._id,
+        cart_item_id: `${product._id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         isCrated: product.isCrated,
         crate_type_one: 0,
         crate_type_one_price: 0,
@@ -108,11 +101,11 @@ export default function POSSystem({ productsData = [] }) {
         subtotal: 0,
         total: 0,
         profit: 0,
-        cost_price: product.cost_price ?? 0,
-        selling_price: product.selling_price ?? 0,
-        product_name: product.name,
-        isCommissionable: product.isCommissionable,
-        commission_rate: product.commission_rate || 0,
+        cost_price: product.basePrice ?? 0,
+        selling_price: product.basePrice ?? 0,
+        product_name: product.productName,
+        isCommissionable: product.allowCommission,
+        commission_rate: product.commissionRate || 0,
         commission: 0,
         selling_date: date,
         expiry_date: '',
@@ -135,9 +128,9 @@ export default function POSSystem({ productsData = [] }) {
   } = useForm({
     defaultValues: {
       receiveAmount: 0,
-      changeAmount: 0,
       dueAmount: totalDueAmount,
       paymentType: 'cash',
+      received_amount_from_balance: 0,
       note: '',
       vatType: 'Select',
       discountType: 'Flat (৳)'
@@ -146,6 +139,8 @@ export default function POSSystem({ productsData = [] }) {
 
   const receiveAmount = watchPayment('receiveAmount')
   const vatType = watchPayment('vatType')
+  const paymentType = watchPayment('paymentType')
+  const receivedFromBalance = watchPayment('received_amount_from_balance')
 
   const parsePercent = v => {
     if (!v || v === 'Select') return 0
@@ -194,7 +189,20 @@ export default function POSSystem({ productsData = [] }) {
   }
 
   // Auto calculate due and change amounts
-  usePaymentCalculation(receiveAmount, totalDueAmount, setPaymentValue)
+  // usePaymentCalculation(receiveAmount, totalDueAmount, setPaymentValue)
+
+  useEffect(() => {
+    if (paymentType === 'balance') {
+      // When payment type is balance, sync receiveAmount with received_amount_from_balance
+      setPaymentValue('receiveAmount', receivedFromBalance || 0)
+    }
+
+    // Always calculate due amount: payableAmount - receiveAmount
+    const currentReceive = Number(receiveAmount) || 0
+    const due = Math.max(0, payableAmount - currentReceive)
+
+    setPaymentValue('dueAmount', due)
+  }, [paymentType, receivedFromBalance, receiveAmount, payableAmount, setPaymentValue])
 
   const columns = useMemo(() => {
     // --- Base Columns (always shown) ---
@@ -218,24 +226,22 @@ export default function POSSystem({ productsData = [] }) {
         header: 'Lot',
         cell: ({ row }) => {
           const product = row.original
-
-          // Use cart_item_id to identify this specific cart row
           const cartItemId = product.cart_item_id
 
           // Check if this row has a lot selected
           const hasLot = product.lot_selected && product.lot_selected.lot_name
 
           if (!hasLot) {
-            // No lot selected - show "Select Lot" button
             return (
               <button
                 type='button'
                 onClick={() =>
                   setLotModal({
                     open: true,
-                    cartItemId: cartItemId, // Pass unique cart item ID
+                    cartItemId: cartItemId,
+                    productId: product.product_id,
                     productName: product.product_name || '',
-                    selectedLot: null // Start with no selection
+                    selectedLot: null
                   })
                 }
                 className='text-indigo-600 hover:text-indigo-800 font-medium underline cursor-pointer'
@@ -245,17 +251,17 @@ export default function POSSystem({ productsData = [] }) {
             )
           }
 
-          // Lot is selected - show lot name (clickable to change)
           return (
             <span
               onClick={() =>
                 setLotModal({
                   open: true,
-                  cartItemId: cartItemId, // Pass unique cart item ID
+                  cartItemId: cartItemId,
+                  productId: product.product_id,
                   productName: product.product_name || '',
                   selectedLot: {
                     ...product.lot_selected,
-                    sell_qty: product.lot_selected.sell_qty || 0 // Pre-fill with existing quantity
+                    sell_qty: product.lot_selected.sell_qty || 0
                   }
                 })
               }
@@ -443,7 +449,7 @@ export default function POSSystem({ productsData = [] }) {
               onChange={e => {
                 const parsed = e.target.value === '' ? 0 : parseInt(e.target.value) || 0
 
-                handleCrateCount(setCartProducts, product.cart_item_id, product.customer_id, 'type_one', parsed)
+                handleCrateCount(setCartProducts, product.cart_item_id, selectedCustomer._id, 'type_one', parsed)
               }}
               placeholder='0'
               className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
@@ -493,6 +499,22 @@ export default function POSSystem({ productsData = [] }) {
     return finalColumns
   }, [cartProducts.some(p => p.isCrated), showTooltip])
 
+  // Validation for balance payment
+  const validateBalanceAmount = value => {
+    if (paymentType !== 'balance') return true
+
+    const amount = Number(value) || 0
+    const availableBalance = selectedCustomer?.account_info?.balance || 0
+
+    if (amount < 0) return 'Amount cannot be negative'
+
+    if (amount > availableBalance) {
+      return `Insufficient balance. Available: ৳${availableBalance.toFixed(2)}`
+    }
+
+    return true
+  }
+
   const tableData = useMemo(() => cartProducts, [cartProducts])
 
   const table = useReactTable({
@@ -512,16 +534,17 @@ export default function POSSystem({ productsData = [] }) {
       return
     }
 
-    // Transform cart item to lot
+    // Transform cart item to lot with new structure
     const toLot = item => ({
-      lot_id: item.product_id,
+      lot_id: item.lot_selected.lot_id,
+      lot_name: item.lot_selected.lot_name,
       kg: item.kg || 0,
       discount_kg: item.discount_kg || 0,
-      unit_price: item.cost_price || 0,
+      unit_cost: item.lot_selected.unit_cost || 0,
+      selling_price: item.selling_price || 0,
       total_price: Number((((item.kg || 0) - (item.discount_kg || 0)) * (item.selling_price || 0)).toFixed(2)),
       discount_amount: item.discount_amount || 0,
-      selling_price: item.selling_price || 0,
-      lot_commission_rate: item.commission_rate || 0,
+      lot_commission_rate: item.lot_selected.commission_rate || 0,
       lot_commission_amount: item.commission || 0,
       crate_type_one: item.crate_type_one || 0,
       crate_type_two: item.crate_type_two || 0
@@ -538,6 +561,7 @@ export default function POSSystem({ productsData = [] }) {
     // Build items
     const items = Object.entries(grouped).map(([pid, items]) => ({
       product_id: pid,
+      product_name: items[0].product_name,
       customer_commission_rate: selectedCustomer.commission_rate || 0,
       customer_commission_amount: Number(items.reduce((s, i) => s + (i.commission || 0), 0).toFixed(2)),
       selected_lots: items.map(toLot)
@@ -546,13 +570,14 @@ export default function POSSystem({ productsData = [] }) {
     // Payload
     const payload = {
       sale_date: date,
-      customer_id: selectedCustomer.sl,
+      customer_id: selectedCustomer._id,
+      customer_name: selectedCustomer.basic_info.name,
       total_customer_commission: Number(cartProducts.reduce((s, i) => s + (i.commission || 0), 0).toFixed(2)),
       items,
       payment_details: {
         payable_amount: payableAmount || 0,
         received_amount: Number(data.receiveAmount) || 0,
-        change_amount: Math.max(0, Number(data.receiveAmount) - payableAmount),
+        received_amount_from_balance: Number(data.received_amount_from_balance) || 0,
         due_amount: Number(data.dueAmount) || 0,
         payment_type: data.paymentType || 'cash',
         vat: vatAmount || 0,
@@ -563,6 +588,7 @@ export default function POSSystem({ productsData = [] }) {
     console.log('Sales payload:', payload)
     toast.success('Product sold successfully!')
     setCartProducts([])
+    setSelectedCustomer({})
   }
 
   // Handle confirm click - save the selected lot to the specific cart row
@@ -575,8 +601,8 @@ export default function POSSystem({ productsData = [] }) {
     }
 
     const lot = lotModal.selectedLot
-    const sellQty = parseFloat(lot.sell_qty) || 0 // Ensure it's a number
-    const currentSold = parseFloat(lot.sold) || 0 // Ensure it's a number
+    const sellQty = parseFloat(lot.sell_qty) || 0
+    const currentSold = parseFloat(lot.totalKgSold) || 0 // Use totalKgSold from sales
 
     // Validate: must enter a quantity
     if (sellQty <= 0) {
@@ -585,33 +611,36 @@ export default function POSSystem({ productsData = [] }) {
       return
     }
 
-    // Validate: check if total usage exceeds limit
-    if (currentSold + sellQty > 30) {
-      toast.error(`You can't use more than 30 kg from lot ${lot.lot_name}. Available: ${30 - currentSold} kg`)
-
-      return
-    }
-
     // Update ONLY the specific cart row identified by cart_item_id
     setCartProducts(prev => {
       const updated = prev.map(item => {
-        // Only update the row matching this unique cart_item_id
         if (item.cart_item_id === lotModal.cartItemId) {
           return {
             ...item,
             lot_selected: {
-              supplier_name: lot.supplier_name,
-              supplier_id: lot.supplier_id,
-              product: lot.product,
-              sold: currentSold + sellQty, // Track total sold from this lot
+              lot_id: lot._id,
               lot_name: lot.lot_name,
-              sell_qty: sellQty // Store quantity for this sale
+              supplier_id: lot.supplierId,
+              supplier_name: lot.supplierId?.basic_info?.name,
+              product_id: lot.productsId?._id,
+              product_name: lot.productsId?.productName,
+              unit_cost: lot.costs?.unitCost || 0,
+              commission_rate: lot.costs?.commissionRate || 0,
+              has_commission: lot.hasCommission,
+              totalKgSold: currentSold + sellQty, // Track total sold
+              sell_qty: sellQty, // Quantity for this sale
+              purchase_date: lot.purchase_date,
+              status: lot.status,
+              carat_type_1: lot.carat?.carat_Type_1 || 0,
+              carat_type_2: lot.carat?.carat_Type_2 || 0
             },
-            kg: sellQty // Auto-fill kg field with lot quantity
+            kg: sellQty, // Auto-fill kg field
+            cost_price: lot.costs?.unitCost || 0, // Update cost price from lot
+            selling_price: item.selling_price || lot.costs?.unitCost || 0 // Keep current or use cost
           }
         }
 
-        return item // Don't modify other rows
+        return item
       })
 
       return updated
@@ -621,8 +650,21 @@ export default function POSSystem({ productsData = [] }) {
     toast.success(`Added ${sellQty} kg from ${lot.lot_name}`)
 
     // Close modal and reset
-    setLotModal({ open: false, cartItemId: null, productName: '', selectedLot: null })
+    setLotModal({
+      open: false,
+      cartItemId: null,
+      productId: null,
+      productName: '',
+      selectedLot: null
+    })
   }
+
+  useEffect(() => {
+    setPaymentValue('received_amount_from_balance', 0)
+    setPaymentValue('receiveAmount', 0)
+    setPaymentValue('dueAmount', 0)
+    setPaymentValue('paymentType', 'cash')
+  }, [selectedCustomer?._id, setPaymentValue])
 
   return (
     <div className='min-h-[calc(100vh-54px] bg-gray-50 p-1'>
@@ -634,14 +676,11 @@ export default function POSSystem({ productsData = [] }) {
           <SearchProduct
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
-            categoryModalOpen={categoryModalOpen}
-            setCategoryModalOpen={setCategoryModalOpen}
-            brandModalOpen={brandModalOpen}
-            setBrandModalOpen={setBrandModalOpen}
             categorySearch={categorySearch}
             setCategorySearch={setCategorySearch}
-            brandSearch={brandSearch}
-            setBrandSearch={setBrandSearch}
+            categoriesData={categoriesData}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
           />
         </div>
       </div>
@@ -663,20 +702,21 @@ export default function POSSystem({ productsData = [] }) {
               className='px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500'
               onChange={e => setDate(e.target.value)}
             />
+
             <div className='flex'>
               <select
-                value={selectedCustomer.sl || ''}
+                value={selectedCustomer?._id || ''}
                 onChange={e => {
-                  const customer = customers.find(s => s.sl === parseInt(e.target.value))
+                  const customer = customersData.find(c => c._id === e.target.value)
 
                   setSelectedCustomer(customer || {})
                 }}
                 className='flex-1 px-3 py-2 border border-gray-300 rounded-l focus:outline-none'
               >
                 <option value=''>Select Customer</option>
-                {customers.map(customer => (
-                  <option key={customer.sl} value={customer.sl}>
-                    {customer.name}
+                {customersData.map(customer => (
+                  <option key={customer._id} value={customer._id}>
+                    {customer.basic_info.name}
                   </option>
                 ))}
               </select>
@@ -684,21 +724,22 @@ export default function POSSystem({ productsData = [] }) {
           </div>
 
           {/* Selected Customer Info */}
-          {selectedCustomer?.sl && (
+          {selectedCustomer?._id && (
             <div className='mb-6'>
               <div className='bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-xl shadow-lg p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
                 {/* Left Section - Profile */}
                 <div className='flex items-center gap-4 w-full sm:w-auto'>
                   <img
-                    src={selectedCustomer.image}
-                    alt={selectedCustomer.name}
+                    src={selectedCustomer.basic_info.avatar || '/placeholder.svg'}
+                    alt={selectedCustomer.basic_info.name}
                     className='w-16 h-16 rounded-full border-2 border-white object-cover shadow-md'
                   />
 
                   <div>
-                    <h2 className='text-lg font-semibold'>{selectedCustomer.name}</h2>
-                    <p className='text-sm opacity-80'>{selectedCustomer.phone}</p>
-                    <p className='text-xs opacity-60'>{selectedCustomer.email}</p>
+                    <h2 className='text-lg font-semibold'>{selectedCustomer.basic_info.name}</h2>
+                    <p className='text-sm opacity-80'>{selectedCustomer.contact_info.phone}</p>
+                    <p className='text-xs opacity-60'>{selectedCustomer.contact_info.email}</p>
+                    <p className='text-xs opacity-60'>{selectedCustomer.contact_info.location}</p>
                   </div>
                 </div>
 
@@ -706,12 +747,14 @@ export default function POSSystem({ productsData = [] }) {
                 <div className='grid grid-cols-2 gap-4 w-full sm:w-auto text-center'>
                   <div className='bg-white/15 backdrop-blur-sm rounded-lg py-2 px-3'>
                     <p className='text-xs opacity-80'>Balance</p>
-                    <p className='text-base font-bold'>৳ {selectedCustomer.balance.toFixed(2)}</p>
+                    <p className='text-base font-bold'>৳ {(selectedCustomer.account_info.balance || 0).toFixed(2)}</p>
                   </div>
 
                   <div className='bg-white/15 backdrop-blur-sm rounded-lg py-2 px-3'>
                     <p className='text-xs opacity-80'>Due</p>
-                    <p className='text-base font-bold text-yellow-300'>৳ {selectedCustomer.due.toFixed(2)}</p>
+                    <p className='text-base font-bold text-yellow-300'>
+                      ৳ {(selectedCustomer.account_info.due || 0).toFixed(2)}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -769,26 +812,53 @@ export default function POSSystem({ productsData = [] }) {
                       <option value='cash'>Cash</option>
                       <option value='card'>Card</option>
                       <option value='bkash'>Bkash</option>
+                      <option value='balance' disabled={!selectedCustomer?._id}>
+                        Balance {!selectedCustomer?._id && '(Select customer first)'}
+                      </option>
                     </select>
                   </div>
+
+                  {paymentType === 'balance' && (
+                    <div className='flex items-center'>
+                      <label className='w-32 text-sm'>Amount from Balance</label>
+                      <div className='flex-1'>
+                        <input
+                          type='number'
+                          {...registerPayment('received_amount_from_balance', {
+                            validate: validateBalanceAmount
+                          })}
+                          className={`w-full px-3 py-2 border rounded ${
+                            paymentErrors.received_amount_from_balance ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          placeholder='0'
+                        />
+                        {selectedCustomer?._id && (
+                          <p className='text-xs text-gray-500 mt-1'>
+                            Available Balance: ৳{(selectedCustomer.account_info.balance || 0).toFixed(2)}
+                          </p>
+                        )}
+                        {paymentErrors.received_amount_from_balance && (
+                          <p className='text-xs text-red-500 mt-1'>
+                            {paymentErrors.received_amount_from_balance.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   <div className='flex items-center'>
                     <label className='w-32 text-sm'>Receive Amount</label>
                     <input
                       type='number'
                       {...registerPayment('receiveAmount')}
-                      className='flex-1 px-3 py-2 border border-gray-300 rounded'
+                      disabled={paymentType === 'balance'} // Disabled for balance payment
+                      className={`flex-1 px-3 py-2 border border-gray-300 rounded ${
+                        paymentType === 'balance' ? 'bg-gray-100' : ''
+                      }`}
+                      placeholder='0'
                     />
                   </div>
-                  <div className='flex items-center'>
-                    <label className='w-32 text-sm'>Change Amount</label>
-                    <input
-                      type='number'
-                      {...registerPayment('changeAmount')}
-                      disabled
-                      className='flex-1 px-3 py-2 border border-gray-300 rounded bg-gray-100'
-                    />
-                  </div>
+
                   <div className='flex items-center'>
                     <label className='w-32 text-sm'>Due Amount</label>
                     <input
@@ -884,9 +954,13 @@ export default function POSSystem({ productsData = [] }) {
                   <div className='flex justify-center sm:justify-end w-full sm:w-auto'>
                     <button
                       type='submit'
-                      disabled={totalDueAmount < 1}
+                      disabled={
+                        totalDueAmount < 1 || (paymentType === 'balance' && paymentErrors.received_amount_from_balance)
+                      }
                       className={`bg-white text-base text-indigo-600 font-semibold px-6 py-2 rounded-lg transition-all duration-200 w-full sm:w-auto ${
-                        totalDueAmount < 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 cursor-pointer'
+                        totalDueAmount < 1 || (paymentType === 'balance' && paymentErrors.received_amount_from_balance)
+                          ? 'opacity-50 cursor-not-allowed'
+                          : 'hover:bg-gray-100 cursor-pointer'
                       }`}
                     >
                       Sell
@@ -899,24 +973,8 @@ export default function POSSystem({ productsData = [] }) {
         </div>
 
         {/* Right Side - Products */}
-        <ShowProductList
-          selectedCategory={selectedCategory}
-          handleRemoveCategory={handleRemoveCategory}
-          filteredProducts={filteredProducts}
-          handleCartProductClick={handleCartProductClick}
-        />
+        <ShowProductList filteredProducts={filteredProducts} handleCartProductClick={handleCartProductClick} />
       </div>
-
-      {/* Category Modal */}
-      <CategoryModal
-        open={categoryModalOpen}
-        onClose={() => setCategoryModalOpen(false)}
-        categorySearch={categorySearch}
-        setCategorySearch={setCategorySearch}
-        filteredCategories={filteredCategories}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-      />
 
       {/* Commission Edit Modal */}
       {commissionModal.open && (
@@ -977,32 +1035,30 @@ export default function POSSystem({ productsData = [] }) {
               <select
                 value={lotModal.selectedLot?.lot_name || ''}
                 onChange={e => {
-                  // Find the selected lot from the lots data
-                  const selectedLot = lots.find(l => l.lot_name === e.target.value)
+                  // Find the selected lot from lotsData using new structure
+                  const selectedLot = lotsData.find(l => l.lot_name === e.target.value)
 
                   if (selectedLot) {
-                    // Ensure all numeric fields exist with defaults
                     setLotModal(prev => ({
                       ...prev,
                       selectedLot: {
                         ...selectedLot,
                         sell_qty: 0, // Initialize to 0
-                        sold: selectedLot.sold || 0 // Ensure sold has a default value
+                        totalKgSold: selectedLot.sales?.totalKgSold || 0
                       }
                     }))
                   } else {
-                    // User selected "Select a lot..." - clear selection
                     setLotModal(prev => ({ ...prev, selectedLot: null }))
                   }
                 }}
                 className='w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none'
               >
                 <option value=''>Select a lot...</option>
-                {/* Filter lots matching this product name */}
-                {lots
-                  .filter(l => l.product.toLowerCase() === lotModal.productName.toLowerCase())
+                {/* Filter lots matching this product _id */}
+                {lotsData
+                  .filter(l => l.productsId?._id === lotModal.productId)
                   .map(l => (
-                    <option key={l.lot_name} value={l.lot_name}>
+                    <option key={l._id} value={l.lot_name}>
                       {l.lot_name}
                     </option>
                   ))}
@@ -1016,8 +1072,14 @@ export default function POSSystem({ productsData = [] }) {
                   {/* Lot info */}
                   <div>
                     <p className='font-semibold text-gray-800'>{lotModal.selectedLot.lot_name}</p>
-                    <p className='text-sm text-gray-600'>Supplier: {lotModal.selectedLot.supplier_name}</p>
-                    <p className='text-sm text-gray-600'>Already Sold: {lotModal.selectedLot.sold} kg</p>
+                    <p className='text-sm text-gray-600'>
+                      Supplier: {lotModal.selectedLot.supplierId?.basic_info?.name || 'N/A'}
+                    </p>
+                    <p className='text-sm text-gray-600'>Already Sold: {lotModal.selectedLot.totalKgSold || 0} kg</p>
+                    <p className='text-sm text-gray-600'>Unit Cost: ৳{lotModal.selectedLot.costs?.unitCost || 0}</p>
+                    <p className='text-sm text-gray-600'>
+                      Status: <span className='capitalize'>{lotModal.selectedLot.status}</span>
+                    </p>
                   </div>
 
                   {/* Quantity input */}
@@ -1026,12 +1088,12 @@ export default function POSSystem({ productsData = [] }) {
                     <input
                       type='number'
                       min='0'
+                      step='0.01'
                       placeholder='0'
                       value={lotModal.selectedLot.sell_qty === 0 ? '' : lotModal.selectedLot.sell_qty}
                       onChange={e => {
                         const val = parseFloat(e.target.value) || 0
 
-                        // Update the sell_qty for this lot
                         setLotModal(prev => ({
                           ...prev,
                           selectedLot: { ...prev.selectedLot, sell_qty: val }
@@ -1048,14 +1110,21 @@ export default function POSSystem({ productsData = [] }) {
             {/* Action buttons */}
             <div className='flex justify-end gap-3'>
               <button
-                onClick={() => setLotModal({ open: false, cartItemId: null, productName: '', selectedLot: null })}
+                onClick={() =>
+                  setLotModal({
+                    open: false,
+                    cartItemId: null,
+                    productId: null,
+                    productName: '',
+                    selectedLot: null
+                  })
+                }
                 className='px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md font-medium'
               >
                 Cancel
               </button>
 
               <button
-                // Disable if no lot selected or no quantity entered
                 disabled={!lotModal.selectedLot || !lotModal.selectedLot.sell_qty || lotModal.selectedLot.sell_qty <= 0}
                 onClick={handleLotConfirm}
                 className='px-4 py-2 rounded-md font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed bg-indigo-600 hover:bg-indigo-700 cursor-pointer'

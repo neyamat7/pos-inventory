@@ -28,6 +28,22 @@ export async function getAllLots({ page = 1, limit = 10 } = {}) {
   }
 }
 
+export async function getInStockLots() {
+  try {
+    const data = await api.get(`/inventoryLots/in-stock`)
+
+    return {
+      lots: data.data || []
+    }
+  } catch (error) {
+    console.error('Error fetching in-stock lots:', error)
+
+    return {
+      lots: []
+    }
+  }
+}
+
 export async function updateLotStatus(lotId, status) {
   try {
     const data = await api.put(`/inventoryLots/status/${lotId}`, { status })
@@ -46,5 +62,17 @@ export async function updateLotStatus(lotId, status) {
       success: false,
       message: `Failed to update lot status: ${error.message}`
     }
+  }
+}
+
+export async function checkDuplicateLotName(lot_name) {
+  try {
+    const data = await api.get(`/inventoryLots/check-name?lot_name=${lot_name}`)
+
+    return data.isDuplicate
+  } catch (error) {
+    console.error('Error checking duplicate lot name:', error)
+
+    return false
   }
 }

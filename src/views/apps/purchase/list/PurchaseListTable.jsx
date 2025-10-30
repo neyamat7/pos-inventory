@@ -135,16 +135,17 @@ const PurchaseListTable = ({ purchaseData = [], paginationData, loading, onPageC
     {
       accessorKey: 'purchase_date',
       header: 'Date',
-      cell: ({ row }) => new Date(row.original.purchase_date).toLocaleDateString()
+      cell: ({ row }) => new Date(row.original.purchase_date).toLocaleDateString('en-GB')
     },
-    {
-      accessorKey: 'supplier',
-      header: 'Supplier',
-      cell: ({ row }) => row.original.items?.[0]?.supplier?.basic_info?.name || 'N/A'
-    },
+
+    // {
+    //   accessorKey: 'supplier',
+    //   header: 'Supplier',
+    //   cell: ({ row }) => row.original.items?.[0]?.supplier?.basic_info?.name || 'N/A'
+    // },
     {
       accessorKey: 'items_count',
-      header: 'Items',
+      header: 'Suppliers',
       cell: ({ row }) => row.original.items?.length || 0
     },
     {
