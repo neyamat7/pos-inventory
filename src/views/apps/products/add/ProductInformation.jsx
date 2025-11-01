@@ -39,7 +39,7 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
       try {
         const result = await getAllCategories({ page: 1, limit: 50 })
 
-        console.log('result of category', result)
+        // console.log('result of category', result)
 
         if (result?.categories.length > 0) {
           setCategories(result.categories || [])

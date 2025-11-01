@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import api from '@/libs/api'
 
 export async function createPurchase(purchaseData) {
-  console.log('purchase data in action', purchaseData)
+  // console.log('purchase data in action', purchaseData)
 
   try {
     const response = await api.post('/purchase/add', purchaseData)
@@ -50,7 +50,7 @@ export async function getAllPurchases({ page = 1, limit = 10 } = {}) {
 }
 
 export async function createLots(purchaseId) {
-  console.log('purchase id in action', purchaseId)
+  // console.log('purchase id in action', purchaseId)
 
   try {
     const response = await api.post(`/inventoryLots/add/?id=${purchaseId}`)
@@ -73,7 +73,7 @@ export async function createLots(purchaseId) {
 }
 
 export async function updatePurchaseStatus(purchaseId, status) {
-  console.log('update status in action', purchaseId, status)
+  // console.log('update status in action', purchaseId, status)
 
   try {
     const response = await api.patch(`/purchase/status/${purchaseId}`, { status })

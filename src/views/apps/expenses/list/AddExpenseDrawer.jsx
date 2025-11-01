@@ -117,7 +117,7 @@ const AddExpenseDrawer = props => {
         handleClose()
 
         // Show success message
-        console.log('Expense created successfully')
+        // console.log('Expense created successfully')
       } else {
         setError(result.error || 'Failed to create expense')
       }

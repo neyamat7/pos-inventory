@@ -6,7 +6,7 @@ import Link from 'next/link'
 
 import { useForm } from 'react-hook-form'
 
-import { FaTimes, FaPlus, FaMinus, FaEdit } from 'react-icons/fa'
+import { FaTimes, FaEdit } from 'react-icons/fa'
 
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table'
 
@@ -21,7 +21,6 @@ import { filteredProductsData } from '@/utils/filteredProductsData'
 import { showAlert } from '@/utils/showAlert'
 import ShowProductList from '@/components/layout/shared/ShowProductList'
 import { createPurchase } from '@/actions/purchaseActions'
-import { checkDuplicateLotName } from '@/actions/lotActions'
 
 const handleCrateCount = (setCartProducts, productId, personId, type, value) => {
   setCartProducts(prevCart =>
@@ -351,37 +350,28 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
     setIsSubmitting(true)
 
     //  generate lot_name for each cart item
-    const updatedCartProducts = await Promise.all(
-      cartProducts.map(async item => {
-        const supplierName = item.supplier_name?.trim() || ''
-        const supplierParts = supplierName.split(' ').filter(Boolean)
-        const firstLetter = supplierParts[0]?.[0]?.toUpperCase() || ''
-        const lastLetter = supplierParts.length > 1 ? supplierParts[supplierParts.length - 1][0]?.toUpperCase() : ''
-        const initials = `${firstLetter}${lastLetter}`
+    const updatedCartProducts = cartProducts.map(item => {
+      const supplierName = item.supplier_name?.trim() || ''
+      const supplierParts = supplierName.split(' ').filter(Boolean)
+      const firstLetter = supplierParts[0]?.[0]?.toUpperCase() || ''
+      const lastLetter = supplierParts.length > 1 ? supplierParts[supplierParts.length - 1][0]?.toUpperCase() : ''
+      const initials = `${firstLetter}${lastLetter}`
 
-        const formattedDate = date.split('-').reverse().join('').slice(0, 6)
-        const cleanProductName = item.product_name?.replace(/\s+/g, '_').toUpperCase() || 'ITEM'
-        const totalCrates = (item.crate_type_one || 0) + (item.crate_type_two || 0)
+      const formattedDate = date.split('-').reverse().join('').slice(0, 6)
 
-        let lot_name = `${initials}-${formattedDate}-${cleanProductName}-${totalCrates}`
+      // Get current time in HHMM format
+      const now = new Date()
+      const hours = String(now.getHours()).padStart(2, '0')
+      const minutes = String(now.getMinutes()).padStart(2, '0')
+      const formattedTime = `${hours}${minutes}`
 
-        let suffix = 1
-        let isDuplicate = true
+      const cleanProductName = item.product_name?.replace(/\s+/g, '_').toUpperCase() || 'ITEM'
+      const totalCrates = (item.crate_type_one || 0) + (item.crate_type_two || 0)
 
-        while (isDuplicate) {
-          const result = await checkDuplicateLotName(lot_name)
+      const lot_name = `${initials}-${formattedDate}-${formattedTime}-${cleanProductName}-${totalCrates}`
 
-          if (result?.isDuplicate) {
-            lot_name = `${initials}-${formattedDate}-${cleanProductName}-${totalCrates}-${String(suffix).padStart(3, '0')}`
-            suffix++
-          } else {
-            isDuplicate = false
-          }
-        }
-
-        return { ...item, lot_name }
-      })
-    )
+      return { ...item, lot_name }
+    })
 
     // group lots by supplier _id
     const suppliersMap = updatedCartProducts.reduce((acc, item) => {
@@ -444,7 +434,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
       total_expenses: totalExpenses
     }
 
-    console.log('Purchase payload:', payload)
+    // console.log('Purchase payload:', payload)
 
     try {
       //  submit via server action createPurchase

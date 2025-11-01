@@ -2,8 +2,6 @@
 export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
   setCartProducts(prevCart =>
     prevCart.map(item => {
-      // --- crate price from selected customer data ---
-      // const customerCrate = selectedCustomer?.crate || {}
       const typeOnePrice = selectedCustomer?.crate_type_one_price || 0
       const typeTwoPrice = selectedCustomer?.crate_type_two_price || 0
 
@@ -24,19 +22,15 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
       // Calculate total based on selling price (excluding discounted kg)
       const productBase = (kg - discountKg) * sellingPrice
 
-      // Calculate profit per item (never below zero)
-      // const profit = Math.max(0, (kg - discountKg) * sellingPrice - (kg - discountKg) * costPrice)
-
-      // --- commission calculation ---
-      // const isCommissioned =
-      //   (item.product_name || '').toLowerCase().includes('mango') ||
-      //   (item.product_name || '').toLowerCase().includes('pineapple')
       const isCommissioned = item.isCommissionable
 
       const commissionRate =
         isCommissioned && item.commission_rate != null ? (Number(item.commission_rate) || 0) / 100 : 0
 
       const commissionAmount = Number((productBase * commissionRate).toFixed(2))
+
+      const lotCommissionRate = (item.lot_selected?.commission_rate || 0) / 100
+      const lotCommissionAmount = Number((productBase * lotCommissionRate).toFixed(2))
 
       // Apply commission on productBase (selling total)
       const productAfterCommission = isCommissioned
@@ -63,6 +57,7 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
         kg,
         cratePrice,
         commission: commissionAmount,
+        lot_commission: lotCommissionAmount,
         subtotal,
         total,
         profit,

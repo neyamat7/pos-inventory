@@ -131,7 +131,7 @@ const VerticalMenu = ({ scrollMenu }) => {
           <MenuItem href='/apps/sales/pos'>POS</MenuItem>
           <MenuItem href='/apps/sales/list'>Sales List</MenuItem>
           <MenuItem href='/apps/sales/return'>Sales Return</MenuItem>
-          <MenuItem href='/apps/draftList'>Draft List</MenuItem>
+          {/* <MenuItem href='/apps/draftList'>Draft List</MenuItem> */}
         </SubMenu>
 
         {/* <MenuItem href='/apps/branches' icon={<i className='tabler-hierarchy' />}>

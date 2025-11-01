@@ -115,7 +115,7 @@ const AddSupplierDrawer = props => {
         reset()
         handleClose()
 
-        console.log('Supplier created successfully!', result.data)
+        // console.log('Supplier created successfully!', result.data)
       } else {
         console.error('Failed to create supplier:', result.error)
         alert(`Error: ${result.error}`)

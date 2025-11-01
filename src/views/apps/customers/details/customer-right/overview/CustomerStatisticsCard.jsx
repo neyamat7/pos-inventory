@@ -8,7 +8,7 @@ import { GiCargoCrate } from 'react-icons/gi'
 import CustomerStats from '@components/card-statistics/CustomerStats'
 
 const CustomerStatisticsCard = ({ customerStatData }) => {
-  console.log('customerStatData', customerStatData)
+  // console.log('customerStatData', customerStatData)
 
   return (
     <Grid container spacing={6}>

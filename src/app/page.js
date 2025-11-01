@@ -8,7 +8,7 @@ import Signout from '@/components/Signout/Signout'
 const HomePage = async () => {
   const session = await auth()
 
-  console.log(session)
+  // console.log(session)
 
   if (!session) {
     redirect('/login')

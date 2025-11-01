@@ -82,7 +82,7 @@ const AddAccounts = props => {
         setFormData(initialData)
         handleClose()
 
-        console.log('Account created successfully!', result.data)
+        // console.log('Account created successfully!', result.data)
       } else {
         setError(result.error || 'Failed to create account')
       }

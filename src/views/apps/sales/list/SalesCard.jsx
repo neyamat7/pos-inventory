@@ -12,31 +12,38 @@ import classnames from 'classnames'
 // Component Imports
 import CustomAvatar from '@core/components/mui/Avatar'
 
-// Vars
-const data = [
-  {
-    value: 56,
-    title: 'Pending Payment',
-    icon: 'tabler-calendar-stats'
-  },
-  {
-    value: 12689,
-    title: 'Completed',
-    icon: 'tabler-checks'
-  },
-  {
-    value: 124,
-    title: 'Refunded',
-    icon: 'tabler-wallet'
-  },
-  {
-    value: 32,
-    title: 'Failed',
-    icon: 'tabler-alert-octagon'
-  }
-]
+const SalesCard = ({ salesData }) => {
+  // console.log('sales data in sales card', salesData)
 
-const SalesCard = () => {
+  // Calculate stats from sales data
+  const totalSales = salesData?.length || 0
+  const totalRevenue = salesData?.reduce((sum, sale) => sum + (sale.payment_details?.payable_amount || 0), 0) || 0
+  const totalDue = salesData?.reduce((sum, sale) => sum + (sale.payment_details?.due_amount || 0), 0) || 0
+  const totalProfit = salesData?.reduce((sum, sale) => sum + (sale.total_profit || 0), 0) || 0
+
+  const data = [
+    {
+      value: totalSales,
+      title: 'Total Sales',
+      icon: 'tabler-shopping-cart'
+    },
+    {
+      value: totalRevenue,
+      title: 'Total Revenue',
+      icon: 'tabler-currency-taka'
+    },
+    {
+      value: totalDue,
+      title: 'Total Due',
+      icon: 'tabler-wallet'
+    },
+    {
+      value: totalProfit,
+      title: 'Total Profit',
+      icon: 'tabler-chart-bar'
+    }
+  ]
+
   // Hooks
   const isBelowMdScreen = useMediaQuery(theme => theme.breakpoints.down('md'))
   const isBelowSmScreen = useMediaQuery(theme => theme.breakpoints.down('sm'))

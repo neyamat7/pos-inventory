@@ -18,7 +18,7 @@ const PurchaseListPage = () => {
       try {
         const result = await getAllPurchases({ page: currentPage, limit: pageSize })
 
-        console.log('result purchase', result)
+        // console.log('result purchase', result)
 
         setData(result.purchases || [])
         setPaginationData({

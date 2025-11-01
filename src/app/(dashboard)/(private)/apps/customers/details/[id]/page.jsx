@@ -8,7 +8,7 @@ import { getCustomerById } from '@/actions/customerActions'
 const CustomerDetailsPage = async props => {
   const params = await props.params
 
-  console.log('params in customer page', params.id)
+  // console.log('params in customer page', params.id)
 
   // Fetch customer data from backend
   const result = await getCustomerById(params.id)

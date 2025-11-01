@@ -15,12 +15,12 @@ import { toast } from 'react-toastify'
 import PosHeader from './PosHeader'
 import SearchProduct from './SearchProduct'
 
-import { customers } from '@/data/customerData/customerData'
 import { handleCrateCount } from '@/utils/handleCrateCount'
 import { calculateTotalDue } from '@/utils/calculateTotalDue'
 import ShowProductList from '@/components/layout/shared/ShowProductList'
 import { handleSalesTotal } from '@/utils/handleSalesTotal'
 import { useGlobalTooltip } from '@/components/layout/shared/useGlobalTooltip'
+import { createSale } from '@/actions/saleActions'
 
 export default function POSSystem({ productsData = [], customersData = [], categoriesData = [], lotsData = [] }) {
   const [searchTerm, setSearchTerm] = useState('')
@@ -57,7 +57,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     return () => clearTimeout(timeout)
   }, [cartProducts, selectedCustomer])
 
-  // const filteredProducts = filteredProductsData(productsData, searchTerm, selectedCategory)
   const filteredProducts = useMemo(() => {
     return productsData.filter(product => {
       // Search term filter
@@ -107,6 +106,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         isCommissionable: product.allowCommission,
         commission_rate: product.commissionRate || 0,
         commission: 0,
+        lot_commission: 0,
         selling_date: date,
         expiry_date: '',
         lot_selected: null
@@ -118,6 +118,40 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
   // calculate total due amount
   const totalDueAmount = calculateTotalDue(cartProducts)
+
+  const { extraCrateType1Price, extraCrateType2Price, extraCrateType1, extraCrateType2 } = useMemo(() => {
+    if (!selectedCustomer?._id || cartProducts.length === 0) {
+      return {
+        extraCrateType1Price: 0,
+        extraCrateType2Price: 0,
+        extraCrateType1: 0,
+        extraCrateType2: 0
+      }
+    }
+
+    // Calculate total crates sold
+    const totalCrateType1Sold = cartProducts.reduce((sum, item) => sum + (item.crate_type_one || 0), 0)
+    const totalCrateType2Sold = cartProducts.reduce((sum, item) => sum + (item.crate_type_two || 0), 0)
+
+    // Get customer's available crates
+    const customerCrateType1Available = selectedCustomer.crate_info?.type_1 || 0
+    const customerCrateType2Available = selectedCustomer.crate_info?.type_2 || 0
+
+    // Calculate extra crates
+    const extraType1 = Math.max(0, totalCrateType1Sold - customerCrateType1Available)
+    const extraType2 = Math.max(0, totalCrateType2Sold - customerCrateType2Available)
+
+    // Calculate extra crate prices
+    const extraType1Price = Number((extraType1 * (selectedCustomer.crate_info?.type_1_price || 0)).toFixed(2))
+    const extraType2Price = Number((extraType2 * (selectedCustomer.crate_info?.type_2_price || 0)).toFixed(2))
+
+    return {
+      extraCrateType1Price: extraType1Price,
+      extraCrateType2Price: extraType2Price,
+      extraCrateType1: extraType1,
+      extraCrateType2: extraType2
+    }
+  }, [cartProducts, selectedCustomer])
 
   const {
     register: registerPayment,
@@ -180,16 +214,13 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         item.product_id === productId ? { ...item, commission_rate: Number(value) || 0 } : item
       )
 
-      handleSalesTotal(() => updated, customers)
+      handleSalesTotal(() => updated, customersData)
 
       return updated
     })
 
     setCommissionModal({ open: false, productId: null, value: 0 })
   }
-
-  // Auto calculate due and change amounts
-  // usePaymentCalculation(receiveAmount, totalDueAmount, setPaymentValue)
 
   useEffect(() => {
     if (paymentType === 'balance') {
@@ -449,7 +480,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
               onChange={e => {
                 const parsed = e.target.value === '' ? 0 : parseInt(e.target.value) || 0
 
-                handleCrateCount(setCartProducts, product.cart_item_id, selectedCustomer._id, 'type_one', parsed)
+                handleCrateCount(setCartProducts, product.cart_item_id, 'type_one', parsed)
               }}
               placeholder='0'
               className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
@@ -475,7 +506,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
               onChange={e => {
                 const parsed = e.target.value === '' ? 0 : parseInt(e.target.value) || 0
 
-                handleCrateCount(setCartProducts, product.cart_item_id, product.customer_id, 'type_two', parsed)
+                handleCrateCount(setCartProducts, product.cart_item_id, 'type_two', parsed)
               }}
               placeholder='0'
               className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
@@ -524,7 +555,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   })
 
   // submit payment
-  const onSubmitPayment = data => {
+  const onSubmitPayment = async data => {
     // Validate
     const missingLot = cartProducts.find(p => !p.lot_selected?.lot_name)
 
@@ -534,23 +565,69 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       return
     }
 
-    // Transform cart item to lot with new structure
-    const toLot = item => ({
-      lot_id: item.lot_selected.lot_id,
-      lot_name: item.lot_selected.lot_name,
-      kg: item.kg || 0,
-      discount_kg: item.discount_kg || 0,
-      unit_cost: item.lot_selected.unit_cost || 0,
-      selling_price: item.selling_price || 0,
-      total_price: Number((((item.kg || 0) - (item.discount_kg || 0)) * (item.selling_price || 0)).toFixed(2)),
-      discount_amount: item.discount_amount || 0,
-      lot_commission_rate: item.lot_selected.commission_rate || 0,
-      lot_commission_amount: item.commission || 0,
-      crate_type_one: item.crate_type_one || 0,
-      crate_type_two: item.crate_type_two || 0
-    })
+    // ========== STEP 1: Transform cart item to lot with complete structure ==========
+    // ========== STEP 1: Transform cart item to lot with complete structure ==========
+    const toLot = item => {
+      const kg = item.kg || 0
+      const discountKg = item.discount_kg || 0
+      const sellingPrice = item.selling_price || 0
+      const unitCost = item.lot_selected.unit_cost || 0
 
-    // Group by product
+      // Calculate total_price (selling price calculation)
+      const totalPrice = Number((kg * sellingPrice).toFixed(2))
+
+      const discountedPrice = Number(((kg - discountKg) * sellingPrice).toFixed(2))
+
+      // Calculate discount_amount (on cost price)
+      const discountAmount = Number((discountKg * unitCost).toFixed(2))
+
+      // ========== LOT COMMISSION (from lot data) ==========
+      const lotCommissionRate = item.lot_selected.commission_rate || 0
+      const lotCommissionAmount = Number((totalPrice * (lotCommissionRate / 100)).toFixed(2))
+
+      // ========== CUSTOMER COMMISSION (from cart item - now moved to lot level) ==========
+      const customerCommissionRate = item.commission_rate || 0
+      const customerCommissionAmount = Number((totalPrice * (customerCommissionRate / 100)).toFixed(2))
+
+      // ========== LOT PROFIT CALCULATION ==========
+      // For commissionable products: profit = customer commission
+      // For non-commissionable products: profit = (selling - cost) for actual kg sold
+      let lotProfit = 0
+
+      if (item.isCommissionable) {
+        // Profit = customer commission for this lot
+        lotProfit = customerCommissionAmount
+      } else {
+        // Profit = margin (selling - cost) for actual kg sold
+        lotProfit = Number(((kg - discountKg) * (sellingPrice - unitCost)).toFixed(2))
+        lotProfit = Math.max(0, lotProfit) // Ensure non-negative
+      }
+
+      return {
+        lotId: item.lot_selected.lot_id,
+        kg: kg,
+        discount_Kg: discountKg,
+        unit_price: sellingPrice,
+        selling_price: discountedPrice,
+        total_price: totalPrice,
+        discount_amount: discountAmount,
+        crate_type1: item.crate_type_one || 0,
+        crate_type2: item.crate_type_two || 0,
+
+        // ========== LOT COMMISSION ==========
+        lot_commission_rate: lotCommissionRate,
+        lot_commission_amount: lotCommissionAmount,
+
+        // ========== CUSTOMER COMMISSION (now at lot level) ==========
+        customer_commission_rate: customerCommissionRate,
+        customer_commission_amount: customerCommissionAmount,
+
+        // ========== LOT PROFIT ==========
+        lot_profit: lotProfit
+      }
+    }
+
+    // ========== STEP 2: Group by product ==========
     const grouped = cartProducts.reduce((acc, item) => {
       if (!acc[item.product_id]) acc[item.product_id] = []
       acc[item.product_id].push(item)
@@ -558,23 +635,81 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       return acc
     }, {})
 
-    // Build items
-    const items = Object.entries(grouped).map(([pid, items]) => ({
-      product_id: pid,
-      product_name: items[0].product_name,
-      customer_commission_rate: selectedCustomer.commission_rate || 0,
-      customer_commission_amount: Number(items.reduce((s, i) => s + (i.commission || 0), 0).toFixed(2)),
-      selected_lots: items.map(toLot)
-    }))
+    // ========== STEP 3: Build items array ==========
+    const items = Object.entries(grouped).map(([pid, items]) => {
+      // Get customer commission rate (should be same for all lots of this product)
+      const customerCommissionRate = items[0].commission_rate || 0
 
-    // Payload
+      const selectedLots = items.map(toLot)
+
+      // Calculate total customer commission for this product
+      const customerCommissionAmount = Number(items.reduce((sum, item) => sum + (item.commission || 0), 0).toFixed(2))
+
+      // Profit for all, commissional or no commissional
+      const profit = Number(items.reduce((sum, item) => sum + (item.profit || 0), 0).toFixed(2))
+
+      return {
+        productId: pid,
+        selected_lots: selectedLots
+
+        // product_name: items[0].product_name,
+        // customer_commission_rate: customerCommissionRate,
+        // customer_commission_amount: customerCommissionAmount,
+        // profit: profit
+      }
+    })
+
+    // ========== STEP 4: Calculate total commissions ==========
+    const total_custom_commission = Number(
+      items
+        .reduce((sum, item) => {
+          return (
+            sum +
+            item.selected_lots.reduce((lotSum, lot) => {
+              return lotSum + (lot.customer_commission_amount || 0)
+            }, 0)
+          )
+        }, 0)
+        .toFixed(2)
+    )
+
+    const total_lots_commission = Number(
+      items
+        .reduce((sum, item) => {
+          return (
+            sum +
+            item.selected_lots.reduce((lotSum, lot) => {
+              return lotSum + (lot.lot_commission_amount || 0)
+            }, 0)
+          )
+        }, 0)
+        .toFixed(2)
+    )
+
+    const total_profit = Number(
+      items
+        .reduce((sum, item) => {
+          return (
+            sum +
+            item.selected_lots.reduce((lotSum, lot) => {
+              return lotSum + (lot.lot_profit || 0)
+            }, 0)
+          )
+        }, 0)
+        .toFixed(2)
+    )
+
+    // ========== STEP 6: Build final payload ==========
     const payload = {
       sale_date: date,
-      customer_id: selectedCustomer._id,
-      customer_name: selectedCustomer.basic_info.name,
-      total_customer_commission: Number(cartProducts.reduce((s, i) => s + (i.commission || 0), 0).toFixed(2)),
-      items,
+      customerId: selectedCustomer._id,
+      total_custom_commission: total_custom_commission,
+      total_lots_commission: total_lots_commission,
+      total_profit: total_profit + total_lots_commission,
+      items: items,
       payment_details: {
+        extra_crate_type1_price: extraCrateType1Price,
+        extra_crate_type2_price: extraCrateType2Price,
         payable_amount: payableAmount || 0,
         received_amount: Number(data.receiveAmount) || 0,
         received_amount_from_balance: Number(data.received_amount_from_balance) || 0,
@@ -585,10 +720,26 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       }
     }
 
-    console.log('Sales payload:', payload)
-    toast.success('Product sold successfully!')
-    setCartProducts([])
-    setSelectedCustomer({})
+    console.log('Sales payload:', JSON.stringify(payload, null, 2))
+
+    try {
+      const result = await createSale(payload)
+
+      if (result.success) {
+        toast.success('Product sold successfully!')
+
+        // console.log('Sale response:', result.data)
+
+        // Clear cart and customer
+        setCartProducts([])
+        setSelectedCustomer({})
+      } else {
+        toast.error(result.error || 'Failed to create sale')
+      }
+    } catch (error) {
+      console.error('Sale submission error:', error)
+      toast.error('An error occurred while creating the sale')
+    }
   }
 
   // Handle confirm click - save the selected lot to the specific cart row
@@ -809,6 +960,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                       {...registerPayment('paymentType')}
                       className='flex-1 px-3 py-2 border border-gray-300 rounded'
                     >
+                      <option value=''>Select Type</option>
                       <option value='cash'>Cash</option>
                       <option value='card'>Card</option>
                       <option value='bkash'>Bkash</option>
@@ -896,6 +1048,20 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                     <span className='text-sm'>৳ {totalDiscountedAmount}</span>
                   </div>
 
+                  {extraCrateType1 > 0 && (
+                    <div className='flex items-center justify-between'>
+                      <span className='text-sm'>Extra Crate Type 1 ({extraCrateType1} pcs)</span>
+                      <span className='text-sm'>৳ {extraCrateType1Price.toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {extraCrateType2 > 0 && (
+                    <div className='flex items-center justify-between'>
+                      <span className='text-sm'>Extra Crate Type 2 ({extraCrateType2} pcs)</span>
+                      <span className='text-sm'>৳ {extraCrateType2Price.toFixed(2)}</span>
+                    </div>
+                  )}
+
                   <div className='flex items-center justify-between'>
                     <span className='text-sm'>Vat</span>
                     <div className='flex items-center space-x-2'>
@@ -917,11 +1083,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                       ৳ {cartProducts.reduce((sum, item) => sum + (Number(item.commission) || 0), 0)}
                     </span>
                   </div>
-
-                  {/* <div className='flex items-center justify-between font-medium'>
-                    <span className='text-sm'>Total Amount</span>
-                    <span>৳ {totalDueAmount}</span>
-                  </div> */}
 
                   <div className='flex items-center justify-between font-bold text-lg'>
                     <span>Payable Amount</span>

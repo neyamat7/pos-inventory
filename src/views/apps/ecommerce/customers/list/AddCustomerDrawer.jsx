@@ -97,7 +97,7 @@ const AddCustomerDrawer = props => {
         reset()
         handleClose()
 
-        console.log('Customer created successfully!', result.data)
+        // console.log('Customer created successfully!', result.data)
       } else {
         console.error('Failed to create customer:', result.error)
         alert(`Error: ${result.error}`)

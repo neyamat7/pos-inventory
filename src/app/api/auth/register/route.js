@@ -73,7 +73,7 @@ export async function PUT(request) {
   try {
     const { id, name, email, phone, imageUrl, role } = await request.json()
 
-    console.log('Received updated data', name, email, phone, role)
+    // console.log('Received updated data', name, email, phone, role)
 
     // Validate required fields
     if (!id || !name || !email || !phone || !role) {

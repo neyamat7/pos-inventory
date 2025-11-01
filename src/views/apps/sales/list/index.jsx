@@ -7,14 +7,20 @@ import Grid from '@mui/material/Grid2'
 import SalesCard from './SalesCard'
 import SalesListTable from './SalesListTable'
 
-const SalesList = ({ salesData }) => {
+const SalesList = ({ salesData, paginationData, loading, onPageChange, onPageSizeChange }) => {
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12 }}>
-        <SalesCard />
+        <SalesCard salesData={salesData} />
       </Grid>
       <Grid size={{ xs: 12 }}>
-        <SalesListTable salesData={salesData} />
+        <SalesListTable
+          salesData={salesData}
+          paginationData={paginationData}
+          loading={loading}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+        />
       </Grid>
     </Grid>
   )

@@ -72,7 +72,7 @@ const EditAccounts = ({ open, handleClose, rowData, setData }) => {
         setData(prev => prev.map(item => (item.id === rowData.id ? updatedAccount : item)))
 
         handleClose()
-        console.log('Account updated successfully!', result.data)
+        // console.log('Account updated successfully!', result.data)
       } else {
         setError(result.error || 'Failed to update account')
       }

@@ -15,7 +15,7 @@ const SupplierListTablePage = () => {
     const fetchData = async () => {
       const result = await getSuppliers(currentPage, pageSize)
 
-      console.log('result', result)
+      // console.log('result', result)
 
       if (result.success) {
         setData(result.data.suppliers || [])

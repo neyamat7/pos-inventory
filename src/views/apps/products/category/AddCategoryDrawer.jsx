@@ -60,7 +60,7 @@ const AddCategoryDrawer = props => {
         handleReset()
 
         // You can add a success callback here if needed
-        console.log('Category created successfully')
+        // console.log('Category created successfully')
       } else {
         setError(result.error)
       }

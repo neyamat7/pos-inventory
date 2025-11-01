@@ -24,7 +24,7 @@ const Layout = async props => {
 
   const session = await auth()
 
-  console.log('session', session)
+  // console.log('session', session)
 
   if (!session) {
     redirect('/login')
