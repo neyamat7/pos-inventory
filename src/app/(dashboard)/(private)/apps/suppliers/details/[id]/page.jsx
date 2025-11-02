@@ -8,8 +8,6 @@ import { getSupplierById } from '@/actions/supplierAction'
 const SupplierDetailsPage = async props => {
   const params = await props.params
 
-  // console.log('params in supplier page', params.id)
-
   // Fetch supplier data from backend
   const result = await getSupplierById(params.id)
 
@@ -17,8 +15,6 @@ const SupplierDetailsPage = async props => {
     console.error('Failed to fetch supplier:', result.error)
     redirect('/not-found')
   }
-
-  console.log('supplier data', result.data)
 
   return result.data ? <SupplierDetails supplierData={result.data} supplierId={params.id} /> : null
 }

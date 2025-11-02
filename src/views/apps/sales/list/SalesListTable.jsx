@@ -4,13 +4,10 @@ import { useState } from 'react'
 // MUI Imports
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import Typography from '@mui/material/Typography'
 import MenuItem from '@mui/material/MenuItem'
 import CircularProgress from '@mui/material/CircularProgress'
 
-// Third-party Imports
-import classnames from 'classnames'
-import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
 // Component Imports
 import { IconButton } from '@mui/material'
@@ -38,9 +35,14 @@ const SalesListTable = ({ salesData, paginationData, loading, onPageChange, onPa
       cell: ({ row }) => row.original.sale_date || 'N/A'
     },
     {
-      accessorKey: 'items',
-      header: 'Products',
-      cell: ({ row }) => row.original.items?.length || 0
+      accessorKey: 'customer',
+      header: 'Customer',
+      cell: ({ row }) => row.original.customerId?.basic_info?.name || 'N/A'
+    },
+    {
+      accessorKey: 'phone',
+      header: 'Phone',
+      cell: ({ row }) => row.original.customerId?.contact_info?.phone || 'N/A'
     },
     {
       accessorKey: 'total_profit',

@@ -41,6 +41,7 @@ import { getInitials } from '@/utils/getInitials'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
+import { updateCustomer } from '@/actions/customerActions'
 
 // -------------------- utils --------------------
 const fuzzyFilter = (row, columnId, value, addMeta) => {
@@ -82,6 +83,7 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
   const [selectedCustomer, setSelectedCustomer] = useState(null)
   const [newBalance, setNewBalance] = useState('')
   const [crateForm, setCrateForm] = useState({ type_1: 0, type_1_price: 0, type_2: 0, type_2_price: 0 })
+  const [isUpdatingCrate, setIsUpdatingCrate] = useState(false)
 
   // Re-sync data if prop changes
   useEffect(() => {
@@ -561,6 +563,7 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
             <div className='flex justify-end gap-3 mt-6'>
               <Button
                 variant='outlined'
+                disabled={isUpdatingCrate}
                 onClick={() => setOpenCrateModal(false)}
                 className='px-4 py-2 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100 transition'
               >
@@ -569,15 +572,98 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
               <Button
                 variant='contained'
                 color='primary'
+                disabled={isUpdatingCrate}
                 className='px-5 py-2 rounded-lg shadow-md'
-                onClick={() => {
-                  setData(prev =>
-                    prev.map(item => (item._id === selectedCustomer._id ? { ...item, crate_info: crateForm } : item))
-                  )
-                  setOpenCrateModal(false)
+                onClick={async () => {
+                  setIsUpdatingCrate(true)
+
+                  try {
+                    // Prepare complete customer data with updated crate info
+                    const completeCustomerData = {
+                      basic_info: {
+                        sl: selectedCustomer.basic_info?.sl,
+                        name: selectedCustomer.basic_info?.name,
+                        role: selectedCustomer.basic_info?.role || 'customer',
+                        avatar: selectedCustomer.basic_info?.avatar || ''
+                      },
+                      contact_info: {
+                        email: selectedCustomer.contact_info?.email,
+                        phone: selectedCustomer.contact_info?.phone,
+                        location: selectedCustomer.contact_info?.location || ''
+                      },
+                      account_info: {
+                        account_number: selectedCustomer.account_info?.account_number || '',
+                        balance: selectedCustomer.account_info?.balance || 0,
+                        due: selectedCustomer.account_info?.due || 0,
+                        return_amount: selectedCustomer.account_info?.return_amount || 0
+                      },
+                      crate_info: {
+                        type_1: crateForm.type_1 || 0,
+                        type_1_price: crateForm.type_1_price || 0,
+                        type_2: crateForm.type_2 || 0,
+                        type_2_price: crateForm.type_2_price || 0
+                      }
+                    }
+
+                    // Call the update API
+                    const result = await updateCustomer(selectedCustomer._id, completeCustomerData)
+
+                    if (result.success) {
+                      // Update local state
+                      setData(prev =>
+                        prev.map(item =>
+                          item._id === selectedCustomer._id
+                            ? {
+                                ...item,
+                                crate_info: {
+                                  type_1: crateForm.type_1 || 0,
+                                  type_1_price: crateForm.type_1_price || 0,
+                                  type_2: crateForm.type_2 || 0,
+                                  type_2_price: crateForm.type_2_price || 0
+                                }
+                              }
+                            : item
+                        )
+                      )
+
+                      // Show success message
+                      const Swal = (await import('sweetalert2')).default
+
+                      Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: result.message || 'Crate information updated successfully',
+                        timer: 2000,
+                        showConfirmButton: false
+                      })
+
+                      // Close modal
+                      setOpenCrateModal(false)
+                    } else {
+                      // Show error message
+                      const Swal = (await import('sweetalert2')).default
+
+                      Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: result.error || 'Failed to update crate information'
+                      })
+                    }
+                  } catch (error) {
+                    console.error('Error updating crate:', error)
+                    const Swal = (await import('sweetalert2')).default
+
+                    Swal.fire({
+                      icon: 'error',
+                      title: 'Error!',
+                      text: 'An unexpected error occurred'
+                    })
+                  } finally {
+                    setIsUpdatingCrate(false)
+                  }
                 }}
               >
-                Save
+                {isUpdatingCrate ? 'Saving...' : 'Save'}
               </Button>
             </div>
           </div>

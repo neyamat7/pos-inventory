@@ -44,6 +44,8 @@ import { getInitials } from '@/utils/getInitials'
 import tableStyles from '@core/styles/table.module.css'
 import AddSupplierDrawer from './AddSupplierDrawer'
 import OptionMenu from '@/@core/components/option-menu'
+import { updateSupplier } from '@/actions/supplierAction'
+import { showError, showSuccess } from '@/utils/toastUtils'
 
 export const paymentStatus = {
   1: { text: 'Paid', color: 'success' },
@@ -130,15 +132,9 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
   const [selectedSupplier, setSelectedSupplier] = useState(null)
   const [newBalance, setNewBalance] = useState('')
   const [crateForm, setCrateForm] = useState({})
-  const [openProfitModal, setOpenProfitModal] = useState(false)
-  const [profitPercentage, setProfitPercentage] = useState('')
   const [balanceNote, setBalanceNote] = useState('')
   const [balanceFile, setBalanceFile] = useState('')
-
-  // New states for lot selection in profit modal
-  const [supplierLots, setSupplierLots] = useState([]) // store fetched lots
-  const [selectedLot, setSelectedLot] = useState(null) // selected lot
-  const [lotError, setLotError] = useState('') // validation message
+  const [isUpdatingCrate, setIsUpdatingCrate] = useState(false)
 
   useEffect(() => {
     setData(supplierData)
@@ -258,28 +254,7 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                     className: 'flex items-center'
                   }
                 },
-                {
-                  text: 'Adjust Profit',
-                  icon: 'tabler-percentage',
-                  menuItemProps: {
-                    onClick: async () => {
-                      const supplier = row.original
-                      const sl = supplier.basic_info?.sl || supplier.sl
 
-                      setSelectedSupplier(supplier)
-                      setProfitPercentage('')
-                      setSelectedLot(null)
-                      setLotError('')
-
-                      // Fetch last 6 lots for this supplier
-                      const lots = await fetchLotsBySupplier(sl)
-
-                      setSupplierLots(lots)
-                      setOpenProfitModal(true)
-                    },
-                    className: 'flex items-center text-blue-600'
-                  }
-                },
                 {
                   text: 'Add Crate',
                   icon: 'tabler-box',
@@ -498,7 +473,6 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
         supplierData={data}
       />
 
-      {/* Add Balance Modal */}
       {/* Add Balance Modal */}
       {openBalanceModal &&
         selectedSupplier &&
@@ -780,6 +754,7 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                 <Button
                   variant='outlined'
                   onClick={() => setOpenCrateModal(false)}
+                  disabled={isUpdatingCrate}
                   className='px-4 py-2 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100 transition'
                 >
                   Cancel
@@ -787,189 +762,91 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                 <Button
                   variant='contained'
                   color='primary'
+                  disabled={isUpdatingCrate}
                   className='px-5 py-2 rounded-lg shadow-md'
-                  onClick={() => {
-                    setData(prev =>
-                      prev.map(item => {
-                        const itemSl = item.basic_info?.sl || item.sl
-                        const selectedSl = selectedSupplier.basic_info?.sl || selectedSupplier.sl
+                  onClick={async () => {
+                    setIsUpdatingCrate(true)
 
-                        if (itemSl === selectedSl) {
-                          if (item.crate_info) {
-                            // New structure
-                            return {
-                              ...item,
-                              crate_info: {
-                                ...item.crate_info,
-                                crate1: crateForm.crate1?.qty || 0,
-                                crate1Price: crateForm.crate1?.price || 0,
-                                crate2: crateForm.crate2?.qty || 0,
-                                crate2Price: crateForm.crate2?.price || 0
+                    try {
+                      // Prepare complete supplier data with updated crate info
+                      const completeSupplierData = {
+                        basic_info: {
+                          sl: selectedSupplier.basic_info?.sl || selectedSupplier.sl,
+                          name: selectedSupplier.basic_info?.name || selectedSupplier.name,
+                          avatar: selectedSupplier.basic_info?.avatar || selectedSupplier.avatar || '',
+                          role: selectedSupplier.basic_info?.role || 'supplier'
+                        },
+                        contact_info: {
+                          email: selectedSupplier.contact_info?.email || selectedSupplier.email || '',
+                          phone: selectedSupplier.contact_info?.phone || selectedSupplier.phone || '',
+                          location: selectedSupplier.contact_info?.location || selectedSupplier.location || ''
+                        },
+                        account_info: {
+                          accountNumber:
+                            selectedSupplier.account_info?.accountNumber || selectedSupplier.accountNumber || '',
+                          balance: selectedSupplier.account_info?.balance || selectedSupplier.balance || 0,
+                          due: selectedSupplier.account_info?.due || selectedSupplier.due || 0,
+                          cost: selectedSupplier.account_info?.cost || selectedSupplier.cost || 0
+                        },
+                        crate_info: {
+                          crate1: crateForm.crate1?.qty || 0,
+                          crate1Price: crateForm.crate1?.price || 0,
+                          needToGiveCrate1: selectedSupplier.crate_info?.needToGiveCrate1 || 0,
+                          crate2: crateForm.crate2?.qty || 0,
+                          crate2Price: crateForm.crate2?.price || 0,
+                          needToGiveCrate2: selectedSupplier.crate_info?.needToGiveCrate2 || 0
+                        }
+                      }
+
+                      // Call the update API
+                      const result = await updateSupplier(selectedSupplier._id, completeSupplierData)
+
+                      if (result.success) {
+                        // Update local state
+                        setData(prev =>
+                          prev.map(item => {
+                            const itemSl = item.basic_info?.sl || item.sl
+                            const selectedSl = selectedSupplier.basic_info?.sl || selectedSupplier.sl
+
+                            if (itemSl === selectedSl) {
+                              return {
+                                ...item,
+                                crate_info: {
+                                  ...item.crate_info,
+                                  crate1: crateForm.crate1?.qty || 0,
+                                  crate1Price: crateForm.crate1?.price || 0,
+                                  crate2: crateForm.crate2?.qty || 0,
+                                  crate2Price: crateForm.crate2?.price || 0
+                                }
                               }
                             }
-                          } else {
-                            // Old structure
-                            return {
-                              ...item,
-                              crate: {
-                                crate1: { qty: crateForm.crate1?.qty || 0, price: crateForm.crate1?.price || 0 },
-                                crate2: { qty: crateForm.crate2?.qty || 0, price: crateForm.crate2?.price || 0 }
-                              }
-                            }
-                          }
-                        }
 
-                        return item
+                            return item
+                          })
+                        )
+
+                        showSuccess('Crate information updated successfully')
+
+                        // Close modal
+                        setOpenCrateModal(false)
+                      } else {
+                        showError('Failed to update crate information')
+                      }
+                    } catch (error) {
+                      console.error('Error updating crate:', error)
+                      const Swal = (await import('sweetalert2')).default
+
+                      Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An unexpected error occurred'
                       })
-                    )
-                    setOpenCrateModal(false)
+                    } finally {
+                      setIsUpdatingCrate(false)
+                    }
                   }}
                 >
-                  Save
-                </Button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
-
-      {/* Adjust Profit Modal */}
-      {openProfitModal &&
-        selectedSupplier &&
-        createPortal(
-          <div className='fixed inset-0 z-[9999] flex items-center h-screen justify-center bg-black/40 p-4'>
-            <div className='w-full max-w-md bg-white/80 backdrop-blur-lg text-gray-800 rounded-2xl shadow-2xl border border-gray-200 p-6 animate-fadeIn scale-100 transition-all duration-300 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent'>
-              <div className='text-center mb-5'>
-                <div className='w-14 h-14 mx-auto mb-3 rounded-full bg-blue-100 flex items-center justify-center'>
-                  <i className='tabler-percentage text-3xl text-blue-600'></i>
-                </div>
-                <Typography variant='h6' className='font-semibold text-gray-900'>
-                  Adjust Profit Share
-                </Typography>
-                <Typography variant='body2' className='text-gray-600 mt-1'>
-                  Select a lot and enter the profit percentage for{' '}
-                  <span className='font-medium text-blue-600'>{selectedSupplier.name}</span>.
-                </Typography>
-              </div>
-
-              {/* Profit Input */}
-              <CustomTextField
-                fullWidth
-                label='Profit Share (%)'
-                type='number'
-                value={profitPercentage}
-                onChange={e => setProfitPercentage(e.target.value)}
-                placeholder='e.g. 10'
-                InputProps={{
-                  style: { backgroundColor: '#f9fafb', borderRadius: '10px', color: '#111827' }
-                }}
-                sx={{
-                  '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '10px' },
-                  '& input': { color: '#111827', textAlign: 'center', fontWeight: 500, fontSize: '18px' },
-                  '& label': { color: '#6b7280' }
-                }}
-                className='mb-5'
-              />
-
-              {/* Select Lot Section */}
-              <Typography variant='subtitle2' className='mb-2 text-gray-700 font-medium'>
-                Select Lot to Apply Profit Share
-              </Typography>
-
-              <div className='max-h-[220px] overflow-y-auto border border-gray-200 rounded-lg bg-gray-50 p-2 space-y-2'>
-                {supplierLots.length === 0 ? (
-                  <Typography variant='body2' className='text-gray-500 text-center py-3'>
-                    No lots found for this supplier.
-                  </Typography>
-                ) : (
-                  supplierLots.map(lot => (
-                    <label
-                      key={lot.lot_name}
-                      className={`flex items-start gap-3 cursor-pointer border rounded-lg p-3 transition-all duration-200 ${
-                        selectedLot?.lot_name === lot.lot_name
-                          ? 'border-blue-400 bg-blue-50'
-                          : 'border-gray-200 bg-white hover:bg-gray-50'
-                      }`}
-                    >
-                      <input
-                        type='radio'
-                        name='selectedLot'
-                        value={lot.lot_name}
-                        checked={selectedLot?.lot_name === lot.lot_name}
-                        onChange={() => {
-                          setSelectedLot(lot)
-                          setLotError('')
-                        }}
-                        className='mt-1 accent-blue-600'
-                      />
-                      <div className='flex flex-col'>
-                        <Typography variant='body2' className='font-semibold text-gray-900'>
-                          {lot.lot_name}
-                        </Typography>
-                        <Typography variant='body2' className='text-gray-600'>
-                          {lot.product} — {lot.category}
-                        </Typography>
-                        <Typography variant='caption' className='text-gray-500'>
-                          Purchased: {lot.purchaseDate}
-                        </Typography>
-                      </div>
-                    </label>
-                  ))
-                )}
-              </div>
-
-              {lotError && (
-                <Typography variant='caption' className='text-red-500 mt-1'>
-                  {lotError}
-                </Typography>
-              )}
-
-              {/* Buttons */}
-              <div className='flex justify-end gap-3 mt-6 max-sm:flex-col pb-2'>
-                <Button
-                  variant='outlined'
-                  onClick={() => {
-                    setOpenProfitModal(false)
-                    setSelectedLot(null)
-                    setSupplierLots([])
-                    setProfitPercentage('')
-                    setLotError('')
-                  }}
-                  className='px-4 py-2 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100 transition w-full sm:w-auto'
-                >
-                  Cancel
-                </Button>
-
-                <Button
-                  variant='contained'
-                  color='primary'
-                  className='px-5 py-2 rounded-lg shadow-md w-full sm:w-auto'
-                  onClick={() => {
-                    if (!profitPercentage) return setLotError('Enter a profit percentage.')
-                    if (!selectedLot) return setLotError('Please select a lot before saving.')
-
-                    setData(prev =>
-                      prev.map(item => {
-                        const itemSl = item.basic_info?.sl || item.sl
-                        const selectedSl = selectedSupplier.basic_info?.sl || selectedSupplier.sl
-
-                        if (itemSl === selectedSl) {
-                          return {
-                            ...item,
-                            profitShare: Number(profitPercentage),
-                            selectedLot: selectedLot.lot_name
-                          }
-                        }
-
-                        return item
-                      })
-                    )
-                    setOpenProfitModal(false)
-                    setSelectedLot(null)
-                    setSupplierLots([])
-                  }}
-                >
-                  Save
+                  {isUpdatingCrate ? 'Saving...' : 'Save'}
                 </Button>
               </div>
             </div>

@@ -47,6 +47,16 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     selectedLot: null
   })
 
+  // Create a dependency key based on input fields only
+  const cartInputKey = useMemo(() => {
+    return cartProducts
+      .map(
+        item =>
+          `${item.cart_item_id}-${item.kg}-${item.discount_kg}-${item.selling_price}-${item.crate_type_one}-${item.crate_type_two}-${item.commission_rate}`
+      )
+      .join('|')
+  }, [cartProducts])
+
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (cartProducts.length > 0 && selectedCustomer?._id) {
@@ -55,7 +65,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     }, 100)
 
     return () => clearTimeout(timeout)
-  }, [cartProducts, selectedCustomer])
+  }, [cartInputKey, selectedCustomer?._id])
 
   const filteredProducts = useMemo(() => {
     return productsData.filter(product => {
@@ -189,11 +199,14 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   // Calculate total discounted amount across all products
   const totalDiscountedAmount = cartProducts.reduce((sum, item) => sum + (Number(item.discount_amount) || 0), 0)
 
-  // Calculate total crate price across all products
-  const totalCratePrice = cartProducts.reduce((sum, item) => sum + (Number(item.cratePrice) || 0), 0)
-
   // Update payable amount calculation
-  const payableAmount = +(totalDueAmount - totalDiscountedAmount + vatAmount).toFixed(2)
+  const payableAmount = +(
+    totalDueAmount -
+    totalDiscountedAmount +
+    vatAmount +
+    extraCrateType1Price +
+    extraCrateType2Price
+  ).toFixed(2)
 
   // Open the commission editor for a row
   const openCommissionEditor = item => {
@@ -565,8 +578,8 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       return
     }
 
-    // ========== STEP 1: Transform cart item to lot with complete structure ==========
-    // ========== STEP 1: Transform cart item to lot with complete structure ==========
+    // ========== Transform cart item to lot ==========
+
     const toLot = item => {
       const kg = item.kg || 0
       const discountKg = item.discount_kg || 0
@@ -590,17 +603,13 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       const customerCommissionAmount = Number((totalPrice * (customerCommissionRate / 100)).toFixed(2))
 
       // ========== LOT PROFIT CALCULATION ==========
-      // For commissionable products: profit = customer commission
-      // For non-commissionable products: profit = (selling - cost) for actual kg sold
       let lotProfit = 0
 
       if (item.isCommissionable) {
-        // Profit = customer commission for this lot
         lotProfit = customerCommissionAmount
       } else {
-        // Profit = margin (selling - cost) for actual kg sold
         lotProfit = Number(((kg - discountKg) * (sellingPrice - unitCost)).toFixed(2))
-        lotProfit = Math.max(0, lotProfit) // Ensure non-negative
+        lotProfit = Math.max(0, lotProfit)
       }
 
       return {
@@ -618,7 +627,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         lot_commission_rate: lotCommissionRate,
         lot_commission_amount: lotCommissionAmount,
 
-        // ========== CUSTOMER COMMISSION (now at lot level) ==========
+        // ========== CUSTOMER COMMISSION  ==========
         customer_commission_rate: customerCommissionRate,
         customer_commission_amount: customerCommissionAmount,
 
@@ -627,7 +636,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       }
     }
 
-    // ========== STEP 2: Group by product ==========
+    // ==========  Group by product ==========
     const grouped = cartProducts.reduce((acc, item) => {
       if (!acc[item.product_id]) acc[item.product_id] = []
       acc[item.product_id].push(item)
@@ -635,7 +644,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       return acc
     }, {})
 
-    // ========== STEP 3: Build items array ==========
+    // ==========  Build items array ==========
     const items = Object.entries(grouped).map(([pid, items]) => {
       // Get customer commission rate (should be same for all lots of this product)
       const customerCommissionRate = items[0].commission_rate || 0
@@ -659,7 +668,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       }
     })
 
-    // ========== STEP 4: Calculate total commissions ==========
+    // ========== Calculate total commissions ==========
     const total_custom_commission = Number(
       items
         .reduce((sum, item) => {
@@ -699,7 +708,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         .toFixed(2)
     )
 
-    // ========== STEP 6: Build final payload ==========
+    // ========== Build final payload ==========
     const payload = {
       sale_date: date,
       customerId: selectedCustomer._id,
@@ -728,7 +737,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       if (result.success) {
         toast.success('Product sold successfully!')
 
-        // console.log('Sale response:', result.data)
+        console.log('Sale response:', result.data)
 
         // Clear cart and customer
         setCartProducts([])
@@ -1036,11 +1045,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                   <div className='flex items-center justify-between'>
                     <span className='text-sm'>Sub Total</span>
                     <span className='font-medium'>৳ {totalDueAmount}</span>
-                  </div>
-
-                  <div className='flex items-center justify-between'>
-                    <span className='text-sm'>Crate Charges</span>
-                    <span className='text-sm'>৳ {totalCratePrice.toFixed(2)}</span>
                   </div>
 
                   <div className='flex items-center justify-between'>

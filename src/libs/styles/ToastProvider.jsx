@@ -8,8 +8,8 @@ import 'react-toastify/dist/ReactToastify.css'
 const ToastProvider = () => {
   return (
     <ToastContainer
-      position='top-right'
-      autoClose={3000}
+      position='top-center'
+      autoClose={2500}
       hideProgressBar={false}
       newestOnTop={false}
       closeOnClick

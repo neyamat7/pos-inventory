@@ -48,3 +48,4 @@ export async function getAllSales({ page = 1, limit = 10 } = {}) {
     }
   }
 }
+

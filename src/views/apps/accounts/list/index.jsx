@@ -70,7 +70,7 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const AccountList = ({ accountsData = [], paginationData, onPageChange, onPageSizeChange }) => {
+const AccountList = ({ accountsData = [], paginationData, onPageChange, onPageSizeChange, loading = false }) => {
   const [editOpenRow, setEditOpenRow] = useState(null)
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
@@ -278,7 +278,15 @@ const AccountList = ({ accountsData = [], paginationData, onPageChange, onPageSi
               ))}
             </thead>
 
-            {data.length === 0 ? (
+            {loading ? (
+              <tbody>
+                <tr>
+                  <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
+                    Loading...
+                  </td>
+                </tr>
+              </tbody>
+            ) : data.length === 0 ? (
               <tbody>
                 <tr>
                   <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>

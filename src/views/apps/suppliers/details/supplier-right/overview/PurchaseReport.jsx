@@ -28,9 +28,6 @@ const PurchaseReport = () => {
   const [fromDate, setFromDate] = useState(dayjs().subtract(1, 'month').format('YYYY-MM-DD'))
   const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'))
 
-  // console.log('from date', fromDate)
-  // console.log('to date', toDate)
-
   const tabs = [
     { key: 'purchases', label: 'Purchases', icon: <ShoppingCart size={16} /> },
     { key: 'stock', label: 'Stock Report', icon: <ClipboardList size={16} /> },

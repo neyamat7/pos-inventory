@@ -5,6 +5,7 @@ import AccountList from '@/views/apps/accounts/list'
 import { getAccounts } from '@/actions/accountActions'
 
 const AccountsListPage = () => {
+  const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [data, setData] = useState([])
@@ -12,12 +13,14 @@ const AccountsListPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true)
       const result = await getAccounts(currentPage, pageSize)
 
-      console.log('result in acc page', result.data)
+      // console.log('result in acc page', result.data)
+      setLoading(false)
 
       if (result.success) {
-        setData(result.data.accounts || []) // Access accounts array
+        setData(result.data.accounts || [])
         setPaginationData({
           total: result.data.total,
           totalPages: result.data.totalPages,
@@ -40,6 +43,7 @@ const AccountsListPage = () => {
       paginationData={paginationData}
       onPageChange={handlePageChange}
       onPageSizeChange={setPageSize}
+      loading={loading}
     />
   )
 }
