@@ -89,3 +89,31 @@ export async function updateCustomer(customerId, customerData) {
     }
   }
 }
+
+export async function getSalesByCustomer(customerId, page = 1, limit = 10, search = '', fromDate = '', toDate = '') {
+  try {
+    // Build query parameters
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    })
+
+    if (search) params.append('search', search)
+    if (fromDate) params.append('fromDate', fromDate)
+    if (toDate) params.append('toDate', toDate)
+
+    const response = await api.get(`/sale/by-customer/${customerId}?${params.toString()}`)
+
+    return {
+      success: true,
+      data: response?.data
+    }
+  } catch (error) {
+    console.error('Get customer sales error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch customer sales'
+    }
+  }
+}

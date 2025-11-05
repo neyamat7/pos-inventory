@@ -12,7 +12,8 @@ const BASE_DEFAULTS = {
   categoryId: '',
   commissionRate: 0,
   allowCommission: false,
-  isCrated: false
+  isCrated: false,
+  isBoxed: false
 }
 
 export default function ProductFormProvider({

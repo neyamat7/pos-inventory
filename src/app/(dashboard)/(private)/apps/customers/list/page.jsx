@@ -9,19 +9,28 @@ const CustomerListTablePage = () => {
   const [pageSize, setPageSize] = useState(10)
   const [data, setData] = useState([])
   const [paginationData, setPaginationData] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
-      const result = await getCustomers(currentPage, pageSize)
+      setIsLoading(true)
 
-      if (result.success) {
-        setData(result.data.customers || [])
-        setPaginationData({
-          total: result.data.total,
-          totalPages: result.data.totalPages,
-          currentPage: result.data.page,
-          limit: result.data.limit
-        })
+      try {
+        const result = await getCustomers(currentPage, pageSize)
+
+        if (result.success) {
+          setData(result.data.customers || [])
+          setPaginationData({
+            total: result.data.total,
+            totalPages: result.data.totalPages,
+            currentPage: result.data.page,
+            limit: result.data.limit
+          })
+        }
+      } catch (error) {
+        console.error('Error fetching customers:', error)
+      } finally {
+        setIsLoading(false)
       }
     }
 
@@ -38,6 +47,7 @@ const CustomerListTablePage = () => {
       paginationData={paginationData}
       onPageChange={handlePageChange}
       onPageSizeChange={setPageSize}
+      isLoading={isLoading}
     />
   )
 }

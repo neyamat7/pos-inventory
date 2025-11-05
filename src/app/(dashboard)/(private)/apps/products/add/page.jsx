@@ -3,6 +3,8 @@
 import { useState } from 'react'
 
 // MUI Imports
+import { useRouter } from 'next/navigation'
+
 import Grid from '@mui/material/Grid2'
 
 // Component Imports
@@ -14,11 +16,13 @@ import ProductInformation from '@/views/apps/products/add/ProductInformation'
 
 // Action Imports
 import { createProduct } from '@/actions/productActions'
+import { showSuccess } from '@/utils/toastUtils'
 
 // Component Imports
 
 const AddProductPage = () => {
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   const handleAddProduct = async values => {
     setLoading(true)
@@ -33,18 +37,16 @@ const AddProductPage = () => {
         categoryId: values.categoryId || null,
         commissionRate: Number(values.commissionRate),
         allowCommission: values.allowCommission,
-        isCrated: values.isCrated
+        isCrated: values.isCrated,
+        isBoxed: values.isBoxed
       }
 
       const result = await createProduct(productPayload)
 
       if (result.success) {
-        Swal.fire({
-          title: 'Success!',
-          text: 'Product created successfully',
-          icon: 'success',
-          confirmButtonText: 'OK'
-        })
+        showSuccess('Product created successfully!')
+
+        router.push('/apps/products/list')
 
         // You can redirect or reset form here
       } else {

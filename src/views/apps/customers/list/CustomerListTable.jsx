@@ -42,6 +42,8 @@ import { getInitials } from '@/utils/getInitials'
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
 import { updateCustomer } from '@/actions/customerActions'
+import { addBalance } from '@/actions/supplierAction'
+import { showSuccess } from '@/utils/toastUtils'
 
 // -------------------- utils --------------------
 const fuzzyFilter = (row, columnId, value, addMeta) => {
@@ -70,7 +72,7 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 const columnHelper = createColumnHelper()
 
 // -------------------- component --------------------
-const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageSizeChange }) => {
+const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageSizeChange, isLoading = false }) => {
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
@@ -81,16 +83,25 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
   const [openBalanceModal, setOpenBalanceModal] = useState(false)
   const [openCrateModal, setOpenCrateModal] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState(null)
-  const [newBalance, setNewBalance] = useState('')
   const [crateForm, setCrateForm] = useState({ type_1: 0, type_1_price: 0, type_2: 0, type_2_price: 0 })
   const [isUpdatingCrate, setIsUpdatingCrate] = useState(false)
+  const [isAddingBalance, setIsAddingBalance] = useState(false)
+
+  const [balanceForm, setBalanceForm] = useState({
+    date: new Date().toISOString().split('T')[0],
+    amount: '',
+    transaction_Id: '',
+    slip_img: null,
+    note: '',
+    payment_method: 'cash'
+  })
 
   // Re-sync data if prop changes
   useEffect(() => {
-    if (customerData && customerData.customers) {
-      setData(customerData.customers)
-    } else if (Array.isArray(customerData)) {
+    if (Array.isArray(customerData)) {
       setData(customerData)
+    } else if (customerData && customerData.customers) {
+      setData(customerData.customers)
     } else {
       setData([])
     }
@@ -224,7 +235,15 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
                   menuItemProps: {
                     onClick: () => {
                       setSelectedCustomer(row.original)
-                      setNewBalance('')
+                      setBalanceForm({
+                        date: new Date().toISOString().split('T')[0],
+                        amount: '',
+                        transaction_Id: '',
+                        slip_img: null,
+                        note: '',
+                        payment_method: 'cash',
+                        balance_for: ''
+                      })
                       setOpenBalanceModal(true)
                     },
                     className: 'flex items-center'
@@ -285,15 +304,19 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
   )
 
   // Table
+  // Table
   const table = useReactTable({
     data,
     columns,
     filterFns: { fuzzy: fuzzyFilter },
     state: {
       rowSelection,
-      globalFilter
+      globalFilter,
+      pagination: {
+        pageIndex: (paginationData?.currentPage || 1) - 1,
+        pageSize: paginationData?.limit || 10
+      }
     },
-
     enableRowSelection: true,
     globalFilterFn: fuzzyFilter,
     onRowSelectionChange: setRowSelection,
@@ -303,11 +326,106 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues()
   })
+
+  const handleBalanceSubmit = async () => {
+    // Validation
+    if (!balanceForm.amount || !balanceForm.transaction_Id || !balanceForm.payment_method) {
+      alert('Please fill in all required fields')
+
+      return
+    }
+
+    setIsAddingBalance(true)
+
+    // Create FormData for multer
+    // const formData = new FormData()
+
+    // formData.append('date', balanceForm.date)
+    // formData.append('amount', balanceForm.amount)
+    // formData.append('transaction_Id', balanceForm.transaction_Id)
+    // formData.append('note', balanceForm.note)
+    // formData.append('payment_method', balanceForm.payment_method)
+    // formData.append('balance_for', balanceForm.balance_for)
+    // formData.append('collection', selectedCustomer._id) // Customer ID
+
+    // // Append image file if exists
+    // if (balanceForm.slip_img) {
+    //   formData.append('slip_img', balanceForm.slip_img)
+    // }
+
+    const balanceData = {
+      date: balanceForm.date,
+      amount: balanceForm.amount,
+      transaction_Id: balanceForm.transaction_Id,
+      note: balanceForm.note,
+      payment_method: balanceForm.payment_method,
+      balance_for: selectedCustomer._id,
+      collection: 'customer',
+      slip_img: 'https://i.postimg.cc/y86SS6X7/Chat-GPT-Image-Nov-4-2025-11-06-30-AM.png'
+    }
+
+    try {
+      // Call the addBalance server action
+      const result = await addBalance(balanceData)
+
+      if (result.success) {
+        // Update local state
+        setData(prev =>
+          prev.map(item =>
+            item._id === selectedCustomer._id
+              ? {
+                  ...item,
+                  account_info: {
+                    ...item.account_info,
+                    balance: (item.account_info?.balance || 0) + Number(balanceForm.amount)
+                  }
+                }
+              : item
+          )
+        )
+
+        // Show success message
+        const Swal = (await import('sweetalert2')).default
+
+        showSuccess('Balance added successfully')
+
+        // Close modal and reset form
+        setOpenBalanceModal(false)
+        setBalanceForm({
+          date: new Date().toISOString().split('T')[0],
+          amount: '',
+          transaction_Id: '',
+          slip_img: null,
+          note: '',
+          payment_method: 'cash'
+        })
+      } else {
+        // Show error message
+        const Swal = (await import('sweetalert2')).default
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: result.error || 'Failed to add balance'
+        })
+      }
+    } catch (error) {
+      console.error('Error adding balance:', error)
+      const Swal = (await import('sweetalert2')).default
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'An unexpected error occurred'
+      })
+    } finally {
+      setIsAddingBalance(false) // Stop loading
+    }
+  }
 
   return (
     <>
@@ -318,13 +436,23 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
             onChange={value => setGlobalFilter(String(value))}
             placeholder='Search name, phone, email'
             className='max-sm:is-full'
+            disabled={isLoading}
           />
           <div className='flex max-sm:flex-col items-start sm:items-center gap-4 max-sm:is-full'>
             <CustomTextField
               select
-              value={table.getState().pagination.pageSize}
-              onChange={e => table.setPageSize(Number(e.target.value))}
+              value={paginationData?.limit || table.getState().pagination.pageSize}
+              onChange={e => {
+                const newSize = Number(e.target.value)
+
+                if (onPageSizeChange) {
+                  onPageSizeChange(newSize)
+                } else {
+                  table.setPageSize(newSize)
+                }
+              }}
               className='is-full sm:is-[70px]'
+              disabled={isLoading}
             >
               <MenuItem value='10'>10</MenuItem>
               <MenuItem value='25'>25</MenuItem>
@@ -338,6 +466,7 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
               className='max-sm:is-full'
               startIcon={<i className='tabler-plus' />}
               onClick={() => setCustomerUserOpen(!customerUserOpen)}
+              disabled={isLoading}
             >
               Add Customer
             </Button>
@@ -372,17 +501,31 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
               ))}
             </thead>
 
-            {table.getFilteredRowModel().rows.length === 0 ? (
-              <tbody>
+            <tbody>
+              {isLoading ? (
                 <tr>
-                  <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
-                    No data available
+                  <td colSpan={table.getVisibleFlatColumns().length} className='text-center py-8'>
+                    <div className='flex flex-col items-center justify-center gap-2'>
+                      <i className='tabler-loader-2 animate-spin text-2xl text-primary' />
+                      <Typography variant='body2' className='text-textSecondary'>
+                        Loading customers...
+                      </Typography>
+                    </div>
                   </td>
                 </tr>
-              </tbody>
-            ) : (
-              <tbody>
-                {table
+              ) : table.getFilteredRowModel().rows.length === 0 ? (
+                <tr>
+                  <td colSpan={table.getVisibleFlatColumns().length} className='text-center py-8'>
+                    <div className='flex flex-col items-center justify-center gap-2'>
+                      <i className='tabler-database-off text-2xl text-textSecondary' />
+                      <Typography variant='body2' className='text-textSecondary'>
+                        No data available
+                      </Typography>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                table
                   .getRowModel()
                   .rows.slice(0, table.getState().pagination.pageSize)
                   .map(row => (
@@ -393,15 +536,20 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
                         </td>
                       ))}
                     </tr>
-                  ))}
-              </tbody>
-            )}
+                  ))
+              )}
+            </tbody>
           </table>
         </div>
 
         <TablePagination
           component={() => (
-            <TablePaginationComponent table={table} paginationData={paginationData} onPageChange={onPageChange} />
+            <TablePaginationComponent
+              table={table}
+              paginationData={paginationData}
+              onPageChange={onPageChange}
+              disabled={isLoading}
+            />
           )}
           count={paginationData?.total || 0}
           rowsPerPage={paginationData?.limit || 10}
@@ -419,22 +567,35 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
 
       {/* Add Balance Modal */}
       {openBalanceModal && selectedCustomer && (
-        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4'>
-          <div className='w-full max-w-md bg-white text-gray-800 rounded-2xl shadow-2xl p-6 transition-all duration-300'>
-            <Typography variant='h6' className='mb-4 font-semibold text-gray-900'>
+        <div
+          className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4'
+          onClick={e => {
+            if (e.target === e.currentTarget) {
+              setOpenBalanceModal(false)
+            }
+          }}
+          style={{ backdropFilter: 'blur(4px)' }}
+        >
+          <div
+            className='w-full max-w-md bg-white text-gray-800 rounded-2xl shadow-2xl p-6 transition-all duration-300 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent'
+            onClick={e => e.stopPropagation()}
+          >
+            <Typography variant='h6' className='mb-4 font-semibold text-gray-900 text-center'>
               Add Balance for <span className='text-primary'>{selectedCustomer.basic_info?.name}</span>
             </Typography>
 
-            <Typography variant='body2' className='text-gray-600 mb-3'>
-              Enter the amount you want to add to this customer&apos;s balance.
+            <Typography variant='body2' className='text-gray-600 mb-4 text-center'>
+              Fill in the transaction details below
             </Typography>
 
+            {/* Date Input */}
             <CustomTextField
               fullWidth
-              label='Amount (৳)'
-              type='number'
-              value={newBalance}
-              onChange={e => setNewBalance(e.target.value)}
+              label='Date'
+              type='date'
+              value={balanceForm.date}
+              onChange={e => setBalanceForm(prev => ({ ...prev, date: e.target.value }))}
+              InputLabelProps={{ shrink: true }}
               InputProps={{
                 style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
               }}
@@ -443,39 +604,138 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
                 '& input': { color: '#111827' },
                 '& label': { color: '#6b7280' }
               }}
+              className='mb-4'
             />
 
-            <div className='flex justify-end gap-3 mt-6'>
+            {/* Amount Input */}
+            <CustomTextField
+              fullWidth
+              label='Amount (৳)'
+              type='number'
+              required
+              value={balanceForm.amount}
+              onChange={e => setBalanceForm(prev => ({ ...prev, amount: e.target.value }))}
+              InputProps={{
+                style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
+              }}
+              sx={{
+                '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
+                '& input': { color: '#111827' },
+                '& label': { color: '#6b7280' }
+              }}
+              className='mb-4'
+            />
+
+            {/* Transaction ID */}
+            <CustomTextField
+              fullWidth
+              label='Transaction ID'
+              required
+              value={balanceForm.transaction_Id}
+              onChange={e => setBalanceForm(prev => ({ ...prev, transaction_Id: e.target.value }))}
+              InputProps={{
+                style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
+              }}
+              sx={{
+                '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
+                '& input': { color: '#111827' },
+                '& label': { color: '#6b7280' }
+              }}
+              className='mb-4'
+            />
+
+            {/* Payment Method */}
+            <div className='mb-4'>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                Payment Method <span className='text-red-500'>*</span>
+              </label>
+              <select
+                value={balanceForm.payment_method}
+                onChange={e => setBalanceForm(prev => ({ ...prev, payment_method: e.target.value }))}
+                className='w-full px-4 py-2.5 bg-[#f9fafb] border border-gray-300 rounded-lg text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 hover:border-gray-400 cursor-pointer appearance-none'
+                required
+              >
+                <option value='cash'>Cash</option>
+                <option value='bank'>Bank</option>
+                <option value='MFS'>MFS (Mobile Financial Service)</option>
+              </select>
+            </div>
+
+            {/* Note Text Area */}
+            <CustomTextField
+              fullWidth
+              label='Note (Optional)'
+              multiline
+              minRows={3}
+              value={balanceForm.note}
+              onChange={e => setBalanceForm(prev => ({ ...prev, note: e.target.value }))}
+              placeholder='Additional notes...'
+              InputProps={{
+                style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
+              }}
+              sx={{
+                '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
+                '& textarea': { color: '#111827' },
+                '& label': { color: '#6b7280' }
+              }}
+              className='mb-4'
+            />
+
+            {/* Upload Slip Image */}
+            <div className='flex flex-col gap-2 mb-4'>
+              <label className='text-sm font-medium text-gray-700'>Upload Payment Slip (Optional)</label>
+              <input
+                type='file'
+                accept='image/*'
+                onChange={e => {
+                  const file = e.target.files?.[0]
+
+                  if (file) {
+                    setBalanceForm(prev => ({ ...prev, slip_img: file }))
+                  }
+                }}
+                className='w-full rounded-lg border border-gray-300 p-2 text-sm bg-gray-50 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition'
+              />
+              {balanceForm.slip_img && (
+                <div className='mt-2 flex justify-center'>
+                  <img
+                    src={URL.createObjectURL(balanceForm.slip_img)}
+                    alt='Payment Slip Preview'
+                    className='max-h-40 rounded-lg shadow-md object-contain border border-gray-200'
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Buttons */}
+            <div className='flex justify-end gap-3 mt-6 max-sm:flex-col'>
               <Button
                 variant='outlined'
-                onClick={() => setOpenBalanceModal(false)}
-                className='px-4 py-2 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100 transition'
+                onClick={() => {
+                  setOpenBalanceModal(false)
+                  setBalanceForm({
+                    date: new Date().toISOString().split('T')[0],
+                    amount: '',
+                    transaction_Id: '',
+                    slip_img: null,
+                    note: '',
+                    payment_method: 'cash'
+                  })
+                }}
+                className='px-4 py-2 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100 transition w-full sm:w-auto'
               >
                 Cancel
               </Button>
+
               <Button
                 variant='contained'
                 color='primary'
-                className='px-5 py-2 rounded-lg shadow-md'
-                onClick={() => {
-                  if (!newBalance) return
-                  setData(prev =>
-                    prev.map(item =>
-                      item._id === selectedCustomer._id
-                        ? {
-                            ...item,
-                            account_info: {
-                              ...item.account_info,
-                              balance: (item.account_info?.balance || 0) + Number(newBalance)
-                            }
-                          }
-                        : item
-                    )
-                  )
-                  setOpenBalanceModal(false)
-                }}
+                className='px-5 py-2 rounded-lg shadow-md w-full sm:w-auto'
+                onClick={handleBalanceSubmit}
+                disabled={isAddingBalance}
+                startIcon={isAddingBalance ? <i className='tabler-loader-2 animate-spin' /> : null}
               >
-                Save
+                {isAddingBalance ? 'Saving...' : 'Save'}
               </Button>
             </div>
           </div>

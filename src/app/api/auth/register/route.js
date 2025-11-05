@@ -50,7 +50,7 @@ export async function POST(request) {
     // Create and save user
     const user = new userModel(userData)
 
-    console.log('User object before save:', user.toObject())
+    // console.log('User object before save:', user.toObject())
 
     try {
       const savedUser = await user.save()

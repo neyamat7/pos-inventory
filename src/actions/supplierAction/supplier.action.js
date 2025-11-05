@@ -81,3 +81,78 @@ export async function updateSupplier(supplierId, supplierData) {
     }
   }
 }
+
+export async function getLotsBySupplier(supplierId, page = 1, limit = 10, search = '', fromDate = '', toDate = '') {
+  try {
+    // Build query parameters
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    })
+
+    if (search) params.append('search', search)
+    if (fromDate) params.append('fromDate', fromDate)
+    if (toDate) params.append('toDate', toDate)
+
+    const response = await api.get(`/inventoryLots/by-supplier/${supplierId}?${params.toString()}`)
+
+    return {
+      success: true,
+      data: response
+    }
+  } catch (error) {
+    console.error('Get supplier lots error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch supplier lots'
+    }
+  }
+}
+
+export async function addBalance(balanceData) {
+  try {
+    const response = await api.post('/balance/add', balanceData)
+
+    return {
+      success: true,
+      data: response.data
+    }
+  } catch (error) {
+    console.error('Add balance error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to add balance'
+    }
+  }
+}
+
+export async function getPurchaseBySupplier(supplierId, page = 1, limit = 10, search = '', fromDate = '', toDate = '') {
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    })
+
+    if (search) params.append('search', search)
+    if (fromDate) params.append('fromDate', fromDate)
+    if (toDate) params.append('toDate', toDate)
+
+    const response = await api.get(`/purchase/by-supplier/${supplierId}?${params.toString()}`)
+
+    // console.log('response', response)
+
+    return {
+      success: true,
+      data: response.data
+    }
+  } catch (error) {
+    console.error('Get purchase by supplier error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch supplier purchases'
+    }
+  }
+}

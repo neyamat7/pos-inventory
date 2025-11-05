@@ -1,26 +1,38 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
-import { Card, CardContent, Typography, Divider, Box, Button } from '@mui/material'
-import { Calendar, FileText, Layers, ShoppingCart, CreditCard, RotateCcw, ClipboardList } from 'lucide-react'
+import { Card, CardContent, Divider, Box } from '@mui/material'
+import { ShoppingCart, CreditCard, RotateCcw } from 'lucide-react'
 
 import dayjs from 'dayjs'
 
 import CustomTextField from '@core/components/mui/TextField'
 import SalesTable from './tables/SalesTable'
-import { customerPayments, customerReturns, salesReports } from '@/fake-db/apps/customerReportData'
+import { customerPayments, customerReturns } from '@/fake-db/apps/customerReportData'
 import CustomerReturnTable from './tables/CustomerReturnTable'
 import CustomerPaymentTable from './tables/PaymentTable'
+import { getSalesByCustomer } from '@/actions/customerActions'
 
 // -------------------------------------------------------------
 // MAIN COMPONENT
 // -------------------------------------------------------------
-const SalesReport = () => {
+const SalesReport = ({ customerId, initialSalesData }) => {
   const [activeTab, setActiveTab] = useState('sales')
   const [searchValue, setSearchValue] = useState('')
   const [fromDate, setFromDate] = useState(dayjs().subtract(1, 'month').format('YYYY-MM-DD'))
   const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'))
+
+  // State for sales data
+  const [salesData, setSalesData] = useState(initialSalesData)
+  const [loading, setLoading] = useState(false)
+
+  // console.log('ss data', salesData)
+
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10
+  })
 
   const tabs = [
     { key: 'sales', label: 'Sales', icon: <ShoppingCart size={16} /> },
@@ -28,17 +40,62 @@ const SalesReport = () => {
     { key: 'returns', label: 'Returns', icon: <RotateCcw size={16} /> }
   ]
 
+  // Function to fetch sales data
+  const fetchSales = async (
+    page = pagination.page,
+    limit = pagination.limit,
+    search = searchValue,
+    from = fromDate,
+    to = toDate
+  ) => {
+    if (!customerId) return
+
+    setLoading(true)
+
+    try {
+      const result = await getSalesByCustomer(customerId, page, limit, search, from, to)
+
+      // console.log(' in sales report', result)
+
+      if (result.success) {
+        setSalesData(result)
+        setPagination(prev => ({ ...prev, page, limit }))
+      }
+    } catch (error) {
+      console.error('Error fetching sales:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Fetch data when filters change
+  useEffect(() => {
+    if (activeTab === 'sales') {
+      fetchSales(1, pagination.limit, searchValue, fromDate, toDate)
+    }
+  }, [searchValue, fromDate, toDate, activeTab])
+
+  // Handle pagination change
+  const handlePaginationChange = (page, limit) => {
+    fetchSales(page, limit, searchValue, fromDate, toDate)
+  }
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'sales':
-        return <SalesTable data={salesReports} />
-
+        return (
+          <SalesTable
+            data={salesData?.data?.sales || []}
+            pagination={pagination}
+            total={salesData?.data?.total || 0}
+            onPaginationChange={handlePaginationChange}
+            loading={loading}
+          />
+        )
       case 'payments':
         return <CustomerPaymentTable data={customerPayments} />
-
       case 'returns':
         return <CustomerReturnTable data={customerReturns} />
-
       default:
         return <div className='p-6 text-center text-gray-500'>No data available for this section.</div>
     }

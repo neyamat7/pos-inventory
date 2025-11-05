@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import { Card, CardContent, Typography, Divider, Box, Button } from '@mui/material'
 import { Calendar, FileText, Layers, ShoppingCart, CreditCard, RotateCcw, ClipboardList } from 'lucide-react'
@@ -13,20 +13,35 @@ import PaymentTable from './tables/PaymentTable'
 import ProductTable from './tables/ProductTable'
 
 // Mock data imports
-import { supplierPurchases } from '@/fake-db/apps/supplierPurchaseHistory'
 import { paymentHistoryData } from '@/fake-db/apps/paymentHistory'
 import { lotInformation } from '@/fake-db/apps/lotInformation'
 import ReturnTable from './tables/ReturnTable'
 import { returnProductsHistory } from '@/fake-db/apps/returnHistory'
+import { getLotsBySupplier, getPurchaseBySupplier } from '@/actions/supplierAction'
 
 // -------------------------------------------------------------
 // MAIN COMPONENT
 // -------------------------------------------------------------
-const PurchaseReport = () => {
+const PurchaseReport = ({ supplierId, initialLotsData, initialPurchaseData }) => {
+  // console.log('lots', initialLotsData)
+  // console.log('purchase', initialPurchaseData)
+
   const [activeTab, setActiveTab] = useState('purchases')
   const [searchValue, setSearchValue] = useState('')
   const [fromDate, setFromDate] = useState(dayjs().subtract(1, 'month').format('YYYY-MM-DD'))
   const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'))
+
+  // State for lots data
+  const [lotsData, setLotsData] = useState(initialLotsData)
+
+  const [purchaseData, setPurchaseData] = useState(initialPurchaseData)
+
+  const [loading, setLoading] = useState(false)
+
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10
+  })
 
   const tabs = [
     { key: 'purchases', label: 'Purchases', icon: <ShoppingCart size={16} /> },
@@ -35,14 +50,99 @@ const PurchaseReport = () => {
     { key: 'returns', label: 'Returns', icon: <RotateCcw size={16} /> }
   ]
 
+  // Function to fetch lots data
+  const fetchLots = async (
+    page = pagination.page,
+    limit = pagination.limit,
+    search = searchValue,
+    from = fromDate,
+    to = toDate
+  ) => {
+    if (!supplierId) return
+
+    setLoading(true)
+
+    try {
+      const result = await getLotsBySupplier(supplierId, page, limit, search, from, to)
+
+      if (result.success) {
+        setLotsData(result)
+        setPagination(prev => ({ ...prev, page, limit }))
+      }
+    } catch (error) {
+      console.error('Error fetching lots:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Function to fetch purchase data
+  const fetchPurchases = async (
+    page = pagination.page,
+    limit = pagination.limit,
+    search = searchValue,
+    from = fromDate,
+    to = toDate
+  ) => {
+    if (!supplierId) return
+
+    setLoading(true)
+
+    try {
+      const result = await getPurchaseBySupplier(supplierId, page, limit, search, from, to)
+
+      if (result.success) {
+        setPurchaseData(result)
+        setPagination(prev => ({ ...prev, page, limit }))
+      }
+    } catch (error) {
+      console.error('Error fetching purchases:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Fetch data when filters change
+  useEffect(() => {
+    if (activeTab === 'purchases') {
+      fetchLots(1, pagination.limit, searchValue, fromDate, toDate)
+    }
+  }, [searchValue, fromDate, toDate, activeTab])
+
+  // Handle pagination change
+  const handlePaginationChange = (page, limit) => {
+    if (activeTab === 'purchases') {
+      fetchPurchases(page, limit, searchValue, fromDate, toDate)
+    } else if (activeTab === 'stock') {
+      fetchLots(page, limit, searchValue, fromDate, toDate)
+    }
+  }
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'purchases':
-        return <PurchaseTable data={supplierPurchases} />
+        return (
+          <PurchaseTable
+            data={purchaseData?.data?.purchases || []}
+            pagination={pagination}
+            total={purchaseData?.data?.total || 0}
+            onPaginationChange={handlePaginationChange}
+            loading={loading}
+          />
+        )
+      case 'stock':
+        return (
+          <ProductTable
+            data={lotsData?.data?.lots || []}
+            pagination={pagination}
+            total={lotsData?.data?.total || 0}
+            onPaginationChange={handlePaginationChange}
+            loading={loading}
+          />
+        )
+
       case 'payments':
         return <PaymentTable data={paymentHistoryData} />
-      case 'stock':
-        return <ProductTable data={lotInformation} />
       case 'returns':
         return <ReturnTable data={returnProductsHistory} />
       default:

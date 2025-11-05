@@ -23,17 +23,17 @@ export async function createSale(saleData) {
   }
 }
 
-export async function getAllSales({ page = 1, limit = 10 } = {}) {
+export async function getAllSales({ page = 1, limit = 10, search = '' } = {}) {
   try {
-    const data = await api.get(`/sale/all?page=${page}&limit=${limit}`)
+    const data = await api.get(`/sale/all?page=${page}&limit=${limit}&search=${search}`)
 
-    console.log('data in action', data)
+    // console.log('data in action', data)
 
     return {
-      total: data?.data?.totalItems || 0,
-      page: data?.data?.pagination?.currentPage || 1,
-      limit: data?.data?.pagination?.limit || limit,
-      totalPages: data?.data?.pagination?.totalPages || 1,
+      total: data?.data?.total || 0,
+      page: data?.data?.page || 1,
+      limit: data?.data?.limit || limit,
+      totalPages: data?.data?.totalPages || 1,
       sales: data?.data?.sales || []
     }
   } catch (error) {
@@ -48,4 +48,3 @@ export async function getAllSales({ page = 1, limit = 10 } = {}) {
     }
   }
 }
-

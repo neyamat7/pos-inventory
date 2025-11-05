@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 
+import { useRouter } from 'next/navigation'
+
 import MenuItem from '@mui/material/MenuItem'
 
 import Grid from '@mui/material/Grid2'
@@ -212,9 +214,31 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
             />
           </Grid>
 
+          {/* Is Boxed */}
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <Controller
+              name='isBoxed'
+              control={control}
+              render={({ field }) => (
+                <CustomTextField
+                  select
+                  fullWidth
+                  label='Is Boxed?'
+                  {...field}
+                  value={field.value ? 'yes' : 'no'}
+                  onChange={e => field.onChange(e.target.value === 'yes')}
+                  disabled={loading}
+                >
+                  <MenuItem value='yes'>Yes</MenuItem>
+                  <MenuItem value='no'>No</MenuItem>
+                </CustomTextField>
+              )}
+            />
+          </Grid>
+
           {/* Product Image URL */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Card variant='outlined' sx={{ p: 3 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <Card variant='outlined'>
               <CardHeader title='Product Image' sx={{ pb: 2 }} />
               <CardContent className='space-y-4'>
                 <Controller
@@ -223,7 +247,7 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
                   render={({ field }) => (
                     <CustomTextField
                       fullWidth
-                      label='Product Image URL'
+                      label=''
                       placeholder='https://example.com/image.jpg'
                       {...field}
                       disabled={loading}
@@ -249,7 +273,7 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
           </Grid>
 
           {/* Description */}
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <div className='flex flex-col gap-4'>
               <Controller
                 name='description'
@@ -260,7 +284,7 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
                     label='Description'
                     placeholder='Enter product description...'
                     multiline
-                    minRows={6}
+                    minRows={4}
                     {...field}
                     error={!!fieldState.error}
                     helperText={fieldState.error?.message}

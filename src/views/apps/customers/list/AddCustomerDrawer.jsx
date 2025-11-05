@@ -15,6 +15,7 @@ import { useForm, Controller } from 'react-hook-form'
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
 import { createCustomer } from '@/actions/customerActions'
+import { showSuccess } from '@/utils/toastUtils'
 
 const AddCustomerDrawer = props => {
   const { open, handleClose, setData, customerData } = props
@@ -98,6 +99,7 @@ const AddCustomerDrawer = props => {
         handleClose()
 
         // console.log('Customer created successfully!', result.data)
+        showSuccess('Customer created successfully!')
       } else {
         console.error('Failed to create customer:', result.error)
         alert(`Error: ${result.error}`)

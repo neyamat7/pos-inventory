@@ -2,26 +2,19 @@
 import Grid from '@mui/material/Grid2'
 
 // Component Imports
-import CustomerStatisticsCard from './CustomerStatisticsCard'
 import SalesReport from './SalesReport'
-import { customers } from '@/data/customerData/customerData'
-
-// Data Imports
-import { getStatisticsData, getEcommerceData } from '@/app/server/actions'
+import { getSalesByCustomer } from '@/actions/customerActions'
 
 const Overview = async ({ customerId }) => {
-  // console.log('customerId', customerId)
+  // Fetch customer sales data from backend
+  const salesResult = await getSalesByCustomer(customerId, 1, 10, '', '', '')
 
-  // Vars
-  // const data = await getStatisticsData()
-  const tableData = await getEcommerceData()
-
-  const customer = customers.find(item => item.sl === Number(customerId))
+  // console.log('sales result', salesResult)
 
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12 }}>
-        <SalesReport orderData={tableData?.orderData} />
+        <SalesReport customerId={customerId} initialSalesData={salesResult} />
       </Grid>
     </Grid>
   )

@@ -44,7 +44,7 @@ import { getInitials } from '@/utils/getInitials'
 import tableStyles from '@core/styles/table.module.css'
 import AddSupplierDrawer from './AddSupplierDrawer'
 import OptionMenu from '@/@core/components/option-menu'
-import { updateSupplier } from '@/actions/supplierAction'
+import { addBalance, updateSupplier } from '@/actions/supplierAction'
 import { showError, showSuccess } from '@/utils/toastUtils'
 
 export const paymentStatus = {
@@ -95,7 +95,13 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, onPageSizeChange }) => {
+const SupplierListTable = ({
+  supplierData = [],
+  paginationData,
+  onPageChange,
+  onPageSizeChange,
+  isLoading = false
+}) => {
   const getCrateSummary = crateInfo => {
     if (!crateInfo) return '—'
 
@@ -130,11 +136,20 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
   const [openBalanceModal, setOpenBalanceModal] = useState(false)
   const [openCrateModal, setOpenCrateModal] = useState(false)
   const [selectedSupplier, setSelectedSupplier] = useState(null)
-  const [newBalance, setNewBalance] = useState('')
+
   const [crateForm, setCrateForm] = useState({})
-  const [balanceNote, setBalanceNote] = useState('')
-  const [balanceFile, setBalanceFile] = useState('')
+
   const [isUpdatingCrate, setIsUpdatingCrate] = useState(false)
+  const [isAddingBalance, setIsAddingBalance] = useState(false)
+
+  const [balanceForm, setBalanceForm] = useState({
+    date: new Date().toISOString().split('T')[0],
+    amount: '',
+    transaction_Id: '',
+    slip_img: null,
+    note: '',
+    payment_method: 'cash'
+  })
 
   useEffect(() => {
     setData(supplierData)
@@ -248,7 +263,15 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                   menuItemProps: {
                     onClick: () => {
                       setSelectedSupplier(row.original)
-                      setNewBalance('')
+                      setBalanceForm({
+                        date: new Date().toISOString().split('T')[0],
+                        amount: '',
+                        transaction_Id: '',
+                        slip_img: null,
+                        note: '',
+                        payment_method: 'cash',
+                        balance_for: ''
+                      })
                       setOpenBalanceModal(true)
                     },
                     className: 'flex items-center'
@@ -362,6 +385,101 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
     }
   }
 
+  const handleBalanceSubmit = async () => {
+    // Validation
+    if (!balanceForm.amount || !balanceForm.transaction_Id || !balanceForm.payment_method) {
+      alert('Please fill in all required fields')
+
+      return
+    }
+
+    setIsAddingBalance(true)
+
+    // Create FormData for multer
+    // const formData = new FormData()
+
+    // formData.append('date', balanceForm.date)
+    // formData.append('amount', balanceForm.amount)
+    // formData.append('transaction_Id', balanceForm.transaction_Id)
+    // formData.append('note', balanceForm.note)
+    // formData.append('payment_method', balanceForm.payment_method)
+    // formData.append('balance_for', selectedSupplier._id)
+    // formData.append('collection', 'supplier')
+
+    // // Append image file if exists
+    // if (balanceForm.slip_img) {
+    //   formData.append('slip_img', balanceForm.slip_img)
+    // } else {
+    //   formData.append('slip_img', 'https://i.postimg.cc/y86SS6X7/Chat-GPT-Image-Nov-4-2025-11-06-30-AM.png')
+    // }
+
+    // console.log('formdata', formData)
+
+    const balanceData = {
+      date: balanceForm.date,
+      amount: balanceForm.amount,
+      transaction_Id: balanceForm.transaction_Id,
+      note: balanceForm.note,
+      payment_method: balanceForm.payment_method,
+      balance_for: selectedSupplier._id,
+      collection: 'supplier',
+      slip_img: 'https://i.postimg.cc/y86SS6X7/Chat-GPT-Image-Nov-4-2025-11-06-30-AM.png'
+    }
+
+    // console.log('Balance Data:', balanceData)
+
+    try {
+      // Call the addBalance server action
+      const result = await addBalance(balanceData)
+
+      if (result.success) {
+        // Update local state
+        setData(prev =>
+          prev.map(item => {
+            if (item._id === selectedSupplier._id) {
+              if (item.account_info) {
+                return {
+                  ...item,
+                  account_info: {
+                    ...item.account_info,
+                    balance: (item.account_info.balance || 0) + Number(balanceForm.amount)
+                  }
+                }
+              } else {
+                return {
+                  ...item,
+                  balance: (item.balance || 0) + Number(balanceForm.amount)
+                }
+              }
+            }
+
+            return item
+          })
+        )
+
+        showSuccess('Balance added successfully')
+
+        // Close modal and reset form
+        setOpenBalanceModal(false)
+        setBalanceForm({
+          date: new Date().toISOString().split('T')[0],
+          amount: '',
+          transaction_Id: '',
+          slip_img: null,
+          note: '',
+          payment_method: 'cash'
+        })
+      } else {
+        showError(result.error || 'Failed to add balance')
+      }
+    } catch (error) {
+      console.error('Error adding balance:', error)
+      showError('An unexpected error occurred')
+    } finally {
+      setIsAddingBalance(false)
+    }
+  }
+
   return (
     <>
       <Card>
@@ -425,17 +543,32 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                 </tr>
               ))}
             </thead>
-            {table.getFilteredRowModel().rows.length === 0 ? (
-              <tbody>
+
+            <tbody>
+              {isLoading ? (
                 <tr>
-                  <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
-                    No data available
+                  <td colSpan={table.getVisibleFlatColumns().length} className='text-center py-8'>
+                    <div className='flex flex-col items-center justify-center gap-2'>
+                      <i className='tabler-loader-2 animate-spin text-2xl text-primary' />
+                      <Typography variant='body2' className='text-textSecondary'>
+                        Loading suppliers...
+                      </Typography>
+                    </div>
                   </td>
                 </tr>
-              </tbody>
-            ) : (
-              <tbody>
-                {table.getRowModel().rows.map(row => {
+              ) : table.getFilteredRowModel().rows.length === 0 ? (
+                <tr>
+                  <td colSpan={table.getVisibleFlatColumns().length} className='text-center py-8'>
+                    <div className='flex flex-col items-center justify-center gap-2'>
+                      <i className='tabler-database-off text-2xl text-textSecondary' />
+                      <Typography variant='body2' className='text-textSecondary'>
+                        No data available
+                      </Typography>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                table.getRowModel().rows.map(row => {
                   return (
                     <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
                       {row.getVisibleCells().map(cell => (
@@ -445,9 +578,9 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                       ))}
                     </tr>
                   )
-                })}
-              </tbody>
-            )}
+                })
+              )}
+            </tbody>
           </table>
         </div>
         <TablePagination
@@ -477,23 +610,37 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
       {openBalanceModal &&
         selectedSupplier &&
         createPortal(
-          <div className='fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4'>
-            <div className='w-full max-w-md bg-white/80 backdrop-blur-lg text-gray-800 rounded-2xl shadow-2xl p-6 transition-all duration-300 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent'>
+          <div
+            className='fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4'
+            onClick={e => {
+              // Close modal when clicking backdrop
+              if (e.target === e.currentTarget) {
+                setOpenBalanceModal(false)
+              }
+            }}
+            style={{ backdropFilter: 'blur(4px)' }}
+          >
+            <div
+              className='w-full max-w-md bg-white/80 backdrop-blur-lg text-gray-800 rounded-2xl shadow-2xl p-6 transition-all duration-300 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent'
+              onClick={e => e.stopPropagation()}
+            >
               <Typography variant='h6' className='mb-4 font-semibold text-gray-900 text-center'>
-                Add Balance for <span className='text-primary'>{selectedSupplier.name}</span>
+                Add Balance for{' '}
+                <span className='text-primary'>{selectedSupplier.basic_info?.name || selectedSupplier.name}</span>
               </Typography>
 
-              <Typography variant='body2' className='text-gray-600 mb-3 text-center'>
-                Enter the amount, attach a note, and upload a document (optional).
+              <Typography variant='body2' className='text-gray-600 mb-4 text-center'>
+                Fill in the transaction details below
               </Typography>
 
-              {/* Amount Input */}
+              {/* Date Input */}
               <CustomTextField
                 fullWidth
-                label='Amount (৳)'
-                type='number'
-                value={newBalance}
-                onChange={e => setNewBalance(e.target.value)}
+                label='Date'
+                type='date'
+                value={balanceForm.date}
+                onChange={e => setBalanceForm(prev => ({ ...prev, date: e.target.value }))}
+                InputLabelProps={{ shrink: true }}
                 InputProps={{
                   style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
                 }}
@@ -505,15 +652,69 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                 className='mb-4'
               />
 
+              {/* Amount Input */}
+              <CustomTextField
+                fullWidth
+                label='Amount (৳)'
+                type='number'
+                required
+                value={balanceForm.amount}
+                onChange={e => setBalanceForm(prev => ({ ...prev, amount: e.target.value }))}
+                InputProps={{
+                  style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
+                }}
+                sx={{
+                  '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
+                  '& input': { color: '#111827' },
+                  '& label': { color: '#6b7280' }
+                }}
+                className='mb-4'
+              />
+
+              {/* Transaction ID */}
+              <CustomTextField
+                fullWidth
+                label='Transaction ID'
+                required
+                value={balanceForm.transaction_Id}
+                onChange={e => setBalanceForm(prev => ({ ...prev, transaction_Id: e.target.value }))}
+                InputProps={{
+                  style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
+                }}
+                sx={{
+                  '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
+                  '& input': { color: '#111827' },
+                  '& label': { color: '#6b7280' }
+                }}
+                className='mb-4'
+              />
+
+              {/* Payment Method */}
+              <div className='mb-4'>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Payment Method <span className='text-red-500'>*</span>
+                </label>
+                <select
+                  value={balanceForm.payment_method}
+                  onChange={e => setBalanceForm(prev => ({ ...prev, payment_method: e.target.value }))}
+                  className='w-full px-4 py-2.5 bg-[#f9fafb] border border-gray-300 rounded-lg text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 hover:border-gray-400 cursor-pointer appearance-none}
+                  required'
+                >
+                  <option value='cash'>Cash</option>
+                  <option value='bank'>Bank</option>
+                  <option value='MFS'>MFS</option>
+                </select>
+              </div>
+
               {/* Note Text Area */}
               <CustomTextField
                 fullWidth
-                label='Note'
+                label='Note (Optional)'
                 multiline
                 minRows={3}
-                value={balanceNote}
-                onChange={e => setBalanceNote(e.target.value)}
-                placeholder='Write any additional notes here...'
+                value={balanceForm.note}
+                onChange={e => setBalanceForm(prev => ({ ...prev, note: e.target.value }))}
+                placeholder='Additional notes...'
                 InputProps={{
                   style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
                 }}
@@ -525,29 +726,26 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                 className='mb-4'
               />
 
-              {/* Upload Document */}
+              {/* Upload Slip Image */}
               <div className='flex flex-col gap-2 mb-4'>
-                <label className='text-sm font-medium text-gray-700'>Upload Document (optional)</label>
+                <label className='text-sm font-medium text-gray-700'>Upload Payment Slip (Optional)</label>
                 <input
                   type='file'
                   accept='image/*'
                   onChange={e => {
-                    const file = e.target.files[0]
+                    const file = e.target.files?.[0]
 
                     if (file) {
-                      const reader = new FileReader()
-
-                      reader.onload = () => setBalanceFile(reader.result)
-                      reader.readAsDataURL(file)
+                      setBalanceForm(prev => ({ ...prev, slip_img: file }))
                     }
                   }}
                   className='w-full rounded-lg border border-gray-300 p-2 text-sm bg-gray-50 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition'
                 />
-                {balanceFile && (
+                {balanceForm.slip_img && (
                   <div className='mt-2 flex justify-center'>
                     <img
-                      src={balanceFile}
-                      alt='Uploaded Document'
+                      src={URL.createObjectURL(balanceForm.slip_img)}
+                      alt='Payment Slip Preview'
                       className='max-h-40 rounded-lg shadow-md object-contain border border-gray-200'
                     />
                   </div>
@@ -560,54 +758,29 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                   variant='outlined'
                   onClick={() => {
                     setOpenBalanceModal(false)
-                    setBalanceFile('')
-                    setBalanceNote('')
+                    setBalanceForm({
+                      date: new Date().toISOString().split('T')[0],
+                      amount: '',
+                      transaction_Id: '',
+                      slip_img: null,
+                      note: '',
+                      payment_method: 'cash'
+                    })
                   }}
                   className='px-4 py-2 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100 transition w-full sm:w-auto'
                 >
                   Cancel
                 </Button>
+
                 <Button
                   variant='contained'
                   color='primary'
                   className='px-5 py-2 rounded-lg shadow-md w-full sm:w-auto'
-                  onClick={() => {
-                    if (!newBalance) return
-                    setData(prev =>
-                      prev.map(item => {
-                        const itemSl = item.basic_info?.sl || item.sl
-                        const selectedSl = selectedSupplier.basic_info?.sl || selectedSupplier.sl
-
-                        if (itemSl === selectedSl) {
-                          if (item.account_info) {
-                            // New structure
-                            return {
-                              ...item,
-                              account_info: {
-                                ...item.account_info,
-                                balance: (item.account_info.balance || 0) + Number(newBalance)
-                              }
-                            }
-                          } else {
-                            // Old structure
-                            return {
-                              ...item,
-                              balance: (item.balance || 0) + Number(newBalance),
-                              note: balanceNote,
-                              document: balanceFile
-                            }
-                          }
-                        }
-
-                        return item
-                      })
-                    )
-                    setOpenBalanceModal(false)
-                    setBalanceFile('')
-                    setBalanceNote('')
-                  }}
+                  onClick={handleBalanceSubmit}
+                  disabled={isAddingBalance}
+                  startIcon={isAddingBalance ? <i className='tabler-loader-2 animate-spin' /> : null}
                 >
-                  Save
+                  {isAddingBalance ? 'Saving...' : 'Save'}
                 </Button>
               </div>
             </div>
@@ -805,10 +978,7 @@ const SupplierListTable = ({ supplierData = [], paginationData, onPageChange, on
                         // Update local state
                         setData(prev =>
                           prev.map(item => {
-                            const itemSl = item.basic_info?.sl || item.sl
-                            const selectedSl = selectedSupplier.basic_info?.sl || selectedSupplier.sl
-
-                            if (itemSl === selectedSl) {
+                            if (item._id === selectedSupplier._id) {
                               return {
                                 ...item,
                                 crate_info: {

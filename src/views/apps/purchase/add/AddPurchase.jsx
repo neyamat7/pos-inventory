@@ -37,6 +37,21 @@ const handleCrateCount = (setCartProducts, productId, personId, type, value) => 
   )
 }
 
+const handleBoxQuantity = (setCartProducts, productId, personId, value) => {
+  setCartProducts(prevCart =>
+    prevCart.map(item => {
+      if (item.product_id === productId && (item.supplier_id === personId || item.customer_id === personId)) {
+        return {
+          ...item,
+          box_quantity: value < 0 ? 0 : value
+        }
+      }
+
+      return item
+    })
+  )
+}
+
 export default function AddPurchase({ productsData = [], suppliersData = [], categoriesData = [] }) {
   const skipNextEffect = useRef(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -123,7 +138,9 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
         trading_post: 0,
         labour: 0,
         expenses: 0,
-        other_expenses: 0
+        other_expenses: 0,
+        box_quantity: 0,
+        isBoxed: product.isBoxed || false
       }
 
       return [...prevCart, newCartItem]
@@ -204,10 +221,42 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
       },
 
       {
+        accessorKey: 'box_quantity',
+        header: 'Box Quantity',
+        cell: ({ row }) => {
+          const product = row.original
+
+          if (!product.isBoxed) {
+            return null
+          }
+
+          return (
+            <input
+              type='number'
+              min='0'
+              value={product.box_quantity === 0 ? '' : (product.box_quantity ?? '')}
+              placeholder='0'
+              onChange={e => {
+                const value = parseInt(e.target.value) || 0
+
+                handleBoxQuantity(setCartProducts, product.product_id, product.supplier_id, value)
+                handleExpenseChange()
+              }}
+              className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
+            />
+          )
+        }
+      },
+
+      {
         accessorKey: 'crate_type_one',
         header: 'Crate Type 1',
         cell: ({ row }) => {
           const product = row.original
+
+          if (product.isBoxed) {
+            return null
+          }
 
           return (
             <input
@@ -226,11 +275,16 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
           )
         }
       },
+
       {
         accessorKey: 'crate_type_two',
         header: 'Crate Type 2',
         cell: ({ row }) => {
           const product = row.original
+
+          if (product.isBoxed) {
+            return null
+          }
 
           return (
             <input
@@ -366,9 +420,11 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
       const formattedTime = `${hours}${minutes}`
 
       const cleanProductName = item.product_name?.replace(/\s+/g, '_').toUpperCase() || 'ITEM'
-      const totalCrates = (item.crate_type_one || 0) + (item.crate_type_two || 0)
 
-      const lot_name = `${initials}-${formattedDate}-${formattedTime}-${cleanProductName}-${totalCrates}`
+      // const totalCrates = (item.crate_type_one || 0) + (item.crate_type_two || 0)
+      const totalUnits = item.isBoxed ? item.box_quantity || 0 : (item.crate_type_one || 0) + (item.crate_type_two || 0)
+
+      const lot_name = `${initials}-${formattedDate}-${formattedTime}-${cleanProductName}-${totalUnits}`
 
       return { ...item, lot_name }
     })
@@ -394,6 +450,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
           carat_Type_1: item.crate_type_one || 0,
           carat_Type_2: item.crate_type_two || 0
         },
+        box_quantity: item.box_quantity || 0,
         expenses: {
           labour: item.labour || 0,
           transportation: item.transportation || 0,

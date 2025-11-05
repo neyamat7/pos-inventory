@@ -22,7 +22,6 @@ const SupplierDetails = ({ supplierData, supplierId }) => {
         <SupplierLeftOverview supplierData={supplierData} />
       </Grid>
       <Grid size={{ xs: 12 }}>
-        {/* Directly render overview content instead of using tabs */}
         <SupplierRight>
           <OverViewTab supplierId={supplierId} />
         </SupplierRight>

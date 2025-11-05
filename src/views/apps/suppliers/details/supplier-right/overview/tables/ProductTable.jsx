@@ -14,20 +14,66 @@ import tableStyles from '@core/styles/table.module.css'
 
 const columnHelper = createColumnHelper()
 
-const productColumns = [
-  columnHelper.accessor('lotName', { header: 'Lot Name' }),
-  columnHelper.accessor('product', { header: 'Product' }),
-  columnHelper.accessor('receivedDate', { header: 'Received Date' }),
-  columnHelper.accessor('quantity', { header: 'Quantity' }),
-  columnHelper.accessor('totalAmount', { header: 'Total Amount' }),
-  columnHelper.accessor('dueAmount', { header: 'Due Amount' }),
-  columnHelper.accessor('status', { header: 'Status' })
+const stockColumns = [
+  columnHelper.accessor('lot_name', {
+    header: 'Lot Name',
+    cell: info => info.getValue() || 'N/A'
+  }),
+  columnHelper.accessor('productsId[0].productName', {
+    header: 'Product Name',
+    cell: info => info.getValue() || 'N/A'
+  }),
+  columnHelper.accessor('purchase_date', {
+    header: 'Purchase Date',
+    cell: info => {
+      const date = info.getValue()
+      return date ? new Date(date).toLocaleDateString() : 'N/A'
+    }
+  }),
+  columnHelper.accessor('status', {
+    header: 'Status',
+    cell: info => {
+      const status = info.getValue()
+      return status ? status.charAt(0).toUpperCase() + status.slice(1) : 'N/A'
+    }
+  }),
+  columnHelper.accessor('box_quantity', {
+    header: 'Total Boxes',
+    cell: info => info.getValue() || 0
+  }),
+  columnHelper.accessor('remaining_boxes', {
+    header: 'Remaining Boxes',
+    cell: info => info.getValue() || 0
+  }),
+  columnHelper.accessor('costs.unitCost', {
+    header: 'Unit Cost',
+    cell: info => `$${info.getValue() || 0}`
+  }),
+  columnHelper.accessor('carat.carat_Type_1', {
+    header: 'Carat Type 1',
+    cell: info => info.getValue() || 0
+  }),
+  columnHelper.accessor('carat.carat_Type_2', {
+    header: 'Carat Type 2',
+    cell: info => info.getValue() || 0
+  }),
+  columnHelper.accessor('sales.totalKgSold', {
+    header: 'Kg Sold',
+    cell: info => info.getValue() || 0
+  }),
+  columnHelper.accessor('profits.totalProfit', {
+    header: 'Total Profit',
+    cell: info => `$${info.getValue() || 0}`
+  })
 ]
 
 const ProductTable = ({ data }) => {
+
+  console.log('lots data', data);
+
   const table = useReactTable({
-    data,
-    columns: productColumns,
+    data: data || [],
+    columns: stockColumns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     initialState: { pagination: { pageSize: 10 } }
@@ -48,7 +94,7 @@ const ProductTable = ({ data }) => {
         <tbody>
           {table.getRowModel().rows.length === 0 ? (
             <tr>
-              <td colSpan={productColumns.length} className='text-center p-4'>
+              <td colSpan={stockColumns.length} className='text-center p-4'>
                 No data available
               </td>
             </tr>

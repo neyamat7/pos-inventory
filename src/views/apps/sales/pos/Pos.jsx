@@ -52,7 +52,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     return cartProducts
       .map(
         item =>
-          `${item.cart_item_id}-${item.kg}-${item.discount_kg}-${item.selling_price}-${item.crate_type_one}-${item.crate_type_two}-${item.commission_rate}`
+          `${item.cart_item_id}-${item.kg}-${item.discount_kg}-${item.discount_amount}-${item.box_quantity}-${item.selling_price}-${item.crate_type_one}-${item.crate_type_two}-${item.commission_rate}`
       )
       .join('|')
   }, [cartProducts])
@@ -105,6 +105,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         crate_type_two_price: 0,
         cratePrice: 0,
         kg: 0,
+        box_quantity: 0,
         discount_kg: 0,
         discount_amount: 0,
         subtotal: 0,
@@ -128,6 +129,10 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
   // calculate total due amount
   const totalDueAmount = calculateTotalDue(cartProducts)
+
+  const totalSubtotal = useMemo(() => {
+    return cartProducts.reduce((sum, item) => sum + (Number(item.subtotal) || 0), 0)
+  }, [cartProducts])
 
   const { extraCrateType1Price, extraCrateType2Price, extraCrateType1, extraCrateType2 } = useMemo(() => {
     if (!selectedCustomer?._id || cartProducts.length === 0) {
@@ -200,13 +205,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   const totalDiscountedAmount = cartProducts.reduce((sum, item) => sum + (Number(item.discount_amount) || 0), 0)
 
   // Update payable amount calculation
-  const payableAmount = +(
-    totalDueAmount -
-    totalDiscountedAmount +
-    vatAmount +
-    extraCrateType1Price +
-    extraCrateType2Price
-  ).toFixed(2)
+  const payableAmount = +(totalDueAmount + vatAmount + extraCrateType1Price + extraCrateType2Price).toFixed(2)
 
   // Open the commission editor for a row
   const openCommissionEditor = item => {
@@ -353,6 +352,8 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         cell: ({ row }) => {
           const product = row.original
 
+          if (product.isBoxed) return null
+
           return (
             <input
               type='number'
@@ -365,6 +366,38 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
                 setCartProducts(prev =>
                   prev.map(item => (item.cart_item_id === product.cart_item_id ? { ...item, kg: parsed } : item))
+                )
+              }}
+              placeholder='0'
+              className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
+            />
+          )
+        }
+      },
+
+      {
+        accessorKey: 'box_quantity',
+        header: 'Box Quantity',
+        cell: ({ row }) => {
+          const product = row.original
+
+          if (!product.isBoxed) return null
+
+          return (
+            <input
+              type='number'
+              name='box_quantity'
+              min='0'
+              onWheel={e => e.currentTarget.blur()}
+              value={product.box_quantity === 0 ? '' : (product.box_quantity ?? '')}
+              onChange={e => {
+                const val = e.target.value
+                const parsed = val === '' ? 0 : parseFloat(val) || 0
+
+                setCartProducts(prev =>
+                  prev.map(item =>
+                    item.cart_item_id === product.cart_item_id ? { ...item, box_quantity: parsed } : item
+                  )
                 )
               }}
               placeholder='0'
@@ -405,6 +438,8 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         cell: ({ row }) => {
           const product = row.original
 
+          if (product.isBoxed) return null
+
           return (
             <input
               type='number'
@@ -418,6 +453,37 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                 setCartProducts(prev =>
                   prev.map(item =>
                     item.cart_item_id === product.cart_item_id ? { ...item, discount_kg: parsed } : item
+                  )
+                )
+              }}
+              placeholder='0'
+              className='w-24 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
+            />
+          )
+        }
+      },
+
+      {
+        accessorKey: 'discount_amount',
+        header: 'Discount (৳)',
+        cell: ({ row }) => {
+          const product = row.original
+
+          if (!product.isBoxed) return null
+
+          return (
+            <input
+              type='number'
+              name='discount_amount'
+              onWheel={e => e.currentTarget.blur()}
+              value={product.discount_amount === 0 ? '' : (product.discount_amount ?? '')}
+              onChange={e => {
+                const val = e.target.value
+                const parsed = val === '' ? 0 : parseFloat(val)
+
+                setCartProducts(prev =>
+                  prev.map(item =>
+                    item.cart_item_id === product.cart_item_id ? { ...item, discount_amount: parsed } : item
                   )
                 )
               }}
@@ -582,17 +648,36 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
     const toLot = item => {
       const kg = item.kg || 0
+      const boxQty = item.box_quantity || 0
       const discountKg = item.discount_kg || 0
+      const discountAmount = item.discount_amount || 0
       const sellingPrice = item.selling_price || 0
       const unitCost = item.lot_selected.unit_cost || 0
+      const isBoxed = item.isBoxed || false
 
       // Calculate total_price (selling price calculation)
-      const totalPrice = Number((kg * sellingPrice).toFixed(2))
+      // const totalPrice = Number((kg * sellingPrice).toFixed(2))
 
-      const discountedPrice = Number(((kg - discountKg) * sellingPrice).toFixed(2))
+      // const discountedPrice = Number(((kg - discountKg) * sellingPrice).toFixed(2))
 
-      // Calculate discount_amount (on cost price)
-      const discountAmount = Number((discountKg * unitCost).toFixed(2))
+      // // Calculate discount_amount (on cost price)
+      // const discountAmount = Number((discountKg * unitCost).toFixed(2))
+
+      let totalPrice = 0
+      let discountedPrice = 0
+      let finalDiscountAmount = 0
+
+      if (isBoxed) {
+        // For boxed products
+        totalPrice = Number((boxQty * sellingPrice).toFixed(2))
+        discountedPrice = Number((totalPrice - discountAmount).toFixed(2))
+        finalDiscountAmount = discountAmount
+      } else {
+        // For kg-based products
+        totalPrice = Number((kg * sellingPrice).toFixed(2))
+        discountedPrice = Number(((kg - discountKg) * sellingPrice).toFixed(2))
+        finalDiscountAmount = Number((discountKg * unitCost).toFixed(2))
+      }
 
       // ========== LOT COMMISSION (from lot data) ==========
       const lotCommissionRate = item.lot_selected.commission_rate || 0
@@ -605,17 +690,34 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       // ========== LOT PROFIT CALCULATION ==========
       let lotProfit = 0
 
+      // if (item.isCommissionable) {
+      //   lotProfit = customerCommissionAmount
+      // } else {
+      //   lotProfit = Number(((kg - discountKg) * (sellingPrice - unitCost)).toFixed(2))
+      //   lotProfit = Math.max(0, lotProfit)
+      // }
+
       if (item.isCommissionable) {
         lotProfit = customerCommissionAmount
       } else {
-        lotProfit = Number(((kg - discountKg) * (sellingPrice - unitCost)).toFixed(2))
+        if (isBoxed) {
+          // For boxed products: (box_qty * selling_price - discount_amount) - (box_qty * unit_cost)
+          lotProfit = Number((boxQty * sellingPrice - finalDiscountAmount - boxQty * unitCost).toFixed(2))
+        } else {
+          // For kg-based products
+          lotProfit = Number(((kg - discountKg) * (sellingPrice - unitCost)).toFixed(2))
+        }
+
         lotProfit = Math.max(0, lotProfit)
       }
 
       return {
         lotId: item.lot_selected.lot_id,
         kg: kg,
-        discount_Kg: discountKg,
+        box_quantity: isBoxed ? boxQty : 0,
+        isBoxed: isBoxed,
+        discount_Kg: isBoxed ? 0 : discountKg,
+        discount_amount: finalDiscountAmount,
         unit_price: sellingPrice,
         selling_price: discountedPrice,
         total_price: totalPrice,
@@ -794,7 +896,10 @@ export default function POSSystem({ productsData = [], customersData = [], categ
               carat_type_1: lot.carat?.carat_Type_1 || 0,
               carat_type_2: lot.carat?.carat_Type_2 || 0
             },
-            kg: sellQty, // Auto-fill kg field
+
+            // kg: sellQty, // Auto-fill kg field
+            kg: item.isBoxed ? 0 : sellQty,
+            box_quantity: item.isBoxed ? sellQty : 0,
             cost_price: lot.costs?.unitCost || 0, // Update cost price from lot
             selling_price: item.selling_price || lot.costs?.unitCost || 0 // Keep current or use cost
           }
@@ -1044,13 +1149,13 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                 <div className='space-y-4'>
                   <div className='flex items-center justify-between'>
                     <span className='text-sm'>Sub Total</span>
-                    <span className='font-medium'>৳ {totalDueAmount}</span>
+                    <span className='font-medium'>৳ {totalSubtotal}</span>
                   </div>
 
-                  <div className='flex items-center justify-between'>
+                  {/* <div className='flex items-center justify-between'>
                     <span className='text-sm'>Total Discount</span>
                     <span className='text-sm'>৳ {totalDiscountedAmount}</span>
-                  </div>
+                  </div> */}
 
                   {extraCrateType1 > 0 && (
                     <div className='flex items-center justify-between'>
@@ -1240,7 +1345,10 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                     <p className='text-sm text-gray-600'>
                       Supplier: {lotModal.selectedLot.supplierId?.basic_info?.name || 'N/A'}
                     </p>
-                    <p className='text-sm text-gray-600'>Already Sold: {lotModal.selectedLot.totalKgSold || 0} kg</p>
+                    <p className='text-sm text-gray-600'>
+                      Already Sold: {lotModal.selectedLot.totalKgSold || 0}{' '}
+                      {cartProducts.find(p => p.cart_item_id === lotModal.cartItemId)?.isBoxed ? 'boxes' : 'kg'}
+                    </p>
                     <p className='text-sm text-gray-600'>Unit Cost: ৳{lotModal.selectedLot.costs?.unitCost || 0}</p>
                     <p className='text-sm text-gray-600'>
                       Status: <span className='capitalize'>{lotModal.selectedLot.status}</span>
@@ -1266,7 +1374,9 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                       }}
                       className='w-24 px-2 py-1 border border-gray-300 rounded-md text-center focus:ring-2 focus:ring-indigo-500 outline-none'
                     />
-                    <span className='text-sm'>kg</span>
+                    <span className='text-sm'>
+                      {cartProducts.find(p => p.cart_item_id === lotModal.cartItemId)?.isBoxed ? 'boxes' : 'kg'}
+                    </span>
                   </div>
                 </div>
               </div>

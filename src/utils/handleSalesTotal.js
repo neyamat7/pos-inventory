@@ -19,10 +19,32 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
       const discountKg = Number(item.discount_kg) || 0
 
       // --- Calculate discounted amount ---
-      const discountedAmount = Number((discountKg * costPrice).toFixed(2))
+      // const discountedAmount = Number((discountKg * costPrice).toFixed(2))
+
+      let discountedAmount = 0
+
+      if (item.isBoxed) {
+        // For boxed products
+        discountedAmount = Number(item.discount_amount) || 0
+      } else {
+        // For kg-based products
+        discountedAmount = Number((discountKg * costPrice).toFixed(2))
+      }
 
       // Calculate total based on selling price (excluding discounted kg)
-      const productBase = (kg - discountKg) * sellingPrice
+      // const productBase = (kg - discountKg) * sellingPrice
+
+      let productBase = 0
+
+      if (item.isBoxed) {
+        // For boxed products
+        const boxQty = Number(item.box_quantity) || 0
+
+        productBase = boxQty * sellingPrice - discountedAmount
+      } else {
+        // For kg-based products
+        productBase = (kg - discountKg) * sellingPrice
+      }
 
       const isCommissioned = item.isCommissionable
 
@@ -39,19 +61,46 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
         ? Number((productBase * (1 + commissionRate)).toFixed(2))
         : productBase
 
-      const subtotal = Number(productBase.toFixed(2))
+      // const subtotal = Number(productBase.toFixed(2))
+      let subtotal = 0
+
+      if (item.isBoxed) {
+        const boxQty = Number(item.box_quantity) || 0
+
+        subtotal = Number((boxQty * sellingPrice).toFixed(2))
+      } else {
+        subtotal = Number((kg * sellingPrice).toFixed(2))
+      }
 
       // Final total = productAfterCommission + cratePrice
       const total = Number(productAfterCommission.toFixed(2))
 
+      // let profit
+
+      // if (isCommissioned) {
+      //   // For commissionable products: profit = commission amount
+      //   profit = commissionAmount
+      // } else {
+      //   // For non-commissionable products
+      //   profit = Math.max(0, (kg - discountKg) * sellingPrice - (kg - discountKg) * costPrice)
+      // }
+
       let profit
 
       if (isCommissioned) {
-        // For commissionable products: profit = commission amount
+        // For commissionable products
         profit = commissionAmount
       } else {
         // For non-commissionable products
-        profit = Math.max(0, (kg - discountKg) * sellingPrice - (kg - discountKg) * costPrice)
+        if (item.isBoxed) {
+          // For boxed products
+          const boxQty = Number(item.box_quantity) || 0
+
+          profit = Math.max(0, boxQty * sellingPrice - discountedAmount - boxQty * costPrice)
+        } else {
+          // For kg-based products
+          profit = Math.max(0, (kg - discountKg) * sellingPrice - (kg - discountKg) * costPrice)
+        }
       }
 
       return {

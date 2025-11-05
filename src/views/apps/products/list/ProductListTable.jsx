@@ -164,11 +164,22 @@ const ProductListTable = ({ productData, paginationData, loading, onPageChange, 
         cell: ({ row }) => <Typography>{row.original.categoryId?.categoryName || 'No Category'}</Typography>
       }),
       columnHelper.accessor('isCrated', {
-        header: 'Crated',
+        header: 'Crate',
         cell: ({ row }) => (
           <Chip
             label={row.original.isCrated ? 'Yes' : 'No'}
             color={row.original.isCrated ? 'success' : 'default'}
+            variant='tonal'
+            size='small'
+          />
+        )
+      }),
+      columnHelper.accessor('isBoxed', {
+        header: 'Box',
+        cell: ({ row }) => (
+          <Chip
+            label={row.original.isBoxed ? 'Yes' : 'No'}
+            color={row.original.isBoxed ? 'success' : 'default'}
             variant='tonal'
             size='small'
           />

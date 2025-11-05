@@ -141,6 +141,15 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
       }
     },
     {
+      accessorKey: 'box_quantity',
+      header: 'Total Boxes',
+      cell: ({ row }) => {
+        const boxQty = row.original.box_quantity || 0
+
+        return boxQty > 0 ? boxQty : '—'
+      }
+    },
+    {
       accessorKey: 'costs.unitCost',
       header: 'Unit Cost',
       cell: ({ getValue }) => {
@@ -154,6 +163,19 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
       header: 'Sold (kg)',
       cell: ({ getValue }) => getValue() || 0
     },
+    {
+      accessorKey: 'sold_boxes',
+      header: 'Sold (Boxes)',
+      cell: ({ row }) => {
+        const totalBoxes = row.original.box_quantity || 0
+        const remainingBoxes = row.original.remaining_boxes || 0
+        const soldBoxes = totalBoxes - remainingBoxes
+
+        // Only show if lot has boxes
+        return totalBoxes > 0 ? soldBoxes : '—'
+      }
+    },
+
     {
       accessorKey: 'sales.totalSoldPrice',
       header: 'Sold Amount',

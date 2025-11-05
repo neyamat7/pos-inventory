@@ -20,7 +20,7 @@ const LotPage = () => {
       try {
         const result = await getAllLots({ page: currentPage, limit: pageSize })
 
-        console.log('result', result)
+        // console.log('result', result)
 
         setData(result?.lots?.lots || [])
         setPaginationData({
