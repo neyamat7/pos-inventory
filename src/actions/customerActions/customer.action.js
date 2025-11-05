@@ -106,7 +106,7 @@ export async function getSalesByCustomer(customerId, page = 1, limit = 10, searc
 
     return {
       success: true,
-      data: response?.data
+      data: response
     }
   } catch (error) {
     console.error('Get customer sales error:', error)

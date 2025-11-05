@@ -13,11 +13,13 @@ import { customerPayments, customerReturns } from '@/fake-db/apps/customerReport
 import CustomerReturnTable from './tables/CustomerReturnTable'
 import CustomerPaymentTable from './tables/PaymentTable'
 import { getSalesByCustomer } from '@/actions/customerActions'
+import BalanceHistoryTable from './tables/BalanceHistoryTable'
+import { getBalanceHistory } from '@/actions/balanceActions'
 
 // -------------------------------------------------------------
 // MAIN COMPONENT
 // -------------------------------------------------------------
-const SalesReport = ({ customerId, initialSalesData }) => {
+const SalesReport = ({ customerId, initialSalesData, initialBalanceData }) => {
   const [activeTab, setActiveTab] = useState('sales')
   const [searchValue, setSearchValue] = useState('')
   const [fromDate, setFromDate] = useState(dayjs().subtract(1, 'month').format('YYYY-MM-DD'))
@@ -25,9 +27,8 @@ const SalesReport = ({ customerId, initialSalesData }) => {
 
   // State for sales data
   const [salesData, setSalesData] = useState(initialSalesData)
+  const [balanceData, setBalanceData] = useState(initialBalanceData)
   const [loading, setLoading] = useState(false)
-
-  // console.log('ss data', salesData)
 
   const [pagination, setPagination] = useState({
     page: 1,
@@ -37,6 +38,7 @@ const SalesReport = ({ customerId, initialSalesData }) => {
   const tabs = [
     { key: 'sales', label: 'Sales', icon: <ShoppingCart size={16} /> },
     { key: 'payments', label: 'Payments', icon: <CreditCard size={16} /> },
+    { key: 'balanceHistory', label: 'Balance History', icon: <CreditCard size={16} /> },
     { key: 'returns', label: 'Returns', icon: <RotateCcw size={16} /> }
   ]
 
@@ -68,16 +70,46 @@ const SalesReport = ({ customerId, initialSalesData }) => {
     }
   }
 
+  const fetchBalanceHistory = async (
+    page = pagination.page,
+    limit = pagination.limit,
+    from = fromDate,
+    to = toDate
+  ) => {
+    if (!customerId) return
+
+    setLoading(true)
+
+    try {
+      const result = await getBalanceHistory(customerId, page, limit, from, to)
+
+      if (result.success) {
+        setBalanceData(result)
+        setPagination(prev => ({ ...prev, page, limit }))
+      }
+    } catch (error) {
+      console.error('Error fetching balance history:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Fetch data when filters change
   useEffect(() => {
     if (activeTab === 'sales') {
       fetchSales(1, pagination.limit, searchValue, fromDate, toDate)
+    } else if (activeTab === 'balanceHistory') {
+      fetchBalanceHistory(1, pagination.limit, '', '')
     }
   }, [searchValue, fromDate, toDate, activeTab])
 
   // Handle pagination change
   const handlePaginationChange = (page, limit) => {
-    fetchSales(page, limit, searchValue, fromDate, toDate)
+    if (activeTab === 'sales') {
+      fetchSales(page, limit, searchValue, fromDate, toDate)
+    } else if (activeTab === 'balanceHistory') {
+      fetchBalanceHistory(page, limit, searchValue, fromDate, toDate)
+    }
   }
 
   const renderTabContent = () => {
@@ -85,15 +117,27 @@ const SalesReport = ({ customerId, initialSalesData }) => {
       case 'sales':
         return (
           <SalesTable
-            data={salesData?.data?.sales || []}
+            data={salesData?.data?.data?.sales || []}
             pagination={pagination}
-            total={salesData?.data?.total || 0}
+            total={salesData?.data?.data?.total || 0}
             onPaginationChange={handlePaginationChange}
             loading={loading}
           />
         )
       case 'payments':
         return <CustomerPaymentTable data={customerPayments} />
+
+      case 'balanceHistory':
+        return (
+          <BalanceHistoryTable
+            data={balanceData?.data?.balances}
+            pagination={pagination}
+            total={balanceData?.data?.total}
+            onPaginationChange={handlePaginationChange}
+            loading={loading}
+          />
+        )
+
       case 'returns':
         return <CustomerReturnTable data={customerReturns} />
       default:

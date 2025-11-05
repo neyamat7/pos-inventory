@@ -27,6 +27,7 @@ const stockColumns = [
     header: 'Purchase Date',
     cell: info => {
       const date = info.getValue()
+
       return date ? new Date(date).toLocaleDateString() : 'N/A'
     }
   }),
@@ -34,6 +35,7 @@ const stockColumns = [
     header: 'Status',
     cell: info => {
       const status = info.getValue()
+
       return status ? status.charAt(0).toUpperCase() + status.slice(1) : 'N/A'
     }
   }),
@@ -67,16 +69,28 @@ const stockColumns = [
   })
 ]
 
-const ProductTable = ({ data }) => {
-
-  console.log('lots data', data);
+const ProductTable = ({ data, pagination, total, onPaginationChange, loading }) => {
+  // console.log('lots data', data)
+  console.log('lots data', data, pagination, total)
 
   const table = useReactTable({
     data: data || [],
     columns: stockColumns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    initialState: { pagination: { pageSize: 10 } }
+    manualPagination: true,
+    pageCount: Math.ceil(total / pagination.limit),
+    state: {
+      pagination: {
+        pageIndex: pagination.page - 1,
+        pageSize: pagination.limit
+      }
+    },
+    onPaginationChange: updater => {
+      const newState = updater(table.getState().pagination)
+
+      onPaginationChange(newState.pageIndex + 1, newState.pageSize)
+    }
   })
 
   return (
@@ -112,10 +126,11 @@ const ProductTable = ({ data }) => {
 
       <TablePagination
         component={() => <TablePaginationComponent table={table} />}
-        count={table.getFilteredRowModel().rows.length}
-        rowsPerPage={table.getState().pagination.pageSize}
-        page={table.getState().pagination.pageIndex}
-        onPageChange={(_, page) => table.setPageIndex(page)}
+        count={total}
+        rowsPerPage={pagination.limit}
+        page={pagination.page - 1}
+        onPageChange={(_, page) => onPaginationChange(page + 1, pagination.limit)}
+        onRowsPerPageChange={event => onPaginationChange(1, parseInt(event.target.value, 10))}
       />
     </>
   )

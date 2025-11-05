@@ -18,13 +18,16 @@ import { lotInformation } from '@/fake-db/apps/lotInformation'
 import ReturnTable from './tables/ReturnTable'
 import { returnProductsHistory } from '@/fake-db/apps/returnHistory'
 import { getLotsBySupplier, getPurchaseBySupplier } from '@/actions/supplierAction'
+import { getBalanceHistory } from '@/actions/balanceActions'
+import BalanceHistoryTable from './tables/BalanceHistoryTable'
 
 // -------------------------------------------------------------
 // MAIN COMPONENT
 // -------------------------------------------------------------
-const PurchaseReport = ({ supplierId, initialLotsData, initialPurchaseData }) => {
+const PurchaseReport = ({ supplierId, initialLotsData, initialPurchaseData, initialBalanceData }) => {
   // console.log('lots', initialLotsData)
   // console.log('purchase', initialPurchaseData)
+  // console.log('dlkfhd', initialBalanceData)
 
   const [activeTab, setActiveTab] = useState('purchases')
   const [searchValue, setSearchValue] = useState('')
@@ -33,8 +36,10 @@ const PurchaseReport = ({ supplierId, initialLotsData, initialPurchaseData }) =>
 
   // State for lots data
   const [lotsData, setLotsData] = useState(initialLotsData)
-
   const [purchaseData, setPurchaseData] = useState(initialPurchaseData)
+  const [balanceData, setBalanceData] = useState(initialBalanceData)
+
+  // console.log('adfddfd', balanceData)
 
   const [loading, setLoading] = useState(false)
 
@@ -47,6 +52,7 @@ const PurchaseReport = ({ supplierId, initialLotsData, initialPurchaseData }) =>
     { key: 'purchases', label: 'Purchases', icon: <ShoppingCart size={16} /> },
     { key: 'stock', label: 'Stock Report', icon: <ClipboardList size={16} /> },
     { key: 'payments', label: 'Payments', icon: <CreditCard size={16} /> },
+    { key: 'balanceHistory', label: 'Balance History', icon: <CreditCard size={16} /> },
     { key: 'returns', label: 'Returns', icon: <RotateCcw size={16} /> }
   ]
 
@@ -102,12 +108,47 @@ const PurchaseReport = ({ supplierId, initialLotsData, initialPurchaseData }) =>
     }
   }
 
+  // Function to fetch balance history data
+  const fetchBalanceHistory = async (
+    page = pagination.page,
+    limit = pagination.limit,
+    from = fromDate,
+    to = toDate
+  ) => {
+    if (!supplierId) return
+
+    setLoading(true)
+
+    try {
+      const result = await getBalanceHistory(supplierId, page, limit, from, to)
+
+      console.log('resss', result)
+
+      if (result.success) {
+        setBalanceData(result)
+        setPagination(prev => ({ ...prev, page, limit }))
+      }
+    } catch (error) {
+      console.error('Error fetching balance history:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Fetch data when filters change
   useEffect(() => {
     if (activeTab === 'purchases') {
       fetchLots(1, pagination.limit, searchValue, fromDate, toDate)
+    } else if (activeTab === 'stock') {
+      fetchPurchases(1, pagination.limit, searchValue, fromDate, toDate)
     }
   }, [searchValue, fromDate, toDate, activeTab])
+
+  useEffect(() => {
+    if (activeTab === 'balanceHistory') {
+      fetchBalanceHistory(1, pagination.limit, fromDate, toDate)
+    }
+  }, [searchValue, fromDate, toDate])
 
   // Handle pagination change
   const handlePaginationChange = (page, limit) => {
@@ -115,6 +156,8 @@ const PurchaseReport = ({ supplierId, initialLotsData, initialPurchaseData }) =>
       fetchPurchases(page, limit, searchValue, fromDate, toDate)
     } else if (activeTab === 'stock') {
       fetchLots(page, limit, searchValue, fromDate, toDate)
+    } else if (activeTab === 'balanceHistory') {
+      fetchBalanceHistory(page, limit, searchValue, fromDate, toDate)
     }
   }
 
@@ -143,6 +186,16 @@ const PurchaseReport = ({ supplierId, initialLotsData, initialPurchaseData }) =>
 
       case 'payments':
         return <PaymentTable data={paymentHistoryData} />
+      case 'balanceHistory':
+        return (
+          <BalanceHistoryTable
+            data={balanceData?.data?.balances || []}
+            pagination={pagination}
+            total={balanceData?.data?.total || 0}
+            onPaginationChange={handlePaginationChange}
+            loading={loading}
+          />
+        )
       case 'returns':
         return <ReturnTable data={returnProductsHistory} />
       default:
