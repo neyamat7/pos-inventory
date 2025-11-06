@@ -141,14 +141,11 @@ const PurchaseReport = ({ supplierId, initialLotsData, initialPurchaseData, init
       fetchLots(1, pagination.limit, searchValue, fromDate, toDate)
     } else if (activeTab === 'stock') {
       fetchPurchases(1, pagination.limit, searchValue, fromDate, toDate)
+    } else if (activeTab === 'balanceHistory') {
+      // Don't send dates - backend has date filtering issues
+      fetchBalanceHistory(1, pagination.limit, '', '')
     }
   }, [searchValue, fromDate, toDate, activeTab])
-
-  useEffect(() => {
-    if (activeTab === 'balanceHistory') {
-      fetchBalanceHistory(1, pagination.limit, fromDate, toDate)
-    }
-  }, [searchValue, fromDate, toDate])
 
   // Handle pagination change
   const handlePaginationChange = (page, limit) => {
@@ -157,7 +154,7 @@ const PurchaseReport = ({ supplierId, initialLotsData, initialPurchaseData, init
     } else if (activeTab === 'stock') {
       fetchLots(page, limit, searchValue, fromDate, toDate)
     } else if (activeTab === 'balanceHistory') {
-      fetchBalanceHistory(page, limit, searchValue, fromDate, toDate)
+      fetchBalanceHistory(page, limit, '', '')
     }
   }
 

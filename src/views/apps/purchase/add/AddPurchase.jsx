@@ -437,7 +437,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
         acc[supplierKey] = {
           supplier: supplierKey,
           lots: []
-        }
+        }  
       }
 
       // Build the lot object
