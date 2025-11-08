@@ -21,6 +21,8 @@ import ShowProductList from '@/components/layout/shared/ShowProductList'
 import { handleSalesTotal } from '@/utils/handleSalesTotal'
 import { useGlobalTooltip } from '@/components/layout/shared/useGlobalTooltip'
 import { createSale } from '@/actions/saleActions'
+import InvoicePrintHandler from '../invoice/InvoicePrintHandler'
+import { showError, showSuccess } from '@/utils/toastUtils'
 
 export default function POSSystem({ productsData = [], customersData = [], categoriesData = [], lotsData = [] }) {
   const [searchTerm, setSearchTerm] = useState('')
@@ -31,6 +33,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   const [selectedCustomer, setSelectedCustomer] = useState({})
   const [cartProducts, setCartProducts] = useState([])
   const showTooltip = useGlobalTooltip()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [commissionModal, setCommissionModal] = useState({
     open: false,
@@ -46,6 +49,8 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     productName: '',
     selectedLot: null
   })
+
+  const [lastSaleData, setLastSaleData] = useState(null)
 
   // Create a dependency key based on input fields only
   const cartInputKey = useMemo(() => {
@@ -635,6 +640,8 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
   // submit payment
   const onSubmitPayment = async data => {
+    setIsSubmitting(true)
+
     // Validate
     const missingLot = cartProducts.find(p => !p.lot_selected?.lot_name)
 
@@ -654,14 +661,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       const sellingPrice = item.selling_price || 0
       const unitCost = item.lot_selected.unit_cost || 0
       const isBoxed = item.isBoxed || false
-
-      // Calculate total_price (selling price calculation)
-      // const totalPrice = Number((kg * sellingPrice).toFixed(2))
-
-      // const discountedPrice = Number(((kg - discountKg) * sellingPrice).toFixed(2))
-
-      // // Calculate discount_amount (on cost price)
-      // const discountAmount = Number((discountKg * unitCost).toFixed(2))
 
       let totalPrice = 0
       let discountedPrice = 0
@@ -689,13 +688,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
       // ========== LOT PROFIT CALCULATION ==========
       let lotProfit = 0
-
-      // if (item.isCommissionable) {
-      //   lotProfit = customerCommissionAmount
-      // } else {
-      //   lotProfit = Number(((kg - discountKg) * (sellingPrice - unitCost)).toFixed(2))
-      //   lotProfit = Math.max(0, lotProfit)
-      // }
 
       if (item.isCommissionable) {
         lotProfit = customerCommissionAmount
@@ -841,15 +833,23 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
         console.log('Sale response:', result.data)
 
+        setLastSaleData({
+          ...result.data,
+          printTrigger: Date.now()
+        })
+
         // Clear cart and customer
-        setCartProducts([])
-        setSelectedCustomer({})
+        // setCartProducts([])
+        // setSelectedCustomer({})
       } else {
         toast.error(result.error || 'Failed to create sale')
       }
     } catch (error) {
       console.error('Sale submission error:', error)
       toast.error('An error occurred while creating the sale')
+      setIsPrinting(false)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -1233,7 +1233,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                           : 'hover:bg-gray-100 cursor-pointer'
                       }`}
                     >
-                      Sell
+                      {isSubmitting ? 'Processing...' : 'Sell'}
                     </button>
                   </div>
                 </div>
@@ -1409,6 +1409,33 @@ export default function POSSystem({ productsData = [], customersData = [], categ
             </div>
           </div>
         </div>
+      )}
+
+      {/* Add Invoice Print Handler */}
+      {lastSaleData && (
+        <InvoicePrintHandler
+          saleData={lastSaleData}
+          customerData={selectedCustomer}
+          cartProducts={cartProducts}
+          triggerPrint={true}
+          onPrintComplete={() => {
+            console.log('Invoice print completed')
+
+            // Clear cart and reset after successful print
+            setCartProducts([])
+            setSelectedCustomer({})
+            setLastSaleData(null)
+            showSuccess('Sale completed and invoice printed!')
+          }}
+          onPrintError={error => {
+            console.error('Print failed:', error)
+            showError('Print failed, but sale was successful. You can print from sales history.')
+
+            setCartProducts([])
+            setSelectedCustomer({})
+            setLastSaleData(null)
+          }}
+        />
       )}
     </div>
   )

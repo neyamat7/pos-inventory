@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+
+import { useReactToPrint } from 'react-to-print'
 
 // MUI Imports
 import Card from '@mui/material/Card'
@@ -24,6 +26,8 @@ import TablePaginationComponent from '@components/TablePaginationComponent'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
+import SalesListInvoice from './SalesListInvoice'
+import { showError, showSuccess } from '@/utils/toastUtils'
 
 const SalesListTable = ({
   salesData,
@@ -37,6 +41,9 @@ const SalesListTable = ({
   const [rowSelection, setRowSelection] = useState({})
   const [openModal, setOpenModal] = useState(false)
   const [selectedSale, setSelectedSale] = useState(null)
+
+  const [printSale, setPrintSale] = useState(null)
+  const componentRef = useRef(null)
 
   const handleSearch = value => {
     if (onSearch) {
@@ -52,6 +59,54 @@ const SalesListTable = ({
   const handleCloseModal = () => {
     setOpenModal(false)
     setSelectedSale(null)
+  }
+
+  const handlePrint = useReactToPrint({
+    contentRef: componentRef,
+    documentTitle: `Invoice_${printSale?._id || 'Sale'}_${new Date().toISOString().split('T')[0]}`,
+    onBeforePrint: () => {
+      console.log('Preparing invoice for printing...')
+
+      return Promise.resolve()
+    },
+    onAfterPrint: () => {
+      console.log('Print completed')
+      showSuccess('Invoice printed successfully!')
+      setPrintSale(null)
+    },
+    onPrintError: (errorLocation, error) => {
+      console.error('Print error:', errorLocation, error)
+      showError('Failed to print invoice')
+      setPrintSale(null)
+    },
+    pageStyle: `
+      @page {
+        size: A4 portrait;
+        margin: 0.3in;
+      }
+      @media print {
+        body {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        .no-print {
+          display: none !important;
+        }
+      }
+    `
+  })
+
+  // Handle print button click
+  const handlePrintInvoice = sale => {
+    console.log('Print invoice for sale:', sale._id)
+    setPrintSale(sale)
+
+    // Trigger print after state update
+    setTimeout(() => {
+      if (componentRef.current) {
+        handlePrint()
+      }
+    }, 100)
   }
 
   const columns = [
@@ -146,6 +201,11 @@ const SalesListTable = ({
           <IconButton onClick={() => handleViewDetails(row.original)} color='primary'>
             <i className='tabler-eye text-textPrimary' />
           </IconButton>
+
+          <IconButton onClick={() => handlePrintInvoice(row.original)} color='success' title='Print Invoice'>
+            <i className='tabler-printer text-textPrimary' />
+          </IconButton>
+
           <IconButton
             onClick={() => {
               Swal.fire({
@@ -567,6 +627,14 @@ const SalesListTable = ({
           )}
         </DialogContent>
       </Dialog>
+
+      {printSale && (
+        <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
+          <div ref={componentRef}>
+            <SalesListInvoice saleData={printSale} />
+          </div>
+        </div>
+      )}
     </>
   )
 }
