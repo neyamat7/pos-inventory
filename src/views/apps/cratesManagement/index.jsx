@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 
 // MUI Imports
 import Card from '@mui/material/Card'
@@ -25,10 +25,14 @@ import TablePaginationComponent from '@components/TablePaginationComponent'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
+import { addCrates, addCratesForSupplier, updateCrates } from '@/actions/crateActions'
+import { showError, showSuccess } from '@/utils/toastUtils'
 
 const CrateManagementTable = ({
   supplierData,
   transactionsData,
+  transactionsPaginationData,
+  transactionsLoading,
   paginationData,
   loading,
   onPageChange,
@@ -37,17 +41,19 @@ const CrateManagementTable = ({
   searchTerm,
   totalCratesBought,
   remainingCrates,
-  totalDebt
+  totalDebt,
+  activeTab,
+  setActiveTab
 }) => {
-  console.log('supplier data', supplierData)
-
-  const [activeTab, setActiveTab] = useState('suppliers')
   const [rowSelection, setRowSelection] = useState({})
   const [showAddCrateModal, setShowAddCrateModal] = useState(false)
   const [showAddTotalModal, setShowAddTotalModal] = useState(false)
   const [selectedSupplier, setSelectedSupplier] = useState(null)
 
   const [showUpdateModal, setShowUpdateModal] = useState(false)
+  const [addTotalCrateLoading, setAddTotalCrateLoading] = useState(false)
+  const [addSupplierCrateLoading, setAddSupplierCrateLoading] = useState(false)
+  const [updateLoading, setUpdateLoading] = useState(false)
 
   const [updateForm, setUpdateForm] = useState({
     type1Quantity: '',
@@ -63,7 +69,10 @@ const CrateManagementTable = ({
   const [modalForm, setModalForm] = useState({
     type1Quantity: '',
     type2Quantity: '',
-    notes: ''
+    type1Price: '',
+    type2Price: '',
+    notes: '',
+    date: ''
   })
 
   const handleSearch = value => {
@@ -108,26 +117,119 @@ const CrateManagementTable = ({
     }
   }, [selectedSupplier, modalForm.type1Quantity, modalForm.type2Quantity])
 
-  const handleAddCrate = () => {
+  const handleSendCratesToSupplier = async () => {
     if (!selectedSupplier || !calculation?.hasInput) return
 
-    // Parent component will handle this via callback
-    console.log('Add crate to supplier:', selectedSupplier._id, modalForm)
-    setModalForm({ type1Quantity: '', type2Quantity: '', notes: '' })
-    setShowAddCrateModal(false)
-    setSelectedSupplier(null)
+    setAddSupplierCrateLoading(true)
+
+    try {
+      const crateInfo = {
+        crate1: parseInt(modalForm.type1Quantity) || 0,
+        crate2: parseInt(modalForm.type2Quantity) || 0,
+        crate1Price: parseInt(modalForm.type1Price) || selectedSupplier.crate_info.crate1Price,
+        crate2Price: parseInt(modalForm.type2Price) || selectedSupplier.crate_info.crate2Price
+      }
+
+      const result = await addCratesForSupplier(selectedSupplier._id, crateInfo)
+
+      if (result.success) {
+        console.log('Crates sent to supplier successfully')
+        showSuccess('Crates sent to supplier successfully!')
+      } else {
+        console.error('Failed to send crates to supplier')
+        showError('Failed to send crates to supplier!')
+      }
+    } catch (error) {
+      console.error('Error sending crates to supplier:', error)
+    } finally {
+      setAddSupplierCrateLoading(false)
+      setModalForm({
+        type1Quantity: '',
+        type2Quantity: '',
+        type1Price: '',
+        type2Price: '',
+        notes: '',
+        date: ''
+      })
+      setShowAddCrateModal(false)
+      setSelectedSupplier(null)
+    }
   }
 
-  const handleAddTotalCrates = () => {
+  const handleAddTotalCrates = async () => {
     const type1Qty = parseInt(modalForm.type1Quantity) || 0
     const type2Qty = parseInt(modalForm.type2Quantity) || 0
 
     if (type1Qty === 0 && type2Qty === 0) return
+    setAddTotalCrateLoading(true)
 
-    // Parent component will handle this via callback
-    console.log('Add to total crates:', modalForm)
-    setModalForm({ type1Quantity: '', type2Quantity: '', notes: '' })
-    setShowAddTotalModal(false)
+    try {
+      const crateData = {
+        date: modalForm.date || new Date().toISOString(),
+        crate_type_1_qty: type1Qty,
+        crate_type_2_qty: type2Qty,
+        note: modalForm.notes || ''
+      }
+
+      const result = await addCrates(crateData)
+
+      if (result.success) {
+        console.log('Total crates added successfully:', result.data)
+        showSuccess('Total crates added successfully!')
+      } else {
+        console.error('Failed to add total crates:', result.error)
+        showError('Failed to add total crates!')
+      }
+    } catch (error) {
+      console.error('Error adding total crates:', error)
+    } finally {
+      setAddTotalCrateLoading(false)
+      setModalForm({ type1Quantity: '', type2Quantity: '', notes: '', date: '' })
+      setShowAddTotalModal(false)
+    }
+  }
+
+  const handleUpdateCrates = async () => {
+    setUpdateLoading(true)
+
+    try {
+      // Prepare query - supplierId is optional
+      const query = selectedSupplier ? { supplierId: selectedSupplier._id } : {}
+
+      // Prepare crate info from updateForm
+      const crateInfo = {
+        crate1: parseInt(updateForm.type1Quantity) || 0,
+        crate2: parseInt(updateForm.type2Quantity) || 0,
+        crate1Price: parseInt(updateForm.type1Price) || 0,
+        crate2Price: parseInt(updateForm.type2Price) || 0
+      }
+
+      const result = await updateCrates(query, crateInfo)
+
+      if (result.success) {
+        console.log('Update successful:', result.data)
+        showSuccess(result.message || 'Update successful!')
+      } else {
+        console.error('Failed to update:', result.error)
+        showError(result.error || 'Failed to update!')
+      }
+    } catch (error) {
+      console.error('Error updating:', error)
+      showError('Error updating!')
+    } finally {
+      setUpdateLoading(false)
+      setShowUpdateModal(false)
+      setSelectedSupplier(null)
+      setUpdateForm({
+        type1Quantity: '',
+        type2Quantity: '',
+        type1Price: '',
+        type2Price: '',
+        type1Debt: '',
+        type2Debt: '',
+        notes: ''
+      })
+    }
   }
 
   // Supplier table columns
@@ -264,40 +366,94 @@ const CrateManagementTable = ({
         )
       },
       {
-        accessorKey: 'supplierName',
+        accessorKey: 'supplierId.supplier_name',
         header: 'Supplier',
-        cell: info => <div className='font-medium'>{info.getValue()}</div>
+        cell: info => <div className='font-medium'>{info.getValue() || '-'}</div>
       },
       {
-        accessorKey: 'crateType',
-        header: 'Crate Type',
+        accessorKey: 'crate_type_1_qty',
+        header: 'Type 1 Qty',
+        cell: info => <div className='text-center font-semibold'>{info.getValue() || 0}</div>
+      },
+      {
+        accessorKey: 'crate_type_2_qty',
+        header: 'Type 2 Qty',
+        cell: info => <div className='text-center font-semibold'>{info.getValue() || 0}</div>
+      },
+      {
+        accessorKey: 'crate_type_1_price',
+        header: 'Type 1 Price',
+        cell: info => <div className='text-center'>৳{info.getValue() || 0}</div>
+      },
+      {
+        accessorKey: 'crate_type_2_price',
+        header: 'Type 2 Price',
+        cell: info => <div className='text-center'>৳{info.getValue() || 0}</div>
+      },
+      {
+        accessorKey: 'status',
+        header: 'Status',
         cell: info => (
           <Chip
             label={info.getValue()}
-            color={info.getValue() === 'Type 1' ? 'primary' : 'secondary'}
+            color={info.getValue() === 'IN' ? 'success' : 'primary'}
             variant='tonal'
             size='small'
           />
         )
       },
       {
-        accessorKey: 'quantityAdded',
-        header: 'Quantity',
-        cell: info => <div className='text-center font-semibold'>{info.getValue()}</div>
-      },
-      {
-        accessorKey: 'debtCleared',
-        header: 'Debt Cleared',
-        cell: info => (
-          <div className='text-center'>
-            <span className='text-red-600 font-medium'>{info.getValue()}</span>
-          </div>
-        )
-      },
-      {
-        accessorKey: 'notes',
+        accessorKey: 'note',
         header: 'Notes',
         cell: info => <div className='text-sm text-gray-600 max-w-xs truncate'>{info.getValue() || '-'}</div>
+      },
+      {
+        id: 'action',
+        header: 'Action',
+        cell: info => (
+          <Button
+            variant='outlined'
+            onClick={() => {
+              // Pass supplierId if available, otherwise null
+              setSelectedSupplier(
+                info.row.original.supplierId
+                  ? {
+                      _id: info.row.original.supplierId._id,
+                      basic_info: { name: info.row.original.supplierId.supplier_name }
+                    }
+                  : null
+              )
+              setShowUpdateModal(true)
+              setUpdateForm({
+                type1Quantity: info.row.original.crate_type_1_qty?.toString() || '',
+                type2Quantity: info.row.original.crate_type_2_qty?.toString() || '',
+                type1Price: info.row.original.crate_type_1_price?.toString() || '',
+                type2Price: info.row.original.crate_type_2_price?.toString() || '',
+                type1Debt: '',
+                type2Debt: '',
+                notes: info.row.original.note || ''
+              })
+            }}
+            sx={{
+              borderColor: '#666',
+              color: '#666',
+              '&:hover': {
+                borderColor: '#333',
+                backgroundColor: 'rgba(102, 102, 102, 0.04)'
+              },
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              padding: '6px 12px',
+              minWidth: 'auto',
+              textTransform: 'none',
+              borderRadius: '6px'
+            }}
+            startIcon={<i className='tabler-edit' style={{ fontSize: '16px' }} />}
+          >
+            Update
+          </Button>
+        ),
+        enableSorting: false
       }
     ],
     []
@@ -306,12 +462,16 @@ const CrateManagementTable = ({
   const table = useReactTable({
     data: activeTab === 'suppliers' ? supplierData || [] : transactionsData || [],
     columns: activeTab === 'suppliers' ? supplierColumns : transactionColumns,
-    pageCount: paginationData?.totalPages || 0,
+    pageCount:
+      activeTab === 'suppliers' ? paginationData?.totalPages || 0 : transactionsPaginationData?.totalPages || 0,
     state: {
       rowSelection,
       pagination: {
-        pageIndex: (paginationData?.currentPage || 1) - 1,
-        pageSize: paginationData?.limit || 10
+        pageIndex:
+          activeTab === 'suppliers'
+            ? (paginationData?.currentPage || 1) - 1
+            : (transactionsPaginationData?.currentPage || 1) - 1,
+        pageSize: activeTab === 'suppliers' ? paginationData?.limit || 10 : transactionsPaginationData?.limit || 10
       }
     },
     enableRowSelection: true,
@@ -321,6 +481,32 @@ const CrateManagementTable = ({
     manualFiltering: true,
     manualSorting: true
   })
+
+  useEffect(() => {
+    // console.log('📊 Table pageIndex update:', {
+    //   activeTab,
+    //   supplierPagination: paginationData,
+    //   transactionPagination: transactionsPaginationData
+    // })
+
+    if (activeTab === 'suppliers' && paginationData) {
+      // console.log('📊 Setting supplier table page to:', paginationData.currentPage - 1)
+      table.setPageIndex(paginationData.currentPage - 1)
+    } else if (activeTab === 'history' && transactionsPaginationData) {
+      // console.log('📊 Setting transaction table page to:', transactionsPaginationData.currentPage - 1)
+      table.setPageIndex(transactionsPaginationData.currentPage - 1)
+    }
+  }, [paginationData, transactionsPaginationData, activeTab, table])
+
+  const handlePageChangeWrapper = newPage => {
+    console.log('Page change requested:', {
+      activeTab,
+      newPage,
+      supplierCurrentPage: paginationData?.currentPage,
+      transactionCurrentPage: transactionsPaginationData?.currentPage
+    })
+    onPageChange(newPage)
+  }
 
   return (
     <>
@@ -477,7 +663,7 @@ const CrateManagementTable = ({
           <div className='flex items-center max-sm:flex-col gap-4 max-sm:is-full is-auto'>
             <CustomTextField
               select
-              value={paginationData?.limit || 10}
+              value={activeTab === 'suppliers' ? paginationData?.limit || 10 : transactionsPaginationData?.limit || 10}
               onChange={e => onPageSizeChange(Number(e.target.value))}
               className='is-[70px] max-sm:is-full'
             >
@@ -506,7 +692,7 @@ const CrateManagementTable = ({
             </thead>
 
             <tbody>
-              {loading ? (
+              {(activeTab === 'suppliers' ? loading : transactionsLoading) ? (
                 <tr>
                   <td
                     colSpan={activeTab === 'suppliers' ? supplierColumns.length : transactionColumns.length}
@@ -541,7 +727,11 @@ const CrateManagementTable = ({
           </table>
         </div>
 
-        <TablePaginationComponent table={table} paginationData={paginationData} onPageChange={onPageChange} />
+        <TablePaginationComponent
+          table={table}
+          paginationData={activeTab === 'suppliers' ? paginationData : transactionsPaginationData}
+          onPageChange={handlePageChangeWrapper}
+        />
       </Card>
 
       {/* Add Crate to Supplier Modal */}
@@ -619,6 +809,19 @@ const CrateManagementTable = ({
 
                 <Box>
                   <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
+                    Type 1 Price (৳)
+                  </Typography>
+                  <CustomTextField
+                    fullWidth
+                    type='number'
+                    value={modalForm.type1Price || selectedSupplier.crate_info.crate1Price}
+                    onChange={e => setModalForm({ ...modalForm, type1Price: e.target.value })}
+                    placeholder='Enter Type 1 price'
+                  />
+                </Box>
+
+                <Box>
+                  <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
                     Type 2 Crates (৳{selectedSupplier.crate_info.crate2Price})
                   </Typography>
                   <CustomTextField
@@ -633,6 +836,19 @@ const CrateManagementTable = ({
                       {calculation.type2.message}
                     </Typography>
                   )}
+                </Box>
+
+                <Box>
+                  <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
+                    Type 2 Price (৳)
+                  </Typography>
+                  <CustomTextField
+                    fullWidth
+                    type='number'
+                    value={modalForm.type2Price || selectedSupplier.crate_info.crate2Price}
+                    onChange={e => setModalForm({ ...modalForm, type2Price: e.target.value })}
+                    placeholder='Enter Type 2 price'
+                  />
                 </Box>
 
                 {calculation?.hasInput && (
@@ -708,8 +924,14 @@ const CrateManagementTable = ({
           >
             Cancel
           </Button>
-          <Button variant='contained' color='primary' onClick={handleAddCrate} disabled={!calculation?.hasInput}>
-            Confirm
+          <Button
+            variant='contained'
+            color='primary'
+            onClick={handleSendCratesToSupplier}
+            disabled={!calculation?.hasInput || addSupplierCrateLoading}
+            startIcon={addSupplierCrateLoading ? <CircularProgress size={16} /> : null}
+          >
+            {addSupplierCrateLoading ? 'Adding...' : 'Add Crates'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -747,6 +969,18 @@ const CrateManagementTable = ({
 
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box>
+              <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
+                Date
+              </Typography>
+              <CustomTextField
+                fullWidth
+                type='date'
+                value={modalForm.date || new Date().toISOString().split('T')[0]}
+                onChange={e => setModalForm({ ...modalForm, date: e.target.value })}
+              />
+            </Box>
+
             <Box>
               <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
                 Type 1 Crates
@@ -842,9 +1076,13 @@ const CrateManagementTable = ({
             variant='contained'
             color='primary'
             onClick={handleAddTotalCrates}
-            disabled={(parseInt(modalForm.type1Quantity) || 0) === 0 && (parseInt(modalForm.type2Quantity) || 0) === 0}
+            disabled={
+              ((parseInt(modalForm.type1Quantity) || 0) === 0 && (parseInt(modalForm.type2Quantity) || 0) === 0) ||
+              addTotalCrateLoading
+            }
+            startIcon={addTotalCrateLoading ? <CircularProgress size={16} /> : null}
           >
-            Add Crates
+            {addTotalCrateLoading ? 'Adding...' : 'Add Crates'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -872,7 +1110,7 @@ const CrateManagementTable = ({
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Box>
               <Typography variant='h5' sx={{ fontWeight: 700 }}>
-                Update Supplier Information
+                {selectedSupplier ? 'Update Supplier Information' : 'Update Crate Totals'}
               </Typography>
               <Typography variant='body2' color='text.secondary'>
                 {selectedSupplier?.basic_info?.name}
@@ -902,45 +1140,47 @@ const CrateManagementTable = ({
           {selectedSupplier && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               {/* Current Values Summary */}
-              <Box sx={{ bgcolor: 'action.hover', p: 2, borderRadius: 2 }}>
-                <Typography variant='body2' sx={{ fontWeight: 600, mb: 1 }}>
-                  Current Values
-                </Typography>
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                  <Box>
-                    <Typography variant='caption' color='text.secondary'>
-                      Type 1 Crates:
-                    </Typography>
-                    <Typography variant='body2' sx={{ fontWeight: 600 }}>
-                      {selectedSupplier.crate_info.crate1}
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant='caption' color='text.secondary'>
-                      Type 2 Crates:
-                    </Typography>
-                    <Typography variant='body2' sx={{ fontWeight: 600 }}>
-                      {selectedSupplier.crate_info.crate2}
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant='caption' color='text.secondary'>
-                      Type 1 Price:
-                    </Typography>
-                    <Typography variant='body2' sx={{ fontWeight: 600 }}>
-                      ৳{selectedSupplier.crate_info.crate1Price}
-                    </Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant='caption' color='text.secondary'>
-                      Type 2 Price:
-                    </Typography>
-                    <Typography variant='body2' sx={{ fontWeight: 600 }}>
-                      ৳{selectedSupplier.crate_info.crate2Price}
-                    </Typography>
+              {selectedSupplier && (
+                <Box sx={{ bgcolor: 'action.hover', p: 2, borderRadius: 2 }}>
+                  <Typography variant='body2' sx={{ fontWeight: 600, mb: 1 }}>
+                    Current Values
+                  </Typography>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                    <Box>
+                      <Typography variant='caption' color='text.secondary'>
+                        Type 1 Crates:
+                      </Typography>
+                      <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                        {selectedSupplier.crate_info.crate1}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant='caption' color='text.secondary'>
+                        Type 2 Crates:
+                      </Typography>
+                      <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                        {selectedSupplier.crate_info.crate2}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant='caption' color='text.secondary'>
+                        Type 1 Price:
+                      </Typography>
+                      <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                        ৳{selectedSupplier.crate_info.crate1Price}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant='caption' color='text.secondary'>
+                        Type 2 Price:
+                      </Typography>
+                      <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                        ৳{selectedSupplier.crate_info.crate2Price}
+                      </Typography>
+                    </Box>
                   </Box>
                 </Box>
-              </Box>
+              )}
 
               {/* Update Form */}
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
@@ -1063,23 +1303,11 @@ const CrateManagementTable = ({
           <Button
             variant='contained'
             color='primary'
-            onClick={() => {
-              // Handle update logic here
-              console.log('Update supplier:', selectedSupplier._id, updateForm)
-              setShowUpdateModal(false)
-              setSelectedSupplier(null)
-              setUpdateForm({
-                type1Quantity: '',
-                type2Quantity: '',
-                type1Price: '',
-                type2Price: '',
-                type1Debt: '',
-                type2Debt: '',
-                notes: ''
-              })
-            }}
+            onClick={handleUpdateCrates}
+            disabled={updateLoading}
+            startIcon={updateLoading ? <CircularProgress size={16} /> : null}
           >
-            Update Information
+            {updateLoading ? 'Updating...' : 'Update Information'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -26,8 +26,6 @@ export async function getSuppliers(page = 1, limit = 10) {
   try {
     const response = await api.get(`/suppliers/all?page=${page}&limit=${limit}`)
 
-    // console.log('response', response.suppliers)
-
     return {
       success: true,
       data: response
