@@ -3,6 +3,8 @@
 import { useState, useMemo, useEffect } from 'react'
 
 // MUI Imports
+import { useRouter } from 'next/navigation'
+
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import MenuItem from '@mui/material/MenuItem'
@@ -43,7 +45,9 @@ const CrateManagementTable = ({
   remainingCrates,
   totalDebt,
   activeTab,
-  setActiveTab
+  setActiveTab,
+  totalCrates,
+  totalCrateLoading
 }) => {
   const [rowSelection, setRowSelection] = useState({})
   const [showAddCrateModal, setShowAddCrateModal] = useState(false)
@@ -54,6 +58,7 @@ const CrateManagementTable = ({
   const [addTotalCrateLoading, setAddTotalCrateLoading] = useState(false)
   const [addSupplierCrateLoading, setAddSupplierCrateLoading] = useState(false)
   const [updateLoading, setUpdateLoading] = useState(false)
+  const router = useRouter()
 
   const [updateForm, setUpdateForm] = useState({
     type1Quantity: '',
@@ -70,7 +75,8 @@ const CrateManagementTable = ({
     type1Price: '',
     type2Price: '',
     notes: '',
-    date: ''
+    date: '',
+    stockType: 'new'
   })
 
   const handleSearch = value => {
@@ -166,7 +172,8 @@ const CrateManagementTable = ({
         date: modalForm.date || new Date().toISOString(),
         crate_type_1_qty: type1Qty,
         crate_type_2_qty: type2Qty,
-        note: modalForm.notes || ''
+        note: modalForm.notes || '',
+        stockType: modalForm.stockType
       }
 
       const result = await addCrates(crateData)
@@ -191,15 +198,15 @@ const CrateManagementTable = ({
     setUpdateLoading(true)
 
     try {
-      // Prepare query - supplierId is optional
       let query = {}
 
-      if (selectedSupplier) {
-        if (selectedSupplier._id) {
-          query = { supplierId: selectedSupplier._id }
-        } else if (selectedSupplier.transactionId) {
-          query = { inventoryCratesId: selectedSupplier.transactionId }
-        }
+      // Check if it's a supplier update or transaction update
+      if (selectedSupplier?.isSupplier) {
+        // Updating from supplier list
+        query = { supplierId: selectedSupplier._id }
+      } else if (selectedSupplier?.isTransaction) {
+        // Updating from transaction history
+        query = { inventoryCratesId: selectedSupplier.transactionId }
       }
 
       // Prepare crate info from updateForm
@@ -213,6 +220,7 @@ const CrateManagementTable = ({
       const result = await updateCrates(query, crateInfo)
 
       if (result.success) {
+        router.refresh()
         console.log('Update successful:', result.data)
         showSuccess(result.message || 'Update successful!')
       } else {
@@ -311,6 +319,42 @@ const CrateManagementTable = ({
             >
               Add
             </Button>
+
+            <Button
+              variant='outlined'
+              onClick={() => {
+                setSelectedSupplier({
+                  _id: info.row.original._id,
+                  isSupplier: true,
+                  supplierData: info.row.original
+                })
+                setShowUpdateModal(true)
+                setUpdateForm({
+                  type1Quantity: info.row.original.crate_info.crate1?.toString() || '',
+                  type2Quantity: info.row.original.crate_info.crate2?.toString() || '',
+                  type1Price: info.row.original.crate_info.crate1Price?.toString() || '',
+                  type2Price: info.row.original.crate_info.crate2Price?.toString() || '',
+                  notes: ''
+                })
+              }}
+              sx={{
+                borderColor: '#666',
+                color: '#666',
+                '&:hover': {
+                  borderColor: '#333',
+                  backgroundColor: 'rgba(102, 102, 102, 0.04)'
+                },
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                padding: '6px 12px',
+                minWidth: 'auto',
+                textTransform: 'none',
+                borderRadius: '6px'
+              }}
+              startIcon={<i className='tabler-edit' style={{ fontSize: '16px' }} />}
+            >
+              Update
+            </Button>
           </div>
         ),
         enableSorting: false
@@ -334,16 +378,19 @@ const CrateManagementTable = ({
           </div>
         )
       },
+
       {
-        accessorKey: 'supplierId.supplier_name',
+        accessorKey: 'supplierId.basic_info.name',
         header: 'Supplier',
         cell: info => <div className='font-medium'>{info.getValue() || '-'}</div>
       },
+
       {
         accessorKey: 'crate_type_1_qty',
         header: 'Type 1 Qty',
         cell: info => <div className='text-center font-semibold'>{info.getValue() || 0}</div>
       },
+
       {
         accessorKey: 'crate_type_2_qty',
         header: 'Type 2 Qty',
@@ -353,65 +400,75 @@ const CrateManagementTable = ({
       {
         accessorKey: 'status',
         header: 'Status',
-        cell: info => (
-          <Chip
-            label={info.getValue()}
-            color={info.getValue() === 'IN' ? 'success' : 'primary'}
-            variant='tonal'
-            size='small'
-          />
-        )
+        cell: info => {
+          const isReStock = info.row.original.stockType === 're-stock'
+          const statusValue = isReStock ? 'Re Stock' : info.getValue()
+
+          return (
+            <Chip
+              label={statusValue}
+              color={statusValue === 'IN' ? 'success' : statusValue === 'Re Stock' ? 'warning' : 'primary'}
+              variant='tonal'
+              size='small'
+            />
+          )
+        }
       },
+
       {
         accessorKey: 'note',
         header: 'Notes',
         cell: info => <div className='text-sm text-gray-600 max-w-xs truncate'>{info.getValue() || '-'}</div>
       },
+
       {
         id: 'action',
         header: 'Action',
-        cell: info => (
-          <Button
-            variant='outlined'
-            onClick={() => {
-              // Pass supplierId if available, otherwise null
-              setSelectedSupplier(
-                info.row.original.supplierId
-                  ? {
-                      _id: info.row.original.supplierId._id,
-                      transactionId: info.row.original._id
-                    }
-                  : {
-                      _id: null,
-                      transactionId: info.row.original._id
-                    }
-              )
-              setShowUpdateModal(true)
-              setUpdateForm({
-                type1Quantity: info.row.original.crate_type_1_qty?.toString() || '',
-                type2Quantity: info.row.original.crate_type_2_qty?.toString() || '',
-                notes: info.row.original.note || ''
-              })
-            }}
-            sx={{
-              borderColor: '#666',
-              color: '#666',
-              '&:hover': {
-                borderColor: '#333',
-                backgroundColor: 'rgba(102, 102, 102, 0.04)'
-              },
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              padding: '6px 12px',
-              minWidth: 'auto',
-              textTransform: 'none',
-              borderRadius: '6px'
-            }}
-            startIcon={<i className='tabler-edit' style={{ fontSize: '16px' }} />}
-          >
-            Update
-          </Button>
-        ),
+        cell: info => {
+          const isReStock = info.row.original.stockType === 're-stock'
+          const isOut = info.row.original.status === 'OUT'
+
+          return (
+            <>
+              {!isOut && !isReStock && (
+                <Button
+                  variant='outlined'
+                  onClick={() => {
+                    setSelectedSupplier({
+                      transactionId: info.row.original._id,
+                      isTransaction: true
+                    })
+                    setShowUpdateModal(true)
+                    setUpdateForm({
+                      type1Quantity: info.row.original.crate_type_1_qty?.toString() || '',
+                      type2Quantity: info.row.original.crate_type_2_qty?.toString() || '',
+                      type1Price: '',
+                      type2Price: '',
+                      notes: info.row.original.note || ''
+                    })
+                  }}
+                  sx={{
+                    borderColor: '#666',
+                    color: '#666',
+                    '&:hover': {
+                      borderColor: '#333',
+                      backgroundColor: 'rgba(102, 102, 102, 0.04)'
+                    },
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    padding: '6px 12px',
+                    minWidth: 'auto',
+                    textTransform: 'none',
+                    borderRadius: '6px'
+                  }}
+                  startIcon={<i className='tabler-edit' style={{ fontSize: '16px' }} />}
+                >
+                  Update
+                </Button>
+              )}
+            </>
+          )
+        },
         enableSorting: false
       }
     ],
@@ -491,10 +548,29 @@ const CrateManagementTable = ({
               </Box>
             </Box>
             <Typography variant='body2' color='text.secondary' sx={{ mb: 0.5 }}>
-              Total Bought (Year)
+              Total Bought Type 1
             </Typography>
             <Typography variant='h4' sx={{ fontWeight: 700, color: 'success.main' }}>
-              {totalCratesBought || 0}
+              {totalCrates?.type_1_total || 0}
+            </Typography>
+            <Typography variant='caption' color='text.secondary'>
+              Total purchased this year
+            </Typography>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <Box sx={{ p: 1.5, borderRadius: 2 }}>
+                <i className='tabler-package' style={{ fontSize: '2rem', color: '#4caf50' }} />
+              </Box>
+            </Box>
+            <Typography variant='body2' color='text.secondary' sx={{ mb: 0.5 }}>
+              Total Bought Type 2
+            </Typography>
+            <Typography variant='h4' sx={{ fontWeight: 700, color: 'success.main' }}>
+              {totalCrates?.type_2_total || 0}
             </Typography>
             <Typography variant='caption' color='text.secondary'>
               Total purchased this year
@@ -514,7 +590,7 @@ const CrateManagementTable = ({
               Remaining Type 1
             </Typography>
             <Typography variant='h4' sx={{ fontWeight: 700, color: 'primary.main' }}>
-              {remainingCrates?.type1 || 0}
+              {totalCrates?.remaining_type_1 || 0}
             </Typography>
             <Typography variant='caption' color='text.secondary'>
               Available in stock
@@ -534,30 +610,10 @@ const CrateManagementTable = ({
               Remaining Type 2
             </Typography>
             <Typography variant='h4' sx={{ fontWeight: 700, color: 'secondary.main' }}>
-              {remainingCrates?.type2 || 0}
+              {totalCrates?.remaining_type_2 || 0}
             </Typography>
             <Typography variant='caption' color='text.secondary'>
               Available in stock
-            </Typography>
-          </CardContent>
-        </Card>
-
-        {/* Total Debt */}
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-              <Box sx={{ p: 1.5, bgcolor: '', borderRadius: 2 }}>
-                <i className='tabler-alert-circle' style={{ fontSize: '2rem', color: '#f44336' }} />
-              </Box>
-            </Box>
-            <Typography variant='body2' color='text.secondary' sx={{ mb: 0.5 }}>
-              Total Debt
-            </Typography>
-            <Typography variant='h4' sx={{ fontWeight: 700, color: 'error.main' }}>
-              {totalDebt || 0}
-            </Typography>
-            <Typography variant='caption' color='text.secondary'>
-              Crates owed to suppliers
             </Typography>
           </CardContent>
         </Card>
@@ -892,7 +948,7 @@ const CrateManagementTable = ({
         open={showAddTotalModal}
         onClose={() => {
           setShowAddTotalModal(false)
-          setModalForm({ type1Quantity: '', type2Quantity: '', notes: '' })
+          setModalForm({ type1Quantity: '', type2Quantity: '', notes: '', stockType: 'new' })
         }}
         maxWidth='sm'
         fullWidth
@@ -930,6 +986,21 @@ const CrateManagementTable = ({
                 value={modalForm.date || new Date().toISOString().split('T')[0]}
                 onChange={e => setModalForm({ ...modalForm, date: e.target.value })}
               />
+            </Box>
+
+            <Box>
+              <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
+                Stock Type
+              </Typography>
+              <CustomTextField
+                select
+                fullWidth
+                value={modalForm.stockType}
+                onChange={e => setModalForm({ ...modalForm, stockType: e.target.value })}
+              >
+                <MenuItem value='new'>New</MenuItem>
+                <MenuItem value='re-stock'>Re-Stock</MenuItem>
+              </CustomTextField>
             </Box>
 
             <Box>
@@ -1018,7 +1089,7 @@ const CrateManagementTable = ({
             color='secondary'
             onClick={() => {
               setShowAddTotalModal(false)
-              setModalForm({ type1Quantity: '', type2Quantity: '', notes: '' })
+              setModalForm({ type1Quantity: '', type2Quantity: '', notes: '', stockType: 'new' })
             }}
           >
             Cancel
@@ -1061,9 +1132,9 @@ const CrateManagementTable = ({
               <Typography variant='h5' sx={{ fontWeight: 700 }}>
                 Update Crate Information
               </Typography>
-              {/* <Typography variant='body2' color='text.secondary'>
-                {selectedSupplier?.basic_info?.name}
-              </Typography> */}
+              <Typography variant='body2' color='text.secondary'>
+                {selectedSupplier?.isSupplier ? selectedSupplier.supplierData?.basic_info?.name : 'Transaction Update'}
+              </Typography>
             </Box>
             <IconButton
               onClick={() => {
@@ -1113,7 +1184,7 @@ const CrateManagementTable = ({
                 />
               </Box>
             </Box>
-            {selectedSupplier?._id && (
+            {selectedSupplier?.isSupplier && (
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
                 <Box>
                   <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>

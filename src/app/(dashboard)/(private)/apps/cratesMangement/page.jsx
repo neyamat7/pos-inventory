@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 
 import CrateManagement from '@/views/apps/cratesManagement'
 import { getSuppliers } from '@/actions/supplierAction'
-import { getAllCrateTransactions } from '@/actions/crateActions'
+import { getAllCrateTransactions, getCrateTotals } from '@/actions/crateActions'
 
 const CratesMangementPage = () => {
   // Separate pagination states for suppliers
@@ -29,6 +29,9 @@ const CratesMangementPage = () => {
   const [transactionsData, setTransactionsData] = useState([])
   const [transactionsPaginationData, setTransactionsPaginationData] = useState(null)
   const [isTransactionsLoading, setIsTransactionsLoading] = useState(true)
+
+  const [totalCrates, setTotalCrates] = useState({})
+  const [totalCrateLoading, setTotalCrateLoading] = useState(false)
 
   // Fetch suppliers
   useEffect(() => {
@@ -56,6 +59,29 @@ const CratesMangementPage = () => {
 
     fetchSupplierData()
   }, [supplierCurrentPage, supplierPageSize, supplierSearchTerm])
+
+  // fetch total crates
+  useEffect(() => {
+    const fetchTotalCrates = async () => {
+      setTotalCrateLoading(true)
+
+      try {
+        const result = await getCrateTotals()
+
+        console.log('result of crates', result)
+
+        if (result.success) {
+          setTotalCrates(result.data || {})
+        }
+      } catch (error) {
+        console.error('Error fetching suppliers:', error)
+      } finally {
+        setTotalCrateLoading(false)
+      }
+    }
+
+    fetchTotalCrates()
+  }, [])
 
   // Fetch transactions
   useEffect(() => {
@@ -142,6 +168,8 @@ const CratesMangementPage = () => {
       transactionsLoading={isTransactionsLoading}
       activeTab={activeTab}
       setActiveTab={setActiveTab}
+      totalCrates={totalCrates}
+      totalCrateLoading={totalCrateLoading}
     />
   )
 }

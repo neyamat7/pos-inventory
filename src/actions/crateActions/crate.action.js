@@ -1,5 +1,7 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
+
 import api from '@/libs/api'
 
 export async function addCrates(crateData) {
@@ -11,7 +13,10 @@ export async function addCrates(crateData) {
       }
     }
 
-    const { date, crate_type_1_qty, crate_type_2_qty, crate_type_1_price, crate_type_2_price, note } = crateData
+    const { date, crate_type_1_qty, crate_type_2_qty, crate_type_1_price, crate_type_2_price, note, stockType } =
+      crateData
+
+    console.log('stock type', stockType)
 
     const response = await api.post('/crates/add', {
       date,
@@ -19,6 +24,7 @@ export async function addCrates(crateData) {
       crate_type_2_qty,
       crate_type_1_price,
       crate_type_2_price,
+      stockType,
       note
     })
 
@@ -73,17 +79,9 @@ export async function addCratesForSupplier(supplierId, crateInfo) {
 }
 
 export async function updateCrates(query, crateInfo) {
-  console.log('crateinfo', crateInfo)
+  // console.log('crateinfo', crateInfo)
 
   try {
-    // Validate required fields
-    // if (!query || !crateInfo || typeof crateInfo !== 'object') {
-    //   return {
-    //     success: false,
-    //     error: 'Query and crate info are required'
-    //   }
-    // }
-
     const { supplierId, inventoryCratesId } = query
 
     const queryParams = {}
@@ -109,6 +107,8 @@ export async function updateCrates(query, crateInfo) {
       crate1Price,
       crate2Price
     })
+
+    revalidatePath('/apps/cratesManagement')
 
     return {
       success: true,
@@ -158,6 +158,25 @@ export async function getAllCrateTransactions(page = 1, limit = 10, searchTerm =
     return {
       success: false,
       error: error.message || 'Failed to fetch crate transactions'
+    }
+  }
+}
+
+export async function getCrateTotals() {
+  try {
+    const response = await api.get('/crates/totals')
+
+    return {
+      success: true,
+      data: response.totals,
+      message: 'Crate totals fetched successfully'
+    }
+  } catch (error) {
+    console.error('Get crate totals error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch crate totals'
     }
   }
 }
