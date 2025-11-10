@@ -12,9 +12,9 @@ const ExpensesList = () => {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
+    setLoading(true)
 
+    const fetchData = async () => {
       try {
         const result = await getAllExpenses({ page: currentPage, limit: pageSize })
 

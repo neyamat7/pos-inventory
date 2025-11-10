@@ -223,12 +223,7 @@ const SupplierDetails = ({ supplierData }) => {
                 </Typography>
               </div>
 
-              <div className='bg-gray-50 p-4 rounded-lg'>
-                <Typography color='text.primary' className='font-medium mb-1'>
-                  Cost
-                </Typography>
-                <Typography variant='h6'>৳{supplierData?.account_info?.cost?.toLocaleString() || 0}</Typography>
-              </div>
+           
             </div>
           </div>
 

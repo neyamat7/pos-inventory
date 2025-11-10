@@ -274,41 +274,32 @@ const ExpenseListTable = ({ expenseData, paginationData, loading, onPageChange, 
                 </tr>
               ))}
             </thead>
-            {table.getFilteredRowModel().rows.length === 0 ? (
-              <tbody>
+            
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
+                    Loading...
+                  </td>
+                </tr>
+              ) : table.getFilteredRowModel().rows.length === 0 ? (
                 <tr>
                   <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
                     No data available
                   </td>
                 </tr>
-              </tbody>
-            ) : (
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
-                      Loading...
-                    </td>
+              ) : (
+                table.getRowModel().rows.map(row => (
+                  <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
+                    {row.getVisibleCells().map(cell => (
+                      <td className='whitespace-nowrap border-r' key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
                   </tr>
-                ) : table.getFilteredRowModel().rows.length === 0 ? (
-                  <tr>
-                    <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
-                      No data available
-                    </td>
-                  </tr>
-                ) : (
-                  table.getRowModel().rows.map(row => (
-                    <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
-                      {row.getVisibleCells().map(cell => (
-                        <td className='whitespace-nowrap border-r' key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      ))}
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            )}
+                ))
+              )}
+            </tbody>
           </table>
         </div>
         <TablePagination

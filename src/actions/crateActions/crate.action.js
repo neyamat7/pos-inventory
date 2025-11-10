@@ -73,6 +73,8 @@ export async function addCratesForSupplier(supplierId, crateInfo) {
 }
 
 export async function updateCrates(query, crateInfo) {
+  console.log('crateinfo', crateInfo)
+
   try {
     // Validate required fields
     // if (!query || !crateInfo || typeof crateInfo !== 'object') {
@@ -82,12 +84,26 @@ export async function updateCrates(query, crateInfo) {
     //   }
     // }
 
-    const { supplierId } = query
+    const { supplierId, inventoryCratesId } = query
+
+    const queryParams = {}
+
+    if (supplierId) {
+      queryParams.supplierId = supplierId
+    }
+
+    if (inventoryCratesId) {
+      queryParams.inventoryCratesId = inventoryCratesId
+    }
+
+    const queryString = new URLSearchParams(queryParams).toString()
+    const url = `/crates/update${queryString ? `?${queryString}` : ''}`
+
+    // console.log('inv id', inventoryCratesId)
     const { crate1, crate2, crate1Price, crate2Price } = crateInfo
 
     // Make API call to update crates
-    const response = await api.patch('/crates/update', {
-      supplierId,
+    const response = await api.patch(url, {
       crate1,
       crate2,
       crate1Price,

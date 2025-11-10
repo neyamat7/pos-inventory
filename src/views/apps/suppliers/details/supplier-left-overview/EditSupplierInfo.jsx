@@ -50,13 +50,12 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
       accountNumber: '',
       balance: '',
       due: '',
-      cost: '',
 
       // Crate Info
-      crate1: '',
+
       crate1Price: '',
       remainingCrate1: '',
-      crate2: '',
+
       crate2Price: '',
       remainingCrate2: ''
     }
@@ -80,13 +79,12 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
         accountNumber: supplierData.account_info?.accountNumber || '',
         balance: supplierData.account_info?.balance || '',
         due: supplierData.account_info?.due || '',
-        cost: supplierData.account_info?.cost || '',
 
         // Crate Info
-        crate1: supplierData.crate_info?.crate1 || '',
+
         crate1Price: supplierData.crate_info?.crate1Price || '',
         remainingCrate1: supplierData.crate_info?.remainingCrate1 || '',
-        crate2: supplierData.crate_info?.crate2 || '',
+
         crate2Price: supplierData.crate_info?.crate2Price || '',
         remainingCrate2: supplierData.crate_info?.remainingCrate2 || ''
       })
@@ -118,16 +116,14 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
         account_info: {
           accountNumber: data.accountNumber?.trim() || '',
           balance: Number(data.balance || 0),
-          due: Number(data.due || 0),
-          cost: Number(data.cost || 0)
+          due: Number(data.due || 0)
         },
 
         // Crate Information
         crate_info: {
-          crate1: Number(data.crate1 || 0),
           crate1Price: Number(data.crate1Price || 0),
           remainingCrate1: Number(data.remainingCrate1 || 0),
-          crate2: Number(data.crate2 || 0),
+
           crate2Price: Number(data.crate2Price || 0),
           remainingCrate2: Number(data.remainingCrate2 || 0)
         }
@@ -521,27 +517,7 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
                       />
                     </Grid>
 
-                    <Grid size={{ xs: 12 }}>
-                      <Controller
-                        name='cost'
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTextField
-                            {...field}
-                            fullWidth
-                            type='number'
-                            label='Cost'
-                            placeholder='500'
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: '#f8fafc'
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                    </Grid>
+                   
                   </Grid>
 
                   <Typography
@@ -567,27 +543,7 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
                   </Typography>
 
                   <Grid container spacing={3}>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <Controller
-                        name='crate1'
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTextField
-                            {...field}
-                            fullWidth
-                            type='number'
-                            label='Crate 1 Quantity'
-                            placeholder='15'
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: '#f8fafc'
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                    </Grid>
+                    
 
                     <Grid size={{ xs: 12, sm: 4 }}>
                       <Controller
@@ -633,27 +589,7 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
                       />
                     </Grid>
 
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <Controller
-                        name='crate2'
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTextField
-                            {...field}
-                            fullWidth
-                            type='number'
-                            label='Crate 2 Quantity'
-                            placeholder='8'
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: '#f8fafc'
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                    </Grid>
+                   
 
                     <Grid size={{ xs: 12, sm: 4 }}>
                       <Controller

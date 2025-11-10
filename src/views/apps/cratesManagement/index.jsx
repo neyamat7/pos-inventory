@@ -60,8 +60,6 @@ const CrateManagementTable = ({
     type2Quantity: '',
     type1Price: '',
     type2Price: '',
-    type1Debt: '',
-    type2Debt: '',
     notes: ''
   })
 
@@ -194,7 +192,15 @@ const CrateManagementTable = ({
 
     try {
       // Prepare query - supplierId is optional
-      const query = selectedSupplier ? { supplierId: selectedSupplier._id } : {}
+      let query = {}
+
+      if (selectedSupplier) {
+        if (selectedSupplier._id) {
+          query = { supplierId: selectedSupplier._id }
+        } else if (selectedSupplier.transactionId) {
+          query = { inventoryCratesId: selectedSupplier.transactionId }
+        }
+      }
 
       // Prepare crate info from updateForm
       const crateInfo = {
@@ -225,8 +231,6 @@ const CrateManagementTable = ({
         type2Quantity: '',
         type1Price: '',
         type2Price: '',
-        type1Debt: '',
-        type2Debt: '',
         notes: ''
       })
     }
@@ -374,9 +378,13 @@ const CrateManagementTable = ({
               setSelectedSupplier(
                 info.row.original.supplierId
                   ? {
-                      _id: info.row.original.supplierId._id
+                      _id: info.row.original.supplierId._id,
+                      transactionId: info.row.original._id
                     }
-                  : null
+                  : {
+                      _id: null,
+                      transactionId: info.row.original._id
+                    }
               )
               setShowUpdateModal(true)
               setUpdateForm({
@@ -1053,9 +1061,9 @@ const CrateManagementTable = ({
               <Typography variant='h5' sx={{ fontWeight: 700 }}>
                 Update Crate Information
               </Typography>
-              <Typography variant='body2' color='text.secondary'>
+              {/* <Typography variant='body2' color='text.secondary'>
                 {selectedSupplier?.basic_info?.name}
-              </Typography>
+              </Typography> */}
             </Box>
             <IconButton
               onClick={() => {
@@ -1105,6 +1113,35 @@ const CrateManagementTable = ({
                 />
               </Box>
             </Box>
+            {selectedSupplier?._id && (
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+                <Box>
+                  <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
+                    Type 1 Price (৳)
+                  </Typography>
+                  <CustomTextField
+                    fullWidth
+                    type='number'
+                    value={updateForm.type1Price}
+                    onChange={e => setUpdateForm({ ...updateForm, type1Price: e.target.value })}
+                    placeholder='Enter Type 1 price'
+                  />
+                </Box>
+
+                <Box>
+                  <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
+                    Type 2 Price (৳)
+                  </Typography>
+                  <CustomTextField
+                    fullWidth
+                    type='number'
+                    value={updateForm.type2Price}
+                    onChange={e => setUpdateForm({ ...updateForm, type2Price: e.target.value })}
+                    placeholder='Enter Type 2 price'
+                  />
+                </Box>
+              </Box>
+            )}
 
             <Box>
               <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
@@ -1134,8 +1171,6 @@ const CrateManagementTable = ({
                 type2Quantity: '',
                 type1Price: '',
                 type2Price: '',
-                type1Debt: '',
-                type2Debt: '',
                 notes: ''
               })
             }}
