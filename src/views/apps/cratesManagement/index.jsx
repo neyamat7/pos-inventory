@@ -84,12 +84,12 @@ const CrateManagementTable = ({
 
   // Calculate real-time debt clearance
   const calculation = useMemo(() => {
-    if (!selectedSupplier) return null
+    if (!selectedSupplier || !selectedSupplier.crate_info) return null
 
     const type1Qty = parseInt(modalForm.type1Quantity) || 0
     const type2Qty = parseInt(modalForm.type2Quantity) || 0
-    const type1Debt = selectedSupplier.crate_info.needToGiveCrate1
-    const type2Debt = selectedSupplier.crate_info.needToGiveCrate2
+    const type1Debt = selectedSupplier.crate_info.needToGiveCrate1 || 0
+    const type2Debt = selectedSupplier.crate_info.needToGiveCrate2 || 0
 
     const type1DebtCleared = Math.min(type1Qty, type1Debt)
     const type2DebtCleared = Math.min(type2Qty, type2Debt)
@@ -307,41 +307,6 @@ const CrateManagementTable = ({
             >
               Add
             </Button>
-            <Button
-              variant='outlined'
-              onClick={() => {
-                setSelectedSupplier(info.row.original)
-                setShowUpdateModal(true)
-
-                // Pre-fill form with existing data
-                setUpdateForm({
-                  type1Quantity: info.row.original.crate_info.crate1.toString(),
-                  type2Quantity: info.row.original.crate_info.crate2.toString(),
-                  type1Price: info.row.original.crate_info.crate1Price.toString(),
-                  type2Price: info.row.original.crate_info.crate2Price.toString(),
-                  type1Debt: info.row.original.crate_info.needToGiveCrate1.toString(),
-                  type2Debt: info.row.original.crate_info.needToGiveCrate2.toString(),
-                  notes: ''
-                })
-              }}
-              sx={{
-                borderColor: '#666',
-                color: '#666',
-                '&:hover': {
-                  borderColor: '#333',
-                  backgroundColor: 'rgba(102, 102, 102, 0.04)'
-                },
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                padding: '6px 12px',
-                minWidth: 'auto',
-                textTransform: 'none',
-                borderRadius: '6px'
-              }}
-              startIcon={<i className='tabler-edit' style={{ fontSize: '16px' }} />}
-            >
-              Update
-            </Button>
           </div>
         ),
         enableSorting: false
@@ -380,16 +345,7 @@ const CrateManagementTable = ({
         header: 'Type 2 Qty',
         cell: info => <div className='text-center font-semibold'>{info.getValue() || 0}</div>
       },
-      {
-        accessorKey: 'crate_type_1_price',
-        header: 'Type 1 Price',
-        cell: info => <div className='text-center'>৳{info.getValue() || 0}</div>
-      },
-      {
-        accessorKey: 'crate_type_2_price',
-        header: 'Type 2 Price',
-        cell: info => <div className='text-center'>৳{info.getValue() || 0}</div>
-      },
+
       {
         accessorKey: 'status',
         header: 'Status',
@@ -418,8 +374,7 @@ const CrateManagementTable = ({
               setSelectedSupplier(
                 info.row.original.supplierId
                   ? {
-                      _id: info.row.original.supplierId._id,
-                      basic_info: { name: info.row.original.supplierId.supplier_name }
+                      _id: info.row.original.supplierId._id
                     }
                   : null
               )
@@ -427,10 +382,6 @@ const CrateManagementTable = ({
               setUpdateForm({
                 type1Quantity: info.row.original.crate_type_1_qty?.toString() || '',
                 type2Quantity: info.row.original.crate_type_2_qty?.toString() || '',
-                type1Price: info.row.original.crate_type_1_price?.toString() || '',
-                type2Price: info.row.original.crate_type_2_price?.toString() || '',
-                type1Debt: '',
-                type2Debt: '',
                 notes: info.row.original.note || ''
               })
             }}
@@ -483,17 +434,9 @@ const CrateManagementTable = ({
   })
 
   useEffect(() => {
-    // console.log('📊 Table pageIndex update:', {
-    //   activeTab,
-    //   supplierPagination: paginationData,
-    //   transactionPagination: transactionsPaginationData
-    // })
-
     if (activeTab === 'suppliers' && paginationData) {
-      // console.log('📊 Setting supplier table page to:', paginationData.currentPage - 1)
       table.setPageIndex(paginationData.currentPage - 1)
     } else if (activeTab === 'history' && transactionsPaginationData) {
-      // console.log('📊 Setting transaction table page to:', transactionsPaginationData.currentPage - 1)
       table.setPageIndex(transactionsPaginationData.currentPage - 1)
     }
   }, [paginationData, transactionsPaginationData, activeTab, table])
@@ -779,10 +722,10 @@ const CrateManagementTable = ({
                       Current Debt
                     </Typography>
                     <Typography variant='caption' sx={{ color: '#d32f2f', display: 'block' }}>
-                      Type 1: <strong>{selectedSupplier.crate_info.needToGiveCrate1}</strong> crates
+                      Type 1: <strong>{selectedSupplier?.crate_info?.needToGiveCrate1}</strong> crates
                     </Typography>
                     <Typography variant='caption' sx={{ color: '#d32f2f', display: 'block' }}>
-                      Type 2: <strong>{selectedSupplier.crate_info.needToGiveCrate2}</strong> crates
+                      Type 2: <strong>{selectedSupplier?.crate_info?.needToGiveCrate2}</strong> crates
                     </Typography>
                   </Box>
                 </Box>
@@ -791,7 +734,7 @@ const CrateManagementTable = ({
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <Box>
                   <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
-                    Type 1 Crates (৳{selectedSupplier.crate_info.crate1Price})
+                    Type 1 Crates (৳{selectedSupplier?.crate_info?.crate1Price})
                   </Typography>
                   <CustomTextField
                     fullWidth
@@ -802,7 +745,7 @@ const CrateManagementTable = ({
                   />
                   {calculation?.type1.message && (
                     <Typography variant='caption' color='primary.main' sx={{ mt: 0.5, display: 'block' }}>
-                      {calculation.type1.message}
+                      {calculation?.type1.message}
                     </Typography>
                   )}
                 </Box>
@@ -814,7 +757,7 @@ const CrateManagementTable = ({
                   <CustomTextField
                     fullWidth
                     type='number'
-                    value={modalForm.type1Price || selectedSupplier.crate_info.crate1Price}
+                    value={modalForm.type1Price || selectedSupplier?.crate_info?.crate1Price}
                     onChange={e => setModalForm({ ...modalForm, type1Price: e.target.value })}
                     placeholder='Enter Type 1 price'
                   />
@@ -822,7 +765,7 @@ const CrateManagementTable = ({
 
                 <Box>
                   <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
-                    Type 2 Crates (৳{selectedSupplier.crate_info.crate2Price})
+                    Type 2 Crates (৳{selectedSupplier?.crate_info?.crate2Price})
                   </Typography>
                   <CustomTextField
                     fullWidth
@@ -845,7 +788,7 @@ const CrateManagementTable = ({
                   <CustomTextField
                     fullWidth
                     type='number'
-                    value={modalForm.type2Price || selectedSupplier.crate_info.crate2Price}
+                    value={modalForm.type2Price || selectedSupplier?.crate_info?.crate2Price}
                     onChange={e => setModalForm({ ...modalForm, type2Price: e.target.value })}
                     placeholder='Enter Type 2 price'
                   />
@@ -1089,7 +1032,7 @@ const CrateManagementTable = ({
 
       {/* Update Supplier Crate Info Modal */}
       <Dialog
-        open={showUpdateModal && selectedSupplier !== null}
+        open={showUpdateModal}
         onClose={() => {
           setShowUpdateModal(false)
           setSelectedSupplier(null)
@@ -1098,8 +1041,6 @@ const CrateManagementTable = ({
             type2Quantity: '',
             type1Price: '',
             type2Price: '',
-            type1Debt: '',
-            type2Debt: '',
             notes: ''
           })
         }}
@@ -1110,7 +1051,7 @@ const CrateManagementTable = ({
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Box>
               <Typography variant='h5' sx={{ fontWeight: 700 }}>
-                {selectedSupplier ? 'Update Supplier Information' : 'Update Crate Totals'}
+                Update Crate Information
               </Typography>
               <Typography variant='body2' color='text.secondary'>
                 {selectedSupplier?.basic_info?.name}
@@ -1125,8 +1066,6 @@ const CrateManagementTable = ({
                   type2Quantity: '',
                   type1Price: '',
                   type2Price: '',
-                  type1Debt: '',
-                  type2Debt: '',
                   notes: ''
                 })
               }}
@@ -1137,147 +1076,50 @@ const CrateManagementTable = ({
         </DialogTitle>
 
         <DialogContent>
-          {selectedSupplier && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {/* Current Values Summary */}
-              {selectedSupplier && (
-                <Box sx={{ bgcolor: 'action.hover', p: 2, borderRadius: 2 }}>
-                  <Typography variant='body2' sx={{ fontWeight: 600, mb: 1 }}>
-                    Current Values
-                  </Typography>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                    <Box>
-                      <Typography variant='caption' color='text.secondary'>
-                        Type 1 Crates:
-                      </Typography>
-                      <Typography variant='body2' sx={{ fontWeight: 600 }}>
-                        {selectedSupplier.crate_info.crate1}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant='caption' color='text.secondary'>
-                        Type 2 Crates:
-                      </Typography>
-                      <Typography variant='body2' sx={{ fontWeight: 600 }}>
-                        {selectedSupplier.crate_info.crate2}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant='caption' color='text.secondary'>
-                        Type 1 Price:
-                      </Typography>
-                      <Typography variant='body2' sx={{ fontWeight: 600 }}>
-                        ৳{selectedSupplier.crate_info.crate1Price}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant='caption' color='text.secondary'>
-                        Type 2 Price:
-                      </Typography>
-                      <Typography variant='body2' sx={{ fontWeight: 600 }}>
-                        ৳{selectedSupplier.crate_info.crate2Price}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-              )}
-
-              {/* Update Form */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
-                <Box>
-                  <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
-                    Type 1 Crates
-                  </Typography>
-                  <CustomTextField
-                    fullWidth
-                    type='number'
-                    value={updateForm.type1Quantity}
-                    onChange={e => setUpdateForm({ ...updateForm, type1Quantity: e.target.value })}
-                    placeholder='Enter new quantity'
-                  />
-                </Box>
-
-                <Box>
-                  <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
-                    Type 2 Crates
-                  </Typography>
-                  <CustomTextField
-                    fullWidth
-                    type='number'
-                    value={updateForm.type2Quantity}
-                    onChange={e => setUpdateForm({ ...updateForm, type2Quantity: e.target.value })}
-                    placeholder='Enter new quantity'
-                  />
-                </Box>
-
-                <Box>
-                  <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
-                    Type 1 Price (৳)
-                  </Typography>
-                  <CustomTextField
-                    fullWidth
-                    type='number'
-                    value={updateForm.type1Price}
-                    onChange={e => setUpdateForm({ ...updateForm, type1Price: e.target.value })}
-                    placeholder='Enter new price'
-                  />
-                </Box>
-
-                <Box>
-                  <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
-                    Type 2 Price (৳)
-                  </Typography>
-                  <CustomTextField
-                    fullWidth
-                    type='number'
-                    value={updateForm.type2Price}
-                    onChange={e => setUpdateForm({ ...updateForm, type2Price: e.target.value })}
-                    placeholder='Enter new price'
-                  />
-                </Box>
-
-                <Box>
-                  <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
-                    Type 1 Debt
-                  </Typography>
-                  <CustomTextField
-                    fullWidth
-                    type='number'
-                    value={updateForm.type1Debt}
-                    onChange={e => setUpdateForm({ ...updateForm, type1Debt: e.target.value })}
-                    placeholder='Enter debt amount'
-                  />
-                </Box>
-
-                <Box>
-                  <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
-                    Type 2 Debt
-                  </Typography>
-                  <CustomTextField
-                    fullWidth
-                    type='number'
-                    value={updateForm.type2Debt}
-                    onChange={e => setUpdateForm({ ...updateForm, type2Debt: e.target.value })}
-                    placeholder='Enter debt amount'
-                  />
-                </Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {/* Update Form */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+              <Box>
+                <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
+                  Type 1 Crates
+                </Typography>
+                <CustomTextField
+                  fullWidth
+                  type='number'
+                  value={updateForm.type1Quantity}
+                  onChange={e => setUpdateForm({ ...updateForm, type1Quantity: e.target.value })}
+                  placeholder='Enter new quantity'
+                />
               </Box>
 
               <Box>
                 <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
-                  Notes (Optional)
+                  Type 2 Crates
                 </Typography>
                 <CustomTextField
                   fullWidth
-                  multiline
-                  rows={3}
-                  value={updateForm.notes}
-                  onChange={e => setUpdateForm({ ...updateForm, notes: e.target.value })}
-                  placeholder='Add update notes...'
+                  type='number'
+                  value={updateForm.type2Quantity}
+                  onChange={e => setUpdateForm({ ...updateForm, type2Quantity: e.target.value })}
+                  placeholder='Enter new quantity'
                 />
               </Box>
             </Box>
-          )}
+
+            <Box>
+              <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
+                Notes (Optional)
+              </Typography>
+              <CustomTextField
+                fullWidth
+                multiline
+                rows={3}
+                value={updateForm.notes}
+                onChange={e => setUpdateForm({ ...updateForm, notes: e.target.value })}
+                placeholder='Add update notes...'
+              />
+            </Box>
+          </Box>
         </DialogContent>
 
         <DialogActions sx={{ px: 3, pb: 3 }}>

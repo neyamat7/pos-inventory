@@ -25,7 +25,7 @@ import {
 } from '@tanstack/react-table'
 
 // Component Imports
-import { IconButton } from '@mui/material'
+import { CircularProgress, IconButton } from '@mui/material'
 
 import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
@@ -116,20 +116,24 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
         return date.toLocaleDateString('en-GB')
       }
     },
+
     {
       accessorKey: 'lot_name',
       header: 'Lot Name'
     },
+
     {
       accessorKey: 'productsId.productName',
       header: 'Product',
       cell: ({ row }) => row.original.productsId?.productName || '—'
     },
+
     {
       accessorKey: 'supplierId.basic_info.name',
       header: 'Supplier',
       cell: ({ row }) => row.original.supplierId?.basic_info?.name || '—'
     },
+
     {
       accessorKey: 'carat',
       header: 'Total Carat',
@@ -140,6 +144,7 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
         return carat1 + carat2
       }
     },
+
     {
       accessorKey: 'box_quantity',
       header: 'Total Boxes',
@@ -149,6 +154,7 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
         return boxQty > 0 ? boxQty : '—'
       }
     },
+
     {
       accessorKey: 'costs.unitCost',
       header: 'Unit Cost',
@@ -158,6 +164,7 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
         return value ? `৳${value}` : '—'
       }
     },
+
     {
       accessorKey: 'sales.totalKgSold',
       header: 'Sold (kg)',
@@ -299,32 +306,37 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
             ))}
           </thead>
 
-          {data.length === 0 ? (
-            <tbody>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
+                  <div className='flex items-center justify-center gap-2 p-4'>
+                    <CircularProgress size={20} />
+                    <span>Loading data...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : data.length === 0 ? (
               <tr>
                 <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
                   No data available
                 </td>
               </tr>
-            </tbody>
-          ) : (
-            <tbody>
-              {table.getRowModel().rows.map(row => {
-                return (
-                  <tr key={row.id}>
-                    {row.getVisibleCells().map(cell => (
-                      <td
-                        key={cell.id}
-                        className={classnames('whitespace-nowrap border border-solid border-gray-200 text-gray-800')}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    ))}
-                  </tr>
-                )
-              })}
-            </tbody>
-          )}
+            ) : (
+              table.getRowModel().rows.map(row => (
+                <tr key={row.id}>
+                  {row.getVisibleCells().map(cell => (
+                    <td
+                      key={cell.id}
+                      className={classnames('whitespace-nowrap border border-solid border-gray-200 text-gray-800')}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
+          </tbody>
         </table>
       </div>
       {/* SERVER-SIDE Pagination */}
