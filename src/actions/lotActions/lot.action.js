@@ -76,3 +76,22 @@ export async function checkDuplicateLotName(lot_name) {
     return false
   }
 }
+
+export async function getUnpaidStockOutLots() {
+  try {
+    const response = await api.get('/inventoryLots/unpaid-stock-out')
+
+    return {
+      success: true,
+      data: response.data,
+      message: 'Unpaid stock-out lots fetched successfully'
+    }
+  } catch (error) {
+    console.error('Get unpaid stock-out lots error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch unpaid stock-out lots'
+    }
+  }
+}

@@ -17,14 +17,21 @@ import { paymentHistoryData } from '@/fake-db/apps/paymentHistory'
 import { lotInformation } from '@/fake-db/apps/lotInformation'
 import ReturnTable from './tables/ReturnTable'
 import { returnProductsHistory } from '@/fake-db/apps/returnHistory'
-import { getLotsBySupplier, getPurchaseBySupplier } from '@/actions/supplierAction'
+import { getLotsBySupplier, getPurchaseBySupplier, getSupplierPayments } from '@/actions/supplierAction'
 import { getBalanceHistory } from '@/actions/balanceActions'
 import BalanceHistoryTable from './tables/BalanceHistoryTable'
 
 // -------------------------------------------------------------
 // MAIN COMPONENT
 // -------------------------------------------------------------
-const PurchaseReport = ({ supplierId, initialLotsData, initialPurchaseData, initialBalanceData }) => {
+const PurchaseReport = ({
+  supplierId,
+  supplierData,
+  initialLotsData,
+  initialPurchaseData,
+  initialBalanceData,
+  initialPaymentData
+}) => {
   // console.log('lots', initialLotsData)
   // console.log('purchase', initialPurchaseData)
   // console.log('dlkfhd', initialBalanceData)
@@ -39,7 +46,9 @@ const PurchaseReport = ({ supplierId, initialLotsData, initialPurchaseData, init
   const [purchaseData, setPurchaseData] = useState(initialPurchaseData)
   const [balanceData, setBalanceData] = useState(initialBalanceData)
 
-  // console.log('adfddfd', balanceData)
+  const [paymentData, setPaymentData] = useState(initialPaymentData)
+
+  console.log('lot data in purchaes Report', lotsData)
 
   const [loading, setLoading] = useState(false)
 
@@ -135,15 +144,36 @@ const PurchaseReport = ({ supplierId, initialLotsData, initialPurchaseData, init
     }
   }
 
+  const fetchPayments = async (page = pagination.page, limit = pagination.limit) => {
+    if (!supplierId) return
+
+    setLoading(true)
+
+    try {
+      const result = await getSupplierPayments({ supplierId, page, limit })
+
+      if (result.success) {
+        setPaymentData(result)
+        setPagination(prev => ({ ...prev, page, limit }))
+      }
+    } catch (error) {
+      console.error('Error fetching payments:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Fetch data when filters change
   useEffect(() => {
     if (activeTab === 'purchases') {
-      fetchLots(1, pagination.limit, searchValue, fromDate, toDate)
-    } else if (activeTab === 'stock') {
       fetchPurchases(1, pagination.limit, searchValue, fromDate, toDate)
+    } else if (activeTab === 'stock') {
+      fetchLots(1, pagination.limit, searchValue, '', '')
     } else if (activeTab === 'balanceHistory') {
       // Don't send dates - backend has date filtering issues
       fetchBalanceHistory(1, pagination.limit, '', '')
+    } else if (activeTab === 'payments') {
+      fetchPayments(1, pagination.limit)
     }
   }, [searchValue, fromDate, toDate, activeTab])
 
@@ -155,6 +185,8 @@ const PurchaseReport = ({ supplierId, initialLotsData, initialPurchaseData, init
       fetchLots(page, limit, searchValue, fromDate, toDate)
     } else if (activeTab === 'balanceHistory') {
       fetchBalanceHistory(page, limit, '', '')
+    } else if (activeTab === 'payments') {
+      fetchPayments(page, limit)
     }
   }
 
@@ -178,11 +210,20 @@ const PurchaseReport = ({ supplierId, initialLotsData, initialPurchaseData, init
             total={lotsData?.data?.total || 0}
             onPaginationChange={handlePaginationChange}
             loading={loading}
+            supplierData={supplierData}
           />
         )
 
       case 'payments':
-        return <PaymentTable data={paymentHistoryData} />
+        return (
+          <PaymentTable
+            data={paymentData?.data?.transactions || []}
+            pagination={pagination}
+            total={paymentData?.data?.total || 0}
+            onPaginationChange={handlePaginationChange}
+            loading={loading}
+          />
+        )
       case 'balanceHistory':
         return (
           <BalanceHistoryTable

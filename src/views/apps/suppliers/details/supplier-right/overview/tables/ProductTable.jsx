@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import {
   useReactTable,
   getCoreRowModel,
@@ -7,10 +9,15 @@ import {
   getPaginationRowModel,
   createColumnHelper
 } from '@tanstack/react-table'
-import { TablePagination } from '@mui/material'
+import { TablePagination, Button, Box } from '@mui/material'
+
+import { DollarSign } from 'lucide-react'
 
 import TablePaginationComponent from '@components/TablePaginationComponent'
 import tableStyles from '@core/styles/table.module.css'
+
+import PaymentModal from './PaymentModal'
+import { getUnpaidStockOutLots } from '@/actions/lotActions'
 
 const columnHelper = createColumnHelper()
 
@@ -33,6 +40,14 @@ const stockColumns = [
   }),
   columnHelper.accessor('status', {
     header: 'Status',
+    cell: info => {
+      const status = info.getValue()
+
+      return status ? status.charAt(0).toUpperCase() + status.slice(1) : 'N/A'
+    }
+  }),
+  columnHelper.accessor('payment_status', {
+    header: 'Payment Status',
     cell: info => {
       const status = info.getValue()
 
@@ -69,9 +84,25 @@ const stockColumns = [
   })
 ]
 
-const ProductTable = ({ data, pagination, total, onPaginationChange, loading }) => {
-  // console.log('lots data', data)
-  console.log('lots data', data, pagination, total)
+const ProductTable = ({ data, pagination, total, onPaginationChange, loading, supplierData }) => {
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false)
+  const [unpaidLotsData, setUnpaidLotsData] = useState([])
+
+  useEffect(() => {
+    const fetchUnpaidLots = async () => {
+      try {
+        const result = await getUnpaidStockOutLots()
+
+        if (result.success) {
+          setUnpaidLotsData(result?.data || [])
+        }
+      } catch (error) {
+        console.error('Error fetching unpaid lots:', error)
+      }
+    }
+
+    fetchUnpaidLots()
+  }, [])
 
   const table = useReactTable({
     data: data || [],
@@ -95,12 +126,26 @@ const ProductTable = ({ data, pagination, total, onPaginationChange, loading }) 
 
   return (
     <>
-      <table className={tableStyles.table}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <Button
+          variant='contained'
+          color='primary'
+          startIcon={<DollarSign size={18} />}
+          onClick={() => setPaymentModalOpen(true)}
+          sx={{ textTransform: 'none', fontWeight: 600 }}
+        >
+          Clear Payment
+        </Button>
+      </Box>
+
+      <table className={`${tableStyles.table} border border-gray-200 border-collapse`}>
         <thead>
           {table.getHeaderGroups().map(group => (
             <tr key={group.id}>
               {group.headers.map(header => (
-                <th key={header.id}>{flexRender(header.column.columnDef.header, header.getContext())}</th>
+                <th className='border border-gray-200' key={header.id}>
+                  {flexRender(header.column.columnDef.header, header.getContext())}
+                </th>
               ))}
             </tr>
           ))}
@@ -116,7 +161,9 @@ const ProductTable = ({ data, pagination, total, onPaginationChange, loading }) 
             table.getRowModel().rows.map(row => (
               <tr key={row.id}>
                 {row.getVisibleCells().map(cell => (
-                  <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                  <td className='border border-gray-200' key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
                 ))}
               </tr>
             ))
@@ -131,6 +178,14 @@ const ProductTable = ({ data, pagination, total, onPaginationChange, loading }) 
         page={pagination.page - 1}
         onPageChange={(_, page) => onPaginationChange(page + 1, pagination.limit)}
         onRowsPerPageChange={event => onPaginationChange(1, parseInt(event.target.value, 10))}
+      />
+
+      <PaymentModal
+        open={paymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+        supplierData={supplierData}
+        lotsData={unpaidLotsData}
+        supplierId={supplierData?._id}
       />
     </>
   )

@@ -23,7 +23,7 @@ const SupplierDetails = ({ supplierData, supplierId }) => {
       </Grid>
       <Grid size={{ xs: 12 }}>
         <SupplierRight>
-          <OverViewTab supplierId={supplierId} />
+          <OverViewTab supplierId={supplierId} supplierData={supplierData} />
         </SupplierRight>
       </Grid>
     </Grid>

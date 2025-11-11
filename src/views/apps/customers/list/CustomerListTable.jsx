@@ -364,7 +364,7 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
       note: balanceForm.note,
       payment_method: balanceForm.payment_method,
       balance_for: selectedCustomer._id,
-      collection: 'customer',
+      role: 'customer',
       slip_img: 'https://i.postimg.cc/y86SS6X7/Chat-GPT-Image-Nov-4-2025-11-06-30-AM.png'
     }
 

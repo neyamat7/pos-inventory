@@ -154,3 +154,45 @@ export async function getPurchaseBySupplier(supplierId, page = 1, limit = 10, se
     }
   }
 }
+
+export async function addPayment(paymentData) {
+  try {
+    const response = await api.post('/payment/add', paymentData)
+
+    return {
+      success: true,
+      data: response.data
+    }
+  } catch (error) {
+    console.error('Add payment error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to add payment'
+    }
+  }
+}
+
+export async function getSupplierPayments({ supplierId, page = 1, limit = 10 }) {
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    })
+
+    const response = await api.get(`/payment/all/${supplierId}?${params.toString()}`)
+
+    return {
+      success: true,
+      data: response.data,
+      message: 'Supplier payments fetched successfully'
+    }
+  } catch (error) {
+    console.error('Get supplier payments error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch supplier payments'
+    }
+  }
+}
