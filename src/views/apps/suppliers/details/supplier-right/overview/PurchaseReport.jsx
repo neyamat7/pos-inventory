@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 
-import { Card, CardContent, Typography, Divider, Box, Button } from '@mui/material'
-import { Calendar, FileText, Layers, ShoppingCart, CreditCard, RotateCcw, ClipboardList } from 'lucide-react'
+import { Card, CardContent, Divider, Box } from '@mui/material'
+import { ShoppingCart, CreditCard, RotateCcw, ClipboardList } from 'lucide-react'
 
 import dayjs from 'dayjs'
 
@@ -13,10 +13,6 @@ import PaymentTable from './tables/PaymentTable'
 import ProductTable from './tables/ProductTable'
 
 // Mock data imports
-import { paymentHistoryData } from '@/fake-db/apps/paymentHistory'
-import { lotInformation } from '@/fake-db/apps/lotInformation'
-import ReturnTable from './tables/ReturnTable'
-import { returnProductsHistory } from '@/fake-db/apps/returnHistory'
 import { getLotsBySupplier, getPurchaseBySupplier, getSupplierPayments } from '@/actions/supplierAction'
 import { getBalanceHistory } from '@/actions/balanceActions'
 import BalanceHistoryTable from './tables/BalanceHistoryTable'
@@ -32,10 +28,6 @@ const PurchaseReport = ({
   initialBalanceData,
   initialPaymentData
 }) => {
-  // console.log('lots', initialLotsData)
-  // console.log('purchase', initialPurchaseData)
-  // console.log('dlkfhd', initialBalanceData)
-
   const [activeTab, setActiveTab] = useState('purchases')
   const [searchValue, setSearchValue] = useState('')
   const [fromDate, setFromDate] = useState(dayjs().subtract(1, 'month').format('YYYY-MM-DD'))
@@ -48,7 +40,7 @@ const PurchaseReport = ({
 
   const [paymentData, setPaymentData] = useState(initialPaymentData)
 
-  console.log('lot data in purchaes Report', lotsData)
+  // console.log('lot data in purchaes Report', lotsData)
 
   const [loading, setLoading] = useState(false)
 
@@ -61,8 +53,9 @@ const PurchaseReport = ({
     { key: 'purchases', label: 'Purchases', icon: <ShoppingCart size={16} /> },
     { key: 'stock', label: 'Stock Report', icon: <ClipboardList size={16} /> },
     { key: 'payments', label: 'Payments', icon: <CreditCard size={16} /> },
-    { key: 'balanceHistory', label: 'Balance History', icon: <CreditCard size={16} /> },
-    { key: 'returns', label: 'Returns', icon: <RotateCcw size={16} /> }
+    { key: 'balanceHistory', label: 'Balance History', icon: <CreditCard size={16} /> }
+
+    // { key: 'returns', label: 'Returns', icon: <RotateCcw size={16} /> }
   ]
 
   // Function to fetch lots data
@@ -234,8 +227,9 @@ const PurchaseReport = ({
             loading={loading}
           />
         )
-      case 'returns':
-        return <ReturnTable data={returnProductsHistory} />
+
+      // case 'returns':
+      //   return <ReturnTable data={returnProductsHistory} />
       default:
         return <div className='p-6 text-center text-gray-500'>No data available for this section.</div>
     }

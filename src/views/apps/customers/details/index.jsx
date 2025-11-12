@@ -10,7 +10,7 @@ import CustomerLeftOverview from './customer-left-overview'
 import CustomerRight from './customer-right'
 
 // Dynamically import OverviewTab
-const OverViewTab = dynamic(() => import('@views/apps/customers/details/customer-right/overview'))
+const OverViewTab = dynamic(() => import('@/views/apps/customers/details/customer-right/overview'))
 
 const CustomerDetails = ({ customerData, customerId }) => {
   // console.log('cus id', customerId)

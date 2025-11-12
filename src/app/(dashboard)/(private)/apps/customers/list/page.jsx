@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 
 import { getCustomers } from '@/actions/customerActions'
-import CustomerListTable from '@views/apps/customers/list/CustomerListTable'
+import CustomerListTable from '@/views/apps/customers/list/CustomerListTable'
 
 const CustomerListTablePage = () => {
   const [currentPage, setCurrentPage] = useState(1)

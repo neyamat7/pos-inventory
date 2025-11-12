@@ -388,9 +388,6 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
           )
         )
 
-        // Show success message
-        const Swal = (await import('sweetalert2')).default
-
         showSuccess('Balance added successfully')
 
         // Close modal and reset form

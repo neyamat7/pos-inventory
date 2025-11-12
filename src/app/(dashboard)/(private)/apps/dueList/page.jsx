@@ -1,5 +1,5 @@
 import { getAllSuppliers } from '@/app/server/actions'
-import DueList from '@/views/apps/ecommerce/dueList'
+import DueList from '@/views/apps/dueList'
 
 // Data Imports
 import { customers } from '@/data/customerData/customerData'

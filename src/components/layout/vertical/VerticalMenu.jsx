@@ -68,11 +68,11 @@ const VerticalMenu = ({ scrollMenu }) => {
           <MenuItem href='/apps/products/category'>Category</MenuItem>
         </SubMenu>
 
-        <SubMenu label='Stock List' icon={<i className='tabler-packages' />}>
+        {/* <SubMenu label='Stock List' icon={<i className='tabler-packages' />}>
           <MenuItem href='/apps/stockList/lot'>All Lots</MenuItem>
           <MenuItem href='/apps/stockList/lowStock'>Low Stock</MenuItem>
           <MenuItem href='/apps/stockList/expiredProducts'>Expired Products</MenuItem>
-        </SubMenu>
+        </SubMenu> */}
 
         <SubMenu label='Customers' icon={<i className='tabler-user-circle' />}>
           <MenuItem href='/apps/customers/list'>All Customers</MenuItem>
@@ -109,13 +109,17 @@ const VerticalMenu = ({ scrollMenu }) => {
         <SubMenu label='Purchase' icon={<i className='tabler-shopping-bag' />}>
           <MenuItem href='/apps/purchase/add'>Add Purchase</MenuItem>
           <MenuItem href='/apps/purchase/list'>Purchase List</MenuItem>
-          <MenuItem href='/apps/purchase/return'>Purchase Return</MenuItem>
+          {/* <MenuItem href='/apps/purchase/return'>Purchase Return</MenuItem> */}
         </SubMenu>
+
+        <MenuItem href='/apps/stockList/lot' icon={<i className='tabler-packages' />}>
+          Stock List
+        </MenuItem>
 
         <SubMenu label='Sales' icon={<i className='tabler-cash' />}>
           <MenuItem href='/apps/sales/pos'>POS</MenuItem>
           <MenuItem href='/apps/sales/list'>Sales List</MenuItem>
-          <MenuItem href='/apps/sales/return'>Sales Return</MenuItem>
+          {/* <MenuItem href='/apps/sales/return'>Sales Return</MenuItem> */}
         </SubMenu>
 
         <MenuItem href='/apps/dueList' icon={<i className='tabler-receipt' />}>
@@ -134,15 +138,21 @@ const VerticalMenu = ({ scrollMenu }) => {
           Accounts
         </MenuItem>
 
-        <SubMenu label='Reports' icon={<i className='tabler-chart-bar' />}>
-          <MenuItem href='/apps/reports/profitLoss'>Profit & Loss</MenuItem>
+        <MenuItem href='/apps/reports/profitLoss' icon={<i className='tabler-credit-card' />}>
+          Profit & Loss
+        </MenuItem>
+
+        <MenuItem href='/apps/reports/activityLog' icon={<i className='tabler-chart-bar' />}>
+          Activity Log
+        </MenuItem>
+
+        {/* <SubMenu label='Reports' icon={<i className='tabler-chart-bar' />}>
           <MenuItem href='/apps/reports/purchase'>Purchase Report</MenuItem>
           <MenuItem href='/apps/reports/sales'>Sales Report</MenuItem>
           <MenuItem href='/apps/reports/suppliers'>Suppliers Report</MenuItem>
           <MenuItem href='/apps/reports/customers'>Customers Report</MenuItem>
           <MenuItem href='/apps/reports/items'>Items Report</MenuItem>
-          <MenuItem href='/apps/reports/activityLog'>Activity Log</MenuItem>
-        </SubMenu>
+        </SubMenu> */}
       </Menu>
     </ScrollWrapper>
   )

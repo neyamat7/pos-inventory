@@ -7,17 +7,13 @@ import { getLotsBySupplier, getPurchaseBySupplier, getSupplierPayments } from '@
 import { getBalanceHistory } from '@/actions/balanceActions'
 
 const Overview = async ({ supplierId, supplierData }) => {
-  // Fetch supplier lots data from backend
   const lotsResult = await getLotsBySupplier(supplierId, 1, 10, '', '', '')
 
-  // Fetch supplier purchase data from backend
   const purchaseResult = await getPurchaseBySupplier(supplierId, 1, 10, '', '', '')
 
   const balanceResult = await getBalanceHistory(supplierId, 1, 10, '', '')
 
   const paymentResult = await getSupplierPayments({ supplierId, page: 1, limit: 10 })
-
-  // console.log('payment result', paymentResult)
 
   return (
     <Grid container spacing={6}>

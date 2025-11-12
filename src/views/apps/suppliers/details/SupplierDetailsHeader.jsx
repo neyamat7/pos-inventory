@@ -1,10 +1,5 @@
-// MUI Imports
-import Button from '@mui/material/Button'
-import Typography from '@mui/material/Typography'
 
-// Component Imports
-import ConfirmationDialog from '@components/dialogs/confirmation-dialog'
-import OpenDialogOnElementClick from '@components/dialogs/OpenDialogOnElementClick'
+import Typography from '@mui/material/Typography'
 
 const SupplierDetailHeader = ({ supplierData }) => {
   // Vars

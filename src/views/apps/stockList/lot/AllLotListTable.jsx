@@ -25,14 +25,16 @@ import {
 } from '@tanstack/react-table'
 
 // Component Imports
-import { CircularProgress, IconButton } from '@mui/material'
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material'
 
 import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
 
 // Util Imports
 import tableStyles from '@core/styles/table.module.css'
-import { updateLotStatus } from '@/actions/lotActions'
+import { adjustStock, updateLotStatus } from '@/actions/lotActions'
+import OptionMenu from '@/@core/components/option-menu'
+import { showSuccess } from '@/utils/toastUtils'
 
 const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...props }) => {
   const [value, setValue] = useState(initialValue)
@@ -54,6 +56,11 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, onPageSizeChange }) => {
   const [data, setData] = useState([])
   const [globalFilter, setGlobalFilter] = useState('')
+
+  const [selectedLot, setSelectedLot] = useState(null)
+  const [viewOpen, setViewOpen] = useState(false)
+  const [adjustStockOpen, setAdjustStockOpen] = useState(false)
+  const [adjustLoading, setAdjustLoading] = useState(false)
 
   useEffect(() => {
     setData(lotData)
@@ -192,6 +199,7 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
         return value ? `৳${value}` : '৳0'
       }
     },
+
     {
       accessorKey: 'profits.totalProfit',
       header: 'Profit',
@@ -201,6 +209,7 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
         return value ? `৳${value}` : '৳0'
       }
     },
+
     {
       accessorKey: 'status',
       header: 'Status',
@@ -231,14 +240,40 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
         )
       }
     },
+
     {
       id: 'action',
       header: 'Action',
       cell: ({ row }) => (
         <div className='flex items-center'>
-          <IconButton aria-label='Delete' onClick={() => handleDelete(row)}>
-            <i className='tabler-trash text-textSecondary' />
-          </IconButton>
+          <OptionMenu
+            iconButtonProps={{ size: 'medium' }}
+            iconClassName='text-textSecondary'
+            options={[
+              {
+                text: 'View Details',
+                icon: 'tabler-eye',
+                menuItemProps: {
+                  onClick: () => {
+                    setSelectedLot(row.original)
+                    setViewOpen(true)
+                  },
+                  className: 'flex items-center gap-2'
+                }
+              },
+              {
+                text: 'Adjust Stock',
+                icon: 'tabler-edit',
+                menuItemProps: {
+                  onClick: () => {
+                    setSelectedLot(row.original)
+                    setAdjustStockOpen(true)
+                  },
+                  className: 'flex items-center gap-2'
+                }
+              }
+            ]}
+          />
         </div>
       ),
       enableSorting: false
@@ -253,6 +288,217 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
     manualPagination: true,
     pageCount: paginationData?.totalPages || 1
   })
+
+  // View Details Modal
+  const ViewDetailsModal = () => (
+    <Dialog open={viewOpen} onClose={() => setViewOpen(false)} maxWidth='md' fullWidth>
+      <DialogTitle className='flex items-center justify-between'>
+        <div className='flex items-center gap-2'>
+          <i className='tabler-eye text-xl' />
+          <span>Lot Details</span>
+        </div>
+        <IconButton size='small' onClick={() => setViewOpen(false)}>
+          <i className='tabler-x' />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent className='flex flex-col gap-4'>
+        {selectedLot && (
+          <>
+            {/* Basic Info */}
+            <Card>
+              <CardContent>
+                <h4 className='mb-4'>Basic Information</h4>
+                <div className='grid grid-cols-2 gap-4'>
+                  <div>
+                    <p className='font-medium text-textSecondary'>Lot Name</p>
+                    <p>{selectedLot.lot_name}</p>
+                  </div>
+                  <div>
+                    <p className='font-medium text-textSecondary'>Purchase Date</p>
+                    <p>{new Date(selectedLot.purchase_date).toLocaleDateString('en-GB')}</p>
+                  </div>
+                  <div>
+                    <p className='font-medium text-textSecondary'>Product</p>
+                    <p>{selectedLot.productsId?.productName}</p>
+                  </div>
+                  <div>
+                    <p className='font-medium text-textSecondary'>Supplier</p>
+                    <p>{selectedLot.supplierId?.basic_info?.name}</p>
+                  </div>
+                  <div>
+                    <p className='font-medium text-textSecondary'>Status</p>
+                    <p className={`capitalize ${selectedLot.status === 'in stock' ? 'text-success' : 'text-error'}`}>
+                      {selectedLot.status}
+                    </p>
+                  </div>
+                  <div>
+                    <p className='font-medium text-textSecondary'>Payment Status</p>
+                    <p className='capitalize'>{selectedLot.payment_status}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Carat Information */}
+            <Card>
+              <CardContent>
+                <h4 className='mb-4'>Carat Information</h4>
+                <div className='grid grid-cols-2 gap-4'>
+                  <div>
+                    <p className='font-medium text-textSecondary'>Carat Type 1</p>
+                    <p>{selectedLot.carat?.carat_Type_1 || 0}</p>
+                  </div>
+                  <div>
+                    <p className='font-medium text-textSecondary'>Carat Type 2</p>
+                    <p>{selectedLot.carat?.carat_Type_2 || 0}</p>
+                  </div>
+                  <div>
+                    <p className='font-medium text-textSecondary'>Total Carat</p>
+                    <p>{(selectedLot.carat?.carat_Type_1 || 0) + (selectedLot.carat?.carat_Type_2 || 0)}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Financial Information */}
+            <Card>
+              <CardContent>
+                <h4 className='mb-4'>Financial Information</h4>
+                <div className='grid grid-cols-2 gap-4'>
+                  <div>
+                    <p className='font-medium text-textSecondary'>Unit Cost</p>
+                    <p>৳{selectedLot.costs?.unitCost || 0}</p>
+                  </div>
+                  <div>
+                    <p className='font-medium text-textSecondary'>Commission Rate</p>
+                    <p>{selectedLot.costs?.commissionRate || 0}%</p>
+                  </div>
+                  <div>
+                    <p className='font-medium text-textSecondary'>Total Sold (kg)</p>
+                    <p>{selectedLot.sales?.totalKgSold || 0}</p>
+                  </div>
+                  <div>
+                    <p className='font-medium text-textSecondary'>Total Sold Price</p>
+                    <p>৳{selectedLot.sales?.totalSoldPrice || 0}</p>
+                  </div>
+                  <div>
+                    <p className='font-medium text-textSecondary'>Total Profit</p>
+                    <p className='text-success'>৳{selectedLot.profits?.totalProfit || 0}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Expenses */}
+            <Card>
+              <CardContent>
+                <h4 className='mb-4'>Expenses</h4>
+                <div className='grid grid-cols-2 gap-4'>
+                  <div>
+                    <p className='font-medium text-textSecondary'>Transportation</p>
+                    <p>৳{selectedLot.expenses?.transportation || 0}</p>
+                  </div>
+                  <div>
+                    <p className='font-medium text-textSecondary'>Total Expenses</p>
+                    <p className='text-error'>৳{selectedLot.expenses?.total_expenses || 0}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button variant='tonal' color='secondary' onClick={() => setViewOpen(false)}>
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+
+  // Adjust Stock Modal
+  const AdjustStockModal = () => {
+    const [unitQuantity, setUnitQuantity] = useState('')
+    const [reasonNote, setReasonNote] = useState('')
+
+    const handleSubmit = async () => {
+      if (!unitQuantity || !reasonNote.trim()) {
+        Swal.fire('Error!', 'Please fill all fields', 'error')
+
+        return
+      }
+
+      setAdjustLoading(true)
+
+      try {
+        const result = await adjustStock(selectedLot._id, {
+          unit_quantity: Number(unitQuantity),
+          reason_note: reasonNote.trim()
+        })
+
+        if (result.success) {
+          showSuccess('Success!', 'Stock adjusted successfully', 'success')
+          setAdjustStockOpen(false)
+          setUnitQuantity('')
+          setReasonNote('')
+
+          // Refresh data or update local state if needed
+        } else {
+          Swal.fire('Error!', result.error, 'error')
+        }
+      } catch (error) {
+        Swal.fire('Error!', 'Failed to adjust stock', 'error')
+      } finally {
+        setAdjustLoading(false)
+      }
+    }
+
+    return (
+      <Dialog open={adjustStockOpen} onClose={() => setAdjustStockOpen(false)} maxWidth='sm' fullWidth>
+        <DialogTitle className='flex items-center justify-between'>
+          <div className='flex items-center gap-2'>
+            <i className='tabler-edit text-xl' />
+            <span>Adjust Stock - {selectedLot?.lot_name}</span>
+          </div>
+          <IconButton size='small' onClick={() => setAdjustStockOpen(false)}>
+            <i className='tabler-x' />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent className='flex flex-col gap-4'>
+          <CustomTextField
+            label='Unit Quantity'
+            type='number'
+            value={unitQuantity}
+            onChange={e => setUnitQuantity(e.target.value)}
+            placeholder='Enter quantity to adjust'
+            fullWidth
+          />
+          <CustomTextField
+            label='Reason Note'
+            multiline
+            rows={3}
+            value={reasonNote}
+            onChange={e => setReasonNote(e.target.value)}
+            placeholder='Enter reason for stock adjustment'
+            fullWidth
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button variant='tonal' color='secondary' onClick={() => setAdjustStockOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant='contained'
+            onClick={handleSubmit}
+            disabled={adjustLoading}
+            startIcon={adjustLoading ? <CircularProgress size={16} /> : null}
+          >
+            {adjustLoading ? 'Adjusting...' : 'Adjust Stock'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
 
   return (
     <Card>
@@ -277,6 +523,7 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
           </CustomTextField>
         </div>
       </CardContent>
+
       <div className='overflow-x-auto'>
         <table className={tableStyles.table}>
           <thead>
@@ -339,7 +586,7 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
           </tbody>
         </table>
       </div>
-      {/* SERVER-SIDE Pagination */}
+
       <TablePagination
         component={() => (
           <TablePaginationComponent table={table} paginationData={paginationData} onPageChange={onPageChange} />
@@ -351,6 +598,9 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
           onPageChange(page + 1)
         }}
       />
+
+      <ViewDetailsModal />
+      <AdjustStockModal />
     </Card>
   )
 }

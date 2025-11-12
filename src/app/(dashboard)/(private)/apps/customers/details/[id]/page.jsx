@@ -2,7 +2,9 @@
 import { redirect } from 'next/navigation'
 
 // Component Imports
-import CustomerDetails from '@/views/apps/ecommerce/customers/details'
+import CustomerDetails from '@/views/apps/customers/details'
+
+// import CustomerDetails from '@/views/apps/ecommerce/customers/details'
 import { getCustomerById } from '@/actions/customerActions'
 
 const CustomerDetailsPage = async props => {

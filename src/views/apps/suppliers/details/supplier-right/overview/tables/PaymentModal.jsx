@@ -24,8 +24,6 @@ import { showError, showSuccess } from '@/utils/toastUtils'
 import { addPayment } from '@/actions/supplierAction'
 
 const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => {
-  // ============ STATE MANAGEMENT ============
-  // State for dynamic lot rows
   const [lotRows, setLotRows] = useState([
     {
       id: 1,
@@ -33,7 +31,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
       totalSell: 0,
       totalExpense: 0,
       profit: 0,
-      originalProfit: 0, // Store original profit before discount
+      originalProfit: 0,
       discountPercentage: 0,
       discountAmount: 0,
       paidAmount: 0
@@ -100,7 +98,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
     const newProfit = originalProfit - discountAmount
 
     // Calculate paid amount: totalSell - totalExpense - discountAmount - newProfit
-    const paidAmount = totalSell - totalExpense - discountAmount - newProfit
+    const paidAmount = totalSell - totalExpense - newProfit
 
     return {
       totalSell,
@@ -146,6 +144,8 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
 
           // Recalculate all values with new discount
           const calculatedValues = calculateLotValues(selectedLot, discountPercentage)
+
+          console.log('Calculated Values:', calculatedValues)
 
           return {
             ...row,

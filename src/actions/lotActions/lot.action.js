@@ -95,3 +95,22 @@ export async function getUnpaidStockOutLots() {
     }
   }
 }
+
+export async function adjustStock(lotId, adjustmentData) {
+  try {
+    const response = await api.patch(`/inventoryLots/${lotId}/adjust-stock`, adjustmentData)
+
+    return {
+      success: true,
+      data: response.data,
+      message: 'Stock adjusted successfully'
+    }
+  } catch (error) {
+    console.error('Adjust stock error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to adjust stock'
+    }
+  }
+}
