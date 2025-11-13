@@ -19,7 +19,6 @@ import { createProduct } from '@/actions/productActions'
 import { showSuccess } from '@/utils/toastUtils'
 
 // Component Imports
-
 const AddProductPage = () => {
   const [loading, setLoading] = useState(false)
   const router = useRouter()

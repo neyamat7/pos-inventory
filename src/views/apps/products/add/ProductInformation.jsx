@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 
-import { useRouter } from 'next/navigation'
+import Typography from '@mui/material/Typography'
+import Divider from '@mui/material/Divider'
 
 import MenuItem from '@mui/material/MenuItem'
 
@@ -20,9 +21,12 @@ import CustomTextField from '@core/components/mui/TextField'
 // Style Imports
 import '@/libs/styles/tiptapEditor.css'
 import { getAllCategories } from '@/actions/categoryActions'
+import { uploadImage } from '@/actions/imageActions'
+import { showError } from '@/utils/toastUtils'
 
 const ProductInformation = ({ mode = 'create', loading = false }) => {
   const { control, setValue, formMode } = useFormContext()
+  const [imageUploading, setImageUploading] = useState(false)
 
   const isEdit = formMode === 'edit'
 
@@ -57,12 +61,45 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
     fetchCategories()
   }, [])
 
-  // Update preview when productImage changes
-  useEffect(() => {
-    if (productImage) {
-      setImagePreview(productImage)
+  // IMAGE UPLOAD HANDLER
+  const handleImageUpload = async event => {
+    const file = event.target.files[0]
+
+    if (!file) return
+
+    const localPreview = URL.createObjectURL(file)
+
+    setImagePreview(localPreview)
+
+    setImageUploading(true)
+
+    try {
+      const formData = new FormData()
+
+      formData.append('image', file)
+
+      // Call the upload image action
+      const uploadResult = await uploadImage(formData)
+
+      if (uploadResult.success) {
+        // Extract image URL from response - adjust based on your API response structure
+        const imagePath = uploadResult.data?.filepath || uploadResult.data.imageUrl
+
+        // Set the image URL in the form field
+        setValue('productImage', imagePath)
+      } else {
+        console.error('Image upload failed:', uploadResult.error)
+
+        // You can add a toast notification here
+        showError(`Image upload failed: ${uploadResult.error}`)
+      }
+    } catch (error) {
+      console.error('Image upload error:', error)
+      showError('Error uploading image. Please try again.')
+    } finally {
+      setImageUploading(false)
     }
-  }, [productImage])
+  }
 
   return (
     <Card>
@@ -236,32 +273,43 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
             />
           </Grid>
 
-          {/* Product Image URL */}
+          {/* PRODUCT IMAGE UPLOAD SECTION */}
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Card variant='outlined'>
               <CardHeader title='Product Image' sx={{ pb: 2 }} />
               <CardContent className='space-y-4'>
-                <Controller
-                  name='productImage'
-                  control={control}
-                  render={({ field }) => (
-                    <CustomTextField
-                      fullWidth
-                      label=''
-                      placeholder='https://example.com/image.jpg'
-                      {...field}
-                      disabled={loading}
-                    />
+                {/*  FILE UPLOAD INPUT   */}
+                <div className='flex flex-col gap-2'>
+                  <input
+                    type='file'
+                    accept='image/*'
+                    onChange={handleImageUpload}
+                    disabled={loading || imageUploading}
+                    className='block w-full text-sm text-textSecondary
+            file:mr-4 file:py-2 file:px-4
+            file:rounded-md file:border-0
+            file:text-sm file:font-medium
+            file:bg-primary file:text-white
+            hover:file:bg-primaryDark disabled:opacity-50'
+                  />
+                  {/* Uploading status indicator */}
+                  {imageUploading && (
+                    <Typography variant='body2' color='text.secondary'>
+                      Uploading image...
+                    </Typography>
                   )}
-                />
+                </div>
 
-                {/* Image Preview */}
+                {/* ========== IMAGE PREVIEW ========== */}
                 {imagePreview && (
-                  <div className='flex justify-center'>
+                  <div className='flex flex-col items-center gap-2'>
+                    <Typography variant='body2' color='text.secondary'>
+                      Preview:
+                    </Typography>
                     <img
                       src={imagePreview}
                       alt='Product preview'
-                      className='rounded-lg max-w-48 max-h-48 object-cover shadow-md'
+                      className='rounded-lg max-w-48 max-h-48 object-cover shadow-md border'
                       onError={e => {
                         e.target.style.display = 'none'
                       }}

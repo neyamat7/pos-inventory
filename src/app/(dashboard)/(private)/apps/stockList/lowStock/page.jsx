@@ -1,12 +1,12 @@
-// Data Imports
-import { getEcommerceData } from '@/app/server/actions'
-import LowStockList from '@/views/apps/ecommerce/stockList/lowStock/list'
+// // Data Imports
+// import { getEcommerceData } from '@/app/server/actions'
+// import LowStockList from '@/views/apps/ecommerce/stockList/lowStock/list'
 
-const LowStockPage = async () => {
-  // Vars
-  const data = await getEcommerceData()
+// const LowStockPage = async () => {
+//   // Vars
+//   const data = await getEcommerceData()
 
-  return <LowStockList lowStockData={data?.lowStockData} />
-}
+//   return <LowStockList lowStockData={data?.lowStockData} />
+// }
 
-export default LowStockPage
+// export default LowStockPage

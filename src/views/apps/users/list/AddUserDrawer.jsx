@@ -14,6 +14,7 @@ import { useForm, Controller } from 'react-hook-form'
 
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
+import { uploadImage } from '@/actions/imageActions'
 
 const AddUserDrawer = props => {
   // Props
@@ -21,6 +22,8 @@ const AddUserDrawer = props => {
 
   // States
   const [loading, setLoading] = useState(false)
+  const [imageFile, setImageFile] = useState(null)
+  const [imagePreview, setImagePreview] = useState('')
 
   // Hooks
   const {
@@ -39,10 +42,53 @@ const AddUserDrawer = props => {
     }
   })
 
+  // Handle image file selection
+  const handleImageChange = event => {
+    const file = event.target.files[0]
+
+    if (file) {
+      setImageFile(file)
+
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file)
+
+      setImagePreview(previewUrl)
+    }
+  }
+
+  // Upload image first, then submit user data
   const onSubmit = async data => {
     setLoading(true)
 
     try {
+      let imageUrl = data.imageUrl // Use provided URL if any
+
+      console.log('image file', imageFile)
+
+      // If image file is selected, upload it first
+      if (imageFile) {
+        const formData = new FormData()
+
+        formData.append('image', imageFile)
+
+        console.log('FormData contents:', formData.get('image'))
+
+        const uploadResult = await uploadImage(formData)
+
+        if (!uploadResult.success) {
+          alert(`Image upload failed: ${uploadResult.error}`)
+          setLoading(false)
+
+          return
+        }
+
+        // console.log('image result', uploadResult)
+
+        // Use the uploaded image URL
+        imageUrl = uploadResult.data.filepath || uploadResult.data.imageUrl
+      }
+
+      // Now submit user data with the image URL
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -54,7 +100,7 @@ const AddUserDrawer = props => {
           phone: data.phone,
           password: data.password,
           role: data.role,
-          imageUrl: data.imageUrl
+          imageUrl: imageUrl || ''
         })
       })
 
@@ -68,12 +114,12 @@ const AddUserDrawer = props => {
           email: data.email,
           phone: data.phone,
           role: data.role,
-          image: data.imageUrl || `https://randomuser.me/api/portraits/men/${Math.floor(Math.random() * 99)}.jpg`
+          image: imageUrl || null
         }
 
         setData([...(userData ?? []), newUser])
         handleClose()
-        resetForm({ name: '', email: '', phone: '', password: '', role: '', imageUrl: '' })
+        resetAll()
         alert('User created successfully!')
       } else {
         alert(`Error: ${result.message}`)
@@ -86,9 +132,16 @@ const AddUserDrawer = props => {
     }
   }
 
+  // Reset everything
+  const resetAll = () => {
+    setImageFile(null)
+    setImagePreview('')
+    resetForm({ name: '', email: '', phone: '', password: '', role: '', imageUrl: '' })
+  }
+
   const handleReset = () => {
     handleClose()
-    resetForm({ name: '', email: '', phone: '', password: '', role: '', imageUrl: '' })
+    resetAll()
   }
 
   return (
@@ -142,7 +195,7 @@ const AddUserDrawer = props => {
             )}
           />
 
-          {/* phone */}
+          {/* Phone */}
           <Controller
             name='phone'
             control={control}
@@ -196,19 +249,59 @@ const AddUserDrawer = props => {
             )}
           />
 
-          {/* Image URL */}
-          <Controller
-            name='imageUrl'
-            control={control}
-            render={({ field }) => (
-              <CustomTextField
-                {...field}
-                fullWidth
-                label='Image URL (Optional)'
-                placeholder='https://example.com/avatar.jpg'
-              />
+          {/* Image Upload */}
+          <div className='flex flex-col gap-2'>
+            <Typography variant='body2' color='text.primary'>
+              Profile Image
+            </Typography>
+
+            {/* File Input */}
+            <input
+              type='file'
+              accept='image/*'
+              onChange={handleImageChange}
+              className='block w-full text-sm text-textSecondary
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-md file:border-0
+                file:text-sm file:font-medium
+                file:bg-primary file:text-white
+                hover:file:bg-primaryDark'
+            />
+
+            {/* Image Preview */}
+            {imagePreview && (
+              <div className='mt-2'>
+                <Typography variant='body2' className='mbe-2'>
+                  Preview:
+                </Typography>
+                <img src={imagePreview} alt='Preview' className='w-20 h-20 rounded-full object-cover border' />
+              </div>
             )}
-          />
+
+            {/* OR separator */}
+            <div className='flex items-center gap-2 my-2'>
+              <Divider className='flex-1' />
+              <Typography variant='body2' color='text.secondary'>
+                OR
+              </Typography>
+              <Divider className='flex-1' />
+            </div>
+
+            {/* Image URL (fallback) */}
+            <Controller
+              name='imageUrl'
+              control={control}
+              render={({ field }) => (
+                <CustomTextField
+                  {...field}
+                  fullWidth
+                  label='Image URL (Optional)'
+                  placeholder='https://example.com/avatar.jpg'
+                  size='small'
+                />
+              )}
+            />
+          </div>
 
           {/* Actions */}
           <div className='flex items-center gap-4'>

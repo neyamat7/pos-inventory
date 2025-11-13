@@ -129,8 +129,7 @@ const ProductTable = ({ data, pagination, total, onPaginationChange, loading, su
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
         <Button
           variant='contained'
-          color='primary'
-          startIcon={<DollarSign size={18} />}
+          color='primary' 
           onClick={() => setPaymentModalOpen(true)}
           sx={{ textTransform: 'none', fontWeight: 600 }}
         >

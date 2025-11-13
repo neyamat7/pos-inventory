@@ -69,35 +69,36 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 // -------------------- component --------------------
 const columnHelper = createColumnHelper()
 
-const DueListTable = ({ suppliersData, customersData }) => {
+const DueListTable = ({
+  tableData,
+  paginationData,
+  loading,
+  selectedType,
+  onTypeChange,
+  onPageChange,
+  onPageSizeChange,
+  onSearch,
+  searchTerm
+}) => {
   // -------------------- state --------------------
   const [rowSelection, setRowSelection] = useState({})
-  const [globalFilter, setGlobalFilter] = useState('')
-  const [filterType, setFilterType] = useState('all') // 'customers' | 'suppliers'
-
-  // local editable copies so Delete action can mutate lists
-  const [customerList, setCustomerList] = useState((customersData ?? []).filter(item => Number(item?.due) > 0))
-
-  const [supplierList, setSupplierList] = useState((suppliersData ?? []).filter(item => Number(item?.due) > 0))
-
-  // rehydrate lists if props change
-  useEffect(() => {
-    setCustomerList((customersData ?? []).filter(item => Number(item?.due) > 0))
-  }, [customersData])
-
-  useEffect(() => {
-    setSupplierList((suppliersData ?? []).filter(item => Number(item?.due) > 0))
-  }, [suppliersData])
+  const [globalFilter, setGlobalFilter] = useState(searchTerm || '')
 
   const { lang: locale } = useParams()
 
-  // choose dataset based on filter + only due > 0
-  const tableData = useMemo(() => {
-    if (filterType === 'customers') return customerList
-    if (filterType === 'suppliers') return supplierList
+  // Handle search changes
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      onSearch(globalFilter)
+    }, 500)
 
-    return [...customerList, ...supplierList]
-  }, [customerList, supplierList, filterType])
+    return () => clearTimeout(timeout)
+  }, [globalFilter, onSearch])
+
+  // Handle initial search term
+  useEffect(() => {
+    setGlobalFilter(searchTerm || '')
+  }, [searchTerm])
 
   // -------------------- helpers --------------------
   const getAvatar = (image, name) => {
@@ -113,97 +114,74 @@ const DueListTable = ({ suppliersData, customersData }) => {
   // -------------------- columns --------------------
   const columns = useMemo(
     () => [
-      columnHelper.accessor('sl', { header: 'SL.' }),
+      columnHelper.accessor('sl', {
+        header: 'SL.',
+        cell: ({ row }) => {
+          const currentPage = paginationData?.currentPage || 1
+          const pageSize = paginationData?.limit || 10
+
+          return (currentPage - 1) * pageSize + row.index + 1
+        }
+      }),
 
       columnHelper.display({
         id: 'name',
         header: 'Name',
         cell: ({ row }) => {
-          const { image, name } = row.original
+          const { basic_info, _id } = row.original
+          const name = basic_info?.name || 'N/A'
+          const role = basic_info?.role || 'customer'
+
+          // Determine the correct link based on role
+          const link = role === 'supplier' ? `/apps/suppliers/details/${_id}` : `/apps/customers/details/${_id}`
 
           return (
-            <Link href={`/apps/suppliers/details/1`} className='flex items-center gap-3'>
-              {getAvatar(image, name)}
+            <Link href={link} className='flex items-center gap-3'>
+              {getAvatar(null, name)}
               <span className='font-medium hover:text-blue-600 hover:underline'>{name}</span>
             </Link>
           )
         }
       }),
 
-      columnHelper.accessor('email', {
+      columnHelper.accessor('contact_info.email', {
         header: 'Email',
-        cell: info => <span className='text-textSecondary'>{info.getValue()}</span>
+        cell: info => <span className='text-textSecondary'>{info.getValue() || '—'}</span>
       }),
 
-      columnHelper.accessor('phone', {
+      columnHelper.accessor('contact_info.phone', {
         header: 'Phone',
-        cell: info => <span>{info.getValue()}</span>
+        cell: info => <span>{info.getValue() || '—'}</span>
       }),
 
-      columnHelper.accessor('type', {
+      columnHelper.accessor('basic_info.role', {
         header: 'Type',
-        cell: info => <span>{info.getValue()}</span>
+        cell: info => {
+          const role = info.getValue()
+
+          return <span className='capitalize'>{role || '—'}</span>
+        }
       }),
 
-      columnHelper.accessor('due', {
+      columnHelper.accessor('account_info.due', {
         header: 'Due Amount',
         cell: info => {
           const val = Number(info.getValue() ?? 0)
 
-          return <span className={val > 0 ? 'text-error font-medium' : ''}>{val.toLocaleString()}</span>
+          return <span className={val > 0 ? 'text-error font-medium' : ''}>৳{val.toLocaleString()}</span>
         }
-      }),
-
-      columnHelper.display({
-        id: 'action',
-        header: 'Action',
-        cell: ({ row }) => (
-          <div className='flex items-center'>
-            <OptionMenu
-              iconButtonProps={{ size: 'medium' }}
-              iconClassName='text-textSecondary'
-              options={[
-                {
-                  text: 'View',
-                  icon: 'tabler-eye',
-
-                  // href: `/people/${row.original.type === 'Supplier' ? 'suppliers' : 'customers'}/${row.original.sl}`,
-                  href: `/apps/suppliers/details/1`,
-                  linkProps: { className: 'flex items-center gap-2 w-full px-2 py-1' }
-                },
-                {
-                  text: 'Delete',
-                  icon: 'tabler-trash',
-                  menuItemProps: {
-                    onClick: () => {
-                      const sl = row.original.sl
-
-                      if (filterType === 'customers') {
-                        setCustomerList(prev => prev.filter(item => item.sl !== sl))
-                      } else {
-                        setSupplierList(prev => prev.filter(item => item.sl !== sl))
-                      }
-                    },
-                    className: 'flex items-center text-red-500 gap-2 w-full px-2 py-1'
-                  }
-                }
-              ]}
-            />
-          </div>
-        ),
-        enableSorting: false
       })
     ],
-    [filterType]
+    [paginationData]
   )
 
   // -------------------- table --------------------
   const table = useReactTable({
-    data: tableData,
+    data: tableData || [],
     columns,
     filterFns: { fuzzy: fuzzyFilter },
     state: { rowSelection, globalFilter },
-    initialState: { pagination: { pageSize: 10 } },
+    initialState: { pagination: { pageSize: paginationData?.limit || 10 } },
     enableRowSelection: true,
     globalFilterFn: fuzzyFilter,
     onRowSelectionChange: setRowSelection,
@@ -225,13 +203,12 @@ const DueListTable = ({ suppliersData, customersData }) => {
           <CustomTextField
             select
             label='Show'
-            value={filterType}
-            onChange={e => setFilterType(e.target.value)}
+            value={selectedType}
+            onChange={e => onTypeChange(e.target.value)}
             className='min-w-[220px] max-sm:w-full'
           >
-            <MenuItem value='all'>All due</MenuItem>
-            <MenuItem value='customers'>Customers due</MenuItem>
             <MenuItem value='suppliers'>Suppliers due</MenuItem>
+            <MenuItem value='customers'>Customers due</MenuItem>
           </CustomTextField>
         </div>
 
@@ -244,8 +221,8 @@ const DueListTable = ({ suppliersData, customersData }) => {
           />
           <CustomTextField
             select
-            value={table.getState().pagination.pageSize}
-            onChange={e => table.setPageSize(Number(e.target.value))}
+            value={paginationData?.limit || 10}
+            onChange={e => onPageSizeChange(Number(e.target.value))}
             className='is-[90px] max-sm:w-full'
             label='Rows'
           >
@@ -285,39 +262,46 @@ const DueListTable = ({ suppliersData, customersData }) => {
             ))}
           </thead>
 
-          {table.getFilteredRowModel().rows.length === 0 ? (
-            <tbody>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
+                  <div className='flex items-center justify-center gap-2 p-4'>
+                    <i className='tabler-refresh animate-spin' />
+                    <span>Loading data...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : table.getFilteredRowModel().rows.length === 0 ? (
               <tr>
                 <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
                   No data available
                 </td>
               </tr>
-            </tbody>
-          ) : (
-            <tbody>
-              {table
-                .getRowModel()
-                .rows.slice(0, table.getState().pagination.pageSize)
-                .map(row => (
-                  <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
-                    {row.getVisibleCells().map(cell => (
-                      <td className='whitespace-nowrap border-r' key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-            </tbody>
-          )}
+            ) : (
+              table.getRowModel().rows.map(row => (
+                <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
+                  {row.getVisibleCells().map(cell => (
+                    <td className='whitespace-nowrap border-r' key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
+          </tbody>
         </table>
       </div>
 
+      {/* Server-side Pagination */}
       <TablePagination
-        component={() => <TablePaginationComponent table={table} />}
-        count={table.getFilteredRowModel().rows.length}
-        rowsPerPage={table.getState().pagination.pageSize}
-        page={table.getState().pagination.pageIndex}
-        onPageChange={(_, page) => table.setPageIndex(page)}
+        component={() => (
+          <TablePaginationComponent table={table} paginationData={paginationData} onPageChange={onPageChange} />
+        )}
+        count={paginationData?.total || 0}
+        rowsPerPage={paginationData?.limit || 10}
+        page={(paginationData?.currentPage || 1) - 1}
+        onPageChange={(_, page) => onPageChange(page + 1)}
       />
     </Card>
   )

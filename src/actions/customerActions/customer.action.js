@@ -117,3 +117,34 @@ export async function getSalesByCustomer(customerId, page = 1, limit = 10, searc
     }
   }
 }
+
+export async function getCustomerDueList({ page = 1, limit = 10 } = {}) {
+  try {
+    if (page < 1 || limit < 1) {
+      return {
+        success: false,
+        error: 'Page and limit must be positive numbers'
+      }
+    }
+
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    })
+
+    const response = await api.get(`/customer/due-list?${params.toString()}`)
+
+    return {
+      success: true,
+      data: response.data,
+      message: 'Customer due list fetched successfully'
+    }
+  } catch (error) {
+    console.error('Get customer due list error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch customer due list'
+    }
+  }
+}

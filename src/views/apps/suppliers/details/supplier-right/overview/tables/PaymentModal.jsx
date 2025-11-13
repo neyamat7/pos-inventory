@@ -20,8 +20,9 @@ import {
 } from '@mui/material'
 import { X, Plus } from 'lucide-react'
 
-import { showError, showSuccess } from '@/utils/toastUtils'
+import { showError, showInfo, showSuccess } from '@/utils/toastUtils'
 import { addPayment } from '@/actions/supplierAction'
+import { uploadImage } from '@/actions/imageActions'
 
 const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => {
   const [lotRows, setLotRows] = useState([
@@ -46,6 +47,10 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
   const [paidAmountInput, setPaidAmountInput] = useState(0) // Changed name from receiveAmount
   const [documentUrl, setDocumentUrl] = useState('')
   const [note, setNote] = useState('')
+
+  const [documentFile, setDocumentFile] = useState(null)
+  const [documentUploading, setDocumentUploading] = useState(false)
+  const [documentPreview, setDocumentPreview] = useState('')
 
   // State for validation error
   const [balanceError, setBalanceError] = useState('')
@@ -77,7 +82,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
     const availableBalance = supplierData?.account_info?.balance || 0
 
     if (Number(amountFromBalance) > availableBalance) {
-      setBalanceError(`Cannot exceed available balance of $${availableBalance}`)
+      setBalanceError(`Cannot exceed available balance of ${availableBalance}`)
     } else {
       setBalanceError('')
     }
@@ -197,20 +202,59 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
     }
   }
 
+  // Handle document file upload
+  const handleDocumentUpload = async event => {
+    const file = event.target.files[0]
+
+    if (!file) return
+
+    const localPreview = URL.createObjectURL(file)
+
+    setDocumentPreview(localPreview)
+
+    setDocumentUploading(true)
+
+    try {
+      const formData = new FormData()
+
+      formData.append('image', file)
+
+      const uploadResult = await uploadImage(formData)
+
+      if (uploadResult.success) {
+        // Extract filename and construct proper URL
+        const imagePath = uploadResult.data?.filepath || uploadResult.data.imageUrl
+
+        // Set the document URL
+        setDocumentUrl(imagePath)
+      } else {
+        console.error('Document upload failed:', uploadResult.error)
+        showError(`Document upload failed: ${uploadResult.error}`)
+      }
+    } catch (error) {
+      console.error('Document upload error:', error)
+      showError('Error uploading document. Please try again.')
+    } finally {
+      setDocumentUploading(false)
+    }
+  }
+
   // Handle submit
   const handleSubmit = async () => {
+    console.log('submit called')
+
     // Validation: Check if at least one lot is selected
     const hasSelectedLots = lotRows.some(row => row.selectedLotId !== '')
 
     if (!hasSelectedLots) {
-      alert('Please select at least one lot')
+      showInfo('Please select at least one lot')
 
       return
     }
 
     // Validation: Check balance error
     if (balanceError) {
-      alert('Please fix the balance amount error')
+      showError('Please fix the balance amount error')
 
       return
     }
@@ -220,13 +264,13 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
       date: paymentDate ? new Date(paymentDate).toISOString() : new Date().toISOString(),
       supplierId: supplierId,
       selected_lots_info: lotRows
-        .filter(row => row.selectedLotId !== '') // Only include selected lots
+        .filter(row => row.selectedLotId !== '')
         .map(row => ({
           lot_id: row.selectedLotId,
           total_sell: row.totalSell,
           total_expense: row.totalExpense,
           profit: row.profit,
-          discount: row.discountPercentage, // Store percentage, not amount
+          discount: row.discountPercentage,
           paid_amount: row.paidAmount
         })),
       payment_method: paymentMethod,
@@ -247,15 +291,26 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
     if (result.success) {
       showSuccess('Payment added successfully!')
       onClose()
+      resetDocumentState()
     } else {
       showError(result.error || 'Failed to add payment')
     }
   }
 
+  const resetDocumentState = () => {
+    setDocumentFile(null)
+    setDocumentPreview('')
+    setDocumentUrl('')
+    setDocumentUploading(false)
+  }
+
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={() => {
+        resetDocumentState()
+        onClose()
+      }}
       maxWidth='lg'
       fullWidth
       PaperProps={{
@@ -279,7 +334,13 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
         <Typography variant='h5' fontWeight='bold'>
           Clear Payment
         </Typography>
-        <IconButton onClick={onClose} sx={{ color: 'white' }}>
+        <IconButton
+          onClick={() => {
+            resetDocumentState()
+            onClose()
+          }}
+          sx={{ color: 'white' }}
+        >
           <X size={24} />
         </IconButton>
       </DialogTitle>
@@ -321,7 +382,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                 Balance
               </Typography>
               <Typography variant='body1' fontWeight='600' color='success.main'>
-                ${supplierData?.account_info?.balance || 0}
+                {supplierData?.account_info?.balance || 0}
               </Typography>
             </Grid>
             <Grid item xs={6} sm={4}>
@@ -329,7 +390,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                 Due
               </Typography>
               <Typography variant='body1' fontWeight='600' color='error.main'>
-                ${supplierData?.account_info?.due || 0}
+                {supplierData?.account_info?.due || 0}
               </Typography>
             </Grid>
           </Grid>
@@ -411,7 +472,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                   <TextField
                     fullWidth
                     size='small'
-                    value={`$${row.totalSell.toFixed(2)}`}
+                    value={`${row.totalSell.toFixed(2)}`}
                     disabled
                     InputProps={{ readOnly: true }}
                   />
@@ -422,7 +483,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                   <TextField
                     fullWidth
                     size='small'
-                    value={`$${row.totalExpense.toFixed(2)}`}
+                    value={`${row.totalExpense.toFixed(2)}`}
                     disabled
                     InputProps={{ readOnly: true }}
                   />
@@ -433,7 +494,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                   <TextField
                     fullWidth
                     size='small'
-                    value={`$${row.profit.toFixed(2)}`}
+                    value={`${row.profit.toFixed(2)}`}
                     disabled
                     InputProps={{ readOnly: true }}
                   />
@@ -460,7 +521,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                   <TextField
                     fullWidth
                     size='small'
-                    value={`$${row.paidAmount.toFixed(2)}`}
+                    value={`${row.paidAmount.toFixed(2)}`}
                     disabled
                     InputProps={{ readOnly: true }}
                   />
@@ -498,16 +559,50 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
           </Box>
         </Box>
 
-        {/* ============ DOCUMENT URL INPUT ============ */}
+        {/* ============ DOCUMENT UPLOAD SECTION ============ */}
         <Box sx={{ mb: 3 }}>
-          <TextField
-            fullWidth
-            label='Document/Image URL'
-            placeholder='https://example.com/payment-proof.jpg'
-            value={documentUrl}
-            onChange={e => setDocumentUrl(e.target.value)}
-            size='small'
-          />
+          <Typography variant='body1' fontWeight='medium' gutterBottom>
+            Payment Proof Document
+          </Typography>
+
+          <div className='flex flex-col gap-2'>
+            {/* File Upload Input */}
+            <input
+              type='file'
+              accept='image/*'
+              onChange={handleDocumentUpload}
+              disabled={documentUploading}
+              className='block w-full text-sm text-textSecondary
+        file:mr-4 file:py-2 file:px-4
+        file:rounded-md file:border-0
+        file:text-sm file:font-medium
+        file:bg-primary file:text-white
+        hover:file:bg-primaryDark disabled:opacity-50'
+            />
+
+            {documentUploading && (
+              <Typography variant='body2' color='text.secondary'>
+                Uploading document...
+              </Typography>
+            )}
+
+            {/* Document Preview */}
+            {documentPreview && (
+              <div className='flex flex-col items-center gap-2 mt-2'>
+                <Typography variant='body2' color='text.secondary'>
+                  Preview:
+                </Typography>
+                <img
+                  src={documentPreview}
+                  alt='Document preview'
+                  className='max-h-40 rounded-lg shadow-md object-contain border border-gray-200'
+                  onError={e => {
+                    e.target.style.display = 'none'
+                  }}
+                />
+              </div>
+            )}
+          </div>
         </Box>
 
         {/* ============ PAYMENT SUMMARY SECTION ============ */}
@@ -560,7 +655,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                   onChange={e => handleAmountFromBalanceChange(e.target.value)}
                   size='small'
                   error={!!balanceError}
-                  helperText={balanceError || `Available Balance: $${supplierData?.account_info?.balance || 0}`}
+                  helperText={balanceError || `Available Balance: ${supplierData?.account_info?.balance || 0}`}
                   inputProps={{ min: 0, max: supplierData?.account_info?.balance || 0 }}
                 />
               </Grid>
@@ -597,7 +692,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
               <TextField
                 fullWidth
                 label='Payable Amount'
-                value={`$${summary.payableAmount.toFixed(2)}`}
+                value={`${summary.payableAmount.toFixed(2)}`}
                 disabled
                 size='small'
                 InputProps={{ readOnly: true }}
@@ -609,7 +704,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
               <TextField
                 fullWidth
                 label='Need to Pay'
-                value={`$${summary.needToPayDue.toFixed(2)}`}
+                value={`${summary.needToPayDue.toFixed(2)}`}
                 disabled
                 size='small'
                 InputProps={{ readOnly: true }}
@@ -628,7 +723,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
               <TextField
                 fullWidth
                 label='Total Profit'
-                value={`$${summary.totalProfit.toFixed(2)}`}
+                value={`${summary.totalProfit.toFixed(2)}`}
                 disabled
                 size='small'
                 InputProps={{ readOnly: true }}
@@ -640,7 +735,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
               <TextField
                 fullWidth
                 label='Total Lots Expenses'
-                value={`$${summary.totalLotsExpenses.toFixed(2)}`}
+                value={`${summary.totalLotsExpenses.toFixed(2)}`}
                 disabled
                 size='small'
                 InputProps={{ readOnly: true }}

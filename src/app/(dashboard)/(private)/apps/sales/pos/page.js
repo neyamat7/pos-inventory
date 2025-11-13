@@ -12,10 +12,6 @@ const posPage = async () => {
     getAllCategories({ page: 1, limit: 100 })
   ])
 
-  // console.log('customers', customers)
-  // console.log('lots', lots)
-  // console.log('products', products)
-
   return (
     <POSSystem
       customersData={customers.success ? customers.data.customers : []}

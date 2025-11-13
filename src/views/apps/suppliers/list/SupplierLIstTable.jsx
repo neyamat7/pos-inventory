@@ -45,7 +45,9 @@ import tableStyles from '@core/styles/table.module.css'
 import AddSupplierDrawer from './AddSupplierDrawer'
 import OptionMenu from '@/@core/components/option-menu'
 import { addBalance, updateSupplier } from '@/actions/supplierAction'
-import { showError, showSuccess } from '@/utils/toastUtils'
+import { showError, showInfo, showSuccess } from '@/utils/toastUtils'
+import { uploadImage } from '@/actions/imageActions'
+import { getImageUrl } from '@/utils/getImageUrl'
 
 export const paymentStatus = {
   1: { text: 'Paid', color: 'success' },
@@ -137,9 +139,6 @@ const SupplierListTable = ({
   const [openCrateModal, setOpenCrateModal] = useState(false)
   const [selectedSupplier, setSelectedSupplier] = useState(null)
 
-  const [crateForm, setCrateForm] = useState({})
-
-  const [isUpdatingCrate, setIsUpdatingCrate] = useState(false)
   const [isAddingBalance, setIsAddingBalance] = useState(false)
 
   const [balanceForm, setBalanceForm] = useState({
@@ -198,10 +197,19 @@ const SupplierListTable = ({
         cell: ({ row }) => {
           const name = row.original.basic_info?.name || row.original.name
           const email = row.original.contact_info?.email || row.original.email
+          const avatar = row.original.basic_info?.avatar || row.original.image
 
           return (
             <div className='flex items-center gap-3'>
-              {getAvatar(row.original)}
+              {/* Updated avatar with helper function */}
+              {avatar ? (
+                <CustomAvatar src={getImageUrl(avatar)} skin='light' size={34} />
+              ) : (
+                <CustomAvatar skin='light' size={34}>
+                  {getInitials(name || 'S')}
+                </CustomAvatar>
+              )}
+
               <div className='flex flex-col items-start'>
                 <Typography
                   component={Link}
@@ -276,58 +284,6 @@ const SupplierListTable = ({
                     },
                     className: 'flex items-center'
                   }
-                },
-
-                {
-                  text: 'Add Crate',
-                  icon: 'tabler-box',
-                  menuItemProps: {
-                    onClick: () => {
-                      setSelectedSupplier(row.original)
-                      const crateInfo = row.original.crate_info || {}
-
-                      // Initialize crateForm with only crate1 and crate2
-                      setCrateForm({
-                        crate1: {
-                          qty: crateInfo.crate1 || 0,
-                          price: crateInfo.crate1Price || 0
-                        },
-                        crate2: {
-                          qty: crateInfo.crate2 || 0,
-                          price: crateInfo.crate2Price || 0
-                        }
-                      })
-                      setOpenCrateModal(true)
-                    },
-                    className: 'flex items-center'
-                  }
-                },
-                {
-                  text: 'Delete',
-                  icon: 'tabler-trash',
-                  menuItemProps: {
-                    onClick: async () => {
-                      const Swal = (await import('sweetalert2')).default
-                      const name = row.original.basic_info?.name || row.original.name
-                      const sl = row.original.basic_info?.sl || row.original.sl
-
-                      Swal.fire({
-                        title: 'Are you sure?',
-                        text: `You are about to delete ${name}. This action cannot be undone.`,
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Yes, delete it!'
-                      }).then(result => {
-                        if (result.isConfirmed) {
-                          setData(prev => prev.filter(item => (item.basic_info?.sl || item.sl) !== sl))
-                          Swal.fire('Deleted!', `${name} has been removed.`, 'success')
-                        }
-                      })
-                    },
-                    className: 'flex items-center text-red-500'
-                  }
                 }
               ]}
             />
@@ -388,48 +344,50 @@ const SupplierListTable = ({
   const handleBalanceSubmit = async () => {
     // Validation
     if (!balanceForm.amount || !balanceForm.transaction_Id || !balanceForm.payment_method) {
-      alert('Please fill in all required fields')
+      showInfo('Please fill in all required fields')
 
       return
     }
 
     setIsAddingBalance(true)
 
-    // Create FormData for multer
-    // const formData = new FormData()
-
-    // formData.append('date', balanceForm.date)
-    // formData.append('amount', balanceForm.amount)
-    // formData.append('transaction_Id', balanceForm.transaction_Id)
-    // formData.append('note', balanceForm.note)
-    // formData.append('payment_method', balanceForm.payment_method)
-    // formData.append('balance_for', selectedSupplier._id)
-    // formData.append('collection', 'supplier')
-
-    // // Append image file if exists
-    // if (balanceForm.slip_img) {
-    //   formData.append('slip_img', balanceForm.slip_img)
-    // } else {
-    //   formData.append('slip_img', 'https://i.postimg.cc/y86SS6X7/Chat-GPT-Image-Nov-4-2025-11-06-30-AM.png')
-    // }
-
-    // console.log('formdata', formData)
-
-    const balanceData = {
-      date: balanceForm.date,
-      amount: balanceForm.amount,
-      transaction_Id: balanceForm.transaction_Id,
-      note: balanceForm.note,
-      payment_method: balanceForm.payment_method,
-      balance_for: selectedSupplier._id,
-      role: 'supplier',
-      slip_img: 'https://i.postimg.cc/y86SS6X7/Chat-GPT-Image-Nov-4-2025-11-06-30-AM.png'
-    }
-
-    // console.log('Balance Data:', balanceData)
-
     try {
-      // Call the addBalance server action
+      let slipImageUrl = balanceForm.slip_img
+
+      // ========== UPLOAD SLIP IMAGE IF FILE EXISTS ==========
+      if (balanceForm.slip_img && typeof balanceForm.slip_img !== 'string') {
+        const formData = new FormData()
+
+        formData.append('image', balanceForm.slip_img)
+
+        const uploadResult = await uploadImage(formData)
+
+        if (uploadResult.success) {
+          // Extract filename and construct proper URL
+          const imagePath = uploadResult.data?.filepath || uploadResult.data.imageUrl
+
+          slipImageUrl = imagePath
+        } else {
+          showError(`Slip image upload failed: ${uploadResult.error}`)
+          setIsAddingBalance(false)
+
+          return
+        }
+      }
+
+      // ========== PREPARE BALANCE DATA ==========
+      const balanceData = {
+        date: balanceForm.date,
+        amount: balanceForm.amount,
+        transaction_Id: balanceForm.transaction_Id,
+        note: balanceForm.note,
+        payment_method: balanceForm.payment_method,
+        balance_for: selectedSupplier._id,
+        role: 'supplier',
+        slip_img: slipImageUrl || null
+      }
+
+      // ========== CALL ADD BALANCE ACTION ==========
       const result = await addBalance(balanceData)
 
       if (result.success) {
@@ -728,7 +686,9 @@ const SupplierListTable = ({
 
               {/* Upload Slip Image */}
               <div className='flex flex-col gap-2 mb-4'>
-                <label className='text-sm font-medium text-gray-700'>Upload Payment Slip (Optional)</label>
+                <label className='text-sm font-medium text-gray-700'>
+                  Upload Payment Slip {isAddingBalance && '(Uploading...)'}
+                </label>
                 <input
                   type='file'
                   accept='image/*'
@@ -739,12 +699,24 @@ const SupplierListTable = ({
                       setBalanceForm(prev => ({ ...prev, slip_img: file }))
                     }
                   }}
-                  className='w-full rounded-lg border border-gray-300 p-2 text-sm bg-gray-50 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition'
+                  disabled={isAddingBalance}
+                  className={`w-full rounded-lg border border-gray-300 p-2 text-sm bg-gray-50 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition ${
+                    isAddingBalance ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 />
+
+                {/* ========== IMAGE PREVIEW ========== */}
                 {balanceForm.slip_img && (
-                  <div className='mt-2 flex justify-center'>
+                  <div className='mt-2 flex flex-col items-center gap-2'>
+                    <Typography variant='body2' color='text.secondary'>
+                      Preview:
+                    </Typography>
                     <img
-                      src={URL.createObjectURL(balanceForm.slip_img)}
+                      src={
+                        typeof balanceForm.slip_img === 'string'
+                          ? balanceForm.slip_img
+                          : URL.createObjectURL(balanceForm.slip_img)
+                      }
                       alt='Payment Slip Preview'
                       className='max-h-40 rounded-lg shadow-md object-contain border border-gray-200'
                     />
@@ -781,242 +753,6 @@ const SupplierListTable = ({
                   startIcon={isAddingBalance ? <i className='tabler-loader-2 animate-spin' /> : null}
                 >
                   {isAddingBalance ? 'Saving...' : 'Save'}
-                </Button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
-
-      {/* Add Crate Modal */}
-      {openCrateModal &&
-        selectedSupplier &&
-        createPortal(
-          <div className='fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4'>
-            <div className='w-full max-w-lg bg-white text-gray-800 rounded-2xl shadow-2xl p-6 transition-all duration-300 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent'>
-              <Typography variant='h6' className='mb-4 font-semibold text-gray-900'>
-                Update Crates for{' '}
-                <span className='text-primary'>{selectedSupplier.basic_info?.name || selectedSupplier.name}</span>
-              </Typography>
-
-              <Typography variant='body2' className='text-gray-600 mb-3'>
-                You can adjust the quantity and price for each crate type.
-              </Typography>
-
-              <div className='space-y-4 max-h-[60vh] overflow-y-auto pr-2'>
-                {/* Crate 1 Section */}
-                <div className='p-3 rounded-lg bg-gray-50 border border-gray-200'>
-                  <Typography variant='subtitle1' className='mb-3 font-medium text-gray-900'>
-                    Crate 1
-                  </Typography>
-                  <div className='grid grid-cols-2 gap-4'>
-                    <CustomTextField
-                      label='Quantity'
-                      type='number'
-                      value={crateForm.crate1?.qty || crateForm.crate1 || 0}
-                      onChange={e => {
-                        const value = Number(e.target.value)
-
-                        setCrateForm(prev => ({
-                          ...prev,
-                          crate1: { ...prev.crate1, qty: value }
-                        }))
-                      }}
-                      InputProps={{
-                        style: {
-                          backgroundColor: '#f9fafb',
-                          borderRadius: '8px',
-                          color: '#111827'
-                        }
-                      }}
-                      sx={{
-                        '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
-                        '& input': { color: '#111827' },
-                        '& label': { color: '#6b7280' }
-                      }}
-                    />
-                    <CustomTextField
-                      label='Price'
-                      type='number'
-                      value={crateForm.crate1?.price || crateForm.crate1Price || 0}
-                      onChange={e => {
-                        const value = Number(e.target.value)
-
-                        setCrateForm(prev => ({
-                          ...prev,
-                          crate1: { ...prev.crate1, price: value }
-                        }))
-                      }}
-                      InputProps={{
-                        style: {
-                          backgroundColor: '#f9fafb',
-                          borderRadius: '8px',
-                          color: '#111827'
-                        }
-                      }}
-                      sx={{
-                        '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
-                        '& input': { color: '#111827' },
-                        '& label': { color: '#6b7280' }
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Crate 2 Section */}
-                <div className='p-3 rounded-lg bg-gray-50 border border-gray-200'>
-                  <Typography variant='subtitle1' className='mb-3 font-medium text-gray-900'>
-                    Crate 2
-                  </Typography>
-                  <div className='grid grid-cols-2 gap-4'>
-                    <CustomTextField
-                      label='Quantity'
-                      type='number'
-                      value={crateForm.crate2?.qty || crateForm.crate2 || 0}
-                      onChange={e => {
-                        const value = Number(e.target.value)
-
-                        setCrateForm(prev => ({
-                          ...prev,
-                          crate2: { ...prev.crate2, qty: value }
-                        }))
-                      }}
-                      InputProps={{
-                        style: {
-                          backgroundColor: '#f9fafb',
-                          borderRadius: '8px',
-                          color: '#111827'
-                        }
-                      }}
-                      sx={{
-                        '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
-                        '& input': { color: '#111827' },
-                        '& label': { color: '#6b7280' }
-                      }}
-                    />
-                    <CustomTextField
-                      label='Price'
-                      type='number'
-                      value={crateForm.crate2?.price || crateForm.crate2Price || 0}
-                      onChange={e => {
-                        const value = Number(e.target.value)
-
-                        setCrateForm(prev => ({
-                          ...prev,
-                          crate2: { ...prev.crate2, price: value }
-                        }))
-                      }}
-                      InputProps={{
-                        style: {
-                          backgroundColor: '#f9fafb',
-                          borderRadius: '8px',
-                          color: '#111827'
-                        }
-                      }}
-                      sx={{
-                        '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
-                        '& input': { color: '#111827' },
-                        '& label': { color: '#6b7280' }
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className='flex justify-end gap-3 mt-6'>
-                <Button
-                  variant='outlined'
-                  onClick={() => setOpenCrateModal(false)}
-                  disabled={isUpdatingCrate}
-                  className='px-4 py-2 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100 transition'
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant='contained'
-                  color='primary'
-                  disabled={isUpdatingCrate}
-                  className='px-5 py-2 rounded-lg shadow-md'
-                  onClick={async () => {
-                    setIsUpdatingCrate(true)
-
-                    try {
-                      // Prepare complete supplier data with updated crate info
-                      const completeSupplierData = {
-                        basic_info: {
-                          sl: selectedSupplier.basic_info?.sl || selectedSupplier.sl,
-                          name: selectedSupplier.basic_info?.name || selectedSupplier.name,
-                          avatar: selectedSupplier.basic_info?.avatar || selectedSupplier.avatar || '',
-                          role: selectedSupplier.basic_info?.role || 'supplier'
-                        },
-                        contact_info: {
-                          email: selectedSupplier.contact_info?.email || selectedSupplier.email || '',
-                          phone: selectedSupplier.contact_info?.phone || selectedSupplier.phone || '',
-                          location: selectedSupplier.contact_info?.location || selectedSupplier.location || ''
-                        },
-                        account_info: {
-                          accountNumber:
-                            selectedSupplier.account_info?.accountNumber || selectedSupplier.accountNumber || '',
-                          balance: selectedSupplier.account_info?.balance || selectedSupplier.balance || 0,
-                          due: selectedSupplier.account_info?.due || selectedSupplier.due || 0,
-                          cost: selectedSupplier.account_info?.cost || selectedSupplier.cost || 0
-                        },
-                        crate_info: {
-                          crate1: crateForm.crate1?.qty || 0,
-                          crate1Price: crateForm.crate1?.price || 0,
-                          needToGiveCrate1: selectedSupplier.crate_info?.needToGiveCrate1 || 0,
-                          crate2: crateForm.crate2?.qty || 0,
-                          crate2Price: crateForm.crate2?.price || 0,
-                          needToGiveCrate2: selectedSupplier.crate_info?.needToGiveCrate2 || 0
-                        }
-                      }
-
-                      // Call the update API
-                      const result = await updateSupplier(selectedSupplier._id, completeSupplierData)
-
-                      if (result.success) {
-                        // Update local state
-                        setData(prev =>
-                          prev.map(item => {
-                            if (item._id === selectedSupplier._id) {
-                              return {
-                                ...item,
-                                crate_info: {
-                                  ...item.crate_info,
-                                  crate1: crateForm.crate1?.qty || 0,
-                                  crate1Price: crateForm.crate1?.price || 0,
-                                  crate2: crateForm.crate2?.qty || 0,
-                                  crate2Price: crateForm.crate2?.price || 0
-                                }
-                              }
-                            }
-
-                            return item
-                          })
-                        )
-
-                        showSuccess('Crate information updated successfully')
-
-                        // Close modal
-                        setOpenCrateModal(false)
-                      } else {
-                        showError('Failed to update crate information')
-                      }
-                    } catch (error) {
-                      console.error('Error updating crate:', error)
-                      const Swal = (await import('sweetalert2')).default
-
-                      Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'An unexpected error occurred'
-                      })
-                    } finally {
-                      setIsUpdatingCrate(false)
-                    }
-                  }}
-                >
-                  {isUpdatingCrate ? 'Saving...' : 'Save'}
                 </Button>
               </div>
             </div>

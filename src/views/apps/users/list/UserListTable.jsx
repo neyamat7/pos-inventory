@@ -40,6 +40,7 @@ import CustomTextField from '@core/components/mui/TextField'
 import tableStyles from '@core/styles/table.module.css'
 import ViewUserModal from './ViewUserModal'
 import EditUserModal from './EditUserModal'
+import { getImageUrl } from '@/utils/getImageUrl'
 
 const fuzzyFilter = (row, columnId, value, addMeta) => {
   // Rank the item
@@ -146,17 +147,25 @@ const UserListTable = ({ userData, paginationData, loading, onPageChange, onPage
       },
       columnHelper.accessor('name', {
         header: 'User',
-        cell: ({ row }) => (
-          <div className='flex items-center gap-4'>
-            <img src={row.original.image} alt={row.original.name} className='w-10 h-10 rounded-full object-cover' />
-            <div className='flex flex-col'>
-              <Typography color='text.primary' className='font-medium'>
-                {row.original.name}
-              </Typography>
-              <Typography variant='body2'>{row.original.email}</Typography>
+        cell: ({ row }) => {
+          return (
+            <div className='flex items-center gap-4'>
+              <img
+                src={getImageUrl(row.original.image)}
+                alt={row.original.name}
+                className='w-10 h-10 rounded-full object-cover'
+
+                // onError={e => (e.target.src = '/images/default-avatar.png')}
+              />
+              <div className='flex flex-col'>
+                <Typography color='text.primary' className='font-medium'>
+                  {row.original.name}
+                </Typography>
+                <Typography variant='body2'>{row.original.email}</Typography>
+              </div>
             </div>
-          </div>
-        )
+          )
+        }
       }),
       columnHelper.accessor('role', {
         header: 'Role',

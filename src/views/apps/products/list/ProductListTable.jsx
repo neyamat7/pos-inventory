@@ -43,6 +43,7 @@ import ProductViewModal from './ProductViewModal'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
+import { getImageUrl } from '@/utils/getImageUrl'
 
 const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value)
@@ -129,7 +130,7 @@ const ProductListTable = ({ productData, paginationData, loading, onPageChange, 
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
             <img
-              src={row.original.productImage}
+              src={getImageUrl(row.original.productImage)}
               width={38}
               height={38}
               className='rounded bg-actionHover object-cover'

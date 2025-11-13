@@ -6,14 +6,39 @@ import Grid from '@mui/material/Grid2'
 import DueListCard from './DueListCard'
 import DueListTable from './DueListTable'
 
-const DueList = ({ suppliersData, customersData }) => {
+const DueList = ({
+  // Current data
+  tableData,
+  paginationData,
+  loading,
+
+  // Type selection
+  selectedType,
+  onTypeChange,
+
+  // Pagination & search handlers
+  onPageChange,
+  onPageSizeChange,
+  onSearch,
+  searchTerm
+}) => {
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12 }}>
-        <DueListCard suppliersData={suppliersData} customersData={customersData} />
+        <DueListCard tableData={tableData} selectedType={selectedType} />
       </Grid>
       <Grid size={{ xs: 12 }}>
-        <DueListTable suppliersData={suppliersData} customersData={customersData} />
+        <DueListTable
+          tableData={tableData}
+          paginationData={paginationData}
+          loading={loading}
+          selectedType={selectedType}
+          onTypeChange={onTypeChange}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+          onSearch={onSearch}
+          searchTerm={searchTerm}
+        />
       </Grid>
     </Grid>
   )

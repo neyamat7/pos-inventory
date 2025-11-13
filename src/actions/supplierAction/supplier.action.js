@@ -196,3 +196,35 @@ export async function getSupplierPayments({ supplierId, page = 1, limit = 10 }) 
     }
   }
 }
+
+
+export async function getSupplierDueList({ page = 1, limit = 10 } = {}) {
+  try {
+    if (page < 1 || limit < 1) {
+      return {
+        success: false,
+        error: 'Page and limit must be positive numbers'
+      }
+    }
+
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    })
+
+    const response = await api.get(`/suppliers/due-list?${params.toString()}`)
+
+    return {
+      success: true,
+      data: response.data,
+      message: 'Supplier due list fetched successfully'
+    }
+  } catch (error) {
+    console.error('Get supplier due list error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch supplier due list'
+    }
+  }
+}

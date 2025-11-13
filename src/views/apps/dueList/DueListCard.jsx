@@ -1,3 +1,5 @@
+'use client'
+
 // MUI Imports
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -12,22 +14,22 @@ import classnames from 'classnames'
 // Component Imports
 import CustomAvatar from '@core/components/mui/Avatar'
 
-const DueListCard = ({ suppliersData, customersData }) => {
-  const suppliersDue = suppliersData.reduce((acc, item) => acc + item.due, 0)
+const DueListCard = ({ tableData, selectedType }) => {
+  // Calculate total due from current table data using the nested structure
+  const totalDue =
+    tableData?.reduce((acc, item) => {
+      const dueAmount = item?.account_info?.due || 0
 
-  const customersDue = customersData.reduce((acc, item) => acc + item.due, 0)
+      return acc + dueAmount
+    }, 0) || 0
 
   // Vars
   const data = [
     {
-      value: suppliersDue,
-      title: 'Suppliers Due',
-      icon: 'tabler-calendar-stats'
-    },
-    {
-      value: customersDue,
-      title: 'Customers Due',
-      icon: 'tabler-checks'
+      value: totalDue,
+      title: `${selectedType === 'suppliers' ? 'Suppliers' : 'Customers'} Due`,
+      icon: selectedType === 'suppliers' ? 'tabler-users' : 'tabler-user',
+      color: selectedType === 'suppliers' ? 'primary' : 'success'
     }
   ]
 
@@ -51,10 +53,17 @@ const DueListCard = ({ suppliersData, customersData }) => {
             >
               <div className='flex justify-between gap-4'>
                 <div className='flex flex-col items-start'>
-                  <Typography variant='h4'>{item.value.toLocaleString()}</Typography>
-                  <Typography>{item.title}</Typography>
+                  <Typography variant='h4' color='primary'>
+                    ৳{totalDue.toLocaleString()}
+                  </Typography>
+                  <Typography color='text.primary' className='font-medium'>
+                    {item.title}
+                  </Typography>
+                  <Typography variant='body2' color='text.secondary'>
+                    {tableData?.length || 0} {selectedType === 'suppliers' ? 'Suppliers' : 'Customers'}
+                  </Typography>
                 </div>
-                <CustomAvatar variant='rounded' size={42} skin='light'>
+                <CustomAvatar variant='rounded' size={42} skin='light' color={item.color}>
                   <i className={classnames(item.icon, 'text-[26px]')} />
                 </CustomAvatar>
               </div>
