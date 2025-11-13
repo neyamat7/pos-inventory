@@ -4,6 +4,8 @@ import { getAllLots, getInStockLots } from '@/actions/lotActions'
 import { getAllProducts } from '@/actions/productActions'
 import POSSystem from '@/views/apps/sales/pos/Pos'
 
+export const dynamic = 'force-dynamic'
+
 const posPage = async () => {
   const [customers, lots, products, categories] = await Promise.all([
     getCustomers(1, 100),
