@@ -51,3 +51,22 @@ export async function getIncomePeriods() {
     }
   }
 }
+
+export async function getProfitLoss() {
+  try {
+    const response = await api.get('/inventoryLots/profit-loss')
+
+    return {
+      success: true,
+      data: response.data,
+      message: 'Profit loss data fetched successfully'
+    }
+  } catch (error) {
+    console.error('Get profit loss error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch profit loss data'
+    }
+  }
+}

@@ -13,6 +13,8 @@ import Grid from '@mui/material/Grid2'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 
+import { getImageUrl } from '@/utils/getImageUrl'
+
 const ProductViewModal = ({ product, onClose }) => {
   if (!product) return null
 
@@ -29,7 +31,7 @@ const ProductViewModal = ({ product, onClose }) => {
             <Card className='rounded-xl shadow-lg overflow-hidden'>
               <Box className='flex justify-center p-6 bg-gray-50'>
                 <img
-                  src={product.productImage}
+                  src={getImageUrl(product.productImage)}
                   alt={product.productName}
                   className='rounded-lg w-48 h-48 object-cover shadow-md'
                   onError={e => {

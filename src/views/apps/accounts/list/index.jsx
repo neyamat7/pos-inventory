@@ -27,9 +27,6 @@ import {
   getSortedRowModel
 } from '@tanstack/react-table'
 
-// Component Imports
-import Swal from 'sweetalert2'
-
 import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
 import OptionMenu from '@/@core/components/option-menu'
@@ -66,9 +63,6 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 
   return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
 }
-
-// Column Definitions
-const columnHelper = createColumnHelper()
 
 const AccountList = ({ accountsData = [], paginationData, onPageChange, onPageSizeChange, loading = false }) => {
   const [editOpenRow, setEditOpenRow] = useState(null)
@@ -150,29 +144,6 @@ const AccountList = ({ accountsData = [], paginationData, onPageChange, onPageSi
                     setEditOpenRow(row.original)
                   },
                   className: 'flex items-center'
-                }
-              },
-              {
-                text: 'Delete',
-                icon: 'tabler-trash',
-                menuItemProps: {
-                  onClick: () => {
-                    Swal.fire({
-                      title: 'Are you sure?',
-                      text: `You are about to delete account: ${row.original.name}`,
-                      icon: 'warning',
-                      showCancelButton: true,
-                      confirmButtonColor: '#3085d6',
-                      cancelButtonColor: '#d33',
-                      confirmButtonText: 'Yes, delete it!'
-                    }).then(result => {
-                      if (result.isConfirmed) {
-                        setData(prev => prev.filter(item => item._id !== row.original._id))
-                        showAlert('Deleted Successfully!', 'success')
-                      }
-                    })
-                  },
-                  className: 'flex items-center text-red-500'
                 }
               }
             ]}

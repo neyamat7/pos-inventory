@@ -103,24 +103,6 @@ const UserListTable = ({ userData, paginationData, loading, onPageChange, onPage
     }
   }, [userData])
 
-  const handleDelete = row => {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: `You are about to delete "${row.original.name}". This action cannot be undone.`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
-    }).then(result => {
-      if (result.isConfirmed) {
-        setData(prev => prev?.filter(user => user._id !== row.original._id))
-        setFilteredData(prev => prev?.filter(user => user._id !== row.original._id))
-        Swal.fire('Deleted!', `"${row.original.name}" has been removed successfully.`, 'success')
-      }
-    })
-  }
-
   const columns = useMemo(
     () => [
       {
@@ -187,10 +169,6 @@ const UserListTable = ({ userData, paginationData, loading, onPageChange, onPage
         header: 'Action',
         cell: ({ row }) => (
           <div className='flex items-center'>
-            <IconButton onClick={() => handleDelete(row)}>
-              <i className='tabler-trash text-textSecondary' />
-            </IconButton>
-
             <IconButton
               onClick={() => {
                 setUserModal(true)

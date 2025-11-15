@@ -138,7 +138,7 @@ const VerticalMenu = ({ scrollMenu }) => {
           Accounts
         </MenuItem>
 
-        <MenuItem href='/apps/reports/profitLoss' icon={<i className='tabler-credit-card' />}>
+        <MenuItem href='/apps/profitLoss' icon={<i className='tabler-credit-card' />}>
           Profit & Loss
         </MenuItem>
 

@@ -705,6 +705,8 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
       return {
         lotId: item.lot_selected.lot_id,
+        lotName: item.lot_selected.lot_name,
+        product_name: item.product_name,
         kg: kg,
         box_quantity: isBoxed ? boxQty : 0,
         isBoxed: isBoxed,
@@ -806,6 +808,9 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     const payload = {
       sale_date: date,
       customerId: selectedCustomer._id,
+      customer_name: selectedCustomer.basic_info.name,
+      customer_address: selectedCustomer.contact_info.location,
+
       total_custom_commission: total_custom_commission,
       total_lots_commission: total_lots_commission,
       total_profit: total_profit + total_lots_commission,
@@ -834,7 +839,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         console.log('Sale response:', result.data)
 
         setLastSaleData({
-          ...result.data,
+          ...payload,
           printTrigger: Date.now()
         })
 

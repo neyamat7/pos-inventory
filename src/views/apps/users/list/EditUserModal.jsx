@@ -177,6 +177,8 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
             />
           </Grid>
 
+          {/* Image URL Section - Commented Out */}
+          {/*
           <Grid size={12}>
             <TextField
               label='Avatar URL'
@@ -187,6 +189,7 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
               helperText='Paste an image URL for the avatar (optional)'
             />
           </Grid>
+          */}
         </Grid>
       </DialogContent>
 

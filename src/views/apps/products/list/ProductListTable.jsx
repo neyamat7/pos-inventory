@@ -1,4 +1,3 @@
-// ProductListTable.jsx
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
@@ -29,12 +28,8 @@ import {
   getFacetedRowModel,
   getFacetedUniqueValues,
   getFacetedMinMaxValues,
-  getPaginationRowModel,
   getSortedRowModel
 } from '@tanstack/react-table'
-
-// Component Imports
-import Swal from 'sweetalert2'
 
 import TableFilters from './TableFilters'
 import CustomTextField from '@core/components/mui/TextField'
@@ -86,24 +81,6 @@ const ProductListTable = ({ productData, paginationData, loading, onPageChange, 
       setFilteredData(productData)
     }
   }, [productData])
-
-  const handleDelete = row => {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: `You are about to delete "${row.original.productName}". This action cannot be undone.`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
-    }).then(result => {
-      if (result.isConfirmed) {
-        setData(prev => prev?.filter(p => p._id !== row.original._id))
-        setFilteredData(prev => prev?.filter(p => p._id !== row.original._id))
-        Swal.fire('Deleted!', `"${row.original.productName}" has been removed.`, 'success')
-      }
-    })
-  }
 
   const columns = useMemo(
     () => [
@@ -209,9 +186,6 @@ const ProductListTable = ({ productData, paginationData, loading, onPageChange, 
                 <i className='tabler-edit text-textSecondary' />
               </IconButton>
             </Link>
-            <IconButton aria-label='Delete' onClick={() => handleDelete(row)}>
-              <i className='tabler-trash text-textSecondary' />
-            </IconButton>
           </div>
         ),
         enableSorting: false

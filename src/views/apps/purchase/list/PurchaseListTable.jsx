@@ -218,29 +218,6 @@ const PurchaseListTable = ({ purchaseData = [], paginationData, loading, onPageC
                     },
                     className: 'flex items-center'
                   }
-                },
-                {
-                  text: 'Delete',
-                  icon: 'tabler-trash',
-                  menuItemProps: {
-                    onClick: () => {
-                      Swal.fire({
-                        title: 'Are you sure?',
-                        text: 'This action cannot be undone!',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Yes, delete it!'
-                      }).then(result => {
-                        if (result.isConfirmed) {
-                          setData(prev => prev.filter(item => item._id !== row.original._id))
-                          Swal.fire('Deleted!', 'The record has been deleted.', 'success')
-                        }
-                      })
-                    },
-                    className: 'flex items-center text-red-500'
-                  }
                 }
               ]}
             />

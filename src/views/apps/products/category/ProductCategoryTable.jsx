@@ -139,37 +139,6 @@ const ProductCategoryTable = ({ categoryData, paginationData, loading, onPageCha
       columnHelper.accessor('actions', {
         header: 'Actions',
         cell: ({ row }) => {
-          const handleDelete = async () => {
-            const result = await Swal.fire({
-              title: 'Are you sure?',
-              text: `You are about to delete "${row.original.categoryName}". This action cannot be undone.`,
-              icon: 'warning',
-              showCancelButton: true,
-              confirmButtonColor: '#3085d6',
-              cancelButtonColor: '#d33',
-              confirmButtonText: 'Yes, delete it!',
-              cancelButtonText: 'Cancel'
-            })
-
-            if (result.isConfirmed) {
-              try {
-                const deleteResult = await deleteCategory(row.original._id)
-
-                if (deleteResult.success) {
-                  // Update local state
-                  setData(prev => prev.filter(category => category._id !== row.original._id))
-
-                  Swal.fire('Deleted!', `"${row.original.categoryName}" has been removed successfully.`, 'success')
-                } else {
-                  Swal.fire('Error!', deleteResult.error || 'Failed to delete category', 'error')
-                }
-              } catch (error) {
-                Swal.fire('Error!', 'An unexpected error occurred while deleting the category.', 'error')
-                console.error('Delete error:', error)
-              }
-            }
-          }
-
           return (
             <div className='flex items-center'>
               <OptionMenu
@@ -183,14 +152,6 @@ const ProductCategoryTable = ({ categoryData, paginationData, loading, onPageCha
                     menuItemProps: {
                       onClick: () => setEditOpen(row.original),
                       className: 'flex items-center'
-                    }
-                  },
-                  {
-                    text: 'Delete',
-                    icon: <i className='tabler-trash mr-2 text-[18px]' />,
-                    menuItemProps: {
-                      onClick: handleDelete,
-                      className: 'flex items-center text-red-500'
                     }
                   }
                 ]}

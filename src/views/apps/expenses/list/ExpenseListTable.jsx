@@ -138,22 +138,22 @@ const ExpenseListTable = ({ expenseData, paginationData, loading, onPageChange, 
         id: 'action',
         header: 'Action',
         cell: ({ row }) => {
-          const handleDelete = () => {
-            Swal.fire({
-              title: 'Are you sure?',
-              text: `You are about to delete expense ${row.original.reference_num}. This action cannot be undone.`,
-              icon: 'warning',
-              showCancelButton: true,
-              confirmButtonColor: '#d33',
-              cancelButtonColor: '#3085d6',
-              confirmButtonText: 'Yes, delete it!'
-            }).then(result => {
-              if (result.isConfirmed) {
-                setData(prev => prev.filter(item => item._id !== row.original._id))
-                Swal.fire('Deleted!', `Expense ${row.original.reference_num} has been removed.`, 'success')
-              }
-            })
-          }
+          // const handleDelete = () => {
+          //   Swal.fire({
+          //     title: 'Are you sure?',
+          //     text: `You are about to delete expense ${row.original.reference_num}. This action cannot be undone.`,
+          //     icon: 'warning',
+          //     showCancelButton: true,
+          //     confirmButtonColor: '#d33',
+          //     cancelButtonColor: '#3085d6',
+          //     confirmButtonText: 'Yes, delete it!'
+          //   }).then(result => {
+          //     if (result.isConfirmed) {
+          //       setData(prev => prev.filter(item => item._id !== row.original._id))
+          //       Swal.fire('Deleted!', `Expense ${row.original.reference_num} has been removed.`, 'success')
+          //     }
+          //   })
+          // }
 
           return (
             <div className='flex items-center'>
@@ -169,15 +169,16 @@ const ExpenseListTable = ({ expenseData, paginationData, loading, onPageChange, 
                       onClick: () => setEditOpen(row.original),
                       className: 'flex items-center'
                     }
-                  },
-                  {
-                    text: 'Delete',
-                    icon: 'tabler-trash',
-                    menuItemProps: {
-                      onClick: handleDelete,
-                      className: 'flex items-center text-red-500'
-                    }
                   }
+
+                  // {
+                  //   text: 'Delete',
+                  //   icon: 'tabler-trash',
+                  //   menuItemProps: {
+                  //     onClick: handleDelete,
+                  //     className: 'flex items-center text-red-500'
+                  //   }
+                  // }
                 ]}
               />
             </div>
@@ -274,7 +275,7 @@ const ExpenseListTable = ({ expenseData, paginationData, loading, onPageChange, 
                 </tr>
               ))}
             </thead>
-            
+
             <tbody>
               {loading ? (
                 <tr>

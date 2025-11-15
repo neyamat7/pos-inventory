@@ -6,20 +6,19 @@ import { useReactToPrint } from 'react-to-print'
 
 import SaleInvoice from './SaleInvoice'
 
-const InvoicePrintHandler = ({ saleData, customerData, cartProducts, onPrintComplete, onPrintError, triggerPrint }) => {
+const InvoicePrintHandler = ({ saleData, onPrintComplete, onPrintError, triggerPrint }) => {
   const componentRef = useRef(null)
 
-  // Print configuration
   const handlePrint = useReactToPrint({
-    contentRef: componentRef, // Changed from content to contentRef
-    documentTitle: `Invoice_${saleData?._id || 'Sale'}_${new Date().toISOString().split('T')[0]}`,
+    contentRef: componentRef,
+    documentTitle: `Invoice_${saleData?.sale_date || 'Sale'}_${saleData?.customer_name || 'Customer'}`,
     onBeforePrint: () => {
-      console.log('Preparing document for printing...')
+      console.log('Preparing invoice for printing...')
 
       return Promise.resolve()
     },
     onAfterPrint: () => {
-      console.log('Print completed or cancelled')
+      console.log('Print completed')
       onPrintComplete?.()
     },
     onPrintError: (errorLocation, error) => {
@@ -28,8 +27,11 @@ const InvoicePrintHandler = ({ saleData, customerData, cartProducts, onPrintComp
     },
     pageStyle: `
       @page {
-        size: A4 portrait;
-        margin: 0.5in;
+        size: 12cm 25cm;
+        margin-top: 8cm;
+        margin-bottom: 3cm;
+        margin-left: 0.5cm;
+        margin-right: 0.5cm;
       }
       @media print {
         body {
@@ -43,30 +45,26 @@ const InvoicePrintHandler = ({ saleData, customerData, cartProducts, onPrintComp
     `
   })
 
-  // Auto-trigger print when triggerPrint becomes true
   useEffect(() => {
-    if (triggerPrint && saleData && cartProducts.length > 0 && componentRef.current) {
-      console.log('Triggering print with data:', { saleData, cartProducts: cartProducts.length })
+    if (triggerPrint && saleData && componentRef.current) {
+      console.log('Triggering print with data:', saleData)
 
-      // Delay to ensure DOM is ready
       const timer = setTimeout(() => {
         handlePrint()
       }, 500)
 
       return () => clearTimeout(timer)
     }
-  }, [triggerPrint, saleData?.printTrigger]) // Use printTrigger as dependency
+  }, [triggerPrint, saleData?.printTrigger])
 
-  // Don't render if no data
-  if (!saleData || cartProducts.length === 0) {
+  if (!saleData) {
     return null
   }
 
   return (
     <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
-      {/* Hidden but rendered for printing */}
       <div ref={componentRef}>
-        <SaleInvoice saleData={saleData} customerData={customerData} cartProducts={cartProducts} />
+        <SaleInvoice saleData={saleData} />
       </div>
     </div>
   )

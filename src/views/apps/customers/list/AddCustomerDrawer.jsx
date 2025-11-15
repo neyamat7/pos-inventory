@@ -1,4 +1,3 @@
-// React Imports
 import { useState } from 'react'
 
 // MUI Imports
@@ -12,19 +11,27 @@ import Typography from '@mui/material/Typography'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useForm, Controller } from 'react-hook-form'
 
+import { showError, showSuccess } from '@/utils/toastUtils'
+import { uploadImage } from '@/actions/imageActions'
+
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
 import { createCustomer } from '@/actions/customerActions'
-import { showSuccess } from '@/utils/toastUtils'
 
 const AddCustomerDrawer = props => {
   const { open, handleClose, setData, customerData } = props
+
+  // Add these states
+  const [loading, setLoading] = useState(false)
+  const [avatarFile, setAvatarFile] = useState(null)
+  const [avatarPreview, setAvatarPreview] = useState('')
 
   const {
     control,
     reset,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
+    setValue
   } = useForm({
     defaultValues: {
       sl: '',
@@ -44,7 +51,43 @@ const AddCustomerDrawer = props => {
     }
   })
 
+  // Add image upload handler
+  const handleAvatarUpload = async event => {
+    const file = event.target.files[0]
+
+    if (!file) return
+
+    const localPreview = URL.createObjectURL(file)
+
+    setAvatarPreview(localPreview)
+
+    try {
+      const formData = new FormData()
+
+      formData.append('image', file)
+
+      const uploadResult = await uploadImage(formData)
+
+      if (uploadResult.success) {
+        // Extract filename and construct proper URL
+        const imagePath = uploadResult.data?.filepath || uploadResult.data.imageUrl
+        const avatarUrl = imagePath
+
+        // Set the avatar URL in the form
+        setValue('image', avatarUrl)
+      } else {
+        console.error('Avatar upload failed:', uploadResult.error)
+        showError(`Avatar upload failed: ${uploadResult.error}`)
+      }
+    } catch (error) {
+      console.error('Avatar upload error:', error)
+      showError('Error uploading avatar. Please try again.')
+    }
+  }
+
   const onSubmit = async data => {
+    setLoading(true)
+
     try {
       // Prepare customer data according to MongoDB model structure
       const customerPayload = {
@@ -53,7 +96,7 @@ const AddCustomerDrawer = props => {
           sl: data.sl.toString(),
           name: data.name.trim(),
           role: 'customer',
-          avatar: data.image?.trim() || ''
+          avatar: data.image
         },
 
         // Contact Information
@@ -107,11 +150,15 @@ const AddCustomerDrawer = props => {
     } catch (error) {
       console.error('Error in onSubmit:', error)
       alert('Failed to create customer. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
   const handleReset = () => {
     reset()
+    setAvatarFile(null)
+    setAvatarPreview('')
     handleClose()
   }
 
@@ -147,7 +194,6 @@ const AddCustomerDrawer = props => {
               render={({ field }) => (
                 <CustomTextField
                   {...field}
-                  type='number'
                   label='SL'
                   placeholder='1'
                   fullWidth
@@ -171,14 +217,35 @@ const AddCustomerDrawer = props => {
               )}
             />
 
-            <Controller
-              name='image'
-              control={control}
-              rules={{ required: false }}
-              render={({ field }) => (
-                <CustomTextField {...field} label='Avatar URL' placeholder='https://example.com/avatar.jpg' fullWidth />
+            <div className='flex flex-col gap-2'>
+              <Typography color='text.primary' className='font-medium'>
+                Customer Avatar
+              </Typography>
+              {/* File Upload Input */}
+              <input
+                type='file'
+                accept='image/*'
+                onChange={handleAvatarUpload}
+                disabled={loading}
+                className='block w-full text-sm text-textSecondary
+      file:mr-4 file:py-2 file:px-4
+      file:rounded-md file:border-0
+      file:text-sm file:font-medium
+      file:bg-primary file:text-white
+      hover:file:bg-primaryDark disabled:opacity-50'
+              />
+
+              {/* Avatar Preview */}
+              {avatarPreview && (
+                <div className='flex justify-center mt-2'>
+                  <img
+                    src={avatarPreview}
+                    alt='Avatar preview'
+                    className='w-20 h-20 rounded-full object-cover border'
+                  />
+                </div>
               )}
-            />
+            </div>
 
             {/* Contact Information Section */}
             <Typography color='text.primary' className='font-medium'>
@@ -308,9 +375,10 @@ const AddCustomerDrawer = props => {
             </div>
 
             <div className='flex items-center gap-4 mt-2'>
-              <Button variant='contained' type='submit'>
-                Add Customer
+              <Button variant='contained' type='submit' disabled={loading}>
+                {loading ? 'Adding...' : 'Add Customer'}
               </Button>
+
               <Button variant='tonal' color='error' type='button' onClick={handleReset}>
                 Discard
               </Button>

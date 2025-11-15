@@ -29,6 +29,9 @@ import {
   getSortedRowModel
 } from '@tanstack/react-table'
 
+import { showError, showInfo, showSuccess } from '@/utils/toastUtils'
+import { uploadImage } from '@/actions/imageActions'
+
 // Component Imports
 import AddCustomerDrawer from './AddCustomerDrawer'
 import CustomAvatar from '@core/components/mui/Avatar'
@@ -43,7 +46,8 @@ import { getInitials } from '@/utils/getInitials'
 import tableStyles from '@core/styles/table.module.css'
 import { updateCustomer } from '@/actions/customerActions'
 import { addBalance } from '@/actions/supplierAction'
-import { showSuccess } from '@/utils/toastUtils'
+
+import { getImageUrl } from '@/utils/getImageUrl'
 
 // -------------------- utils --------------------
 const fuzzyFilter = (row, columnId, value, addMeta) => {
@@ -107,20 +111,6 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
     }
   }, [customerData])
 
-  // Helpers
-  const getAvatar = customer => {
-    const image = customer?.basic_info?.avatar
-    const name = customer?.basic_info?.name
-
-    if (image) return <CustomAvatar src={image} skin='light' size={34} />
-
-    return (
-      <CustomAvatar skin='light' size={34}>
-        {getInitials(name || '')}
-      </CustomAvatar>
-    )
-  }
-
   const getCrateSummary = crateInfo => {
     if (!crateInfo) return '—'
 
@@ -169,17 +159,29 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
           const name = row.original.basic_info?.name
           const email = row.original.contact_info?.email
           const id = row.original._id
+          const avatar = row.original.basic_info?.avatar || row.original.image
 
           return (
             <div className='flex items-center gap-3'>
-              {getAvatar(row.original)}
-              <div className='flex flex-col'>
-                <Link href={`/apps/customers/details/${id || row.original.basic_info?.sl}`}>
-                  <Typography className='font-medium hover:text-blue-500 hover:underline' color='text.primary'>
-                    {name}
-                  </Typography>
-                </Link>
-                {email ? <Typography variant='body2'>{email}</Typography> : null}
+              {/* Updated avatar with helper function */}
+              {avatar ? (
+                <CustomAvatar src={getImageUrl(avatar)} skin='light' size={34} />
+              ) : (
+                <CustomAvatar skin='light' size={34}>
+                  {getInitials(name || 'C')}
+                </CustomAvatar>
+              )}
+
+              <div className='flex flex-col items-start'>
+                <Typography
+                  component={Link}
+                  color='text.primary'
+                  href={`/apps/customers/details/${id || row.original.basic_info?.sl}`}
+                  className='font-medium hover:text-primary'
+                >
+                  {name || 'No Name'}
+                </Typography>
+                {email && <Typography variant='body2'>{email}</Typography>}
               </div>
             </div>
           )
@@ -267,31 +269,6 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
                     },
                     className: 'flex items-center'
                   }
-                },
-                {
-                  text: 'Delete',
-                  icon: 'tabler-trash',
-                  menuItemProps: {
-                    onClick: async () => {
-                      const Swal = (await import('sweetalert2')).default
-
-                      Swal.fire({
-                        title: 'Are you sure?',
-                        text: `You are about to delete ${row.original.basic_info?.name}. This action cannot be undone.`,
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Yes, delete it!'
-                      }).then(result => {
-                        if (result.isConfirmed) {
-                          setData(prev => prev.filter(item => item._id !== row.original._id))
-                          Swal.fire('Deleted!', `${row.original.basic_info?.name} has been removed.`, 'success')
-                        }
-                      })
-                    },
-                    className: 'flex items-center text-red-500'
-                  }
                 }
               ]}
             />
@@ -300,10 +277,9 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
         enableSorting: false
       })
     ],
-    [] // static columns for this table
+    []
   )
 
-  // Table
   // Table
   const table = useReactTable({
     data,
@@ -334,58 +310,75 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
   const handleBalanceSubmit = async () => {
     // Validation
     if (!balanceForm.amount || !balanceForm.transaction_Id || !balanceForm.payment_method) {
-      alert('Please fill in all required fields')
+      showInfo('Please fill in all required fields')
 
       return
     }
 
     setIsAddingBalance(true)
 
-    // Create FormData for multer
-    // const formData = new FormData()
-
-    // formData.append('date', balanceForm.date)
-    // formData.append('amount', balanceForm.amount)
-    // formData.append('transaction_Id', balanceForm.transaction_Id)
-    // formData.append('note', balanceForm.note)
-    // formData.append('payment_method', balanceForm.payment_method)
-    // formData.append('balance_for', balanceForm.balance_for)
-    // formData.append('collection', selectedCustomer._id) // Customer ID
-
-    // // Append image file if exists
-    // if (balanceForm.slip_img) {
-    //   formData.append('slip_img', balanceForm.slip_img)
-    // }
-
-    const balanceData = {
-      date: balanceForm.date,
-      amount: balanceForm.amount,
-      transaction_Id: balanceForm.transaction_Id,
-      note: balanceForm.note,
-      payment_method: balanceForm.payment_method,
-      balance_for: selectedCustomer._id,
-      role: 'customer',
-      slip_img: 'https://i.postimg.cc/y86SS6X7/Chat-GPT-Image-Nov-4-2025-11-06-30-AM.png'
-    }
-
     try {
-      // Call the addBalance server action
+      let slipImageUrl = balanceForm.slip_img
+
+      // ========== UPLOAD SLIP IMAGE IF FILE EXISTS ==========
+      if (balanceForm.slip_img && typeof balanceForm.slip_img !== 'string') {
+        const formData = new FormData()
+
+        formData.append('image', balanceForm.slip_img)
+
+        const uploadResult = await uploadImage(formData)
+
+        if (uploadResult.success) {
+          // Extract filename and construct proper URL
+          const imagePath = uploadResult.data?.filepath || uploadResult.data.imageUrl
+
+          slipImageUrl = imagePath
+        } else {
+          showError(`Slip image upload failed: ${uploadResult.error}`)
+          setIsAddingBalance(false)
+
+          return
+        }
+      }
+
+      // ========== PREPARE BALANCE DATA ==========
+      const balanceData = {
+        date: balanceForm.date,
+        amount: balanceForm.amount,
+        transaction_Id: balanceForm.transaction_Id,
+        note: balanceForm.note,
+        payment_method: balanceForm.payment_method,
+        balance_for: selectedCustomer._id,
+        role: 'customer', // Changed from 'supplier' to 'customer'
+        slip_img: slipImageUrl || null
+      }
+
+      // ========== CALL ADD BALANCE ACTION ==========
       const result = await addBalance(balanceData)
 
       if (result.success) {
         // Update local state
         setData(prev =>
-          prev.map(item =>
-            item._id === selectedCustomer._id
-              ? {
+          prev.map(item => {
+            if (item._id === selectedCustomer._id) {
+              if (item.account_info) {
+                return {
                   ...item,
                   account_info: {
                     ...item.account_info,
-                    balance: (item.account_info?.balance || 0) + Number(balanceForm.amount)
+                    balance: (item.account_info.balance || 0) + Number(balanceForm.amount)
                   }
                 }
-              : item
-          )
+              } else {
+                return {
+                  ...item,
+                  balance: (item.balance || 0) + Number(balanceForm.amount)
+                }
+              }
+            }
+
+            return item
+          })
         )
 
         showSuccess('Balance added successfully')
@@ -401,26 +394,13 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
           payment_method: 'cash'
         })
       } else {
-        // Show error message
-        const Swal = (await import('sweetalert2')).default
-
-        Swal.fire({
-          icon: 'error',
-          title: 'Error!',
-          text: result.error || 'Failed to add balance'
-        })
+        showError(result.error || 'Failed to add balance')
       }
     } catch (error) {
       console.error('Error adding balance:', error)
-      const Swal = (await import('sweetalert2')).default
-
-      Swal.fire({
-        icon: 'error',
-        title: 'Error!',
-        text: 'An unexpected error occurred'
-      })
+      showError('An unexpected error occurred')
     } finally {
-      setIsAddingBalance(false) // Stop loading
+      setIsAddingBalance(false)
     }
   }
 

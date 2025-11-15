@@ -205,22 +205,6 @@ const SalesListTable = ({
           <IconButton onClick={() => handlePrintInvoice(row.original)} color='success' title='Print Invoice'>
             <i className='tabler-printer text-textPrimary' />
           </IconButton>
-
-          <IconButton
-            onClick={() => {
-              Swal.fire({
-                title: 'Are you sure?',
-                text: `You are about to delete this sale. This action cannot be undone.`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!'
-              })
-            }}
-          >
-            <i className='tabler-trash text-textSecondary' />
-          </IconButton>
         </div>
       ),
       enableSorting: false

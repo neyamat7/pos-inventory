@@ -1,25 +1,40 @@
-const SaleInvoice = ({ saleData, customerData, cartProducts }) => {
-  // Calculate totals from cartProducts
-  const subtotal = cartProducts.reduce((sum, item) => sum + (item.subtotal || 0), 0)
-  const totalDue = cartProducts.reduce((sum, item) => sum + (item.total || 0), 0)
-  const totalCommission = cartProducts.reduce((sum, item) => sum + (item.commission || 0), 0)
+const SaleInvoice = ({ saleData }) => {
+  // Group lots by product and calculate product totals
+  const productSummary =
+    saleData?.items?.map(item => {
+      const productTotal = item.selected_lots.reduce((sum, lot) => sum + (lot.total_price || 0), 0)
+      const totalKg = item.selected_lots.reduce((sum, lot) => sum + (lot.kg || 0), 0)
+      const totalBox = item.selected_lots.reduce((sum, lot) => sum + (lot.box_quantity || 0), 0)
+      const totalDiscount = item.selected_lots.reduce((sum, lot) => sum + (lot.discount_amount || 0), 0)
+      const totalCrate1 = item.selected_lots.reduce((sum, lot) => sum + (lot.crate_type1 || 0), 0)
+      const totalCrate2 = item.selected_lots.reduce((sum, lot) => sum + (lot.crate_type2 || 0), 0)
 
-  // Get payment details from saleData or calculate
-  const paymentDetails = saleData?.payment_details || {
-    extra_crate_type1_price: 0,
-    extra_crate_type2_price: 0,
-    vat: 0,
-    payable_amount: totalDue
-  }
+      return {
+        product_name: item.selected_lots[0]?.product_name || 'N/A',
+        isBoxed: item.selected_lots[0]?.isBoxed || false,
+        totalKg,
+        totalBox,
+        unit_price: item.selected_lots[0]?.unit_price || 0,
+        totalDiscount,
+        productTotal,
+        totalCrate1,
+        totalCrate2,
+        lots: item.selected_lots
+      }
+    }) || []
+
+  const paymentDetails = saleData?.payment_details || {}
 
   return (
-    <div className='p-3 bg-white invoice-container' id='sale-invoice'>
-      {/* Print Styles */}
+    <div className='invoice-wrapper'>
       <style jsx>{`
         @media print {
           @page {
-            margin: 0.3in;
-            size: A4 portrait;
+            size: 12cm 25cm;
+            margin-top: 8cm;
+            margin-bottom: 3cm;
+            margin-left: 0.5cm;
+            margin-right: 0.5cm;
           }
 
           body {
@@ -27,10 +42,9 @@ const SaleInvoice = ({ saleData, customerData, cartProducts }) => {
             print-color-adjust: exact;
           }
 
-          .invoice-container {
-            padding: 0.3in;
-            max-width: 100%;
-            max-height: 5.85in; /* Half of A4 height (11.7in / 2) */
+          .invoice-wrapper {
+            width: 11cm;
+            max-height: 15cm;
             overflow: hidden;
           }
 
@@ -39,269 +53,174 @@ const SaleInvoice = ({ saleData, customerData, cartProducts }) => {
           }
         }
 
-        /* Compact invoice styles */
-        .invoice-container {
-          font-family: 'Arial', sans-serif;
-          line-height: 1.1;
-          color: #333;
+        .invoice-wrapper {
+          font-family: Arial, sans-serif;
+          font-size: 9px;
+          line-height: 1.2;
+          color: #000;
+          padding: 0;
+          margin: 0;
+        }
+
+        .customer-section {
+          margin-bottom: 8px;
+          padding: 4px 0;
+          border-bottom: 1px solid #ddd;
+        }
+
+        .customer-name {
           font-size: 11px;
+          font-weight: bold;
+          margin-bottom: 2px;
+          color: #2d5016;
         }
 
-        .header-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          border-bottom: 2px solid #4f46e5;
-          padding-bottom: 0.3rem;
-          margin-bottom: 0.3rem;
-        }
-
-        .info-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr 1fr;
-          gap: 0.5rem;
-          margin-bottom: 0.4rem;
-          font-size: 10px;
-        }
-
-        .info-box {
-          background: #f8fafc;
-          padding: 0.3rem 0.4rem;
-          border-left: 2px solid #4f46e5;
+        .customer-address {
+          font-size: 9px;
+          color: #333;
         }
 
         .product-table {
-          border-collapse: collapse;
           width: 100%;
-          font-size: 9px;
-          margin: 0.3rem 0;
+          border-collapse: collapse;
+          margin-bottom: 6px;
         }
 
         .product-table th {
-          background-color: #4f46e5;
-          color: white;
-          font-weight: 600;
-          padding: 0.2rem 0.3rem;
+          background-color: #f0f0f0;
+          padding: 3px 4px;
           text-align: left;
+          font-size: 8px;
+          font-weight: 600;
+          border-bottom: 1px solid #ccc;
         }
 
         .product-table td {
-          padding: 0.2rem 0.3rem;
-          border-bottom: 1px solid #e5e7eb;
+          padding: 3px 4px;
+          font-size: 8px;
+          border-bottom: 1px solid #eee;
         }
 
-        .product-table tr:nth-child(even) {
-          background-color: #f9fafb;
+        .product-row {
+          background-color: #fafafa;
         }
 
-        .summary-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 0.5rem;
-          background: #f0f9ff;
-          padding: 0.4rem;
-          border: 1px solid #bae6fd;
-          border-radius: 4px;
-          font-size: 10px;
-          margin-top: 0.3rem;
+        .text-right {
+          text-align: right;
         }
 
-        .summary-col {
-          display: flex;
-          flex-direction: column;
-          gap: 0.15rem;
+        .text-center {
+          text-align: center;
+        }
+
+        .summary-section {
+          margin-top: 8px;
+          padding-top: 6px;
+          border-top: 2px solid #2d5016;
         }
 
         .summary-row {
           display: flex;
           justify-content: space-between;
-          align-items: center;
+          padding: 2px 0;
+          font-size: 9px;
         }
 
-        .total-row {
-          border-top: 1px solid #4f46e5;
-          padding-top: 0.2rem;
-          margin-top: 0.2rem;
+        .summary-row.total {
           font-weight: bold;
+          font-size: 11px;
+          padding-top: 4px;
+          margin-top: 4px;
+          border-top: 1px solid #ccc;
+          color: #2d5016;
         }
 
-        .footer-section {
-          margin-top: 0.3rem;
-          padding-top: 0.3rem;
-          border-top: 1px dashed #d1d5db;
+        .date-section {
           font-size: 8px;
-          text-align: center;
+          text-align: right;
+          color: #666;
+          margin-bottom: 6px;
         }
       `}</style>
 
-      {/* Header Row - Everything inline */}
-      <div className='header-row'>
-        <div>
-          <h1 className='text-lg font-bold text-gray-800 mb-0'>INVOICE</h1>
-          <p className='text-xs text-gray-600 mb-0'>#{saleData?._id?.slice(-8) || 'N/A'}</p>
-        </div>
+      {/* Date */}
+      <div className='date-section'>Date: {saleData?.sale_date || new Date().toISOString().split('T')[0]}</div>
 
-        <div className='text-center'>
-          <p className='text-xs font-semibold mb-0'>{saleData?.sale_date || new Date().toISOString().split('T')[0]}</p>
-          <p className='text-xs text-gray-600 mb-0'>
-            {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-          </p>
-        </div>
-
-        <div className='text-right'>
-          <p className='text-xs mb-0'>
-            <strong>Payment:</strong> {saleData?.payment_details?.payment_type || 'Cash'}
-          </p>
-          <p className='text-xs text-gray-600 mb-0'>Status: Completed</p>
-        </div>
+      {/* Customer Info */}
+      <div className='customer-section'>
+        <div className='customer-name'>Name: {saleData?.customer_name || 'N/A'}</div>
+        <div className='customer-address'>Address: {saleData?.customer_address || 'N/A'}</div>
       </div>
 
-      {/* Info Grid - Bill To, Contact, Balance inline */}
-      <div className='info-grid'>
-        <div className='info-box'>
-          <p className='text-xs font-semibold mb-1'>Bill To:</p>
-          <p className='text-xs font-bold mb-0'>{customerData?.basic_info?.name || 'N/A'}</p>
-          <p className='text-xs mb-0'>📞 {customerData?.contact_info?.phone || 'N/A'}</p>
-        </div>
-
-        <div className='info-box'>
-          <p className='text-xs font-semibold mb-1'>Contact:</p>
-          <p className='text-xs mb-0'>📧 {customerData?.contact_info?.email || 'N/A'}</p>
-          <p className='text-xs mb-0'>📍 {customerData?.contact_info?.location || 'N/A'}</p>
-        </div>
-
-        <div className='info-box'>
-          <p className='text-xs font-semibold mb-1'>Account:</p>
-          <p className='text-xs mb-0'>
-            <strong>Balance:</strong> ৳{(customerData?.account_info?.balance || 0).toFixed(2)}
-          </p>
-          <p className='text-xs mb-0'>
-            <strong>Due:</strong> ৳{(customerData?.account_info?.due || 0).toFixed(2)}
-          </p>
-        </div>
-      </div>
-
-      {/* Compact Products Table */}
+      {/* Products Table */}
       <table className='product-table'>
         <thead>
           <tr>
-            <th style={{ width: '35%' }}>Product Name</th>
-            <th style={{ width: '15%' }}>Lot</th>
-            <th style={{ width: '12%' }} className='text-center'>
+            <th style={{ width: '35%' }}>Product</th>
+            <th style={{ width: '15%' }} className='text-center'>
               Quantity
             </th>
-            <th style={{ width: '13%' }} className='text-right'>
+            <th style={{ width: '15%' }} className='text-right'>
               Unit Price
             </th>
             <th style={{ width: '12%' }} className='text-right'>
               Discount
             </th>
-            <th style={{ width: '13%' }} className='text-right'>
+            <th style={{ width: '12%' }} className='text-center'>
+              Crate
+            </th>
+            <th style={{ width: '18%' }} className='text-right'>
               Total
             </th>
           </tr>
         </thead>
         <tbody>
-          {cartProducts.map((item, index) => (
-            <tr key={item.cart_item_id || index}>
-              <td className='font-medium'>{item.product_name}</td>
-              <td className='text-gray-600'>{item.lot_selected?.lot_name || 'N/A'}</td>
+          {productSummary.map((product, index) => (
+            <tr key={index} className='product-row'>
+              <td style={{ fontWeight: '600' }}>{product.product_name}</td>
+              <td className='text-center'>{product.isBoxed ? `${product.totalBox} box` : `${product.totalKg} kg`}</td>
+              <td className='text-right'>৳{product.unit_price.toFixed(0)}</td>
+              <td className='text-right'>{product.totalDiscount > 0 ? `৳${product.totalDiscount.toFixed(0)}` : '-'}</td>
               <td className='text-center'>
-                {item.isBoxed ? (
-                  <span className='bg-blue-100 text-blue-800 px-1 py-0.5 rounded' style={{ fontSize: '8px' }}>
-                    {item.box_quantity} box
-                  </span>
-                ) : (
-                  <span className='bg-green-100 text-green-800 px-1 py-0.5 rounded' style={{ fontSize: '8px' }}>
-                    {item.kg} kg
-                  </span>
-                )}
+                {product.totalCrate1 > 0 || product.totalCrate2 > 0
+                  ? `${product.totalCrate1}/${product.totalCrate2}`
+                  : '-'}
               </td>
-              <td className='text-right'>৳{(item.selling_price || 0).toFixed(2)}</td>
-              <td className='text-right'>৳{(item.discount_amount || 0).toFixed(2)}</td>
-              <td className='text-right font-semibold'>৳{(item.total || 0).toFixed(2)}</td>
+              <td className='text-right' style={{ fontWeight: '600' }}>
+                ৳{product.productTotal.toFixed(2)}
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      {/* Compact Payment Summary - Two columns */}
-      <div className='summary-grid'>
-        {/* Left Column */}
-        <div className='summary-col'>
+      {/* Payment Summary */}
+      <div className='summary-section'>
+        {paymentDetails.extra_crate_type1_price > 0 && (
           <div className='summary-row'>
-            <span>Subtotal:</span>
-            <span className='font-medium'>৳{subtotal.toFixed(2)}</span>
+            <span>Extra Crate (Type 1):</span>
+            <span>৳{paymentDetails.extra_crate_type1_price.toFixed(2)}</span>
           </div>
+        )}
 
-          {paymentDetails.extra_crate_type1_price > 0 && (
-            <div className='summary-row'>
-              <span>Extra Crate Type 1:</span>
-              <span>৳{paymentDetails.extra_crate_type1_price.toFixed(2)}</span>
-            </div>
-          )}
-
-          {paymentDetails.extra_crate_type2_price > 0 && (
-            <div className='summary-row'>
-              <span>Extra Crate Type 2:</span>
-              <span>৳{paymentDetails.extra_crate_type2_price.toFixed(2)}</span>
-            </div>
-          )}
-
-          {paymentDetails.vat > 0 && (
-            <div className='summary-row'>
-              <span>VAT ({((paymentDetails.vat / subtotal) * 100).toFixed(1)}%):</span>
-              <span>৳{paymentDetails.vat.toFixed(2)}</span>
-            </div>
-          )}
-
-          {totalCommission > 0 && (
-            <div className='summary-row'>
-              <span>Commission:</span>
-              <span>৳{totalCommission.toFixed(2)}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Right Column */}
-        <div className='summary-col'>
-          <div className='summary-row total-row'>
-            <span className='font-bold'>Total Payable:</span>
-            <span className='font-bold text-blue-600' style={{ fontSize: '11px' }}>
-              ৳{(paymentDetails.payable_amount || totalDue).toFixed(2)}
-            </span>
+        {paymentDetails.extra_crate_type2_price > 0 && (
+          <div className='summary-row'>
+            <span>Extra Crate (Type 2):</span>
+            <span>৳{paymentDetails.extra_crate_type2_price.toFixed(2)}</span>
           </div>
+        )}
 
-          {saleData?.payment_details && (
-            <>
-              <div className='summary-row'>
-                <span>Paid Amount:</span>
-                <span className='font-semibold text-green-600'>
-                  ৳{(saleData.payment_details.received_amount || 0).toFixed(2)}
-                </span>
-              </div>
-              <div className='summary-row'>
-                <span>Due Amount:</span>
-                <span className='font-semibold text-red-600'>
-                  ৳{(saleData.payment_details.due_amount || 0).toFixed(2)}
-                </span>
-              </div>
-              {saleData.payment_details.note && (
-                <div className='summary-row'>
-                  <span>Note:</span>
-                  <span className='text-xs italic'>{saleData.payment_details.note}</span>
-                </div>
-              )}
-            </>
-          )}
+        {paymentDetails.vat > 0 && (
+          <div className='summary-row'>
+            <span>VAT:</span>
+            <span>৳{paymentDetails.vat.toFixed(2)}</span>
+          </div>
+        )}
+
+        <div className='summary-row total'>
+          <span>Payable Amount:</span>
+          <span>৳{(paymentDetails.payable_amount || 0).toFixed(2)}</span>
         </div>
-      </div>
-
-      {/* Compact Footer */}
-      <div className='footer-section'>
-        <p className='mb-0 text-gray-600'>Thank you for your business!</p>
-        <p className='mb-0 text-gray-500'>This is a computer generated invoice, no signature required.</p>
-        <p className='mb-0 text-gray-400'>{new Date().toLocaleString()}</p>
       </div>
     </div>
   )

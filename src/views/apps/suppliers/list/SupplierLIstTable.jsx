@@ -225,6 +225,7 @@ const SupplierListTable = ({
           )
         }
       }),
+
       columnHelper.accessor('contact_info.phone', {
         header: 'Phone',
         cell: ({ row }) => (
@@ -233,6 +234,7 @@ const SupplierListTable = ({
           </div>
         )
       }),
+
       columnHelper.accessor('account_info.balance', {
         header: 'Balance',
         cell: ({ row }) => (
@@ -316,30 +318,6 @@ const SupplierListTable = ({
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues()
   })
-
-  const getAvatar = supplier => {
-    const avatar = supplier?.basic_info?.avatar || supplier?.image
-    const name = supplier?.basic_info?.name || supplier?.name
-
-    // Add safety check
-    if (!name) {
-      return (
-        <CustomAvatar skin='light' size={34}>
-          S
-        </CustomAvatar>
-      )
-    }
-
-    if (avatar) {
-      return <CustomAvatar src={avatar} skin='light' size={34} />
-    } else {
-      return (
-        <CustomAvatar skin='light' size={34}>
-          {getInitials(name)}
-        </CustomAvatar>
-      )
-    }
-  }
 
   const handleBalanceSubmit = async () => {
     // Validation
@@ -689,6 +667,7 @@ const SupplierListTable = ({
                 <label className='text-sm font-medium text-gray-700'>
                   Upload Payment Slip {isAddingBalance && '(Uploading...)'}
                 </label>
+
                 <input
                   type='file'
                   accept='image/*'
