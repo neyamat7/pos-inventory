@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getProfitLoss } from '@/actions/incomeActions'
 import ProfitLoss from '@/views/apps/profitLoss'
 

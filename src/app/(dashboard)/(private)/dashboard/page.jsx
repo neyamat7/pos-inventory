@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getAnalysisStats, getMonthlySummary } from '@/actions/dashboardActions'
 import DashboardClient from './DashboardClient'
 
