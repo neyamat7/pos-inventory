@@ -40,7 +40,6 @@ const EditCustomerInfo = ({ open, handleClose, customerData, onSave }) => {
       // Basic Info
       name: '',
       sl: '',
-      avatar: '',
 
       // Contact Info
       email: '',
@@ -68,7 +67,6 @@ const EditCustomerInfo = ({ open, handleClose, customerData, onSave }) => {
         // Basic Info
         name: customerData.basic_info?.name || '',
         sl: customerData.basic_info?.sl || '',
-        avatar: customerData.basic_info?.avatar || '',
 
         // Contact Info
         email: customerData.contact_info?.email || '',
@@ -100,8 +98,7 @@ const EditCustomerInfo = ({ open, handleClose, customerData, onSave }) => {
         basic_info: {
           sl: data.sl.toString(),
           name: data.name.trim(),
-          role: 'customer',
-          avatar: data.avatar?.trim() || ''
+          role: 'customer'
         },
 
         // Contact Information
@@ -288,27 +285,6 @@ const EditCustomerInfo = ({ open, handleClose, customerData, onSave }) => {
                             placeholder='Ahmed Khan'
                             error={!!errors.name}
                             helperText={errors.name && 'Required'}
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: '#f8fafc'
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                    </Grid>
-
-                    <Grid size={{ xs: 12 }}>
-                      <Controller
-                        name='avatar'
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTextField
-                            {...field}
-                            fullWidth
-                            label='Avatar URL'
-                            placeholder='https://example.com/avatar.jpg'
                             sx={{
                               '& .MuiOutlinedInput-root': {
                                 borderRadius: 2,

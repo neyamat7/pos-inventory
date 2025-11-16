@@ -842,10 +842,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
           ...payload,
           printTrigger: Date.now()
         })
-
-        // Clear cart and customer
-        // setCartProducts([])
-        // setSelectedCustomer({})
       } else {
         toast.error(result.error || 'Failed to create sale')
       }

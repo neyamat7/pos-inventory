@@ -160,16 +160,16 @@ const SaleInvoice = ({ saleData }) => {
             <th style={{ width: '15%' }} className='text-center'>
               Quantity
             </th>
-            <th style={{ width: '15%' }} className='text-right'>
+            <th style={{ width: '15%' }} className='text-center'>
               Unit Price
             </th>
-            <th style={{ width: '12%' }} className='text-right'>
+            <th style={{ width: '12%' }} className='text-center'>
               Discount
             </th>
             <th style={{ width: '12%' }} className='text-center'>
               Crate
             </th>
-            <th style={{ width: '18%' }} className='text-right'>
+            <th style={{ width: '18%' }} className='text-center'>
               Total
             </th>
           </tr>
@@ -178,15 +178,15 @@ const SaleInvoice = ({ saleData }) => {
           {productSummary.map((product, index) => (
             <tr key={index} className='product-row'>
               <td style={{ fontWeight: '600' }}>{product.product_name}</td>
-              <td className='text-center'>{product.isBoxed ? `${product.totalBox} box` : `${product.totalKg} kg`}</td>
-              <td className='text-right'>৳{product.unit_price.toFixed(0)}</td>
-              <td className='text-right'>{product.totalDiscount > 0 ? `৳${product.totalDiscount.toFixed(0)}` : '-'}</td>
-              <td className='text-center'>
+              <td className='text-left'>{product.isBoxed ? `${product.totalBox} box` : `${product.totalKg} kg`}</td>
+              <td className='text-left'>৳{product.unit_price.toFixed(0)}</td>
+              <td className='text-left'>{product.totalDiscount > 0 ? `৳${product.totalDiscount.toFixed(0)}` : '-'}</td>
+              <td className='text-left'>
                 {product.totalCrate1 > 0 || product.totalCrate2 > 0
                   ? `${product.totalCrate1}/${product.totalCrate2}`
                   : '-'}
               </td>
-              <td className='text-right' style={{ fontWeight: '600' }}>
+              <td className='text-left' style={{ fontWeight: '600' }}>
                 ৳{product.productTotal.toFixed(2)}
               </td>
             </tr>

@@ -1,88 +1,13 @@
-// MUI Imports
-import { redirect } from 'next/navigation'
-
-import Grid from '@mui/material/Grid2'
-
-// Component Imports
-
-import LineAreaYearlySalesChart from '@views/dashboards/crm/LineAreaYearlySalesChart'
-import CardStatVertical from '@/components/card-statistics/Vertical'
-import BarChartRevenueGrowth from '@views/dashboards/crm/BarChartRevenueGrowth'
-import EarningReportsWithTabs from '@views/dashboards/crm/EarningReportsWithTabs'
-
-// Server Action Imports
-import { getServerMode } from '@core/utils/serverHelpers'
-import { auth } from '@/auth'
-import EarningReports from '@/views/dashboards/crm/EarningReports'
-import PopularProducts from '@/views/dashboards/crm/PopularProducts'
-import DistributedBarChartPurchase from '@/views/dashboards/crm/DistributedBarChartPurchase'
-import DistributedBarChartPurchaseDue from '@/views/dashboards/crm/DistributedBarChartPurchaseDue'
-import LineAreaYearlySalesChartDue from '@/views/dashboards/crm/LineAreaYearlySalesChartDue'
-import DistributedBarChartPurchaseReturn from '@/views/dashboards/crm/DistributedBarChartPurchaseReturn'
-import LineAreaYearlySalesChartReturn from '@/views/dashboards/crm/LineAreaYearlySalesChartReturn'
+import { getAnalysisStats, getMonthlySummary } from '@/actions/dashboardActions'
+import DashboardClient from './DashboardClient'
 
 const DashboardCRM = async () => {
-  // const session = await auth()
+  const stats = await getAnalysisStats({ filter: 'daily' })
+  const monthly = await getMonthlySummary()
 
-  // // console.log('session', session)
+  console.log('monthly', monthly)
 
-  // if (!session) {
-  //   redirect('/login')
-  // }
-
-  // Vars
-  const serverMode = await getServerMode()
-
-  return (
-    <Grid container spacing={6}>
-      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-        <DistributedBarChartPurchase />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-        <DistributedBarChartPurchaseDue />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-        <DistributedBarChartPurchaseReturn />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-        <LineAreaYearlySalesChart />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-        <LineAreaYearlySalesChartDue />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-        <LineAreaYearlySalesChartReturn />
-      </Grid>
-
-      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-        <CardStatVertical
-          title='Total Profit'
-          subtitle='Last Week'
-          stats='1.28k'
-          avatarColor='error'
-          avatarIcon='tabler-credit-card'
-          avatarSkin='light'
-          avatarSize={44}
-          chipText='-12.2%'
-          chipColor='error'
-          chipVariant='tonal'
-        />
-      </Grid>
-
-      <Grid size={{ xs: 12, md: 8, lg: 3 }}>
-        <BarChartRevenueGrowth />
-      </Grid>
-      <Grid size={{ xs: 12, lg: 12 }}>
-        <EarningReportsWithTabs />
-      </Grid>
-      <Grid size={{ xs: 12, md: 6, lg: 6 }}>
-        <EarningReports />
-      </Grid>
-      <Grid size={{ xs: 12, md: 6, lg: 6 }}>
-        <PopularProducts />
-      </Grid>
-    </Grid>
-  )
+  return <DashboardClient initialData={stats.data} monthlySummary={monthly.data} />
 }
 
 export default DashboardCRM

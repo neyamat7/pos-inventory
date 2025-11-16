@@ -222,8 +222,6 @@ const SupplierDetails = ({ supplierData }) => {
                   ৳{supplierData?.account_info?.due?.toLocaleString() || 0}
                 </Typography>
               </div>
-
-           
             </div>
           </div>
 
@@ -245,7 +243,7 @@ const SupplierDetails = ({ supplierData }) => {
                   Price: ৳{supplierData?.crate_info?.crate1Price || 0}
                 </Typography>
                 <Typography variant='body2' color='text.secondary'>
-                  Remaining: {supplierData?.crate_info?.remainingCrate1 || 0} pcs
+                  Need to give: {supplierData?.crate_info?.needToGiveCrate1 || 0} pcs
                 </Typography>
               </div>
 
@@ -258,7 +256,7 @@ const SupplierDetails = ({ supplierData }) => {
                   Price: ৳{supplierData?.crate_info?.crate2Price || 0}
                 </Typography>
                 <Typography variant='body2' color='text.secondary'>
-                  Remaining: {supplierData?.crate_info?.remainingCrate2 || 0} pcs
+                  Need to give: {supplierData?.crate_info?.needToGiveCrate2 || 0} pcs
                 </Typography>
               </div>
 

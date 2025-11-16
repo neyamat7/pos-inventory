@@ -274,57 +274,60 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
           </Grid>
 
           {/* PRODUCT IMAGE UPLOAD SECTION */}
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <Card variant='outlined'>
-              <CardHeader title='Product Image' sx={{ pb: 2 }} />
-              <CardContent className='space-y-4'>
-                {/*  FILE UPLOAD INPUT   */}
-                <div className='flex flex-col gap-2'>
-                  <input
-                    type='file'
-                    accept='image/*'
-                    onChange={handleImageUpload}
-                    disabled={loading || imageUploading}
-                    className='block w-full text-sm text-textSecondary
+
+          {!isEdit && (
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+              <Card variant='outlined'>
+                <CardHeader title='Product Image' sx={{ pb: 2 }} />
+                <CardContent className='space-y-4'>
+                  {/*  FILE UPLOAD INPUT   */}
+                  <div className='flex flex-col gap-2'>
+                    <input
+                      type='file'
+                      accept='image/*'
+                      onChange={handleImageUpload}
+                      disabled={loading || imageUploading}
+                      className='block w-full text-sm text-textSecondary
             file:mr-4 file:py-2 file:px-4
             file:rounded-md file:border-0
             file:text-sm file:font-medium
             file:bg-primary file:text-white
             hover:file:bg-primaryDark disabled:opacity-50'
-                  />
-                  {/* Uploading status indicator */}
-                  {imageUploading && (
-                    <Typography variant='body2' color='text.secondary'>
-                      Uploading image...
-                    </Typography>
-                  )}
-                </div>
-
-                {/* ========== IMAGE PREVIEW ========== */}
-                {imagePreview && (
-                  <div className='flex flex-col items-center gap-2'>
-                    <Typography variant='body2' color='text.secondary'>
-                      Preview:
-                    </Typography>
-                    <img
-                      src={imagePreview}
-                      alt='Product preview'
-                      className='rounded-lg max-w-48 max-h-48 object-cover shadow-md border'
-                      onError={e => {
-                        e.target.style.display = 'none'
-                      }}
                     />
+                    {/* Uploading status indicator */}
+                    {imageUploading && (
+                      <Typography variant='body2' color='text.secondary'>
+                        Uploading image...
+                      </Typography>
+                    )}
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
+
+                  {/* ========== IMAGE PREVIEW ========== */}
+                  {imagePreview && (
+                    <div className='flex flex-col items-center gap-2'>
+                      <Typography variant='body2' color='text.secondary'>
+                        Preview:
+                      </Typography>
+                      <img
+                        src={imagePreview}
+                        alt='Product preview'
+                        className='rounded-lg max-w-48 max-h-48 object-cover shadow-md border'
+                        onError={e => {
+                          e.target.style.display = 'none'
+                        }}
+                      />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
+          )}
 
           {/* Description */}
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <div className='flex flex-col gap-4'>
               <Controller
-                name='description'
+                name='description' 
                 control={control}
                 render={({ field, fieldState }) => (
                   <CustomTextField

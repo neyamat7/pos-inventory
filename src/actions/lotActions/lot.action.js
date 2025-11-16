@@ -114,3 +114,22 @@ export async function adjustStock(lotId, adjustmentData) {
     }
   }
 }
+
+export async function getLotSaleSummary(lotId) {
+  try {
+    const response = await api.get(`/sale/lot-sale-summary/${lotId}`)
+
+    return {
+      success: true,
+      data: response.data,
+      message: 'Lot sale summary fetched successfully'
+    }
+  } catch (error) {
+    console.error('Get lot sale summary error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch lot sale summary'
+    }
+  }
+}

@@ -57,7 +57,6 @@ export default function EditProduct({ id, productData: initialProductData }) {
       const productPayload = {
         productName: values.productName.trim(),
         basePrice: Number(values.basePrice),
-        productImage: values.productImage?.trim() || '',
         description: values.description?.trim() || '',
         categoryId: values.categoryId || null,
         commissionRate: Number(values.commissionRate),
@@ -105,7 +104,6 @@ export default function EditProduct({ id, productData: initialProductData }) {
     return {
       productName: product.productName || '',
       basePrice: product.basePrice || 0,
-      productImage: product.productImage || '',
       description: product.description || '',
       categoryId: product.categoryId?._id || product.categoryId || '',
       commissionRate: product.commissionRate || 0,

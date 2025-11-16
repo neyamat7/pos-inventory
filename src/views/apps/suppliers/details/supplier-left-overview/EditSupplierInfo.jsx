@@ -39,7 +39,6 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
       // Basic Info
       name: '',
       sl: '',
-      avatar: '',
 
       // Contact Info
       email: '',
@@ -68,7 +67,6 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
         // Basic Info
         name: supplierData.basic_info?.name || '',
         sl: supplierData.basic_info?.sl || '',
-        avatar: supplierData.basic_info?.avatar || '',
 
         // Contact Info
         email: supplierData.contact_info?.email || '',
@@ -101,7 +99,7 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
         basic_info: {
           sl: data.sl.toString(),
           name: data.name.trim(),
-          avatar: data.avatar?.trim() || '',
+
           role: 'supplier'
         },
 
@@ -289,27 +287,6 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
                             placeholder='Ahmed Suppliers'
                             error={!!errors.name}
                             helperText={errors.name && 'Required'}
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: '#f8fafc'
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                    </Grid>
-
-                    <Grid size={{ xs: 12 }}>
-                      <Controller
-                        name='avatar'
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTextField
-                            {...field}
-                            fullWidth
-                            label='Avatar URL'
-                            placeholder='https://example.com/avatar.jpg'
                             sx={{
                               '& .MuiOutlinedInput-root': {
                                 borderRadius: 2,
@@ -516,8 +493,6 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
                         )}
                       />
                     </Grid>
-
-                   
                   </Grid>
 
                   <Typography
@@ -543,8 +518,6 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
                   </Typography>
 
                   <Grid container spacing={3}>
-                    
-
                     <Grid size={{ xs: 12, sm: 4 }}>
                       <Controller
                         name='crate1Price'
@@ -588,8 +561,6 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
                         )}
                       />
                     </Grid>
-
-                   
 
                     <Grid size={{ xs: 12, sm: 4 }}>
                       <Controller
