@@ -21,6 +21,8 @@ import Chip from '@mui/material/Chip'
 
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
+import { customerColumns } from './customerColumns'
+
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
@@ -47,7 +49,10 @@ const CrateManagementTable = ({
   activeTab,
   setActiveTab,
   totalCrates,
-  totalCrateLoading
+  totalCrateLoading,
+  customerData,
+  customerPaginationData,
+  customerLoading
 }) => {
   const [rowSelection, setRowSelection] = useState({})
   const [showAddCrateModal, setShowAddCrateModal] = useState(false)
@@ -476,18 +481,35 @@ const CrateManagementTable = ({
   )
 
   const table = useReactTable({
-    data: activeTab === 'suppliers' ? supplierData || [] : transactionsData || [],
-    columns: activeTab === 'suppliers' ? supplierColumns : transactionColumns,
+    data:
+      activeTab === 'suppliers'
+        ? supplierData || []
+        : activeTab === 'customers'
+          ? customerData || []
+          : transactionsData || [],
+    columns:
+      activeTab === 'suppliers' ? supplierColumns : activeTab === 'customers' ? customerColumns : transactionColumns,
     pageCount:
-      activeTab === 'suppliers' ? paginationData?.totalPages || 0 : transactionsPaginationData?.totalPages || 0,
+      activeTab === 'suppliers'
+        ? paginationData?.totalPages || 0
+        : activeTab === 'customers'
+          ? customerPaginationData?.totalPages || 0
+          : transactionsPaginationData?.totalPages || 0,
     state: {
       rowSelection,
       pagination: {
         pageIndex:
           activeTab === 'suppliers'
             ? (paginationData?.currentPage || 1) - 1
-            : (transactionsPaginationData?.currentPage || 1) - 1,
-        pageSize: activeTab === 'suppliers' ? paginationData?.limit || 10 : transactionsPaginationData?.limit || 10
+            : activeTab === 'customers'
+              ? (customerPaginationData?.currentPage || 1) - 1
+              : (transactionsPaginationData?.currentPage || 1) - 1,
+        pageSize:
+          activeTab === 'suppliers'
+            ? paginationData?.limit || 10
+            : activeTab === 'customers'
+              ? customerPaginationData?.limit || 10
+              : transactionsPaginationData?.limit || 10
       }
     },
     enableRowSelection: true,
@@ -639,6 +661,25 @@ const CrateManagementTable = ({
             >
               Supplier List
             </Button>
+
+            <Button
+              onClick={() => setActiveTab('customers')}
+              sx={{
+                flex: 1,
+                borderRadius: 0,
+                borderBottom: activeTab === 'customers' ? 2 : 0,
+                borderColor: 'primary.main',
+                bgcolor: activeTab === 'customers' ? 'primary.light' : 'transparent',
+                color: activeTab === 'customers' ? 'white' : 'text.secondary',
+                '&:hover': {
+                  bgcolor: activeTab === 'customers' ? 'primary.light' : 'action.hover',
+                  color: activeTab === 'customers' ? 'black' : 'text.secondary'
+                }
+              }}
+            >
+              Customer List
+            </Button>
+
             <Button
               onClick={() => setActiveTab('history')}
               sx={{
@@ -663,14 +704,26 @@ const CrateManagementTable = ({
           <CustomTextField
             value={searchTerm || ''}
             onChange={e => handleSearch(e.target.value)}
-            placeholder={activeTab === 'suppliers' ? 'Search Supplier' : 'Search Transaction'}
+            placeholder={
+              activeTab === 'suppliers'
+                ? 'Search Supplier'
+                : activeTab === 'customers'
+                  ? 'Search Customer'
+                  : 'Search Transaction'
+            }
             className='sm:is-auto'
           />
 
           <div className='flex items-center max-sm:flex-col gap-4 max-sm:is-full is-auto'>
             <CustomTextField
               select
-              value={activeTab === 'suppliers' ? paginationData?.limit || 10 : transactionsPaginationData?.limit || 10}
+              value={
+                activeTab === 'suppliers'
+                  ? paginationData?.limit || 10
+                  : activeTab === 'customers'
+                    ? customerPaginationData?.limit || 10
+                    : transactionsPaginationData?.limit || 10
+              }
               onChange={e => onPageSizeChange(Number(e.target.value))}
               className='is-[70px] max-sm:is-full'
             >
@@ -699,10 +752,18 @@ const CrateManagementTable = ({
             </thead>
 
             <tbody>
-              {(activeTab === 'suppliers' ? loading : transactionsLoading) ? (
+              {(
+                activeTab === 'suppliers' ? loading : activeTab === 'customers' ? customerLoading : transactionsLoading
+              ) ? (
                 <tr>
                   <td
-                    colSpan={activeTab === 'suppliers' ? supplierColumns.length : transactionColumns.length}
+                    colSpan={
+                      activeTab === 'suppliers'
+                        ? supplierColumns.length
+                        : activeTab === 'customers'
+                          ? customerColumns.length
+                          : transactionColumns.length
+                    }
                     className='text-center py-8'
                   >
                     <div className='flex justify-center items-center'>
@@ -736,7 +797,13 @@ const CrateManagementTable = ({
 
         <TablePaginationComponent
           table={table}
-          paginationData={activeTab === 'suppliers' ? paginationData : transactionsPaginationData}
+          paginationData={
+            activeTab === 'suppliers'
+              ? paginationData
+              : activeTab === 'customers'
+                ? customerPaginationData
+                : transactionsPaginationData
+          }
           onPageChange={handlePageChangeWrapper}
         />
       </Card>

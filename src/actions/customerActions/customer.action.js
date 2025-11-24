@@ -148,3 +148,39 @@ export async function getCustomerDueList({ page = 1, limit = 10 } = {}) {
     }
   }
 }
+
+export async function getCustomerCrateHistory(customerId, page = 1, limit = 10) {
+  try {
+    const response = await api.get(`/customer-crate-history/${customerId}?page=${page}&limit=${limit}`)
+
+    return {
+      success: true,
+      data: response
+    }
+  } catch (error) {
+    console.error('Get customer crate history error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch customer crate history'
+    }
+  }
+}
+
+export async function updateCrateStatus(id, status) {
+  try {
+    const response = await api.patch(`/customer-crate-history/status/${id}`, { status })
+
+    return {
+      success: true,
+      data: response
+    }
+  } catch (error) {
+    console.error('Update crate status error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to update crate status'
+    }
+  }
+}

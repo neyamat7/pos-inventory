@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import CrateManagement from '@/views/apps/cratesManagement'
 import { getSuppliers } from '@/actions/supplierAction'
 import { getAllCrateTransactions, getCrateTotals } from '@/actions/crateActions'
+import { getCustomers } from '@/actions/customerActions'
 
 const CratesMangementPage = () => {
   // Separate pagination states for suppliers
@@ -32,6 +33,16 @@ const CratesMangementPage = () => {
 
   const [totalCrates, setTotalCrates] = useState({})
   const [totalCrateLoading, setTotalCrateLoading] = useState(false)
+
+  // Separate pagination states for customers
+  const [customerCurrentPage, setCustomerCurrentPage] = useState(1)
+  const [customerPageSize, setCustomerPageSize] = useState(10)
+  const [customerSearchTerm, setCustomerSearchTerm] = useState('')
+
+  // Customer states
+  const [customerData, setCustomerData] = useState([])
+  const [customerPaginationData, setCustomerPaginationData] = useState(null)
+  const [isCustomerLoading, setIsCustomerLoading] = useState(true)
 
   // Fetch suppliers
   useEffect(() => {
@@ -68,7 +79,7 @@ const CratesMangementPage = () => {
       try {
         const result = await getCrateTotals()
 
-        console.log('result of crates', result)
+        // console.log('result of crates', result)
 
         if (result.success) {
           setTotalCrates(result.data || {})
@@ -123,10 +134,39 @@ const CratesMangementPage = () => {
     fetchTransactionData()
   }, [transactionCurrentPage, transactionPageSize, transactionSearchTerm])
 
+  // Fetch customers
+  useEffect(() => {
+    const fetchCustomerData = async () => {
+      setIsCustomerLoading(true)
+
+      try {
+        const result = await getCustomers(customerCurrentPage, customerPageSize)
+
+        if (result.success) {
+          setCustomerData(result.data.customers || [])
+          setCustomerPaginationData({
+            total: result.data.total,
+            totalPages: result.data.totalPages,
+            currentPage: result.data.page,
+            limit: result.data.limit
+          })
+        }
+      } catch (error) {
+        console.error('Error fetching customers:', error)
+      } finally {
+        setIsCustomerLoading(false)
+      }
+    }
+
+    fetchCustomerData()
+  }, [customerCurrentPage, customerPageSize, customerSearchTerm])
+
   // Handle page change based on active tab
   const handlePageChange = newPage => {
     if (activeTab === 'suppliers') {
       setSupplierCurrentPage(newPage)
+    } else if (activeTab === 'customers') {
+      setCustomerCurrentPage(newPage)
     } else if (activeTab === 'history') {
       setTransactionCurrentPage(newPage)
     }
@@ -137,6 +177,9 @@ const CratesMangementPage = () => {
     if (activeTab === 'suppliers') {
       setSupplierPageSize(newSize)
       setSupplierCurrentPage(1)
+    } else if (activeTab === 'customers') {
+      setCustomerPageSize(newSize)
+      setCustomerCurrentPage(1)
     } else if (activeTab === 'history') {
       setTransactionPageSize(newSize)
       setTransactionCurrentPage(1)
@@ -148,6 +191,9 @@ const CratesMangementPage = () => {
     if (activeTab === 'suppliers') {
       setSupplierSearchTerm(searchValue)
       setSupplierCurrentPage(1)
+    } else if (activeTab === 'customers') {
+      setCustomerSearchTerm(searchValue)
+      setCustomerCurrentPage(1)
     } else if (activeTab === 'history') {
       setTransactionSearchTerm(searchValue)
       setTransactionCurrentPage(1)
@@ -161,7 +207,13 @@ const CratesMangementPage = () => {
       onPageChange={handlePageChange}
       onPageSizeChange={handlePageSizeChange}
       onSearch={handleSearch}
-      searchTerm={activeTab === 'suppliers' ? supplierSearchTerm : transactionSearchTerm}
+      searchTerm={
+        activeTab === 'suppliers'
+          ? supplierSearchTerm
+          : activeTab === 'customers'
+            ? customerSearchTerm
+            : transactionSearchTerm
+      }
       loading={isLoading}
       transactionsData={transactionsData}
       transactionsPaginationData={transactionsPaginationData}
@@ -170,6 +222,9 @@ const CratesMangementPage = () => {
       setActiveTab={setActiveTab}
       totalCrates={totalCrates}
       totalCrateLoading={totalCrateLoading}
+      customerData={customerData}
+      customerPaginationData={customerPaginationData}
+      customerLoading={isCustomerLoading}
     />
   )
 }

@@ -194,7 +194,8 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   const receiveAmount = watchPayment('receiveAmount')
   const vatType = watchPayment('vatType')
   const paymentType = watchPayment('paymentType')
-  const receivedFromBalance = watchPayment('received_amount_from_balance')
+
+  // const receivedFromBalance = watchPayment('received_amount_from_balance')
 
   const parsePercent = v => {
     if (!v || v === 'Select') return 0
@@ -207,7 +208,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   const vatAmount = +(totalDueAmount * vatRate).toFixed(2)
 
   // Calculate total discounted amount across all products
-  const totalDiscountedAmount = cartProducts.reduce((sum, item) => sum + (Number(item.discount_amount) || 0), 0)
+  // const totalDiscountedAmount = cartProducts.reduce((sum, item) => sum + (Number(item.discount_amount) || 0), 0)
 
   // Update payable amount calculation
   const payableAmount = +(totalDueAmount + vatAmount + extraCrateType1Price + extraCrateType2Price).toFixed(2)
@@ -240,17 +241,12 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   }
 
   useEffect(() => {
-    if (paymentType === 'balance') {
-      // When payment type is balance, sync receiveAmount with received_amount_from_balance
-      setPaymentValue('receiveAmount', receivedFromBalance || 0)
-    }
-
     // Always calculate due amount: payableAmount - receiveAmount
     const currentReceive = Number(receiveAmount) || 0
     const due = Math.max(0, payableAmount - currentReceive)
 
     setPaymentValue('dueAmount', due)
-  }, [paymentType, receivedFromBalance, receiveAmount, payableAmount, setPaymentValue])
+  }, [receiveAmount, payableAmount, setPaymentValue])
 
   const columns = useMemo(() => {
     // --- Base Columns (always shown) ---
@@ -615,20 +611,20 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   }, [cartProducts.some(p => p.isCrated), showTooltip])
 
   // Validation for balance payment
-  const validateBalanceAmount = value => {
-    if (paymentType !== 'balance') return true
+  // const validateBalanceAmount = value => {
+  //   if (paymentType !== 'balance') return true
 
-    const amount = Number(value) || 0
-    const availableBalance = selectedCustomer?.account_info?.balance || 0
+  //   const amount = Number(value) || 0
+  //   const availableBalance = selectedCustomer?.account_info?.balance || 0
 
-    if (amount < 0) return 'Amount cannot be negative'
+  //   if (amount < 0) return 'Amount cannot be negative'
 
-    if (amount > availableBalance) {
-      return `Insufficient balance. Available: ৳${availableBalance.toFixed(2)}`
-    }
+  //   if (amount > availableBalance) {
+  //     return `Insufficient balance. Available: ৳${availableBalance.toFixed(2)}`
+  //   }
 
-    return true
-  }
+  //   return true
+  // }
 
   const tableData = useMemo(() => cartProducts, [cartProducts])
 
@@ -820,7 +816,8 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         extra_crate_type2_price: extraCrateType2Price,
         payable_amount: payableAmount || 0,
         received_amount: Number(data.receiveAmount) || 0,
-        received_amount_from_balance: Number(data.received_amount_from_balance) || 0,
+
+        // received_amount_from_balance: Number(data.received_amount_from_balance) || 0,
         due_amount: Number(data.dueAmount) || 0,
         payment_type: data.paymentType || 'cash',
         vat: vatAmount || 0,
@@ -926,7 +923,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   }
 
   useEffect(() => {
-    setPaymentValue('received_amount_from_balance', 0)
+    // setPaymentValue('received_amount_from_balance', 0)
     setPaymentValue('receiveAmount', 0)
     setPaymentValue('dueAmount', 0)
     setPaymentValue('paymentType', 'cash')
@@ -1079,13 +1076,10 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                       <option value='cash'>Cash</option>
                       <option value='card'>Card</option>
                       <option value='bkash'>Bkash</option>
-                      <option value='balance' disabled={!selectedCustomer?._id}>
-                        Balance {!selectedCustomer?._id && '(Select customer first)'}
-                      </option>
                     </select>
                   </div>
 
-                  {paymentType === 'balance' && (
+                  {/* {paymentType === 'balance' && (
                     <div className='flex items-center'>
                       <label className='w-32 text-sm'>Amount from Balance</label>
                       <div className='flex-1'>
@@ -1111,14 +1105,13 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                         )}
                       </div>
                     </div>
-                  )}
+                  )} */}
 
                   <div className='flex items-center'>
                     <label className='w-32 text-sm'>Receive Amount</label>
                     <input
                       type='number'
                       {...registerPayment('receiveAmount')}
-                      disabled={paymentType === 'balance'} // Disabled for balance payment
                       className={`flex-1 px-3 py-2 border border-gray-300 rounded ${
                         paymentType === 'balance' ? 'bg-gray-100' : ''
                       }`}
@@ -1152,11 +1145,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                     <span className='text-sm'>Sub Total</span>
                     <span className='font-medium'>৳ {totalSubtotal}</span>
                   </div>
-
-                  {/* <div className='flex items-center justify-between'>
-                    <span className='text-sm'>Total Discount</span>
-                    <span className='text-sm'>৳ {totalDiscountedAmount}</span>
-                  </div> */}
 
                   {extraCrateType1 > 0 && (
                     <div className='flex items-center justify-between'>
@@ -1218,16 +1206,14 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                     </div>
                     <div>
                       <p className='text-base opacity-80'>Total Amount</p>
-                      <h2 className='text-2xl font-bold'>৳ {totalDueAmount}</h2>
+                      <h2 className='text-2xl font-bold'>৳ {payableAmount}</h2>
                     </div>
                   </div>
 
                   <div className='flex justify-center sm:justify-end w-full sm:w-auto'>
                     <button
                       type='submit'
-                      disabled={
-                        totalDueAmount < 1 || (paymentType === 'balance' && paymentErrors.received_amount_from_balance)
-                      }
+                      disabled={totalDueAmount < 1}
                       className={`bg-white text-base text-indigo-600 font-semibold px-6 py-2 rounded-lg transition-all duration-200 w-full sm:w-auto ${
                         totalDueAmount < 1 || (paymentType === 'balance' && paymentErrors.received_amount_from_balance)
                           ? 'opacity-50 cursor-not-allowed'

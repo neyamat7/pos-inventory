@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 
 import { Card, CardContent, Divider, Box } from '@mui/material'
-import { ShoppingCart, CreditCard, RotateCcw } from 'lucide-react'
+import { ShoppingCart, CreditCard, RotateCcw, Package } from 'lucide-react'
 
 import dayjs from 'dayjs'
 
@@ -12,14 +12,15 @@ import SalesTable from './tables/SalesTable'
 import { customerPayments, customerReturns } from '@/fake-db/apps/customerReportData'
 import CustomerReturnTable from './tables/CustomerReturnTable'
 import CustomerPaymentTable from './tables/PaymentTable'
-import { getSalesByCustomer } from '@/actions/customerActions'
+import { getCustomerCrateHistory, getSalesByCustomer } from '@/actions/customerActions'
 import BalanceHistoryTable from './tables/BalanceHistoryTable'
 import { getBalanceHistory } from '@/actions/balanceActions'
+import CustomerCrateHistoryTable from './tables/CustomerCrateHistoryTable'
 
 // -------------------------------------------------------------
 // MAIN COMPONENT
 // -------------------------------------------------------------
-const SalesReport = ({ customerId, initialSalesData, initialBalanceData }) => {
+const SalesReport = ({ customerId, initialSalesData, initialBalanceData, initialCrateHistoryData }) => {
   const [activeTab, setActiveTab] = useState('sales')
   const [searchValue, setSearchValue] = useState('')
   const [fromDate, setFromDate] = useState(dayjs().subtract(1, 'month').format('YYYY-MM-DD'))
@@ -28,6 +29,7 @@ const SalesReport = ({ customerId, initialSalesData, initialBalanceData }) => {
   // State for sales data
   const [salesData, setSalesData] = useState(initialSalesData)
   const [balanceData, setBalanceData] = useState(initialBalanceData)
+  const [crateHistoryData, setCrateHistoryData] = useState(initialCrateHistoryData)
   const [loading, setLoading] = useState(false)
 
   const [pagination, setPagination] = useState({
@@ -38,9 +40,11 @@ const SalesReport = ({ customerId, initialSalesData, initialBalanceData }) => {
   const tabs = [
     { key: 'sales', label: 'Sales', icon: <ShoppingCart size={16} /> },
 
+    { key: 'crateHistory', label: 'Crate History', icon: <Package size={16} /> }
+
     // { key: 'payments', label: 'Payments', icon: <CreditCard size={16} /> },
 
-    { key: 'balanceHistory', label: 'Balance History', icon: <CreditCard size={16} /> }
+    // { key: 'balanceHistory', label: 'Balance History', icon: <CreditCard size={16} /> }
 
     // { key: 'returns', label: 'Returns', icon: <RotateCcw size={16} /> }
   ]
@@ -97,12 +101,31 @@ const SalesReport = ({ customerId, initialSalesData, initialBalanceData }) => {
     }
   }
 
+  const fetchCrateHistory = async (page = pagination.page, limit = pagination.limit) => {
+    if (!customerId) return
+
+    setLoading(true)
+
+    try {
+      const result = await getCustomerCrateHistory(customerId, page, limit)
+
+      if (result.success) {
+        setCrateHistoryData(result)
+        setPagination(prev => ({ ...prev, page, limit }))
+      }
+    } catch (error) {
+      console.error('Error fetching crate history:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Fetch data when filters change
   useEffect(() => {
     if (activeTab === 'sales') {
       fetchSales(1, pagination.limit, searchValue, fromDate, toDate)
-    } else if (activeTab === 'balanceHistory') {
-      fetchBalanceHistory(1, pagination.limit, '', '')
+    } else if (activeTab === 'crateHistory') {
+      fetchCrateHistory(1, pagination.limit)
     }
   }, [searchValue, fromDate, toDate, activeTab])
 
@@ -110,8 +133,8 @@ const SalesReport = ({ customerId, initialSalesData, initialBalanceData }) => {
   const handlePaginationChange = (page, limit) => {
     if (activeTab === 'sales') {
       fetchSales(page, limit, searchValue, fromDate, toDate)
-    } else if (activeTab === 'balanceHistory') {
-      fetchBalanceHistory(page, limit, searchValue, fromDate, toDate)
+    } else if (activeTab === 'crateHistory') {
+      fetchCrateHistory(page, limit)
     }
   }
 
@@ -128,19 +151,28 @@ const SalesReport = ({ customerId, initialSalesData, initialBalanceData }) => {
           />
         )
 
-      // case 'payments':
-      //   return <CustomerPaymentTable data={customerPayments} />
-
-      case 'balanceHistory':
+      case 'crateHistory':
         return (
-          <BalanceHistoryTable
-            data={balanceData?.data?.balances}
+          <CustomerCrateHistoryTable
+            data={crateHistoryData?.data?.history || []}
             pagination={pagination}
-            total={balanceData?.data?.total}
+            total={crateHistoryData?.data?.total || 0}
             onPaginationChange={handlePaginationChange}
             loading={loading}
+            onDataUpdate={() => fetchCrateHistory(pagination.page, pagination.limit)}
           />
         )
+
+      // case 'balanceHistory':
+      //   return (
+      //     <BalanceHistoryTable
+      //       data={balanceData?.data?.balances}
+      //       pagination={pagination}
+      //       total={balanceData?.data?.total}
+      //       onPaginationChange={handlePaginationChange}
+      //       loading={loading}
+      //     />
+      //   )
 
       // case 'returns':
       //   return <CustomerReturnTable data={customerReturns} />
