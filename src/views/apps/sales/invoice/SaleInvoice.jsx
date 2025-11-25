@@ -198,14 +198,14 @@ const SaleInvoice = ({ saleData }) => {
       <div className='summary-section'>
         {paymentDetails.extra_crate_type1_price > 0 && (
           <div className='summary-row'>
-            <span>Extra Crate (Type 1):</span>
+            <span>Crate (Type 1):</span>
             <span>৳{paymentDetails.extra_crate_type1_price.toFixed(2)}</span>
           </div>
         )}
 
         {paymentDetails.extra_crate_type2_price > 0 && (
           <div className='summary-row'>
-            <span>Extra Crate (Type 2):</span>
+            <span>Crate (Type 2):</span>
             <span>৳{paymentDetails.extra_crate_type2_price.toFixed(2)}</span>
           </div>
         )}

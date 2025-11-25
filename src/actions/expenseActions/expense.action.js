@@ -1,5 +1,7 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
+
 import api from '@/libs/api'
 
 export async function createExpense(expenseData) {
@@ -63,6 +65,90 @@ export async function updateExpense(expenseId, expenseData) {
     return {
       success: false,
       error: error.message || 'Failed to update expense'
+    }
+  }
+}
+
+export async function createExpenseCategory(categoryData) {
+  try {
+    const response = await api.post('/expense-category/add', categoryData)
+
+    revalidatePath('/apps/expenses/category')
+
+    return {
+      success: true,
+      data: response
+    }
+  } catch (error) {
+    console.error('Create expense category error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to create expense category'
+    }
+  }
+}
+
+export async function getExpenseCategories({ page = 1, limit = 10, name = '' } = {}) {
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    })
+
+    // Add search query if provided
+    if (name) {
+      params.append('name', name)
+    }
+
+    const response = await api.get(`/expense-category/all?${params.toString()}`)
+
+    return {
+      success: true,
+      data: response
+    }
+  } catch (error) {
+    console.error('Get expense categories error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch expense categories'
+    }
+  }
+}
+
+export async function updateExpenseCategory(id, categoryData) {
+  try {
+    const response = await api.put(`/expense-category/update/${id}`, categoryData)
+
+    return {
+      success: true,
+      data: response
+    }
+  } catch (error) {
+    console.error('Update expense category error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to update expense category'
+    }
+  }
+}
+
+export async function deleteExpenseCategory(id) {
+  try {
+    const response = await api.delete(`/expense-category/delete/${id}`)
+
+    return {
+      success: true,
+      data: response
+    }
+  } catch (error) {
+    console.error('Delete expense category error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to delete expense category'
     }
   }
 }

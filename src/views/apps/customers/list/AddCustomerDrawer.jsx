@@ -137,7 +137,7 @@ const AddCustomerDrawer = props => {
           createdAt: new Date().toISOString()
         }
 
-        setData([...(customerData ?? []), newCustomer])
+        setData([newCustomer, ...(customerData ?? [])])
         reset()
         handleClose()
 
@@ -337,13 +337,7 @@ const AddCustomerDrawer = props => {
                 <Typography variant='body2' color='text.secondary'>
                   Type 1
                 </Typography>
-                <Controller
-                  name='type_1_qty'
-                  control={control}
-                  render={({ field }) => (
-                    <CustomTextField {...field} type='number' label='Quantity' placeholder='0' fullWidth />
-                  )}
-                />
+
                 <Controller
                   name='type_1_price'
                   control={control}
@@ -357,13 +351,7 @@ const AddCustomerDrawer = props => {
                 <Typography variant='body2' color='text.secondary'>
                   Type 2
                 </Typography>
-                <Controller
-                  name='type_2_qty'
-                  control={control}
-                  render={({ field }) => (
-                    <CustomTextField {...field} type='number' label='Quantity' placeholder='0' fullWidth />
-                  )}
-                />
+
                 <Controller
                   name='type_2_price'
                   control={control}

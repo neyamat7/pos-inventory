@@ -156,6 +156,7 @@ export async function getPurchaseBySupplier(supplierId, page = 1, limit = 10, se
 }
 
 export async function addPayment(paymentData) {
+  
   try {
     const response = await api.post('/payment/add', paymentData)
 

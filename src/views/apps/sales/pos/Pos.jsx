@@ -1079,34 +1079,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                     </select>
                   </div>
 
-                  {/* {paymentType === 'balance' && (
-                    <div className='flex items-center'>
-                      <label className='w-32 text-sm'>Amount from Balance</label>
-                      <div className='flex-1'>
-                        <input
-                          type='number'
-                          {...registerPayment('received_amount_from_balance', {
-                            validate: validateBalanceAmount
-                          })}
-                          className={`w-full px-3 py-2 border rounded ${
-                            paymentErrors.received_amount_from_balance ? 'border-red-500' : 'border-gray-300'
-                          }`}
-                          placeholder='0'
-                        />
-                        {selectedCustomer?._id && (
-                          <p className='text-xs text-gray-500 mt-1'>
-                            Available Balance: ৳{(selectedCustomer.account_info.balance || 0).toFixed(2)}
-                          </p>
-                        )}
-                        {paymentErrors.received_amount_from_balance && (
-                          <p className='text-xs text-red-500 mt-1'>
-                            {paymentErrors.received_amount_from_balance.message}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  )} */}
-
                   <div className='flex items-center'>
                     <label className='w-32 text-sm'>Receive Amount</label>
                     <input
@@ -1148,14 +1120,14 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
                   {extraCrateType1 > 0 && (
                     <div className='flex items-center justify-between'>
-                      <span className='text-sm'>Extra Crate Type 1 ({extraCrateType1} pcs)</span>
+                      <span className='text-sm'>Crate Type 1 ({extraCrateType1} pcs)</span>
                       <span className='text-sm'>৳ {extraCrateType1Price.toFixed(2)}</span>
                     </div>
                   )}
 
                   {extraCrateType2 > 0 && (
                     <div className='flex items-center justify-between'>
-                      <span className='text-sm'>Extra Crate Type 2 ({extraCrateType2} pcs)</span>
+                      <span className='text-sm'>Crate Type 2 ({extraCrateType2} pcs)</span>
                       <span className='text-sm'>৳ {extraCrateType2Price.toFixed(2)}</span>
                     </div>
                   )}
@@ -1190,7 +1162,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
               </div>
 
               {/* Selling Summary Section */}
-
               <div className='mt-5'>
                 <div className='bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-xl p-6 shadow-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-10'>
                   <div className='flex flex-col sm:flex-row sm:gap-10 text-center sm:text-left w-full justify-between'>

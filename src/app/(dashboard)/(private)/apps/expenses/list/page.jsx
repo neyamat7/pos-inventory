@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 
 import ExpenseListTable from '@/views/apps/expenses/list/ExpenseListTable'
-import { getAllExpenses } from '@/actions/expenseActions'
+import { getAllExpenses, getExpenseCategories } from '@/actions/expenseActions'
 
 const ExpensesList = () => {
   const [currentPage, setCurrentPage] = useState(1)
@@ -10,6 +10,7 @@ const ExpensesList = () => {
   const [data, setData] = useState([])
   const [paginationData, setPaginationData] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [expenseCategories, setExpenseCategories] = useState([])
 
   useEffect(() => {
     setLoading(true)
@@ -37,6 +38,23 @@ const ExpensesList = () => {
     fetchData()
   }, [currentPage, pageSize])
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const result = await getExpenseCategories({ page: 1, limit: 100 })
+
+        if (result.success) {
+          setExpenseCategories(result.data.categories || [])
+        }
+      } catch (error) {
+        console.error('Error fetching expense categories:', error)
+        setExpenseCategories([])
+      }
+    }
+
+    fetchCategories()
+  }, [])
+
   const handlePageChange = newPage => {
     setCurrentPage(newPage)
   }
@@ -53,6 +71,7 @@ const ExpensesList = () => {
       loading={loading}
       onPageChange={handlePageChange}
       onPageSizeChange={handlePageSizeChange}
+      expenseCategories={expenseCategories}
     />
   )
 }

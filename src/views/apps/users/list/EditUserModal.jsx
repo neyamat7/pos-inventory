@@ -20,6 +20,8 @@ import {
 import Grid from '@mui/material/Grid2'
 import CloseIcon from '@mui/icons-material/Close'
 
+import { showSuccess } from '@/utils/toastUtils'
+
 const ROLE_OPTIONS = ['admin', 'manager', 'operator', 'staff']
 
 export default function EditUserModal({ open, user, onClose, setFilteredData, setData }) {
@@ -27,8 +29,7 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
     name: '',
     role: '',
     phone: '',
-    email: '',
-    image: ''
+    email: ''
   })
 
   const [loading, setLoading] = useState(false)
@@ -40,8 +41,7 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
         name: user.name || '',
         role: user.role || '',
         phone: user.phone || '',
-        email: user.email || '',
-        image: user.image || ''
+        email: user.email || ''
       })
     }
 
@@ -71,8 +71,7 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
           name: form.name.trim(),
           email: form.email.trim(),
           phone: form.phone.trim(),
-          role: form.role,
-          imageUrl: form.image?.trim() || ''
+          role: form.role
         })
       })
 
@@ -85,14 +84,14 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
           name: form.name,
           email: form.email,
           phone: form.phone,
-          role: form.role,
-          image: form.image
+          role: form.role
         }
 
         setData(prev => prev.map(u => (u._id === user._id ? updatedUser : u)))
         setFilteredData(prev => prev.map(u => (u._id === user._id ? updatedUser : u)))
 
         onClose()
+        showSuccess('User updated successfully!')
       } else {
         setError(result.message || 'Failed to update user')
       }
@@ -176,20 +175,6 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
               required
             />
           </Grid>
-
-          {/* Image URL Section - Commented Out */}
-          {/*
-          <Grid size={12}>
-            <TextField
-              label='Avatar URL'
-              fullWidth
-              value={form.image}
-              onChange={handleChange('image')}
-              disabled={loading}
-              helperText='Paste an image URL for the avatar (optional)'
-            />
-          </Grid>
-          */}
         </Grid>
       </DialogContent>
 

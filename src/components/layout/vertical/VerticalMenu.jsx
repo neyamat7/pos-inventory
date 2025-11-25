@@ -68,12 +68,6 @@ const VerticalMenu = ({ scrollMenu }) => {
           <MenuItem href='/apps/products/category'>Category</MenuItem>
         </SubMenu>
 
-        {/* <SubMenu label='Stock List' icon={<i className='tabler-packages' />}>
-          <MenuItem href='/apps/stockList/lot'>All Lots</MenuItem>
-          <MenuItem href='/apps/stockList/lowStock'>Low Stock</MenuItem>
-          <MenuItem href='/apps/stockList/expiredProducts'>Expired Products</MenuItem>
-        </SubMenu> */}
-
         <SubMenu label='Customers' icon={<i className='tabler-user-circle' />}>
           <MenuItem href='/apps/customers/list'>All Customers</MenuItem>
           <MenuItem
@@ -109,7 +103,6 @@ const VerticalMenu = ({ scrollMenu }) => {
         <SubMenu label='Purchase' icon={<i className='tabler-shopping-bag' />}>
           <MenuItem href='/apps/purchase/add'>Add Purchase</MenuItem>
           <MenuItem href='/apps/purchase/list'>Purchase List</MenuItem>
-          {/* <MenuItem href='/apps/purchase/return'>Purchase Return</MenuItem> */}
         </SubMenu>
 
         <MenuItem href='/apps/stockList/lot' icon={<i className='tabler-packages' />}>
@@ -119,16 +112,16 @@ const VerticalMenu = ({ scrollMenu }) => {
         <SubMenu label='Sales' icon={<i className='tabler-cash' />}>
           <MenuItem href='/apps/sales/pos'>POS</MenuItem>
           <MenuItem href='/apps/sales/list'>Sales List</MenuItem>
-          {/* <MenuItem href='/apps/sales/return'>Sales Return</MenuItem> */}
         </SubMenu>
 
         <MenuItem href='/apps/dueList' icon={<i className='tabler-receipt' />}>
           Due List
         </MenuItem>
 
-        <MenuItem href='/apps/expenses/list' icon={<i className='tabler-wallet' />}>
-          Expenses
-        </MenuItem>
+        <SubMenu label='Expenses' icon={<i className='tabler-wallet' />}>
+          <MenuItem href='/apps/expenses/list'>Expense List</MenuItem>
+          <MenuItem href='/apps/expenses/category'>Expense Category</MenuItem>
+        </SubMenu>
 
         <MenuItem href='/apps/income' icon={<i className='tabler-currency-taka' />}>
           Income
@@ -142,17 +135,9 @@ const VerticalMenu = ({ scrollMenu }) => {
           Profit & Loss
         </MenuItem>
 
-        <MenuItem href='/apps/reports/activityLog' icon={<i className='tabler-chart-bar' />}>
+        <MenuItem href='/apps/activityLog' icon={<i className='tabler-chart-bar' />}>
           Activity Log
         </MenuItem>
-
-        {/* <SubMenu label='Reports' icon={<i className='tabler-chart-bar' />}>
-          <MenuItem href='/apps/reports/purchase'>Purchase Report</MenuItem>
-          <MenuItem href='/apps/reports/sales'>Sales Report</MenuItem>
-          <MenuItem href='/apps/reports/suppliers'>Suppliers Report</MenuItem>
-          <MenuItem href='/apps/reports/customers'>Customers Report</MenuItem>
-          <MenuItem href='/apps/reports/items'>Items Report</MenuItem>
-        </SubMenu> */}
       </Menu>
     </ScrollWrapper>
   )

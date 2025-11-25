@@ -227,50 +227,11 @@ export default function ViewUserModal({ open, user, onClose, onEdit }) {
             </Box>
           </Grid>
 
-          {/* Additional Information */}
-          <Grid size={{ xs: 12 }}>
-            <Typography variant='h6' fontWeight='bold' color='primary.main' gutterBottom>
-              Additional Information
-            </Typography>
-            <Box
-              sx={{
-                p: 3,
-                bgcolor: 'info.light',
-                borderRadius: 2,
-                border: '1px solid',
-                borderColor: 'info.main'
-              }}
-            >
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Typography variant='body2' color='text.secondary' fontWeight='medium'>
-                      Image Path
-                    </Typography>
-                    <Typography variant='body2' fontFamily='monospace' sx={{ wordBreak: 'break-all' }}>
-                      {user.image || 'No image uploaded'}
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Typography variant='body2' color='text.secondary' fontWeight='medium'>
-                      Image Preview URL
-                    </Typography>
-                    <Typography variant='body2' fontFamily='monospace' sx={{ wordBreak: 'break-all' }}>
-                      {userImageUrl || 'No image available'}
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
-            </Box>
-          </Grid>
-
           {/* Image Preview Section */}
           {userImageUrl && (
             <Grid size={{ xs: 12 }}>
               <Typography variant='h6' fontWeight='bold' color='primary.main' gutterBottom>
-                Profile Image Preview
+                Profile Image
               </Typography>
               <Box
                 sx={{
@@ -297,7 +258,7 @@ export default function ViewUserModal({ open, user, onClose, onEdit }) {
                   }}
                 />
                 <Typography variant='caption' color='text.secondary' sx={{ mt: 2, display: 'block' }}>
-                  Profile image preview
+                  Profile image
                 </Typography>
               </Box>
             </Grid>

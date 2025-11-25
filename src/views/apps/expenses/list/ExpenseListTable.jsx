@@ -88,7 +88,14 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
   return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
 }
 
-const ExpenseListTable = ({ expenseData, paginationData, loading, onPageChange, onPageSizeChange }) => {
+const ExpenseListTable = ({
+  expenseData,
+  paginationData,
+  loading,
+  onPageChange,
+  onPageSizeChange,
+  expenseCategories
+}) => {
   const [editOpen, setEditOpen] = useState(null)
 
   // States
@@ -127,6 +134,11 @@ const ExpenseListTable = ({ expenseData, paginationData, loading, onPageChange, 
       // Updated columns to match API schema
       { accessorKey: 'date', header: 'Date' },
       { accessorKey: 'amount', header: 'Amount' },
+      {
+        accessorKey: 'expense_category',
+        header: 'Expense Category',
+        cell: ({ row }) => <Typography>{row.original.expense_category || 'N/A'}</Typography>
+      },
       { accessorKey: 'expense_for', header: 'Expense For' },
       {
         accessorKey: 'payment_type',
@@ -321,6 +333,7 @@ const ExpenseListTable = ({ expenseData, paginationData, loading, onPageChange, 
         handleClose={() => setCustomerUserOpen(!customerUserOpen)}
         setData={setData}
         expenseData={data}
+        expenseCategories={expenseCategories}
       />
       {/* Edit Modal Component */}
       {editOpen && (

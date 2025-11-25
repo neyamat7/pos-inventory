@@ -15,6 +15,7 @@ import { useForm, Controller } from 'react-hook-form'
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
 import { uploadImage } from '@/actions/imageActions'
+import { showError, showSuccess } from '@/utils/toastUtils'
 
 const AddUserDrawer = props => {
   // Props
@@ -63,7 +64,7 @@ const AddUserDrawer = props => {
     try {
       let imageUrl = data.imageUrl // Use provided URL if any
 
-      console.log('image file', imageFile)
+      // console.log('image file', imageFile)
 
       // If image file is selected, upload it first
       if (imageFile) {
@@ -71,7 +72,7 @@ const AddUserDrawer = props => {
 
         formData.append('image', imageFile)
 
-        console.log('FormData contents:', formData.get('image'))
+        // console.log('FormData contents:', formData.get('image'))
 
         const uploadResult = await uploadImage(formData)
 
@@ -117,12 +118,12 @@ const AddUserDrawer = props => {
           image: imageUrl || null
         }
 
-        setData([...(userData ?? []), newUser])
+        setData([newUser, ...(userData ?? [])])
         handleClose()
         resetAll()
-        alert('User created successfully!')
+        showSuccess('User created successfully!')
       } else {
-        alert(`Error: ${result.message}`)
+        showError(`Error: ${result.message}`)
       }
     } catch (error) {
       alert('Error creating user. Please try again.')
@@ -277,30 +278,6 @@ const AddUserDrawer = props => {
                 <img src={imagePreview} alt='Preview' className='w-20 h-20 rounded-full object-cover border' />
               </div>
             )}
-
-            {/* OR separator */}
-            <div className='flex items-center gap-2 my-2'>
-              <Divider className='flex-1' />
-              <Typography variant='body2' color='text.secondary'>
-                OR
-              </Typography>
-              <Divider className='flex-1' />
-            </div>
-
-            {/* Image URL (fallback) */}
-            <Controller
-              name='imageUrl'
-              control={control}
-              render={({ field }) => (
-                <CustomTextField
-                  {...field}
-                  fullWidth
-                  label='Image URL (Optional)'
-                  placeholder='https://example.com/avatar.jpg'
-                  size='small'
-                />
-              )}
-            />
           </div>
 
           {/* Actions */}

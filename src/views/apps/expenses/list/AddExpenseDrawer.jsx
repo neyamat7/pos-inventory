@@ -27,7 +27,7 @@ import { getAccounts } from '@/actions/accountActions'
 
 const AddExpenseDrawer = props => {
   // Props
-  const { open, handleClose, setData, expenseData } = props
+  const { open, handleClose, setData, expenseData, expenseCategories } = props
 
   // States
   const [loading, setLoading] = useState(false)
@@ -48,9 +48,10 @@ const AddExpenseDrawer = props => {
     formState: { errors }
   } = useForm({
     defaultValues: {
-      date: '',
+      date: new Date().toISOString().split('T')[0],
       amount: '',
       expense_for: '',
+      expense_category: '',
       payment_type: '',
       reference_num: '',
       choose_account: ''
@@ -91,6 +92,7 @@ const AddExpenseDrawer = props => {
       const expensePayload = {
         date: data.date,
         amount: Number(data.amount),
+        expense_category: data.expense_category,
         expense_for: data.expense_for.trim(),
         payment_type: data.payment_type,
         reference_num: data.reference_num?.trim() || '',
@@ -208,6 +210,36 @@ const AddExpenseDrawer = props => {
                   helperText={errors.amount?.message}
                   disabled={loading}
                 />
+              )}
+            />
+
+            {/* Expense Category */}
+            <Controller
+              name='expense_category'
+              control={control}
+              rules={{ required: 'Expense category is required' }}
+              render={({ field }) => (
+                <CustomTextField
+                  select
+                  fullWidth
+                  label='Expense Category'
+                  {...field}
+                  error={!!errors.expense_category}
+                  helperText={errors.expense_category?.message}
+                  disabled={loading}
+                >
+                  {expenseCategories && expenseCategories.length > 0 ? (
+                    expenseCategories.map(category => (
+                      <MenuItem key={category._id} value={category.name}>
+                        {category.name}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem value='' disabled>
+                      No categories available
+                    </MenuItem>
+                  )}
+                </CustomTextField>
               )}
             />
 

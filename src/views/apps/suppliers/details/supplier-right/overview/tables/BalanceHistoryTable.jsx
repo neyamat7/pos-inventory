@@ -166,60 +166,9 @@ const BalanceDetailModal = ({ open, onClose, balance }) => {
                     e.target.style.display = 'none'
                   }}
                 />
-                <Typography variant='caption' color='text.secondary' sx={{ mt: 2, display: 'block' }}>
-                  Image URL: {slipImageUrl}
-                </Typography>
               </Box>
             </>
           )}
-
-          {/* Additional Information */}
-          <Divider sx={{ my: 3 }} />
-          <Typography variant='h6' component='h3' gutterBottom sx={{ color: 'primary.main', mb: 3 }}>
-            Additional Information
-          </Typography>
-          <Box
-            sx={{
-              p: 3,
-              bgcolor: 'info.light',
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'info.main'
-            }}
-          >
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant='body2' component='span' fontWeight='bold'>
-                    Transaction ID:
-                  </Typography>
-                  <Typography variant='body2' component='span'>
-                    {balance._id}
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant='body2' component='span' fontWeight='bold'>
-                    Balance For:
-                  </Typography>
-                  <Typography variant='body2' component='span'>
-                    {balance.balance_for}
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant='body2' component='span' fontWeight='bold'>
-                    Last Updated:
-                  </Typography>
-                  <Typography variant='body2' component='span'>
-                    {new Date(balance.updatedAt).toLocaleString('en-GB')}
-                  </Typography>
-                </Box>
-              </Grid>
-            </Grid>
-          </Box>
         </Box>
       </DialogContent>
     </Dialog>

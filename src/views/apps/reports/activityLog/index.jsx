@@ -177,11 +177,11 @@ const ActivityLogs = ({ activityLogsData = [], paginationData, loading, onPageCh
 
       // Subject Type
       {
-        accessorKey: 'subjectType',
-        header: 'Module',
+        accessorKey: 'model_name',
+        header: 'Page',
         cell: ({ row }) => (
           <Typography className='capitalize' color='text.primary'>
-            {row.original.subjectType}
+            {row.original?.model_name}
           </Typography>
         )
       },

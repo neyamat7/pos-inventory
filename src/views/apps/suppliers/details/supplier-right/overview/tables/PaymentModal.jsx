@@ -241,7 +241,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
 
   // Handle submit
   const handleSubmit = async () => {
-    console.log('submit called')
+    // console.log('submit called')
 
     // Validation: Check if at least one lot is selected
     const hasSelectedLots = lotRows.some(row => row.selectedLotId !== '')
@@ -284,7 +284,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
       note: note
     }
 
-    console.log('Payment Payload:', payload)
+    // console.log('Payment Payload:', payload)
 
     const result = await addPayment(payload)
 
@@ -636,7 +636,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                 onChange={e => setPaymentMethod(e.target.value)}
                 size='small'
               >
-                <MenuItem value='mfs'>MFS</MenuItem>
+                <MenuItem value='MFS'>MFS</MenuItem>
                 <MenuItem value='bank'>Bank</MenuItem>
                 <MenuItem value='cash'>Cash</MenuItem>
                 <MenuItem value='balance'>Balance</MenuItem>
