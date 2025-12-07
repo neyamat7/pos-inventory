@@ -61,6 +61,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
     const totalSell = lotRows.reduce((sum, row) => sum + (row.totalSell || 0), 0)
     const totalProfit = lotRows.reduce((sum, row) => sum + (row.profit || 0), 0)
     const totalLotsExpenses = lotRows.reduce((sum, row) => sum + (row.totalExpense || 0), 0)
+    const totalExtraExpenses = lotRows.reduce((sum, row) => sum + (row.extraExpense || 0), 0)
     const payableAmount = lotRows.reduce((sum, row) => sum + (row.paidAmount || 0), 0)
 
     // Calculate need to pay due
@@ -70,6 +71,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
       totalSell,
       totalProfit,
       totalLotsExpenses,
+      totalExtraExpenses,
       payableAmount,
       needToPayDue: Math.max(0, needToPayDue) // Don't show negative
     }
@@ -93,7 +95,9 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
   // Calculate individual lot values when lot is selected or discount changes
   const calculateLotValues = (lot, discountPercentage) => {
     const totalSell = lot?.sales?.totalSoldPrice || 0
-    const totalExpense = lot?.expenses?.total_expenses || 0
+    const baseExpense = lot?.expenses?.total_expenses || 0
+    const extraExpense = lot?.expenses?.extra_expense || 0
+    const totalExpense = baseExpense + extraExpense
     const originalProfit = lot?.profits?.lotProfit || 0
 
     // Calculate discount amount from percentage
@@ -108,6 +112,8 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
     return {
       totalSell,
       totalExpense,
+      baseExpense,
+      extraExpense,
       originalProfit,
       profit: newProfit,
       discountAmount,
@@ -268,6 +274,8 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
         .map(row => ({
           lot_id: row.selectedLotId,
           total_sell: row.totalSell,
+          base_expense: row.baseExpense || 0,
+          extra_expense: row.extraExpense || 0,
           total_expense: row.totalExpense,
           profit: row.profit,
           discount: row.discountPercentage,
@@ -416,9 +424,21 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
             </Grid>
             <Grid item xs={3} sm={1.5}>
               <Typography variant='body2' fontWeight='bold' color='text.secondary'>
-                Total Expense {/* NEW COLUMN */}
+                Base Expense
               </Typography>
             </Grid>
+            <Grid item xs={3} sm={1.2}>
+              <Typography variant='body2' fontWeight='bold' color='text.secondary'>
+                Extra Expense
+              </Typography>
+            </Grid>
+
+            <Grid item xs={3} sm={1.2}>
+              <Typography variant='body2' fontWeight='bold' color='text.secondary'>
+                Total Expense
+              </Typography>
+            </Grid>
+
             <Grid item xs={3} sm={1.5}>
               <Typography variant='body2' fontWeight='bold' color='text.secondary'>
                 Profit
@@ -478,12 +498,34 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                   />
                 </Grid>
 
-                {/* NEW: Total Expense */}
-                <Grid item xs={3} sm={1.5}>
+                {/* Base Expense (Read-only) */}
+                <Grid item xs={3} sm={1.2}>
                   <TextField
                     fullWidth
                     size='small'
-                    value={`${row.totalExpense.toFixed(2)}`}
+                    value={`${row.baseExpense?.toFixed(2) || '0.00'}`}
+                    disabled
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+
+                {/* Extra Expense (Read-only) */}
+                <Grid item xs={3} sm={1.2}>
+                  <TextField
+                    fullWidth
+                    size='small'
+                    value={`${row.extraExpense?.toFixed(2) || '0.00'}`}
+                    disabled
+                    InputProps={{ readOnly: true }}
+                  />
+                </Grid>
+
+                {/* Total Expense (Read-only) */}
+                <Grid item xs={3} sm={1.2}>
+                  <TextField
+                    fullWidth
+                    size='small'
+                    value={`${row.totalExpense?.toFixed(2) || '0.00'}`}
                     disabled
                     InputProps={{ readOnly: true }}
                   />

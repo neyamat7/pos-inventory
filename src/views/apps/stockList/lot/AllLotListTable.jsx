@@ -210,28 +210,24 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
       header: 'Status',
       cell: ({ row }) => {
         const status = row.original.status
+        const displayText = status === 'in stock' ? 'In Stock' : 'Stock Out'
+        const color = status === 'in stock' ? '#2e7d32' : '#d32f2f'
 
         return (
-          <CustomTextField
-            select
-            size='small'
-            value={status}
-            onChange={e => handleStatusChange(row.original._id, e.target.value)}
-            sx={{
-              minWidth: 120,
-              '& .MuiSelect-select': {
-                color: status === 'in stock' ? '#2e7d32' : '#d32f2f',
-                fontWeight: 500
-              }
+          <div
+            style={{
+              color,
+              fontWeight: 500,
+              padding: '4px 8px',
+              borderRadius: '4px',
+              backgroundColor: status === 'in stock' ? '#f1f8e9' : '#ffebee',
+              display: 'inline-block',
+              minWidth: '100px',
+              textAlign: 'center'
             }}
           >
-            <MenuItem value='in stock' sx={{ color: '#2e7d32', fontWeight: 500 }}>
-              In Stock
-            </MenuItem>
-            <MenuItem value='stock out' sx={{ color: '#d32f2f', fontWeight: 500 }}>
-              Stock Out
-            </MenuItem>
-          </CustomTextField>
+            {displayText}
+          </div>
         )
       }
     },
@@ -245,9 +241,6 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
             iconClassName='text-textSecondary'
             options={[
               {
-                // ============================================
-                // UPDATED - Changed text from "View Details" to "View Sales"
-                // ============================================
                 text: 'View Sales',
                 icon: 'tabler-receipt',
                 menuItemProps: {
