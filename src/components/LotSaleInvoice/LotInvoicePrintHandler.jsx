@@ -13,32 +13,28 @@ const LotInvoicePrintHandler = ({ lotSaleData, onPrintComplete, onPrintError, tr
     contentRef: componentRef,
     documentTitle: `Lot_Invoice_${lotSaleData?.lot_name || 'Summary'}_${new Date().toISOString().split('T')[0]}`,
 
-    // Before print callback
     onBeforePrint: () => {
       console.log('Preparing lot invoice for printing...')
 
       return Promise.resolve()
     },
 
-    // After print callback (success or cancel)
     onAfterPrint: () => {
       console.log('Lot invoice print completed or cancelled')
       onPrintComplete?.()
     },
 
-    // Error callback
     onPrintError: (errorLocation, error) => {
       console.error('Lot invoice print error:', errorLocation, error)
       onPrintError?.(error)
     },
 
-    // Page styling for print - CRITICAL for proper alignment
     pageStyle: `
       @page {
-        size: 12cm 25cm;           /* Exact paper size */
-        margin-top: 8cm;           /* Top margin for pre-printed header */
-        margin-bottom: 3cm;        /* Bottom margin for pre-printed footer */
-        margin-left: 0.5cm;        /* Side margins */
+        size: 12cm 25cm;
+        margin-top: 8cm;
+        margin-bottom: 3cm;
+        margin-left: 0.5cm;
         margin-right: 0.5cm;
       }
       
@@ -59,16 +55,14 @@ const LotInvoicePrintHandler = ({ lotSaleData, onPrintComplete, onPrintError, tr
     if (triggerPrint && lotSaleData && componentRef.current) {
       console.log('Triggering lot invoice print with data:', lotSaleData)
 
-      // Small delay to ensure DOM is ready
       const timer = setTimeout(() => {
         handlePrint()
       }, 500)
 
       return () => clearTimeout(timer)
     }
-  }, [triggerPrint, lotSaleData?.printTrigger])
+  }, [triggerPrint, lotSaleData, handlePrint])
 
-  // Don't render anything if no data
   if (!lotSaleData) {
     return null
   }

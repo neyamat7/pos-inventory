@@ -3,10 +3,6 @@
 // React Imports
 import { useState, useEffect, useMemo } from 'react'
 
-import { MdMoreVert, MdDeleteOutline, MdOutlineEdit } from 'react-icons/md'
-
-import { useForm } from 'react-hook-form'
-
 // MUI Imports
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -15,6 +11,8 @@ import Typography from '@mui/material/Typography'
 import Checkbox from '@mui/material/Checkbox'
 import TablePagination from '@mui/material/TablePagination'
 import MenuItem from '@mui/material/MenuItem'
+import FormControl from '@mui/material/FormControl'
+import InputLabel from '@mui/material/InputLabel'
 
 // Third-party Imports
 import classnames from 'classnames'
@@ -27,13 +25,10 @@ import {
   getFacetedRowModel,
   getFacetedUniqueValues,
   getFacetedMinMaxValues,
-  getPaginationRowModel,
   getSortedRowModel
 } from '@tanstack/react-table'
 
 // Component Imports
-import Swal from 'sweetalert2'
-
 import AddExpenseDrawer from './AddExpenseDrawer'
 import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
@@ -49,44 +44,6 @@ export const paymentStatus = {
   3: { text: 'Cancelled', color: 'secondary' },
   4: { text: 'Failed', color: 'error' }
 }
-export const statusChipColor = {
-  Delivered: { color: 'success' },
-  'Out for Delivery': { color: 'primary' },
-  'Ready to Pickup': { color: 'info' },
-  Dispatched: { color: 'warning' }
-}
-
-const fuzzyFilter = (row, columnId, value, addMeta) => {
-  // Rank the item
-  const itemRank = rankItem(row.getValue(columnId), value)
-
-  // Store the itemRank info
-  addMeta({
-    itemRank
-  })
-
-  // Return if the item should be filtered in/out
-  return itemRank.passed
-}
-
-const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...props }) => {
-  // States
-  const [value, setValue] = useState(initialValue)
-
-  useEffect(() => {
-    setValue(initialValue)
-  }, [initialValue])
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      onChange(value)
-    }, debounce)
-
-    return () => clearTimeout(timeout)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value])
-
-  return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
-}
 
 const ExpenseListTable = ({
   expenseData,
@@ -94,11 +51,13 @@ const ExpenseListTable = ({
   loading,
   onPageChange,
   onPageSizeChange,
-  expenseCategories
+  expenseCategories,
+  usersList,
+  filters,
+  onFilterChange,
+  onClearFilters
 }) => {
   const [editOpen, setEditOpen] = useState(null)
-
-  // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
   const [data, setData] = useState([])
@@ -109,6 +68,27 @@ const ExpenseListTable = ({
       setData(expenseData)
     }
   }, [expenseData])
+
+  const handleSearchChange = e => {
+    const value = e.target.value
+
+    setGlobalFilter(value)
+    onFilterChange('search', value)
+  }
+
+  const handleDateChange = e => {
+    const dateValue = e.target.value
+    const isoDate = dateValue ? new Date(dateValue).toISOString() : ''
+
+    onFilterChange('date', isoDate)
+  }
+
+  const formatDateForInput = isoDate => {
+    if (!isoDate) return ''
+    const date = new Date(isoDate)
+
+    return date.toISOString().split('T')[0]
+  }
 
   const columns = useMemo(
     () => [
@@ -130,10 +110,20 @@ const ExpenseListTable = ({
           />
         )
       },
+      {
+        accessorKey: 'date',
+        header: 'Date',
+        cell: ({ row }) => {
+          const date = new Date(row.original.date)
 
-      // Updated columns to match API schema
-      { accessorKey: 'date', header: 'Date' },
-      { accessorKey: 'amount', header: 'Amount' },
+          return date.toLocaleDateString()
+        }
+      },
+      {
+        accessorKey: 'amount',
+        header: 'Amount',
+        cell: ({ row }) => <Typography>${parseFloat(row.original.amount || 0).toFixed(2)}</Typography>
+      },
       {
         accessorKey: 'expense_category',
         header: 'Expense Category',
@@ -149,53 +139,25 @@ const ExpenseListTable = ({
       {
         id: 'action',
         header: 'Action',
-        cell: ({ row }) => {
-          // const handleDelete = () => {
-          //   Swal.fire({
-          //     title: 'Are you sure?',
-          //     text: `You are about to delete expense ${row.original.reference_num}. This action cannot be undone.`,
-          //     icon: 'warning',
-          //     showCancelButton: true,
-          //     confirmButtonColor: '#d33',
-          //     cancelButtonColor: '#3085d6',
-          //     confirmButtonText: 'Yes, delete it!'
-          //   }).then(result => {
-          //     if (result.isConfirmed) {
-          //       setData(prev => prev.filter(item => item._id !== row.original._id))
-          //       Swal.fire('Deleted!', `Expense ${row.original.reference_num} has been removed.`, 'success')
-          //     }
-          //   })
-          // }
-
-          return (
-            <div className='flex items-center'>
-              <OptionMenu
-                tooltipProps={{ title: 'More options' }}
-                iconClassName='text-textSecondary'
-                iconButtonProps={{ size: 'small' }}
-                options={[
-                  {
-                    text: 'Edit',
-                    icon: 'tabler-edit',
-                    menuItemProps: {
-                      onClick: () => setEditOpen(row.original),
-                      className: 'flex items-center'
-                    }
+        cell: ({ row }) => (
+          <div className='flex items-center'>
+            <OptionMenu
+              tooltipProps={{ title: 'More options' }}
+              iconClassName='text-textSecondary'
+              iconButtonProps={{ size: 'small' }}
+              options={[
+                {
+                  text: 'Edit',
+                  icon: 'tabler-edit',
+                  menuItemProps: {
+                    onClick: () => setEditOpen(row.original),
+                    className: 'flex items-center'
                   }
-
-                  // {
-                  //   text: 'Delete',
-                  //   icon: 'tabler-trash',
-                  //   menuItemProps: {
-                  //     onClick: handleDelete,
-                  //     className: 'flex items-center text-red-500'
-                  //   }
-                  // }
-                ]}
-              />
-            </div>
-          )
-        },
+                }
+              ]}
+            />
+          </div>
+        ),
         enableSorting: false
       }
     ],
@@ -206,14 +168,21 @@ const ExpenseListTable = ({
     data: data || [],
     columns,
     filterFns: {
-      fuzzy: fuzzyFilter
+      fuzzy: (row, columnId, value, addMeta) => {
+        const itemRank = rankItem(row.getValue(columnId), value)
+
+        addMeta({ itemRank })
+
+        return itemRank.passed
+      }
     },
-    state: {
-      rowSelection,
-      globalFilter
-    },
+    state: { rowSelection, globalFilter },
     enableRowSelection: true,
-    globalFilterFn: fuzzyFilter,
+    globalFilterFn: (row, columnId, value) => {
+      const itemRank = rankItem(row.getValue(columnId), value)
+
+      return itemRank.passed
+    },
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     onGlobalFilterChange: setGlobalFilter,
@@ -227,37 +196,151 @@ const ExpenseListTable = ({
   return (
     <>
       <Card>
-        <CardContent className='flex justify-between flex-wrap max-sm:flex-col sm:items-center gap-4'>
-          <DebouncedInput
-            value={globalFilter ?? ''}
-            onChange={value => setGlobalFilter(String(value))}
-            placeholder='Search'
-            className='max-sm:is-full'
-          />
-          <div className='flex max-sm:flex-col items-start sm:items-center gap-4 max-sm:is-full'>
-            <CustomTextField
-              select
-              value={paginationData?.limit || 10}
-              onChange={e => onPageSizeChange(Number(e.target.value))}
-              className='is-full sm:is-[70px]'
-            >
-              <MenuItem value='10'>10</MenuItem>
-              <MenuItem value='25'>25</MenuItem>
-              <MenuItem value='50'>50</MenuItem>
-              <MenuItem value='100'>100</MenuItem>
-            </CustomTextField>
+        <CardContent className='flex flex-col gap-4'>
+          {/* Top Row: Filters and Actions */}
+          <div className='flex flex-wrap justify-between items-start gap-4'>
+            {/* Left Side: Search and Filters */}
+            <div className='flex flex-wrap items-center gap-4 flex-1'>
+              {/* Search Input - NO DEBOUNCE HERE, handled in parent */}
+              <CustomTextField
+                label='Search By Name'
+                value={filters.search}
+                onChange={handleSearchChange}
+                placeholder='Search expenses...'
+                className='min-w-[200px]'
+                size='small'
+              />
 
-            <Button
-              variant='contained'
-              color='primary'
-              className='max-sm:is-full'
-              startIcon={<i className='tabler-plus' />}
-              onClick={() => setCustomerUserOpen(!customerUserOpen)}
-            >
-              Add Expense
-            </Button>
+              {/* Category Filter */}
+              <FormControl size='small' className='min-w-[180px]'>
+                <CustomTextField
+                  select
+                  size='small'
+                  label='Category'
+                  value={filters.category_id}
+                  onChange={e => onFilterChange('category_id', e.target.value)}
+                  className='min-w-[180px]'
+                  SelectProps={{
+                    displayEmpty: true
+                  }}
+                >
+                  <MenuItem value=''>All Categories</MenuItem>
+                  {expenseCategories.map(category => (
+                    <MenuItem key={category._id} value={category._id}>
+                      {category.name}
+                    </MenuItem>
+                  ))}
+                </CustomTextField>
+              </FormControl>
+
+              {/* User Filter */}
+              <FormControl size='small' className='min-w-[180px]'>
+                <CustomTextField
+                  select
+                  size='small'
+                  label='User'
+                  value={filters.user_id}
+                  onChange={e => onFilterChange('user_id', e.target.value)}
+                  className='min-w-[180px]'
+                  SelectProps={{
+                    displayEmpty: true
+                  }}
+                >
+                  <MenuItem value=''>All Users</MenuItem>
+                  {usersList.map(user => (
+                    <MenuItem key={user._id} value={user._id}>
+                      {user.name}
+                    </MenuItem>
+                  ))}
+                </CustomTextField>
+              </FormControl>
+
+              {/* Date Filter */}
+              <FormControl size='small' className='min-w-[180px]'>
+                <CustomTextField
+                  type='date'
+                  size='small'
+                  label='Date'
+                  value={formatDateForInput(filters.date)}
+                  onChange={handleDateChange}
+                  InputLabelProps={{
+                    shrink: true
+                  }}
+                />
+              </FormControl>
+
+              {/* Clear Filters Button */}
+              <Button
+                variant='outlined'
+                color='secondary'
+                size='small'
+                className='mt-3 cursor-pointer'
+                onClick={onClearFilters}
+                disabled={!filters.category_id && !filters.user_id && !filters.date && !filters.search}
+              >
+                Clear Filters
+              </Button>
+            </div>
+
+            {/* Right Side: Page Size and Add Button */}
+            <div className='flex items-center gap-4'>
+              <CustomTextField
+                select
+                size='small'
+                value={paginationData?.limit || 10}
+                onChange={e => onPageSizeChange(Number(e.target.value))}
+                className='w-[70px]'
+              >
+                <MenuItem value='10'>10</MenuItem>
+                <MenuItem value='25'>25</MenuItem>
+                <MenuItem value='50'>50</MenuItem>
+                <MenuItem value='100'>100</MenuItem>
+              </CustomTextField>
+
+              <Button
+                variant='contained'
+                color='primary'
+                size='small'
+                startIcon={<i className='tabler-plus' />}
+                onClick={() => setCustomerUserOpen(!customerUserOpen)}
+              >
+                Add Expense
+              </Button>
+            </div>
           </div>
+
+          {/* Active Filters Summary */}
+          {(filters.category_id || filters.user_id || filters.date || filters.search) && (
+            <div className='mt-2'>
+              <Typography variant='body2' color='textSecondary' className='flex items-center gap-2 flex-wrap'>
+                <i className='tabler-filter text-sm' />
+                Active filters:
+                {filters.category_id && (
+                  <span className='inline-flex items-center gap-1 bg-actionHover px-2 py-1 rounded'>
+                    Category: {expenseCategories.find(c => c._id === filters.category_id)?.name || 'Selected'}
+                  </span>
+                )}
+                {filters.user_id && (
+                  <span className='inline-flex items-center gap-1 bg-actionHover px-2 py-1 rounded'>
+                    User: {usersList.find(u => u._id === filters.user_id)?.name || 'Selected'}
+                  </span>
+                )}
+                {filters.date && (
+                  <span className='inline-flex items-center gap-1 bg-actionHover px-2 py-1 rounded'>
+                    Date: {new Date(filters.date).toLocaleDateString()}
+                  </span>
+                )}
+                {filters.search && (
+                  <span className='inline-flex items-center gap-1 bg-actionHover px-2 py-1 rounded'>
+                    Search: {filters.search}
+                  </span>
+                )}
+              </Typography>
+            </div>
+          )}
         </CardContent>
+
+        {/* Table Content */}
         <div className='overflow-x-auto'>
           <table className={tableStyles.table}>
             <thead>
@@ -292,13 +375,31 @@ const ExpenseListTable = ({
               {loading ? (
                 <tr>
                   <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
-                    Loading...
+                    <div className='flex justify-center items-center p-8'>
+                      <i className='tabler-loader animate-spin text-2xl mr-3' />
+                      <Typography>Loading expenses...</Typography>
+                    </div>
                   </td>
                 </tr>
               ) : table.getFilteredRowModel().rows.length === 0 ? (
                 <tr>
                   <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
-                    No data available
+                    <div className='p-8 text-center'>
+                      <i className='tabler-file-off text-4xl text-textSecondary mb-3' />
+                      <Typography variant='h6' className='mb-2'>
+                        No expenses found
+                      </Typography>
+                      <Typography variant='body2' color='textSecondary' className='mb-4'>
+                        {filters.category_id || filters.user_id || filters.date || filters.search
+                          ? 'Try changing your filters'
+                          : 'No expenses available'}
+                      </Typography>
+                      {(filters.category_id || filters.user_id || filters.date || filters.search) && (
+                        <Button variant='outlined' color='primary' onClick={onClearFilters} size='small'>
+                          Clear all filters
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -335,7 +436,7 @@ const ExpenseListTable = ({
         expenseData={data}
         expenseCategories={expenseCategories}
       />
-      {/* Edit Modal Component */}
+
       {editOpen && (
         <EditExpenseModal
           open={!!editOpen}

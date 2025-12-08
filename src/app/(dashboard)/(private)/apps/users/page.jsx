@@ -46,6 +46,8 @@ const UserListApp = () => {
     setCurrentPage(1)
   }
 
+  // console.log('user', data)
+
   return (
     <UserList
       userData={data}

@@ -13,12 +13,12 @@ import {
   Box,
   Typography,
   Divider,
-  Grid,
   IconButton,
   Paper,
   Alert
 } from '@mui/material'
 import { X, Plus } from 'lucide-react'
+import Grid from '@mui/material/Grid2'
 
 import { showError, showInfo, showSuccess } from '@/utils/toastUtils'
 import { addPayment } from '@/actions/supplierAction'
@@ -107,7 +107,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
     const newProfit = originalProfit - discountAmount
 
     // Calculate paid amount: totalSell - totalExpense - discountAmount - newProfit
-    const paidAmount = totalSell - totalExpense - newProfit
+    const paidAmount = Math.max(0, totalSell - totalExpense - newProfit)
 
     return {
       totalSell,
@@ -339,9 +339,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
           py: 2
         }}
       >
-        <Typography variant='h5' fontWeight='bold'>
-          Clear Payment
-        </Typography>
+        Clear Payment
         <IconButton
           onClick={() => {
             resetDocumentState()
@@ -361,7 +359,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
           </Typography>
           <Divider sx={{ mb: 2 }} />
           <Grid container spacing={2}>
-            <Grid item xs={6} sm={4}>
+            <Grid size={{ xs: 6, sm: 4 }}>
               <Typography variant='body2' color='text.secondary'>
                 Name
               </Typography>
@@ -369,7 +367,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                 {supplierData?.basic_info?.name || 'N/A'}
               </Typography>
             </Grid>
-            <Grid item xs={6} sm={4}>
+            <Grid size={{ xs: 6, sm: 4 }}>
               <Typography variant='body2' color='text.secondary'>
                 Account No
               </Typography>
@@ -377,7 +375,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                 {supplierData?.account_info?.accountNumber || 'N/A'}
               </Typography>
             </Grid>
-            <Grid item xs={6} sm={4}>
+            <Grid size={{ xs: 6, sm: 4 }}>
               <Typography variant='body2' color='text.secondary'>
                 Phone
               </Typography>
@@ -385,7 +383,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                 {supplierData?.contact_info?.phone || 'N/A'}
               </Typography>
             </Grid>
-            <Grid item xs={6} sm={4}>
+            <Grid size={{ xs: 6, sm: 4 }}>
               <Typography variant='body2' color='text.secondary'>
                 Balance
               </Typography>
@@ -393,7 +391,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                 {supplierData?.account_info?.balance || 0}
               </Typography>
             </Grid>
-            <Grid item xs={6} sm={4}>
+            <Grid size={{ xs: 6, sm: 4 }}>
               <Typography variant='body2' color='text.secondary'>
                 Due
               </Typography>
@@ -410,63 +408,107 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
             Select Lots
           </Typography>
 
-          {/* Table Header - UPDATED: Added Total Expense column and Actions */}
-          <Grid container spacing={2} sx={{ mb: 1, px: 1 }}>
-            <Grid item xs={12} sm={3}>
-              <Typography variant='body2' fontWeight='bold' color='text.secondary'>
-                Lot Name
-              </Typography>
-            </Grid>
-            <Grid item xs={3} sm={1.5}>
-              <Typography variant='body2' fontWeight='bold' color='text.secondary'>
-                Total Sell
-              </Typography>
-            </Grid>
-            <Grid item xs={3} sm={1.5}>
-              <Typography variant='body2' fontWeight='bold' color='text.secondary'>
-                Base Expense
-              </Typography>
-            </Grid>
-            <Grid item xs={3} sm={1.2}>
-              <Typography variant='body2' fontWeight='bold' color='text.secondary'>
-                Extra Expense
-              </Typography>
-            </Grid>
+          {/* Table Container with Horizontal Scroll */}
+          <Box
+            sx={{
+              overflowX: 'auto',
+              mb: 2,
+              border: '1px solid #e0e0e0',
+              borderRadius: 1,
+              backgroundColor: '#fafafa'
+            }}
+          >
+            {/* Table Header */}
+            <Box
+              sx={{
+                display: 'flex',
+                minWidth: '1200px', // Set minimum width to prevent squeezing
+                py: 1.5,
+                px: 2,
+                borderBottom: '1px solid #e0e0e0',
+                backgroundColor: '#f5f5f5'
+              }}
+            >
+              {/* Lot Name - Fixed width */}
+              <Box sx={{ width: 200, minWidth: 200, px: 1 }}>
+                <Typography variant='body2' fontWeight='bold' color='text.secondary'>
+                  Lot Name
+                </Typography>
+              </Box>
 
-            <Grid item xs={3} sm={1.2}>
-              <Typography variant='body2' fontWeight='bold' color='text.secondary'>
-                Total Expense
-              </Typography>
-            </Grid>
+              {/* Total Sell */}
+              <Box sx={{ width: 120, minWidth: 120, px: 1 }}>
+                <Typography variant='body2' fontWeight='bold' color='text.secondary'>
+                  Total Sell
+                </Typography>
+              </Box>
 
-            <Grid item xs={3} sm={1.5}>
-              <Typography variant='body2' fontWeight='bold' color='text.secondary'>
-                Profit
-              </Typography>
-            </Grid>
-            <Grid item xs={3} sm={1.5}>
-              <Typography variant='body2' fontWeight='bold' color='text.secondary'>
-                Discount (%)
-              </Typography>
-            </Grid>
-            <Grid item xs={3} sm={1.5}>
-              <Typography variant='body2' fontWeight='bold' color='text.secondary'>
-                Paid Amount {/* NEW: Calculated value */}
-              </Typography>
-            </Grid>
-            <Grid item xs={3} sm={1.5}>
-              <Typography variant='body2' fontWeight='bold' color='text.secondary'>
-                Action {/* NEW: Remove button column */}
-              </Typography>
-            </Grid>
-          </Grid>
+              {/* Base Expense */}
+              <Box sx={{ width: 120, minWidth: 120, px: 1 }}>
+                <Typography variant='body2' fontWeight='bold' color='text.secondary'>
+                  Base Expense
+                </Typography>
+              </Box>
 
-          {/* Dynamic Lot Rows - UPDATED: Added Total Expense, Paid Amount, and Remove button */}
-          {lotRows.map((row, index) => (
-            <Paper key={row.id} elevation={1} sx={{ p: 2, mb: 2, borderRadius: 2 }}>
-              <Grid container spacing={2} alignItems='center'>
+              {/* Extra Expense */}
+              <Box sx={{ width: 120, minWidth: 120, px: 1 }}>
+                <Typography variant='body2' fontWeight='bold' color='text.secondary'>
+                  Extra Expense
+                </Typography>
+              </Box>
+
+              {/* Total Expense */}
+              <Box sx={{ width: 120, minWidth: 120, px: 1 }}>
+                <Typography variant='body2' fontWeight='bold' color='text.secondary'>
+                  Total Expense
+                </Typography>
+              </Box>
+
+              {/* Profit */}
+              <Box sx={{ width: 120, minWidth: 120, px: 1 }}>
+                <Typography variant='body2' fontWeight='bold' color='text.secondary'>
+                  Profit
+                </Typography>
+              </Box>
+
+              {/* Discount (%) */}
+              <Box sx={{ width: 120, minWidth: 120, px: 1 }}>
+                <Typography variant='body2' fontWeight='bold' color='text.secondary'>
+                  Discount (%)
+                </Typography>
+              </Box>
+
+              {/* Paid Amount */}
+              <Box sx={{ width: 120, minWidth: 120, px: 1 }}>
+                <Typography variant='body2' fontWeight='bold' color='text.secondary'>
+                  Paid Amount
+                </Typography>
+              </Box>
+
+              {/* Action */}
+              <Box sx={{ width: 80, minWidth: 80, px: 1 }}>
+                <Typography variant='body2' fontWeight='bold' color='text.secondary'>
+                  Action
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Dynamic Lot Rows */}
+            {lotRows.map((row, index) => (
+              <Paper
+                key={row.id}
+                elevation={0}
+                sx={{
+                  display: 'flex',
+                  minWidth: '1200px',
+                  p: 2,
+                  borderBottom: '1px solid #e0e0e0',
+                  '&:hover': { backgroundColor: '#f9f9f9' },
+                  borderRadius: 0
+                }}
+              >
                 {/* Lot Dropdown */}
-                <Grid item xs={12} sm={3}>
+                <Box sx={{ width: 200, minWidth: 200, px: 1 }}>
                   <TextField
                     select
                     fullWidth
@@ -479,16 +521,16 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                       <MenuItem
                         key={lot._id}
                         value={lot._id}
-                        disabled={lotRows.some(r => r.selectedLotId === lot._id && r.id !== row.id)} // Prevent duplicate selection
+                        disabled={lotRows.some(r => r.selectedLotId === lot._id && r.id !== row.id)}
                       >
                         {lot.lot_name}
                       </MenuItem>
                     ))}
                   </TextField>
-                </Grid>
+                </Box>
 
                 {/* Total Sell */}
-                <Grid item xs={3} sm={1.5}>
+                <Box sx={{ width: 120, minWidth: 120, px: 1 }}>
                   <TextField
                     fullWidth
                     size='small'
@@ -496,10 +538,10 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                     disabled
                     InputProps={{ readOnly: true }}
                   />
-                </Grid>
+                </Box>
 
                 {/* Base Expense (Read-only) */}
-                <Grid item xs={3} sm={1.2}>
+                <Box sx={{ width: 120, minWidth: 120, px: 1 }}>
                   <TextField
                     fullWidth
                     size='small'
@@ -507,10 +549,10 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                     disabled
                     InputProps={{ readOnly: true }}
                   />
-                </Grid>
+                </Box>
 
                 {/* Extra Expense (Read-only) */}
-                <Grid item xs={3} sm={1.2}>
+                <Box sx={{ width: 120, minWidth: 120, px: 1 }}>
                   <TextField
                     fullWidth
                     size='small'
@@ -518,10 +560,10 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                     disabled
                     InputProps={{ readOnly: true }}
                   />
-                </Grid>
+                </Box>
 
                 {/* Total Expense (Read-only) */}
-                <Grid item xs={3} sm={1.2}>
+                <Box sx={{ width: 120, minWidth: 120, px: 1 }}>
                   <TextField
                     fullWidth
                     size='small'
@@ -529,10 +571,10 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                     disabled
                     InputProps={{ readOnly: true }}
                   />
-                </Grid>
+                </Box>
 
                 {/* Profit (Calculated after discount) */}
-                <Grid item xs={3} sm={1.5}>
+                <Box sx={{ width: 120, minWidth: 120, px: 1 }}>
                   <TextField
                     fullWidth
                     size='small'
@@ -540,10 +582,10 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                     disabled
                     InputProps={{ readOnly: true }}
                   />
-                </Grid>
+                </Box>
 
                 {/* Discount Percentage Input */}
-                <Grid item xs={3} sm={1.5}>
+                <Box sx={{ width: 120, minWidth: 120, px: 1 }}>
                   <TextField
                     fullWidth
                     size='small'
@@ -556,10 +598,10 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                       endAdornment: <Typography variant='body2'>%</Typography>
                     }}
                   />
-                </Grid>
+                </Box>
 
-                {/* NEW: Paid Amount (Calculated) */}
-                <Grid item xs={3} sm={1.5}>
+                {/* Paid Amount (Calculated) */}
+                <Box sx={{ width: 120, minWidth: 120, px: 1 }}>
                   <TextField
                     fullWidth
                     size='small'
@@ -567,28 +609,28 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                     disabled
                     InputProps={{ readOnly: true }}
                   />
-                </Grid>
+                </Box>
 
-                {/* NEW: Remove Button */}
-                <Grid item xs={3} sm={1.5}>
+                {/* Remove Button */}
+                <Box sx={{ width: 80, minWidth: 80, px: 1, display: 'flex', alignItems: 'center' }}>
                   <IconButton
-                    color='error'
+                    color=''
                     onClick={() => handleRemoveLotRow(row.id)}
-                    disabled={lotRows.length === 1} // Disable if only one row
+                    disabled={lotRows.length === 1}
                     sx={{
-                      bgcolor: 'error.light',
+                      bgcolor: '',
                       '&:hover': { bgcolor: 'error.main' },
                       '&.Mui-disabled': { bgcolor: 'grey.300' }
                     }}
                   >
                     <X size={18} />
                   </IconButton>
-                </Grid>
-              </Grid>
-            </Paper>
-          ))}
+                </Box>
+              </Paper>
+            ))}
+          </Box>
 
-          {/* ============ PLUS BUTTON (Below all rows) ============ */}
+          {/* Plus Button */}
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
             <Button
               variant='outlined'
@@ -608,7 +650,6 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
           </Typography>
 
           <div className='flex flex-col gap-2'>
-            {/* File Upload Input */}
             <input
               type='file'
               accept='image/*'
@@ -628,7 +669,6 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
               </Typography>
             )}
 
-            {/* Document Preview */}
             {documentPreview && (
               <div className='flex flex-col items-center gap-2 mt-2'>
                 <Typography variant='body2' color='text.secondary'>
@@ -656,7 +696,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
 
           <Grid container spacing={2}>
             {/* Payment Date */}
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 type='date'
@@ -669,7 +709,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
             </Grid>
 
             {/* Payment Method */}
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 select
                 fullWidth
@@ -685,9 +725,9 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
               </TextField>
             </Grid>
 
-            {/* ============ CONDITIONAL: Amount from Balance with VALIDATION ============ */}
+            {/* Amount from Balance */}
             {paymentMethod === 'balance' && (
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   type='number'
@@ -704,7 +744,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
             )}
 
             {/* Transaction ID */}
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label='Transaction ID'
@@ -715,22 +755,22 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
               />
             </Grid>
 
-            {/* UPDATED: Paid Amount (was Receive Amount) - WITH LIVE CALCULATION */}
-            <Grid item xs={12} sm={6}>
+            {/* Paid Amount */}
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 type='number'
                 label='Paid Amount'
                 placeholder='0'
                 value={paidAmountInput}
-                onChange={e => setPaidAmountInput(e.target.value)} // Live update triggers recalculation
+                onChange={e => setPaidAmountInput(e.target.value)}
                 size='small'
                 inputProps={{ min: 0 }}
               />
             </Grid>
 
-            {/* NEW: Payable Amount (Display only - calculated) */}
-            <Grid item xs={12} sm={6}>
+            {/* Payable Amount */}
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label='Payable Amount'
@@ -741,8 +781,8 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
               />
             </Grid>
 
-            {/* Need to Pay Amount (Display only - calculated with LIVE updates) */}
-            <Grid item xs={12} sm={6}>
+            {/* Need to Pay Amount */}
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label='Need to Pay'
@@ -761,7 +801,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
             </Grid>
 
             {/* Total Profit Display */}
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label='Total Profit'
@@ -772,8 +812,8 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
               />
             </Grid>
 
-            {/* NEW: Total Lots Expenses Display */}
-            <Grid item xs={12} sm={6}>
+            {/* Total Lots Expenses Display */}
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label='Total Lots Expenses'
@@ -785,7 +825,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
             </Grid>
 
             {/* Note/Remarks */}
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 multiline
@@ -817,7 +857,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
           onClick={handleSubmit}
           variant='contained'
           sx={{ textTransform: 'none', minWidth: 120 }}
-          disabled={!!balanceError} // Disable if balance error exists
+          disabled={!!balanceError}
         >
           Payment
         </Button>

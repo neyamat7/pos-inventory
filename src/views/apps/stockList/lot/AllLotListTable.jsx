@@ -31,12 +31,13 @@ import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
 import OptionMenu from '@/@core/components/option-menu'
 
-import LotInvoicePrintHandler from './LotInvoicePrintHandler'
+// import LotInvoicePrintHandler from './LotInvoicePrintHandler'
 
 // Util Imports
 import tableStyles from '@core/styles/table.module.css'
 import { adjustStock, getLotSaleSummary, updateLotStatus } from '@/actions/lotActions'
 import { showSuccess, showError } from '@/utils/toastUtils'
+import LotInvoicePrintHandler from '@/components/LotSaleInvoice/LotInvoicePrintHandler'
 
 const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...props }) => {
   const [value, setValue] = useState(initialValue)
@@ -78,6 +79,8 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
 
     try {
       const result = await getLotSaleSummary(lotId)
+
+      // console.log('sale data', result)
 
       if (result.success) {
         setLotSaleData(result.data)

@@ -17,17 +17,25 @@ import {
   DialogTitle,
   DialogContent,
   TextField,
-  DialogActions
+  DialogActions,
+  Typography,
+  Paper,
+  Divider,
+  IconButton,
+  CircularProgress
 } from '@mui/material'
+import Grid from '@mui/material/Grid2'
 
-import { DollarSign } from 'lucide-react'
+import { DollarSign, Printer, X } from 'lucide-react'
 
 import TablePaginationComponent from '@components/TablePaginationComponent'
 import tableStyles from '@core/styles/table.module.css'
 
 import PaymentModal from './PaymentModal'
-import { getUnpaidStockOutLots } from '@/actions/lotActions'
+import { getLotSaleSummary, getUnpaidStockOutLots } from '@/actions/lotActions'
 import OptionMenu from '@/@core/components/option-menu'
+import LotInvoicePrintHandler from '@/components/LotSaleInvoice/LotInvoicePrintHandler'
+import { showSuccess } from '@/utils/toastUtils'
 
 const columnHelper = createColumnHelper()
 
@@ -37,6 +45,15 @@ const ProductTable = ({ data, pagination, total, onPaginationChange, loading, su
 
   const [expenseModalOpen, setExpenseModalOpen] = useState(false)
   const [selectedLot, setSelectedLot] = useState(null)
+
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false)
+  const [selectedLotDetails, setSelectedLotDetails] = useState(null)
+  const [lotSaleData, setLotSaleData] = useState(null)
+  const [loadingSaleData, setLoadingSaleData] = useState(false)
+  const [selectedLotIdForDetails, setSelectedLotIdForDetails] = useState(null)
+
+  const [printTrigger, setPrintTrigger] = useState(false)
+  const [printLotData, setPrintLotData] = useState(null)
 
   // console.log('data in supplier lot tab', data)
 
@@ -55,6 +72,46 @@ const ProductTable = ({ data, pagination, total, onPaginationChange, loading, su
 
     fetchUnpaidLots()
   }, [])
+
+  const fetchLotSaleSummary = async lotId => {
+    setLoadingSaleData(true)
+    setSelectedLotIdForDetails(lotId)
+
+    try {
+      const result = await getLotSaleSummary(lotId)
+
+      // console.log('sale data', result)
+
+      if (result.success) {
+        setLotSaleData(result.data)
+      } else {
+        console.error('Failed to fetch sale summary:', result.error)
+        setLotSaleData(null)
+      }
+    } catch (error) {
+      console.error('Error fetching lot sale summary:', error)
+      setLotSaleData(null)
+    } finally {
+      setLoadingSaleData(false)
+    }
+  }
+
+  const handlePrintInvoice = lotData => {
+    if (!lotData) return
+
+    setPrintLotData(lotData)
+    setPrintTrigger(prev => !prev)
+  }
+
+  const handlePrintComplete = () => {
+    showSuccess('Print completed successfully')
+    setPrintLotData(null)
+  }
+
+  const handlePrintError = error => {
+    showSuccess('Print error:', error)
+    setPrintLotData(null)
+  }
 
   const stockColumns = [
     columnHelper.accessor('lot_name', {
@@ -142,9 +199,11 @@ const ProductTable = ({ data, pagination, total, onPaginationChange, loading, su
                 icon: 'tabler-eye',
                 menuItemProps: {
                   onClick: () => {
-                    console.log('Showing details for lot:', row.original)
+                    const lot = row.original
 
-                    // Will implement details modal later
+                    setSelectedLotDetails(lot)
+                    fetchLotSaleSummary(lot._id)
+                    setDetailsModalOpen(true)
                   },
                   className: 'flex items-center'
                 }
@@ -175,6 +234,12 @@ const ProductTable = ({ data, pagination, total, onPaginationChange, loading, su
       onPaginationChange(newState.pageIndex + 1, newState.pageSize)
     }
   })
+
+  const handleCloseDetailsModal = () => {
+    setDetailsModalOpen(false)
+    setLotSaleData(null) // Reset sale data on close
+    setSelectedLotDetails(null)
+  }
 
   return (
     <>
@@ -240,6 +305,22 @@ const ProductTable = ({ data, pagination, total, onPaginationChange, loading, su
       />
 
       <AddExpenseModal open={expenseModalOpen} onClose={() => setExpenseModalOpen(false)} lot={selectedLot} />
+
+      <LotDetailsModal
+        open={detailsModalOpen}
+        onClose={handleCloseDetailsModal}
+        lot={selectedLotDetails}
+        lotSaleData={lotSaleData}
+        loadingSaleData={loadingSaleData}
+        onPrint={handlePrintInvoice}
+      />
+
+      <LotInvoicePrintHandler
+        lotSaleData={printLotData}
+        triggerPrint={printTrigger}
+        onPrintComplete={handlePrintComplete}
+        onPrintError={handlePrintError}
+      />
     </>
   )
 }
@@ -299,6 +380,426 @@ const AddExpenseModal = ({ open, onClose, lot }) => {
         <Button onClick={handleClose}>Cancel</Button>
         <Button onClick={handleSubmit} variant='contained' color='primary'>
           Add Expense
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+
+const LotDetailsModal = ({ open, onClose, lot, lotSaleData, loadingSaleData, onPrint }) => {
+  // Dummy data for extra expenses (will be replaced with real data later)
+  const extraExpenses = [
+    { id: 1, amount: 500, reason: 'Transportation extra charge', date: '2025-11-30' },
+    { id: 2, amount: 300, reason: 'Labor overtime', date: '2025-12-01' }
+  ]
+
+  const totalExtraExpense = extraExpenses.reduce((sum, expense) => sum + expense.amount, 0)
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth='md'
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 2,
+          maxHeight: '90vh'
+        }
+      }}
+    >
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          bgcolor: 'primary.main',
+          color: 'white',
+          py: 2
+        }}
+      >
+        <Typography fontWeight='bold'>Lot Details - {lot?.lot_name || 'N/A'}</Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <IconButton onClick={() => onPrint(lotSaleData)} sx={{ color: 'white' }} title='Print'>
+            <Printer size={20} />
+          </IconButton>
+          <IconButton onClick={onClose} sx={{ color: 'white' }}>
+            <X size={24} />
+          </IconButton>
+        </Box>
+      </DialogTitle>
+
+      <DialogContent sx={{ pt: 3 }}>
+        {/* Basic Information Section */}
+        <Paper elevation={2} sx={{ p: 2.5, mb: 3, borderRadius: 2 }}>
+          <Typography variant='h6' fontWeight='bold' color='primary' gutterBottom>
+            Basic Information
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 6, sm: 4 }}>
+              <Typography variant='body2' color='text.secondary'>
+                Product Name
+              </Typography>
+              <Typography variant='body1' fontWeight='600'>
+                {lot?.productsId?.[0]?.productName || 'N/A'}
+              </Typography>
+            </Grid>
+            <Grid size={{ xs: 6, sm: 4 }}>
+              <Typography variant='body2' color='text.secondary'>
+                Purchase Date
+              </Typography>
+              <Typography variant='body1' fontWeight='600'>
+                {lot?.purchase_date ? new Date(lot.purchase_date).toLocaleDateString() : 'N/A'}
+              </Typography>
+            </Grid>
+            <Grid size={{ xs: 6, sm: 4 }}>
+              <Typography variant='body2' color='text.secondary'>
+                Status
+              </Typography>
+              <Typography
+                variant='body1'
+                fontWeight='600'
+                sx={{
+                  color: lot?.status === 'in stock' ? 'success.main' : 'warning.main'
+                }}
+              >
+                {lot?.status ? lot.status.charAt(0).toUpperCase() + lot.status.slice(1) : 'N/A'}
+              </Typography>
+            </Grid>
+            <Grid size={{ xs: 6, sm: 4 }}>
+              <Typography variant='body2' color='text.secondary'>
+                Total Boxes
+              </Typography>
+              <Typography variant='body1' fontWeight='600'>
+                {lot?.box_quantity || 0}
+              </Typography>
+            </Grid>
+            <Grid size={{ xs: 6, sm: 4 }}>
+              <Typography variant='body2' color='text.secondary'>
+                Remaining Boxes
+              </Typography>
+              <Typography variant='body1' fontWeight='600'>
+                {lot?.remaining_boxes || 0}
+              </Typography>
+            </Grid>
+            <Grid size={{ xs: 6, sm: 4 }}>
+              <Typography variant='body2' color='text.secondary'>
+                Payment Status
+              </Typography>
+              <Typography
+                variant='body1'
+                fontWeight='600'
+                sx={{
+                  color: lot?.payment_status === 'paid' ? 'success.main' : 'error.main'
+                }}
+              >
+                {lot?.payment_status ? lot.payment_status.charAt(0).toUpperCase() + lot.payment_status.slice(1) : 'N/A'}
+              </Typography>
+            </Grid>
+          </Grid>
+        </Paper>
+
+        {/* Costs & Expenses Section */}
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          {/* Costs Column */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Paper elevation={2} sx={{ p: 2.5, height: '100%', borderRadius: 2 }}>
+              <Typography variant='h6' fontWeight='bold' color='primary' gutterBottom>
+                Costs
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12 }}>
+                  <Typography variant='body2' color='text.secondary'>
+                    Unit Cost
+                  </Typography>
+                  <Typography variant='body1' fontWeight='600'>
+                    ${lot?.costs?.unitCost?.toLocaleString() || 0}
+                  </Typography>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Typography variant='body2' color='text.secondary'>
+                    Commission Rate
+                  </Typography>
+                  <Typography variant='body1' fontWeight='600'>
+                    {lot?.costs?.commissionRate || 0}%
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
+
+          {/* Expenses Column */}
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Paper elevation={2} sx={{ p: 2.5, height: '100%', borderRadius: 2 }}>
+              <Typography variant='h6' fontWeight='bold' color='primary' gutterBottom>
+                Expenses
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 6 }}>
+                  <Typography variant='body2' color='text.secondary'>
+                    Transportation
+                  </Typography>
+                  <Typography variant='body1' fontWeight='600'>
+                    ${lot?.expenses?.transportation?.toLocaleString() || 0}
+                  </Typography>
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                  <Typography variant='body2' color='text.secondary'>
+                    Labour
+                  </Typography>
+                  <Typography variant='body1' fontWeight='600'>
+                    ${lot?.expenses?.labour?.toLocaleString() || 0}
+                  </Typography>
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                  <Typography variant='body2' color='text.secondary'>
+                    Other Expenses
+                  </Typography>
+                  <Typography variant='body1' fontWeight='600'>
+                    ${lot?.expenses?.other_expenses?.toLocaleString() || 0}
+                  </Typography>
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                  <Typography variant='body2' color='text.secondary'>
+                    Total Expenses
+                  </Typography>
+                  <Typography variant='body1' fontWeight='600' color='error.main'>
+                    ${lot?.expenses?.total_expenses?.toLocaleString() || 0}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
+        </Grid>
+
+        {/* Sales & Profit Section */}
+        <Paper elevation={2} sx={{ p: 2.5, mb: 3, borderRadius: 2 }}>
+          <Typography variant='h6' fontWeight='bold' color='primary' gutterBottom>
+            Sales & Profit
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 6, sm: 3 }}>
+              <Typography variant='body2' color='text.secondary'>
+                Total Kg Sold
+              </Typography>
+              <Typography variant='body1' fontWeight='600'>
+                {lot?.sales?.totalKgSold?.toLocaleString() || 0}
+              </Typography>
+            </Grid>
+            <Grid size={{ xs: 6, sm: 3 }}>
+              <Typography variant='body2' color='text.secondary'>
+                Total Sold Price
+              </Typography>
+              <Typography variant='body1' fontWeight='600'>
+                ${lot?.sales?.totalSoldPrice?.toLocaleString() || 0}
+              </Typography>
+            </Grid>
+            <Grid size={{ xs: 6, sm: 3 }}>
+              <Typography variant='body2' color='text.secondary'>
+                Lot Profit
+              </Typography>
+              <Typography
+                variant='body1'
+                fontWeight='600'
+                sx={{
+                  color: (lot?.profits?.lotProfit || 0) >= 0 ? 'success.main' : 'error.main'
+                }}
+              >
+                ${lot?.profits?.lotProfit?.toLocaleString() || 0}
+              </Typography>
+            </Grid>
+            <Grid size={{ xs: 6, sm: 3 }}>
+              <Typography variant='body2' color='text.secondary'>
+                Total Profit
+              </Typography>
+              <Typography
+                variant='body1'
+                fontWeight='600'
+                sx={{
+                  color: (lot?.profits?.totalProfit || 0) >= 0 ? 'success.main' : 'error.main'
+                }}
+              >
+                ${lot?.profits?.totalProfit?.toLocaleString() || 0}
+              </Typography>
+            </Grid>
+          </Grid>
+        </Paper>
+
+        {/* Extra Expenses Section */}
+        <Paper elevation={2} sx={{ p: 2.5, borderRadius: 2 }}>
+          <Typography variant='h6' fontWeight='bold' color='primary' gutterBottom>
+            Extra Expenses
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+
+          {/* Extra Expenses List */}
+          <Box sx={{ mb: 2 }}>
+            {extraExpenses.map(expense => (
+              <Paper
+                key={expense.id}
+                elevation={1}
+                sx={{
+                  p: 2,
+                  mb: 1.5,
+                  borderRadius: 1,
+                  backgroundColor: '#f8f9fa'
+                }}
+              >
+                <Grid container spacing={2} alignItems='center'>
+                  <Grid size={{ xs: 4, sm: 2 }}>
+                    <Typography variant='body2' color='text.secondary'>
+                      Amount
+                    </Typography>
+                    <Typography variant='body1' fontWeight='600' color='error.main'>
+                      ${expense.amount.toLocaleString()}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 8, sm: 6 }}>
+                    <Typography variant='body2' color='text.secondary'>
+                      Reason
+                    </Typography>
+                    <Typography variant='body1' fontWeight='600'>
+                      {expense.reason}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 4 }}>
+                    <Typography variant='body2' color='text.secondary'>
+                      Date
+                    </Typography>
+                    <Typography variant='body1' fontWeight='600'>
+                      {new Date(expense.date).toLocaleDateString()}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Paper>
+            ))}
+          </Box>
+        </Paper>
+
+        {/* Sales Data Section */}
+        <Paper elevation={2} sx={{ p: 2.5, mb: 3, mt: 3, borderRadius: 2 }}>
+          <Typography variant='h6' fontWeight='bold' color='primary' gutterBottom>
+            Sales Data
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+
+          {loadingSaleData ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : lotSaleData?.sales && lotSaleData.sales.length > 0 ? (
+            <>
+              {/* Sales Table */}
+              <Box sx={{ overflowX: 'auto', mb: 2 }}>
+                <Box sx={{ minWidth: 800 }}>
+                  {/* Table Header */}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      py: 1.5,
+                      px: 2,
+                      borderBottom: '1px solid #e0e0e0',
+                      backgroundColor: '#f5f5f5',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    <Box sx={{ width: 150, minWidth: 150, px: 1 }}>Kg</Box>
+                    <Box sx={{ width: 150, minWidth: 150, px: 1 }}>Unit Price</Box>
+                    <Box sx={{ width: 150, minWidth: 150, px: 1 }}>Total Price</Box>
+                    <Box sx={{ width: 150, minWidth: 150, px: 1 }}>Discount (Kg)</Box>
+                    <Box sx={{ width: 200, minWidth: 200, px: 1 }}>Total Crate</Box>
+                  </Box>
+
+                  {/* Table Rows */}
+                  {lotSaleData.sales.map((sale, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        display: 'flex',
+                        py: 1.5,
+                        px: 2,
+                        borderBottom: '1px solid #e0e0e0',
+                        '&:hover': { backgroundColor: '#f9f9f9' }
+                      }}
+                    >
+                      <Box sx={{ width: 150, minWidth: 150, px: 1 }}>{sale.kg || 0}</Box>
+                      <Box sx={{ width: 150, minWidth: 150, px: 1 }}>${sale.unit_price?.toLocaleString() || 0}</Box>
+                      <Box sx={{ width: 150, minWidth: 150, px: 1 }}>${sale.total_price?.toLocaleString() || 0}</Box>
+                      <Box sx={{ width: 150, minWidth: 150, px: 1 }}>{sale.discount_Kg || 0}</Box>
+                      <Box sx={{ width: 200, minWidth: 200, px: 1 }}>{sale.total_crate?.toLocaleString() || 0}</Box>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+
+              {/* Sales Summary */}
+              {lotSaleData.sales.length > 0 && (
+                <Grid container spacing={2} sx={{ mt: 2 }}>
+                  <Grid size={{ xs: 6, sm: 3 }}>
+                    <Paper sx={{ p: 2, bgcolor: '#e8f5e9', borderRadius: 1 }}>
+                      <Typography variant='body2' color='text.secondary'>
+                        Total Sales
+                      </Typography>
+                      <Typography variant='h6' fontWeight='bold' color='success.main'>
+                        ${lotSaleData.sales.reduce((sum, sale) => sum + (sale.total_price || 0), 0).toLocaleString()}
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                  <Grid size={{ xs: 6, sm: 3 }}>
+                    <Paper sx={{ p: 2, bgcolor: '#fff3e0', borderRadius: 1 }}>
+                      <Typography variant='body2' color='text.secondary'>
+                        Total Kg
+                      </Typography>
+                      <Typography variant='h6' fontWeight='bold' color='warning.main'>
+                        {lotSaleData.sales.reduce((sum, sale) => sum + (sale.kg || 0), 0).toLocaleString()}
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                  <Grid size={{ xs: 6, sm: 3 }}>
+                    <Paper sx={{ p: 2, bgcolor: '#f3e5f5', borderRadius: 1 }}>
+                      <Typography variant='body2' color='text.secondary'>
+                        Avg Price/Kg
+                      </Typography>
+                      <Typography variant='h6' fontWeight='bold' color='secondary.main'>
+                        $
+                        {(
+                          lotSaleData.sales.reduce((sum, sale) => sum + (sale.total_price || 0), 0) /
+                          Math.max(
+                            1,
+                            lotSaleData.sales.reduce((sum, sale) => sum + (sale.kg || 0), 0)
+                          )
+                        ).toFixed(2)}
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                  <Grid size={{ xs: 6, sm: 3 }}>
+                    <Paper sx={{ p: 2, bgcolor: '#e3f2fd', borderRadius: 1 }}>
+                      <Typography variant='body2' color='text.secondary'>
+                        Total Crates
+                      </Typography>
+                      <Typography variant='h6' fontWeight='bold' color='info.main'>
+                        {lotSaleData.sales.reduce((sum, sale) => sum + (sale.total_crate || 0), 0).toLocaleString()}
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                </Grid>
+              )}
+            </>
+          ) : (
+            <Typography sx={{ py: 4, textAlign: 'center', color: 'text.secondary' }}>
+              No sales data available
+            </Typography>
+          )}
+        </Paper>
+      </DialogContent>
+
+      <DialogActions sx={{ px: 3, py: 2, bgcolor: '#f8f9fa' }}>
+        <Button onClick={onClose} variant='outlined' sx={{ textTransform: 'none' }}>
+          Close
         </Button>
       </DialogActions>
     </Dialog>
