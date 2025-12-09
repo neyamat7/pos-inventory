@@ -27,7 +27,7 @@ import { getAccounts } from '@/actions/accountActions'
 
 const AddExpenseDrawer = props => {
   // Props
-  const { open, handleClose, setData, expenseData, expenseCategories } = props
+  const { open, handleClose, setData, expenseData, expenseCategories, usersList = [] } = props
 
   // States
   const [loading, setLoading] = useState(false)
@@ -54,7 +54,8 @@ const AddExpenseDrawer = props => {
       expense_category: '',
       payment_type: '',
       reference_num: '',
-      choose_account: ''
+      choose_account: '',
+      user: ''
     }
   })
 
@@ -97,7 +98,8 @@ const AddExpenseDrawer = props => {
         payment_type: data.payment_type,
         reference_num: data.reference_num?.trim() || '',
         choose_account: data.choose_account,
-        expense_by: currentUserId
+        expense_by: currentUserId,
+        user: data.user
       }
 
       const result = await createExpense(expensePayload)
@@ -258,6 +260,36 @@ const AddExpenseDrawer = props => {
                   helperText={errors.expense_for?.message}
                   disabled={loading}
                 />
+              )}
+            />
+
+            {/* select user */}
+            <Controller
+              name='user'
+              control={control}
+              rules={{ required: 'User is required' }}
+              render={({ field }) => (
+                <CustomTextField
+                  select
+                  fullWidth
+                  label='User'
+                  {...field}
+                  error={!!errors.user}
+                  helperText={errors.user?.message}
+                  disabled={loading}
+                >
+                  {usersList && usersList.length > 0 ? (
+                    usersList.map(user => (
+                      <MenuItem key={user._id} value={user._id}>
+                        {user.name}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem value='' disabled>
+                      No users available
+                    </MenuItem>
+                  )}
+                </CustomTextField>
               )}
             />
 

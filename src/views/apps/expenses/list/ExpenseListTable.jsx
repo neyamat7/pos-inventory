@@ -435,6 +435,7 @@ const ExpenseListTable = ({
         setData={setData}
         expenseData={data}
         expenseCategories={expenseCategories}
+        usersList={usersList}
       />
 
       {editOpen && (
