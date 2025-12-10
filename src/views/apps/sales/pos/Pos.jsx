@@ -25,6 +25,8 @@ import InvoicePrintHandler from '../invoice/InvoicePrintHandler'
 import { showError, showSuccess } from '@/utils/toastUtils'
 
 export default function POSSystem({ productsData = [], customersData = [], categoriesData = [], lotsData = [] }) {
+  // console.log('lotsdata', lotsData)
+
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [categorySearch, setCategorySearch] = useState('')
@@ -645,6 +647,37 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       toast.error(`Please select a lot for "${missingLot.product_name}"`)
 
       return
+    }
+
+    // ========== VALIDATE CRATE AVAILABILITY ==========
+    for (const item of cartProducts) {
+      const selectedCrateType1 = item.crate_type_one || 0
+      const selectedCrateType2 = item.crate_type_two || 0
+
+      // Get available crates from the selected lot
+      const availableCrateType1 = item.lot_selected?.carat_type_1 || 0
+      const availableCrateType2 = item.lot_selected?.carat_type_2 || 0
+
+      // Check if selected crates exceed available crates
+      if (selectedCrateType1 > availableCrateType1) {
+        toast.error(
+          `Crate Type 1 exceeded for "${item.product_name}"! ` +
+            `Selected: ${selectedCrateType1}, Available in lot: ${availableCrateType1}`
+        )
+        setIsSubmitting(false)
+
+        return
+      }
+
+      if (selectedCrateType2 > availableCrateType2) {
+        toast.error(
+          `Crate Type 2 exceeded for "${item.product_name}"! ` +
+            `Selected: ${selectedCrateType2}, Available in lot: ${availableCrateType2}`
+        )
+        setIsSubmitting(false)
+
+        return
+      }
     }
 
     // ========== Transform cart item to lot ==========

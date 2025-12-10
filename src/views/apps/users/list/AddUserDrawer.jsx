@@ -39,7 +39,8 @@ const AddUserDrawer = props => {
       phone: '',
       password: '',
       role: '',
-      imageUrl: ''
+      imageUrl: '',
+      salary: ''
     }
   })
 
@@ -101,6 +102,7 @@ const AddUserDrawer = props => {
           phone: data.phone,
           password: data.password,
           role: data.role,
+          salary: data.salary,
           imageUrl: imageUrl || ''
         })
       })
@@ -115,6 +117,7 @@ const AddUserDrawer = props => {
           email: data.email,
           phone: data.phone,
           role: data.role,
+          salary: data.salary,
           image: imageUrl || null
         }
 
@@ -137,7 +140,7 @@ const AddUserDrawer = props => {
   const resetAll = () => {
     setImageFile(null)
     setImagePreview('')
-    resetForm({ name: '', email: '', phone: '', password: '', role: '', imageUrl: '' })
+    resetForm({ name: '', email: '', phone: '', password: '', role: '', imageUrl: '', salary: '' })
   }
 
   const handleReset = () => {
@@ -247,6 +250,23 @@ const AddUserDrawer = props => {
                 <MenuItem value='operator'>Operator</MenuItem>
                 <MenuItem value='staff'>Staff</MenuItem>
               </CustomTextField>
+            )}
+          />
+
+          {/* Salary */}
+          <Controller
+            name='salary'
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <CustomTextField
+                {...field}
+                fullWidth
+                type='number'
+                label='Salary'
+                placeholder='e.g., 25000'
+                {...(errors.salary && { error: true, helperText: 'This field is required.' })}
+              />
             )}
           />
 

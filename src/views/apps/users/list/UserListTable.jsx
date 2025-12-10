@@ -105,28 +105,6 @@ const UserListTable = ({ userData, paginationData, loading, onPageChange, onPage
 
   const columns = useMemo(
     () => [
-      {
-        id: 'select',
-        header: ({ table }) => (
-          <Checkbox
-            {...{
-              checked: table.getIsAllRowsSelected(),
-              indeterminate: table.getIsSomeRowsSelected(),
-              onChange: table.getToggleAllRowsSelectedHandler()
-            }}
-          />
-        ),
-        cell: ({ row }) => (
-          <Checkbox
-            {...{
-              checked: row.getIsSelected(),
-              disabled: !row.getCanSelect(),
-              indeterminate: row.getIsSomeSelected(),
-              onChange: row.getToggleSelectedHandler()
-            }}
-          />
-        )
-      },
       columnHelper.accessor('name', {
         header: 'User',
         cell: ({ row }) => {
@@ -164,6 +142,14 @@ const UserListTable = ({ userData, paginationData, loading, onPageChange, onPage
       columnHelper.accessor('email', {
         header: 'Email',
         cell: ({ row }) => <Typography color='text.primary'>{row.original.email}</Typography>
+      }),
+      columnHelper.accessor('salary', {
+        header: 'Salary',
+        cell: ({ row }) => (
+          <Typography color='text.primary'>
+            {row.original.salary ? `${Number(row.original.salary).toLocaleString()}` : '-'}
+          </Typography>
+        )
       }),
       columnHelper.accessor('action', {
         header: 'Action',

@@ -1,3 +1,5 @@
+'use client'
+
 const SaleInvoice = ({ saleData }) => {
   // Group lots by product and calculate product totals
   const productSummary =
@@ -26,168 +28,74 @@ const SaleInvoice = ({ saleData }) => {
   const paymentDetails = saleData?.payment_details || {}
 
   return (
-    <div className='invoice-wrapper'>
-      <style jsx>{`
-        @media print {
-          @page {
-            size: 12cm 25cm;
-            margin-top: 8cm;
-            margin-bottom: 3cm;
-            margin-left: 0.5cm;
-            margin-right: 0.5cm;
-          }
-
-          body {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
-
-          .invoice-wrapper {
-            width: 11cm;
-            max-height: 15cm;
-            overflow: hidden;
-          }
-
-          .no-print {
-            display: none !important;
-          }
-        }
-
-        .invoice-wrapper {
-          font-family: Arial, sans-serif;
-          font-size: 9px;
-          line-height: 1.2;
-          color: #000;
-          padding: 0;
-          margin: 0;
-        }
-
-        .customer-section {
-          margin-bottom: 8px;
-          padding: 4px 0;
-          border-bottom: 1px solid #ddd;
-        }
-
-        .customer-name {
-          font-size: 11px;
-          font-weight: bold;
-          margin-bottom: 2px;
-          color: #2d5016;
-        }
-
-        .customer-address {
-          font-size: 9px;
-          color: #333;
-        }
-
-        .product-table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-bottom: 6px;
-        }
-
-        .product-table th {
-          background-color: #f0f0f0;
-          padding: 3px 4px;
-          text-align: left;
-          font-size: 8px;
-          font-weight: 600;
-          border-bottom: 1px solid #ccc;
-        }
-
-        .product-table td {
-          padding: 3px 4px;
-          font-size: 8px;
-          border-bottom: 1px solid #eee;
-        }
-
-        .product-row {
-          background-color: #fafafa;
-        }
-
-        .text-right {
-          text-align: right;
-        }
-
-        .text-center {
-          text-align: center;
-        }
-
-        .summary-section {
-          margin-top: 8px;
-          padding-top: 6px;
-          border-top: 2px solid #2d5016;
-        }
-
-        .summary-row {
-          display: flex;
-          justify-content: space-between;
-          padding: 2px 0;
-          font-size: 9px;
-        }
-
-        .summary-row.total {
-          font-weight: bold;
-          font-size: 11px;
-          padding-top: 4px;
-          margin-top: 4px;
-          border-top: 1px solid #ccc;
-          color: #2d5016;
-        }
-
-        .date-section {
-          font-size: 8px;
-          text-align: right;
-          color: #666;
-          margin-bottom: 6px;
-        }
-      `}</style>
-
-      {/* Date */}
-      <div className='date-section'>Date: {saleData?.sale_date || new Date().toISOString().split('T')[0]}</div>
+    <div
+      style={{
+        fontFamily: "'Hind Siliguri', 'SolaimanLipi', 'Siyam Rupali', sans-serif",
+        fontSize: '9px',
+        lineHeight: '1.2',
+        color: '#000',
+        backgroundColor: '#fff',
+        width: '11cm',
+        margin: '0 auto',
+        padding: '0 0.3cm'
+      }}
+    >
+      {/* Header - Centered */}
+      <div style={{ textAlign: 'center', marginBottom: '8px', paddingBottom: '4px', borderBottom: '0.5px solid #000' }}>
+        <div style={{ fontSize: '11px', marginBottom: '2px' }}>বিক্রয় চালান</div>
+        <div style={{ fontSize: '8px', marginBottom: '1px' }}>
+          তারিখ: {saleData?.sale_date || new Date().toISOString().split('T')[0]}
+        </div>
+      </div>
 
       {/* Customer Info */}
-      <div className='customer-section'>
-        <div className='customer-name'>Name: {saleData?.customer_name || 'N/A'}</div>
-        <div className='customer-address'>Address: {saleData?.customer_address || 'N/A'}</div>
+      <div style={{ marginBottom: '6px' }}>
+        <div style={{ fontSize: '9px', marginBottom: '1px' }}>ক্রেতা: {saleData?.customer_name || 'N/A'}</div>
+        <div style={{ fontSize: '8px', marginBottom: '2px' }}>ঠিকানা: {saleData?.customer_address || 'N/A'}</div>
       </div>
 
       {/* Products Table */}
-      <table className='product-table'>
+      <table
+        style={{
+          width: '100%',
+          borderCollapse: 'collapse',
+          marginBottom: '8px'
+        }}
+      >
         <thead>
           <tr>
-            <th style={{ width: '35%' }}>Product</th>
-            <th style={{ width: '15%' }} className='text-center'>
-              Quantity
+            <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center', fontSize: '8px' }}>পণ্য</th>
+            <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center', fontSize: '8px' }}>পরিমাণ</th>
+            <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center', fontSize: '8px' }}>দর</th>
+            <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center', fontSize: '8px' }}>
+              ডিস্কাউন্ট
             </th>
-            <th style={{ width: '15%' }} className='text-center'>
-              Unit Price
-            </th>
-            <th style={{ width: '12%' }} className='text-center'>
-              Discount
-            </th>
-            <th style={{ width: '12%' }} className='text-center'>
-              Crate
-            </th>
-            <th style={{ width: '18%' }} className='text-center'>
-              Total
-            </th>
+            <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center', fontSize: '8px' }}>ক্রেট</th>
+            <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center', fontSize: '8px' }}>মোট</th>
           </tr>
         </thead>
         <tbody>
           {productSummary.map((product, index) => (
-            <tr key={index} className='product-row'>
-              <td style={{ fontWeight: '600' }}>{product.product_name}</td>
-              <td className='text-left'>{product.isBoxed ? `${product.totalBox} box` : `${product.totalKg} kg`}</td>
-              <td className='text-left'>৳{product.unit_price.toFixed(0)}</td>
-              <td className='text-left'>{product.totalDiscount > 0 ? `৳${product.totalDiscount.toFixed(0)}` : '-'}</td>
-              <td className='text-left'>
+            <tr key={index}>
+              <td style={{ border: '0.5px solid #000', padding: '2px', fontSize: '8px', textAlign: 'left' }}>
+                {product.product_name}
+              </td>
+              <td style={{ border: '0.5px solid #000', padding: '2px', fontSize: '8px', textAlign: 'center' }}>
+                {product.isBoxed ? `${product.totalBox} box` : `${product.totalKg} kg`}
+              </td>
+              <td style={{ border: '0.5px solid #000', padding: '2px', fontSize: '8px', textAlign: 'center' }}>
+                {product.unit_price || 0}
+              </td>
+              <td style={{ border: '0.5px solid #000', padding: '2px', fontSize: '8px', textAlign: 'center' }}>
+                {product.totalDiscount > 0 ? product.totalDiscount : '-'}
+              </td>
+              <td style={{ border: '0.5px solid #000', padding: '2px', fontSize: '8px', textAlign: 'center' }}>
                 {product.totalCrate1 > 0 || product.totalCrate2 > 0
                   ? `${product.totalCrate1}/${product.totalCrate2}`
                   : '-'}
               </td>
-              <td className='text-left' style={{ fontWeight: '600' }}>
-                ৳{product.productTotal.toFixed(2)}
+              <td style={{ border: '0.5px solid #000', padding: '2px', fontSize: '8px', textAlign: 'center' }}>
+                {product.productTotal || 0}
               </td>
             </tr>
           ))}
@@ -195,32 +103,83 @@ const SaleInvoice = ({ saleData }) => {
       </table>
 
       {/* Payment Summary */}
-      <div className='summary-section'>
+      <div
+        style={{
+          border: '0.5px solid #000',
+          padding: '4px',
+          fontSize: '9px'
+        }}
+      >
+        <div style={{ marginBottom: '4px', fontSize: '9px', textAlign: 'center' }}>পরিশোধ বিবরণ</div>
+
         {paymentDetails.extra_crate_type1_price > 0 && (
-          <div className='summary-row'>
-            <span>Crate (Type 1):</span>
-            <span>৳{paymentDetails.extra_crate_type1_price.toFixed(2)}</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
+            <span>ক্রেট (ধরন ১):</span>
+            <span>{paymentDetails.extra_crate_type1_price || 0}</span>
           </div>
         )}
 
         {paymentDetails.extra_crate_type2_price > 0 && (
-          <div className='summary-row'>
-            <span>Crate (Type 2):</span>
-            <span>৳{paymentDetails.extra_crate_type2_price.toFixed(2)}</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
+            <span>ক্রেট (ধরন ২):</span>
+            <span>{paymentDetails.extra_crate_type2_price || 0}</span>
           </div>
         )}
 
         {paymentDetails.vat > 0 && (
-          <div className='summary-row'>
-            <span>VAT:</span>
-            <span>৳{paymentDetails.vat.toFixed(2)}</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
+            <span>ভ্যাট:</span>
+            <span>{paymentDetails.vat || 0}</span>
           </div>
         )}
 
-        <div className='summary-row total'>
-          <span>Payable Amount:</span>
-          <span>৳{(paymentDetails.payable_amount || 0).toFixed(2)}</span>
+        {paymentDetails.discount > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
+            <span>মোট ডিস্কাউন্ট:</span>
+            <span>{paymentDetails.discount || 0}</span>
+          </div>
+        )}
+
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginTop: '3px',
+            paddingTop: '2px',
+            borderTop: '0.5px solid #000'
+          }}
+        >
+          <span>পরিশোধযোগ্য টাকা:</span>
+          <span>{paymentDetails.payable_amount || 0}</span>
         </div>
+
+        {/* Additional Payment Info if available */}
+        {paymentDetails.paid_amount > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
+            <span>প্রদত্ত টাকা:</span>
+            <span>{paymentDetails.paid_amount || 0}</span>
+          </div>
+        )}
+
+        {paymentDetails.due > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
+            <span>বাকি:</span>
+            <span>{paymentDetails.due || 0}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div
+        style={{
+          marginTop: '8px',
+          paddingTop: '2px',
+          borderTop: '0.5px dashed #000',
+          fontSize: '7px',
+          textAlign: 'center'
+        }}
+      >
+        <div>প্রিন্টের সময়: {new Date().toLocaleTimeString('bn-BD')}</div>
       </div>
     </div>
   )

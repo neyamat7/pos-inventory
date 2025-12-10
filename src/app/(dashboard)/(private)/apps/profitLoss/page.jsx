@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { getProfitLoss } from '@/actions/incomeActions'
-import ProfitLoss from '@/views/apps/profitLoss'
+import ProfitLoss from '@/views/apps/profitLoss/ind'
 
 const ProfitLossPage = async () => {
   const result = await getProfitLoss()

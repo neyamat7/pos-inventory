@@ -63,6 +63,8 @@ const ExpenseListTable = ({
   const [data, setData] = useState([])
   const [globalFilter, setGlobalFilter] = useState('')
 
+  console.log('user list', usersList)
+
   useEffect(() => {
     if (expenseData) {
       setData(expenseData)
