@@ -30,6 +30,8 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
       id: 1,
       selectedLotId: '',
       totalSell: 0,
+      baseExpense: 0,
+      extraExpense: 0,
       totalExpense: 0,
       profit: 0,
       originalProfit: 0,
@@ -95,9 +97,8 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
   // Calculate individual lot values when lot is selected or discount changes
   const calculateLotValues = (lot, discountPercentage) => {
     const totalSell = lot?.sales?.totalSoldPrice || 0
-    const baseExpense = lot?.expenses?.total_expenses || 0
+    const totalExpense = lot?.expenses?.total_expenses || 0
     const extraExpense = lot?.expenses?.extra_expense || 0
-    const totalExpense = baseExpense + extraExpense
     const originalProfit = lot?.profits?.lotProfit || 0
 
     // Calculate discount amount from percentage
@@ -112,7 +113,6 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
     return {
       totalSell,
       totalExpense,
-      baseExpense,
       extraExpense,
       originalProfit,
       profit: newProfit,
@@ -176,6 +176,8 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
       id: Date.now(),
       selectedLotId: '',
       totalSell: 0,
+      baseExpense: 0,
+      extraExpense: 0,
       totalExpense: 0,
       profit: 0,
       originalProfit: 0,
@@ -415,14 +417,15 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
               mb: 2,
               border: '1px solid #e0e0e0',
               borderRadius: 1,
-              backgroundColor: '#fafafa'
+              backgroundColor: '#fafafa',
+              width: '100%'
             }}
           >
             {/* Table Header */}
             <Box
               sx={{
                 display: 'flex',
-                minWidth: '1200px', // Set minimum width to prevent squeezing
+                minWidth: { xs: '1200px', lg: 'auto' }, // Only set minWidth on small screens
                 py: 1.5,
                 px: 2,
                 borderBottom: '1px solid #e0e0e0',
@@ -440,13 +443,6 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
               <Box sx={{ width: 120, minWidth: 120, px: 1 }}>
                 <Typography variant='body2' fontWeight='bold' color='text.secondary'>
                   Total Sell
-                </Typography>
-              </Box>
-
-              {/* Base Expense */}
-              <Box sx={{ width: 120, minWidth: 120, px: 1 }}>
-                <Typography variant='body2' fontWeight='bold' color='text.secondary'>
-                  Base Expense
                 </Typography>
               </Box>
 
@@ -500,7 +496,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                 elevation={0}
                 sx={{
                   display: 'flex',
-                  minWidth: '1200px',
+                  minWidth: { xs: '1200px', lg: 'auto' }, // Only set minWidth on small screens
                   p: 2,
                   borderBottom: '1px solid #e0e0e0',
                   '&:hover': { backgroundColor: '#f9f9f9' },
@@ -535,17 +531,6 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
                     fullWidth
                     size='small'
                     value={`${row.totalSell.toFixed(2)}`}
-                    disabled
-                    InputProps={{ readOnly: true }}
-                  />
-                </Box>
-
-                {/* Base Expense (Read-only) */}
-                <Box sx={{ width: 120, minWidth: 120, px: 1 }}>
-                  <TextField
-                    fullWidth
-                    size='small'
-                    value={`${row.baseExpense?.toFixed(2) || '0.00'}`}
                     disabled
                     InputProps={{ readOnly: true }}
                   />

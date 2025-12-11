@@ -68,9 +68,11 @@ const SaleInvoice = ({ saleData }) => {
             <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center', fontSize: '8px' }}>পরিমাণ</th>
             <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center', fontSize: '8px' }}>দর</th>
             <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center', fontSize: '8px' }}>
-              ডিস্কাউন্ট
+              ডিসকাউন্ট
             </th>
-            <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center', fontSize: '8px' }}>ক্রেট</th>
+            <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center', fontSize: '8px' }}>
+              ক্যারেট
+            </th>
             <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center', fontSize: '8px' }}>মোট</th>
           </tr>
         </thead>
@@ -114,14 +116,14 @@ const SaleInvoice = ({ saleData }) => {
 
         {paymentDetails.extra_crate_type1_price > 0 && (
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
-            <span>ক্রেট (ধরন ১):</span>
+            <span>ক্যারেট (টাইপ ১):</span>
             <span>{paymentDetails.extra_crate_type1_price || 0}</span>
           </div>
         )}
 
         {paymentDetails.extra_crate_type2_price > 0 && (
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
-            <span>ক্রেট (ধরন ২):</span>
+            <span>ক্যারেট (টাইপ ২):</span>
             <span>{paymentDetails.extra_crate_type2_price || 0}</span>
           </div>
         )}
@@ -135,7 +137,7 @@ const SaleInvoice = ({ saleData }) => {
 
         {paymentDetails.discount > 0 && (
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
-            <span>মোট ডিস্কাউন্ট:</span>
+            <span>মোট ডিসকাউন্ট:</span>
             <span>{paymentDetails.discount || 0}</span>
           </div>
         )}

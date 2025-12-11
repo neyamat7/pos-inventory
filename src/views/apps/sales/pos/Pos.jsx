@@ -25,7 +25,7 @@ import InvoicePrintHandler from '../invoice/InvoicePrintHandler'
 import { showError, showSuccess } from '@/utils/toastUtils'
 
 export default function POSSystem({ productsData = [], customersData = [], categoriesData = [], lotsData = [] }) {
-  // console.log('lotsdata', lotsData)
+  console.log('lotsdata', lotsData)
 
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
@@ -649,34 +649,57 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       return
     }
 
-    // ========== VALIDATE CRATE AVAILABILITY ==========
+    // ========== VALIDATE CRATE AND BOX AVAILABILITY ==========
     for (const item of cartProducts) {
-      const selectedCrateType1 = item.crate_type_one || 0
-      const selectedCrateType2 = item.crate_type_two || 0
+      // Check if this is a crate-based product
+      if (item.isCrated) {
+        console.log('lot selected', item.lot_selected)
+        const selectedCrateType1 = item.crate_type_one || 0
+        const selectedCrateType2 = item.crate_type_two || 0
 
-      // Get available crates from the selected lot
-      const availableCrateType1 = item.lot_selected?.carat_type_1 || 0
-      const availableCrateType2 = item.lot_selected?.carat_type_2 || 0
+        // Get available crates from the selected lot
+        const availableCrateType1 = item.lot_selected?.remaining_crate_Type_1 || 0
+        const availableCrateType2 = item.lot_selected?.remaining_crate_Type_2 || 0
 
-      // Check if selected crates exceed available crates
-      if (selectedCrateType1 > availableCrateType1) {
-        toast.error(
-          `Crate Type 1 exceeded for "${item.product_name}"! ` +
-            `Selected: ${selectedCrateType1}, Available in lot: ${availableCrateType1}`
-        )
-        setIsSubmitting(false)
+        // Check if selected crates exceed available crates
+        if (selectedCrateType1 > availableCrateType1) {
+          toast.error(
+            `Crate Type 1 exceeded for "${item.product_name}"! ` +
+              `Selected: ${selectedCrateType1}, Available in lot: ${availableCrateType1}`
+          )
+          setIsSubmitting(false)
 
-        return
+          return
+        }
+
+        if (selectedCrateType2 > availableCrateType2) {
+          toast.error(
+            `Crate Type 2 exceeded for "${item.product_name}"! ` +
+              `Selected: ${selectedCrateType2}, Available in lot: ${availableCrateType2}`
+          )
+          setIsSubmitting(false)
+
+          return
+        }
       }
 
-      if (selectedCrateType2 > availableCrateType2) {
-        toast.error(
-          `Crate Type 2 exceeded for "${item.product_name}"! ` +
-            `Selected: ${selectedCrateType2}, Available in lot: ${availableCrateType2}`
-        )
-        setIsSubmitting(false)
+      // Check if this is a box-based product
+      if (item.isBoxed) {
+        const selectedBoxQuantity = item.box_quantity || 0
 
-        return
+        // Get remaining boxes from the selected lot
+        const remainingBoxes = item.lot_selected?.remaining_boxes || 0
+
+        // Check if selected boxes exceed remaining boxes
+        if (selectedBoxQuantity > remainingBoxes) {
+          toast.error(
+            `Box quantity exceeded for "${item.product_name}"! ` +
+              `Selected: ${selectedBoxQuantity}, Available in lot: ${remainingBoxes}`
+          )
+          setIsSubmitting(false)
+
+          return
+        }
       }
     }
 
@@ -920,12 +943,15 @@ export default function POSSystem({ productsData = [], customersData = [], categ
               unit_cost: lot.costs?.unitCost || 0,
               commission_rate: lot.costs?.commissionRate || 0,
               has_commission: lot.hasCommission,
-              totalKgSold: currentSold + sellQty, // Track total sold
-              sell_qty: sellQty, // Quantity for this sale
+              totalKgSold: currentSold + sellQty,
+              sell_qty: sellQty,
               purchase_date: lot.purchase_date,
               status: lot.status,
               carat_type_1: lot.carat?.carat_Type_1 || 0,
-              carat_type_2: lot.carat?.carat_Type_2 || 0
+              carat_type_2: lot.carat?.carat_Type_2 || 0,
+              remaining_crate_Type_1: lot?.carat?.remaining_crate_Type_1,
+              remaining_crate_Type_2: lot?.carat?.remaining_crate_Type_2,
+              remaining_boxes: lot?.remaining_boxes
             },
 
             // kg: sellQty, // Auto-fill kg field

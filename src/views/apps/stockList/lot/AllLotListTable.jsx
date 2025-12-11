@@ -58,6 +58,8 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 }
 
 const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, onPageSizeChange }) => {
+  // console.log('lot data', lotData)
+
   const [data, setData] = useState([])
   const [globalFilter, setGlobalFilter] = useState('')
 
@@ -156,6 +158,26 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
         return carat1 + carat2
       }
     },
+
+    {
+      accessorKey: 'carat.remaining_crate_Type_1',
+      header: 'Remaining Crate 1',
+      cell: ({ row }) => {
+        const remainingCrate1 = row.original.carat?.remaining_crate_Type_1 || 0
+
+        return remainingCrate1 > 0 ? remainingCrate1 : '—'
+      }
+    },
+
+    {
+      accessorKey: 'carat.remaining_crate_Type_2',
+      header: 'Remaining Crate 2',
+      cell: ({ row }) => {
+        const remainingCrate2 = row.original.carat?.remaining_crate_Type_2 || 0
+
+        return remainingCrate2 > 0 ? remainingCrate2 : '—'
+      }
+    },
     {
       accessorKey: 'box_quantity',
       header: 'Total Boxes',
@@ -163,6 +185,15 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
         const boxQty = row.original.box_quantity || 0
 
         return boxQty > 0 ? boxQty : '—'
+      }
+    },
+    {
+      accessorKey: 'remaining_boxes',
+      header: 'Remaining Boxes',
+      cell: ({ row }) => {
+        const remainingBoxes = row.original.remaining_boxes || 0
+
+        return remainingBoxes > 0 ? remainingBoxes : '—'
       }
     },
     {
