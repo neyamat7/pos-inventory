@@ -22,6 +22,9 @@ const userSchema = new Schema({
   role: {
     type: String,
     required: true
+  },
+  salary: {
+    type: Number,
   }
 })
 

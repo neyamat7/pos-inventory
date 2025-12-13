@@ -26,6 +26,7 @@ import Signout from '@/components/Signout/Signout'
 
 // Hook Imports
 import { useSettings } from '@core/hooks/useSettings'
+import { getImageUrl } from '@/utils/getImageUrl'
 
 // Styled component for badge content
 const BadgeContentSpan = styled('span')({
@@ -46,7 +47,7 @@ const UserDropdown = () => {
   const { data: session, status } = useSession()
 
   if (status !== 'loading') {
-    // console.log(session)
+    console.log('session got in dropdown', session)
   }
 
   // console.log('session got in dropdown', session, status)
@@ -88,7 +89,7 @@ const UserDropdown = () => {
         <Avatar
           ref={anchorRef}
           alt='John Doe'
-          src={session?.user?.image}
+          src={getImageUrl(session?.user?.image)}
           onClick={handleDropdownOpen}
           className='cursor-pointer bs-[38px] is-[38px]'
         />
@@ -112,7 +113,8 @@ const UserDropdown = () => {
               <ClickAwayListener onClickAway={e => handleDropdownClose(e)}>
                 <MenuList>
                   <div className='flex items-center plb-2 pli-6 gap-2' tabIndex={-1}>
-                    <Avatar alt={session?.user?.name} src={session?.user?.image} />
+                    <Avatar alt={session?.user?.name} src={getImageUrl(session?.user?.image)} />
+                  
                     <div className='flex items-start flex-col'>
                       <Typography className='font-medium' color='text.primary'>
                         {session?.user?.name}
@@ -121,22 +123,14 @@ const UserDropdown = () => {
                     </div>
                   </div>
                   <Divider className='mlb-1' />
-                  <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
+                  <MenuItem
+                    className='mli-2 gap-3'
+                    onClick={e => handleDropdownClose(e, `/apps/profile/${session?.user?.id}`)}
+                  >
                     <i className='tabler-user' />
                     <Typography color='text.primary'>My Profile</Typography>
                   </MenuItem>
-                  <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
-                    <i className='tabler-settings' />
-                    <Typography color='text.primary'>Settings</Typography>
-                  </MenuItem>
-                  <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
-                    <i className='tabler-currency-dollar' />
-                    <Typography color='text.primary'>Pricing</Typography>
-                  </MenuItem>
-                  <MenuItem className='mli-2 gap-3' onClick={e => handleDropdownClose(e)}>
-                    <i className='tabler-help-circle' />
-                    <Typography color='text.primary'>FAQ</Typography>
-                  </MenuItem>
+
                   <div className='flex items-center plb-2 pli-3'>
                     {/* <Button
                       fullWidth

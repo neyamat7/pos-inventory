@@ -29,7 +29,8 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
     name: '',
     role: '',
     phone: '',
-    email: ''
+    email: '',
+    salary: ''
   })
 
   const [loading, setLoading] = useState(false)
@@ -41,7 +42,8 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
         name: user.name || '',
         role: user.role || '',
         phone: user.phone || '',
-        email: user.email || ''
+        email: user.email || '',
+        salary: user.salary || ''
       })
     }
 
@@ -71,7 +73,8 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
           name: form.name.trim(),
           email: form.email.trim(),
           phone: form.phone.trim(),
-          role: form.role
+          role: form.role,
+          salary: form.salary
         })
       })
 
@@ -84,7 +87,8 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
           name: form.name,
           email: form.email,
           phone: form.phone,
-          role: form.role
+          role: form.role,
+          salary: form.salary
         }
 
         setData(prev => prev.map(u => (u._id === user._id ? updatedUser : u)))
@@ -171,6 +175,18 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
               fullWidth
               value={form.email}
               onChange={handleChange('email')}
+              disabled={loading}
+              required
+            />
+          </Grid>
+
+          <Grid size={12}>
+            <TextField
+              label='Salary'
+              type='number'
+              fullWidth
+              value={form.salary}
+              onChange={handleChange('salary')}
               disabled={loading}
               required
             />

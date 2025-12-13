@@ -2,6 +2,7 @@
 
 // React Imports
 import { useEffect, useState, useMemo } from 'react'
+import Link from 'next/link'
 
 // MUI Imports
 import Card from '@mui/material/Card'
@@ -118,9 +119,11 @@ const UserListTable = ({ userData, paginationData, loading, onPageChange, onPage
                 // onError={e => (e.target.src = '/images/default-avatar.png')}
               />
               <div className='flex flex-col'>
-                <Typography color='text.primary' className='font-medium'>
-                  {row.original.name}
-                </Typography>
+                <Link href={`/apps/profile/${row.original._id}`} className='no-underline'>
+                  <Typography color='text.primary' className='font-medium hover:text-primary'>
+                    {row.original.name}
+                  </Typography>
+                </Link>
                 <Typography variant='body2'>{row.original.email}</Typography>
               </div>
             </div>

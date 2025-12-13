@@ -12,7 +12,7 @@ import Alert from '@mui/material/Alert'
 import CircularProgress from '@mui/material/CircularProgress'
 import Box from '@mui/material/Box'
 
-// Third-party Imports
+// Third-party Imports 
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import { useForm, Controller } from 'react-hook-form'
 
@@ -24,6 +24,7 @@ import CustomTextField from '@core/components/mui/TextField'
 // Action Imports
 import { createExpense } from '@/actions/expenseActions'
 import { getAccounts } from '@/actions/accountActions'
+import { showSuccess } from '@/utils/toastUtils'
 
 const AddExpenseDrawer = props => {
   // Props
@@ -55,7 +56,7 @@ const AddExpenseDrawer = props => {
       payment_type: '',
       reference_num: '',
       choose_account: '',
-      user: ''
+      employeeId: ''
     }
   })
 
@@ -99,7 +100,7 @@ const AddExpenseDrawer = props => {
         reference_num: data.reference_num?.trim() || '',
         choose_account: data.choose_account,
         expense_by: currentUserId,
-        user: data.user
+        employeeId: data.employeeId
       }
 
       const result = await createExpense(expensePayload)
@@ -121,7 +122,7 @@ const AddExpenseDrawer = props => {
         handleClose()
 
         // Show success message
-        // console.log('Expense created successfully')
+        showSuccess('Expense created successfully')
       } else {
         setError(result.error || 'Failed to create expense')
       }
@@ -263,19 +264,19 @@ const AddExpenseDrawer = props => {
               )}
             />
 
-            {/* select user */}
+            {/* select employee */}
             <Controller
-              name='user'
+              name='employeeId'
               control={control}
-              rules={{ required: 'User is required' }}
+              rules={{ required: 'Employee is required' }}
               render={({ field }) => (
                 <CustomTextField
                   select
                   fullWidth
-                  label='User'
+                  label='Expense for Employee'
                   {...field}
-                  error={!!errors.user}
-                  helperText={errors.user?.message}
+                  error={!!errors.employeeId}
+                  helperText={errors.employeeId?.message}
                   disabled={loading}
                 >
                   {usersList && usersList.length > 0 ? (
@@ -286,7 +287,7 @@ const AddExpenseDrawer = props => {
                     ))
                   ) : (
                     <MenuItem value='' disabled>
-                      No users available
+                      No Employee available
                     </MenuItem>
                   )}
                 </CustomTextField>

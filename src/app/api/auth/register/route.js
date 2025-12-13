@@ -7,7 +7,7 @@ import { connectToMongoDB } from '@/libs/mongo'
 
 export async function POST(request) {
   try {
-    const { name, email, phone, password, imageUrl = '', role } = await request.json()
+    const { name, email, phone, password, imageUrl = '', role, salary } = await request.json()
 
     // console.log('Received data:', { name, email, role, phone })
 
@@ -42,7 +42,8 @@ export async function POST(request) {
       phone,
       password: hashedPassword,
       image: imageUrl || null,
-      role
+      role,
+      salary
     }
 
     // console.log('User data to save:', userData)
@@ -71,7 +72,7 @@ export async function POST(request) {
 
 export async function PUT(request) {
   try {
-    const { id, name, email, phone, imageUrl, role } = await request.json()
+    const { id, name, email, phone, imageUrl, role, salary } = await request.json()
 
     // console.log('Received updated data', name, email, phone, role)
 
@@ -111,6 +112,7 @@ export async function PUT(request) {
         email,
         phone,
         role,
+        salary,
         image: imageUrl || null
       },
       { new: true, runValidators: true }

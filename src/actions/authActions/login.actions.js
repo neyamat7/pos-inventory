@@ -54,10 +54,15 @@ export async function getAllUsers({ page = 1, limit = 10 } = {}) {
 
 // get a user by id
 export async function getUserById(userId) {
+  // console.log('getUserById called with userId:', userId)
   try {
     const data = await api.get(`/users/${userId}`)
+    console.log('getUserById API response:', data)
 
-    return data.user || null
+    if (data.user) return data.user
+    if (data._id) return data
+    
+    return null
   } catch (error) {
     console.error('Error fetching user:', error)
 
@@ -68,7 +73,7 @@ export async function getUserById(userId) {
 // get expenses by user
 export async function getExpensesByUser(userId, { page = 1, limit = 10 } = {}) {
   try {
-    const data = await api.get(`/expenses/by-user?userId=${userId}&page=${page}&limit=${limit}`)
+    const data = await api.get(`/expenses/employee/${userId}?page=${page}&limit=${limit}`)
 
     return {
       total: data.total || 0,

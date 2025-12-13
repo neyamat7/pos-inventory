@@ -63,7 +63,7 @@ const ExpenseListTable = ({
   const [data, setData] = useState([])
   const [globalFilter, setGlobalFilter] = useState('')
 
-  console.log('user list', usersList)
+  // console.log('expense data', expenseData)
 
   useEffect(() => {
     if (expenseData) {
@@ -80,14 +80,14 @@ const ExpenseListTable = ({
 
   const handleDateChange = e => {
     const dateValue = e.target.value
-    const isoDate = dateValue ? new Date(dateValue).toISOString() : ''
-
-    onFilterChange('date', isoDate)
+    // Send just the date part (YYYY-MM-DD) which matches the database format
+    onFilterChange('date', dateValue)
   }
 
   const formatDateForInput = isoDate => {
     if (!isoDate) return ''
     const date = new Date(isoDate)
+
 
     return date.toISOString().split('T')[0]
   }
@@ -133,6 +133,11 @@ const ExpenseListTable = ({
       },
       { accessorKey: 'expense_for', header: 'Expense For' },
       {
+        id: 'employee',
+        header: 'Employee',
+        cell: ({ row }) => <Typography>{row.original.employeeId?.name || 'N/A'}</Typography>
+      },
+      {
         accessorKey: 'payment_type',
         header: 'Payment Type',
         cell: ({ row }) => <Typography className='capitalize'>{row.original.payment_type}</Typography>
@@ -163,7 +168,7 @@ const ExpenseListTable = ({
         enableSorting: false
       }
     ],
-    []
+    [usersList]
   )
 
   const table = useReactTable({
@@ -205,7 +210,7 @@ const ExpenseListTable = ({
             <div className='flex flex-wrap items-center gap-4 flex-1'>
               {/* Search Input - NO DEBOUNCE HERE, handled in parent */}
               <CustomTextField
-                label='Search By Name'
+                label='Search By Reference'
                 value={filters.search}
                 onChange={handleSearchChange}
                 placeholder='Search expenses...'
@@ -228,7 +233,7 @@ const ExpenseListTable = ({
                 >
                   <MenuItem value=''>All Categories</MenuItem>
                   {expenseCategories.map(category => (
-                    <MenuItem key={category._id} value={category._id}>
+                    <MenuItem key={category._id} value={category.name}>
                       {category.name}
                     </MenuItem>
                   ))}

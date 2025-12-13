@@ -25,9 +25,19 @@ export async function createExpense(expenseData) {
   }
 }
 
-export async function getAllExpenses({ page = 1, limit = 10 } = {}) {
+export async function getAllExpenses({ page = 1, limit = 10, category, employeeId, date, search } = {}) {
   try {
-    const data = await api.get(`/expenses/all?page=${page}&limit=${limit}`)
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    })
+
+    if (category) params.append('category', category)
+    if (employeeId) params.append('employeeId', employeeId)
+    if (date) params.append('date', date)
+    if (search) params.append('search', search)
+
+    const data = await api.get(`/expenses/all?${params.toString()}`)
 
     // Return the full pagination info
     return {

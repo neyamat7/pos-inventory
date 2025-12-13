@@ -26,18 +26,21 @@ import { rankItem } from '@tanstack/match-sorter-utils'
 import classnames from 'classnames'
 
 import tableStyles from '@core/styles/table.module.css'
-import { getExpensesByUser } from '@/actions/authActions'
+import { getExpensesByUser } from '@/actions/authActions/login.actions'
+import { getImageUrl } from '@/utils/getImageUrl'
 
 const Profile = ({ user: initialUser, userId }) => {
   // Use dummy data if no real user data
-  const user = initialUser || {
-    _id: '69005fda43160b954fe0efb8',
-    name: 'Thor Fitzpatrick',
-    email: 'admin@gmail.com',
-    phone: '+1 (349) 562-1014',
-    salary: 25000,
-    role: 'admin',
-    image: null
+  const user = initialUser
+
+  if (!user) {
+    return (
+      <div className='flex items-center justify-center p-10'>
+        <Typography variant='h5' color='textSecondary'>
+          User not found
+        </Typography>
+      </div>
+    )
   }
 
   const [expenses, setExpenses] = useState([])
@@ -65,36 +68,8 @@ const Profile = ({ user: initialUser, userId }) => {
 
       // Use dummy data if no real data
       if (data.expenses.length === 0) {
-        setExpenses([
-          {
-            _id: '1',
-            date: '2024-01-15T00:00:00.000Z',
-            amount: user.salary,
-            expense_category: 'Salary',
-            expense_for: 'Monthly Salary Payment',
-            payment_type: 'bank transfer',
-            reference_num: 'SAL-2024-001'
-          },
-          {
-            _id: '2',
-            date: '2024-02-15T00:00:00.000Z',
-            amount: user.salary,
-            expense_category: 'Salary',
-            expense_for: 'Monthly Salary Payment',
-            payment_type: 'bank transfer',
-            reference_num: 'SAL-2024-002'
-          },
-          {
-            _id: '3',
-            date: '2024-03-15T00:00:00.000Z',
-            amount: user.salary,
-            expense_category: 'Salary',
-            expense_for: 'Monthly Salary Payment',
-            payment_type: 'bank transfer',
-            reference_num: 'SAL-2024-003'
-          }
-        ])
-        setPagination(prev => ({ ...prev, total: 3, totalPages: 1 }))
+        setExpenses([])
+        setPagination(prev => ({ ...prev, total: 0, totalPages: 1 }))
       } else {
         setExpenses(data.expenses)
         setPagination(prev => ({
@@ -220,7 +195,7 @@ const Profile = ({ user: initialUser, userId }) => {
         <CardContent>
           <Grid container spacing={4} alignItems='center'>
             <Grid item>
-              <Avatar src={user.image} alt={user.name} sx={{ width: 120, height: 120, fontSize: '3rem' }}>
+              <Avatar src={getImageUrl(user.image)} alt={user.name} sx={{ width: 120, height: 120, fontSize: '3rem' }}>
                 {user.name?.charAt(0).toUpperCase()}
               </Avatar>
             </Grid>

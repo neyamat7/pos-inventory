@@ -45,7 +45,13 @@ export const {
             const isMatch = await bcrypt.compare(credentials.password, user.password)
 
             if (isMatch) {
-              return { id: user._id.toString(), email: user.email }
+              return {
+                id: user._id.toString(),
+                email: user.email,
+                name: user.name,
+                image: user.image,
+                role: user.role
+              }
             } else {
               throw new Error('Invalid credentials')
             }
@@ -71,6 +77,9 @@ export const {
       if (user) {
         token.id = user.id
         token.email = user.email
+        token.name = user.name
+        token.image = user.image
+        token.role = user.role
       }
 
       return token
@@ -83,7 +92,10 @@ export const {
       if (token) {
         session.user = {
           id: token.id,
-          email: token.email
+          email: token.email,
+          name: token.name,
+          image: token.image,
+          role: token.role
         }
         session.accessToken = jwt.sign({ id: token.id, email: token.email }, process.env.AUTH_SECRET, {
           expiresIn: '7d'

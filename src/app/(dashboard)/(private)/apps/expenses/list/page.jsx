@@ -64,8 +64,8 @@ const ExpensesList = () => {
         const result = await getAllExpenses({
           page: currentPage,
           limit: pageSize,
-          category_id: debouncedFilters.category_id || null,
-          user_id: debouncedFilters.user_id || null,
+          category: debouncedFilters.category_id || null,
+          employeeId: debouncedFilters.user_id || null,
           date: debouncedFilters.date || null,
           search: debouncedFilters.search || ''
         })
