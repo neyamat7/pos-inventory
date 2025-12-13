@@ -152,3 +152,24 @@ export async function deleteExpenseCategory(id) {
     }
   }
 }
+
+export async function addExtraExpense(id, data) {
+  try {
+    const response = await api.patch(`/expenses/add-extra-expense/${id}`, data)
+
+    return {
+      success: true,
+      data: response,
+      message: 'Extra expense added successfully'
+    }
+  } catch (error) {
+    console.error('Add extra expense error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to add extra expense'
+    }
+  }
+}
+
+

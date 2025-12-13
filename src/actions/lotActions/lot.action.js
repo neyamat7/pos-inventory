@@ -133,3 +133,22 @@ export async function getLotSaleSummary(lotId) {
     }
   }
 }
+
+export async function updateLotExtraExpense(lotId, data) {
+  try {
+    const response = await api.patch(`/inventoryLots/${lotId}/extra-expense`, data)
+
+    return {
+      success: true,
+      data: response.data,
+      message: 'Extra expense updated successfully'
+    }
+  } catch (error) {
+    console.error('Update extra expense error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to update extra expense'
+    }
+  }
+}

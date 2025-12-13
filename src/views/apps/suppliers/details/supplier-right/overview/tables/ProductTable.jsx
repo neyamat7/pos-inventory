@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 import {
   useReactTable,
@@ -35,11 +36,13 @@ import PaymentModal from './PaymentModal'
 import { getLotSaleSummary, getUnpaidStockOutLots } from '@/actions/lotActions'
 import OptionMenu from '@/@core/components/option-menu'
 import LotInvoicePrintHandler from '@/components/LotSaleInvoice/LotInvoicePrintHandler'
-import { showSuccess } from '@/utils/toastUtils'
+import { showSuccess, showError } from '@/utils/toastUtils'
+import { updateLotExtraExpense } from '@/actions/lotActions'
 
 const columnHelper = createColumnHelper()
 
 const ProductTable = ({ data, pagination, total, onPaginationChange, loading, supplierData }) => {
+  const router = useRouter()
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
   const [unpaidLotsData, setUnpaidLotsData] = useState([])
 
@@ -304,7 +307,12 @@ const ProductTable = ({ data, pagination, total, onPaginationChange, loading, su
         supplierId={supplierData?._id}
       />
 
-      <AddExpenseModal open={expenseModalOpen} onClose={() => setExpenseModalOpen(false)} lot={selectedLot} />
+      <AddExpenseModal
+        open={expenseModalOpen}
+        onClose={() => setExpenseModalOpen(false)}
+        lot={selectedLot}
+        onSuccess={() => router.refresh()}
+      />
 
       <LotDetailsModal
         open={detailsModalOpen}
@@ -328,20 +336,39 @@ const ProductTable = ({ data, pagination, total, onPaginationChange, loading, su
 export default ProductTable
 
 // Optional: Update AddExpenseModal to show lot information
-const AddExpenseModal = ({ open, onClose, lot }) => {
+const AddExpenseModal = ({ open, onClose, lot, onSuccess }) => {
   const [expenseAmount, setExpenseAmount] = useState('')
   const [expenseReason, setExpenseReason] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = () => {
-    console.log('Submitting expense for lot:', lot?._id)
-    console.log('Lot name:', lot?.lot_name)
-    console.log('Expense amount:', expenseAmount)
-    console.log('Expense reason:', expenseReason)
+  const handleSubmit = async () => {
+    if (!expenseAmount || !expenseReason) {
+      showError('Please fill in all fields')
+      return
+    }
 
-    // Reset and close
-    setExpenseAmount('')
-    setExpenseReason('')
-    onClose()
+    setLoading(true)
+    try {
+      const result = await updateLotExtraExpense(lot?._id, {
+        extra_expense: expenseAmount,
+        extra_expense_note: expenseReason
+      })
+
+      if (result.success) {
+        showSuccess('Extra expense added successfully')
+        setExpenseAmount('')
+        setExpenseReason('')
+        onClose()
+        if (onSuccess) onSuccess()
+      } else {
+        showError(result.error || 'Failed to add extra expense')
+      }
+    } catch (error) {
+      console.error('Error adding extra expense:', error)
+      showError('An error occurred while adding extra expense')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleClose = () => {
@@ -377,9 +404,11 @@ const AddExpenseModal = ({ open, onClose, lot }) => {
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant='contained' color='primary'>
-          Add Expense
+        <Button onClick={handleClose} disabled={loading}>
+          Cancel
+        </Button>
+        <Button onClick={handleSubmit} variant='contained' color='primary' disabled={loading}>
+          {loading ? <CircularProgress size={24} /> : 'Add Expense'}
         </Button>
       </DialogActions>
     </Dialog>
@@ -387,13 +416,10 @@ const AddExpenseModal = ({ open, onClose, lot }) => {
 }
 
 const LotDetailsModal = ({ open, onClose, lot, lotSaleData, loadingSaleData, onPrint }) => {
-  // Dummy data for extra expenses (will be replaced with real data later)
-  const extraExpenses = [
-    { id: 1, amount: 500, reason: 'Transportation extra charge', date: '2025-11-30' },
-    { id: 2, amount: 300, reason: 'Labor overtime', date: '2025-12-01' }
-  ]
-
-  const totalExtraExpense = extraExpenses.reduce((sum, expense) => sum + expense.amount, 0)
+  // Use real data from lot
+  const extraExpenseAmount = lot?.expenses?.extra_expense || 0
+  const extraExpenseNote = lot?.expenses?.extra_expense_note || ''
+  const extraExpenseDate = lot?.updatedAt || new Date()
 
   return (
     <Dialog
@@ -638,9 +664,8 @@ const LotDetailsModal = ({ open, onClose, lot, lotSaleData, loadingSaleData, onP
 
           {/* Extra Expenses List */}
           <Box sx={{ mb: 2 }}>
-            {extraExpenses.map(expense => (
+            {extraExpenseAmount > 0 ? (
               <Paper
-                key={expense.id}
                 elevation={1}
                 sx={{
                   p: 2,
@@ -655,7 +680,7 @@ const LotDetailsModal = ({ open, onClose, lot, lotSaleData, loadingSaleData, onP
                       Amount
                     </Typography>
                     <Typography variant='body1' fontWeight='600' color='error.main'>
-                      ${expense.amount.toLocaleString()}
+                      ${extraExpenseAmount.toLocaleString()}
                     </Typography>
                   </Grid>
                   <Grid size={{ xs: 8, sm: 6 }}>
@@ -663,7 +688,7 @@ const LotDetailsModal = ({ open, onClose, lot, lotSaleData, loadingSaleData, onP
                       Reason
                     </Typography>
                     <Typography variant='body1' fontWeight='600'>
-                      {expense.reason}
+                      {extraExpenseNote || 'N/A'}
                     </Typography>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 4 }}>
@@ -671,12 +696,16 @@ const LotDetailsModal = ({ open, onClose, lot, lotSaleData, loadingSaleData, onP
                       Date
                     </Typography>
                     <Typography variant='body1' fontWeight='600'>
-                      {new Date(expense.date).toLocaleDateString()}
+                      {new Date(extraExpenseDate).toLocaleDateString()}
                     </Typography>
                   </Grid>
                 </Grid>
               </Paper>
-            ))}
+            ) : (
+              <Typography variant='body2' color='text.secondary' align='center'>
+                No extra expenses recorded
+              </Typography>
+            )}
           </Box>
         </Paper>
 
