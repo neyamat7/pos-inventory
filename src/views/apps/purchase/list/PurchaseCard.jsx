@@ -36,40 +36,45 @@ const PurchaseCard = ({ purchaseData = [] }) => {
     {
       value: totalPurchaseCount,
       title: 'Total Purchases',
-      icon: 'tabler-shopping-cart'
+      icon: 'tabler-shopping-cart',
+      color: 'primary'
     },
     {
       value: totalSuppliersCount,
       title: 'Total Suppliers',
-      icon: 'tabler-users'
+      icon: 'tabler-users',
+      color: 'success'
     },
     {
       value: totalLotsCount,
       title: 'Total Lots',
-      icon: 'tabler-layers-linked'
+      icon: 'tabler-layers-linked',
+      color: 'warning'
     }
   ]
 
   return (
-    <Card>
-      <CardContent>
-        <Grid container spacing={6}>
-          {stats.map((item, index) => (
-            <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
-              <div className='flex justify-between gap-4'>
-                <div className='flex flex-col items-start'>
-                  <Typography variant='h4'>{item.value.toLocaleString()}</Typography>
-                  <Typography>{item.title}</Typography>
-                </div>
-                <CustomAvatar variant='rounded' size={48} skin='light'>
-                  <i className={`${item.icon} text-[28px]`} />
-                </CustomAvatar>
+    <Grid container spacing={6}>
+      {stats.map((item, index) => (
+        <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
+          <Card sx={{ borderBottom: 4, borderColor: `${item.color}.main` }}>
+            <CardContent className='flex justify-between gap-4'>
+              <div className='flex flex-col items-start'>
+                <Typography variant='h4' color={`${item.color}.main`} sx={{ fontWeight: 700 }}>
+                  {item.value.toLocaleString()}
+                </Typography>
+                <Typography variant='body2' color='text.secondary'>
+                  {item.title}
+                </Typography>
               </div>
-            </Grid>
-          ))}
+              <CustomAvatar variant='rounded' size={48} skin='light' color={item.color}>
+                <i className={`${item.icon} text-[28px]`} />
+              </CustomAvatar>
+            </CardContent>
+          </Card>
         </Grid>
-      </CardContent>
-    </Card>
+      ))}
+    </Grid>
   )
 }
 

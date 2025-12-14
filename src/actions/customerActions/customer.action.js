@@ -32,9 +32,9 @@ export async function createCustomer(customerData) {
   }
 }
 
-export async function getCustomers(page, limit) {
+export async function getCustomers(page, limit, search = '') {
   try {
-    const response = await api.get(`/customer/all?page=${page}&limit=${limit}`)
+    const response = await api.get(`/customer/all?page=${page}&limit=${limit}&search=${search}`)
 
     return {
       success: true,

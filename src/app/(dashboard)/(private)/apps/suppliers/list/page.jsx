@@ -12,29 +12,29 @@ const SupplierListTablePage = () => {
   const [paginationData, setPaginationData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true)
+  const fetchData = async () => {
+    setIsLoading(true)
 
-      try {
-        const result = await getSuppliers(currentPage, pageSize)
+    try {
+      const result = await getSuppliers(currentPage, pageSize)
 
-        if (result.success) {
-          setData(result.data.suppliers || [])
-          setPaginationData({
-            total: result.data.total,
-            totalPages: result.data.totalPages,
-            currentPage: result.data.page,
-            limit: result.data.limit
-          })
-        }
-      } catch (error) {
-        console.error('Error fetching suppliers:', error)
-      } finally {
-        setIsLoading(false)
+      if (result.success) {
+        setData(result.data.suppliers || [])
+        setPaginationData({
+          total: result.data.total,
+          totalPages: result.data.totalPages,
+          currentPage: result.data.page,
+          limit: result.data.limit
+        })
       }
+    } catch (error) {
+      console.error('Error fetching suppliers:', error)
+    } finally {
+      setIsLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchData()
   }, [currentPage, pageSize])
 
@@ -49,6 +49,7 @@ const SupplierListTablePage = () => {
       onPageChange={handlePageChange}
       onPageSizeChange={setPageSize}
       isLoading={isLoading}
+      refreshData={fetchData}
     />
   )
 }

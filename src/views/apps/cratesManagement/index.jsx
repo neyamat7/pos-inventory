@@ -31,6 +31,7 @@ import TablePaginationComponent from '@components/TablePaginationComponent'
 import tableStyles from '@core/styles/table.module.css'
 import { addCrates, addCratesForSupplier, updateCrates } from '@/actions/crateActions'
 import { showError, showSuccess } from '@/utils/toastUtils'
+import TableSkeleton from '@/components/TableSkeleton'
 
 const CrateManagementTable = ({
   supplierData,
@@ -750,28 +751,12 @@ const CrateManagementTable = ({
                 </tr>
               ))}
             </thead>
-
             <tbody>
               {(
                 activeTab === 'suppliers' ? loading : activeTab === 'customers' ? customerLoading : transactionsLoading
               ) ? (
-                <tr>
-                  <td
-                    colSpan={
-                      activeTab === 'suppliers'
-                        ? supplierColumns.length
-                        : activeTab === 'customers'
-                          ? customerColumns.length
-                          : transactionColumns.length
-                    }
-                    className='text-center py-8'
-                  >
-                    <div className='flex justify-center items-center'>
-                      <CircularProgress />
-                    </div>
-                  </td>
-                </tr>
-              ) : table.getRowModel().rows.length === 0 ? (
+                <TableSkeleton columns={table.getVisibleFlatColumns().length} />
+              ) : table.getFilteredRowModel().rows.length === 0 ? (
                 <tr>
                   <td
                     colSpan={activeTab === 'suppliers' ? supplierColumns.length : transactionColumns.length}

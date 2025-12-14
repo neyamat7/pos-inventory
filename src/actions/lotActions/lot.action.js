@@ -4,9 +4,9 @@ import { revalidatePath } from 'next/cache'
 
 import api from '@/libs/api'
 
-export async function getAllLots({ page = 1, limit = 10 } = {}) {
+export async function getAllLots({ page = 1, limit = 10, search = '' } = {}) {
   try {
-    const data = await api.get(`/inventoryLots/all?page=${page}&limit=${limit}`)
+    const data = await api.get(`/inventoryLots/all?page=${page}&limit=${limit}&search=${search}`)
 
     return {
       total: data.total || 0,

@@ -37,6 +37,7 @@ import TablePaginationComponent from '@components/TablePaginationComponent'
 import tableStyles from '@core/styles/table.module.css'
 import EditExpenseModal from './EditExpenseModal'
 import OptionMenu from '@/@core/components/option-menu'
+import TableSkeleton from '@/components/TableSkeleton'
 
 export const paymentStatus = {
   1: { text: 'Paid', color: 'success' },
@@ -55,7 +56,8 @@ const ExpenseListTable = ({
   usersList,
   filters,
   onFilterChange,
-  onClearFilters
+  onClearFilters,
+  refreshData
 }) => {
   const [editOpen, setEditOpen] = useState(null)
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
@@ -380,14 +382,7 @@ const ExpenseListTable = ({
 
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
-                    <div className='flex justify-center items-center p-8'>
-                      <i className='tabler-loader animate-spin text-2xl mr-3' />
-                      <Typography>Loading expenses...</Typography>
-                    </div>
-                  </td>
-                </tr>
+                <TableSkeleton columns={table.getVisibleFlatColumns().length} />
               ) : table.getFilteredRowModel().rows.length === 0 ? (
                 <tr>
                   <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
@@ -443,6 +438,7 @@ const ExpenseListTable = ({
         expenseData={data}
         expenseCategories={expenseCategories}
         usersList={usersList}
+        refreshData={refreshData}
       />
 
       {editOpen && (

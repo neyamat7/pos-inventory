@@ -34,6 +34,7 @@ import OptionMenu from '@/@core/components/option-menu'
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
 import { showAlert } from '@/utils/showAlert'
+import TableSkeleton from '@/components/TableSkeleton'
 
 import EditAccounts from './EditAccounts'
 import AddAccounts from './AddAccounts'
@@ -251,11 +252,7 @@ const AccountList = ({ accountsData = [], paginationData, onPageChange, onPageSi
 
             {loading ? (
               <tbody>
-                <tr>
-                  <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
-                    Loading...
-                  </td>
-                </tr>
+                <TableSkeleton columns={table.getVisibleFlatColumns().length} />
               </tbody>
             ) : data.length === 0 ? (
               <tbody>

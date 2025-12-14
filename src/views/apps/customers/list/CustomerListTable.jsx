@@ -37,7 +37,9 @@ import AddCustomerDrawer from './AddCustomerDrawer'
 import CustomAvatar from '@core/components/mui/Avatar'
 import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
+
 import OptionMenu from '@core/components/option-menu'
+import TableSkeleton from '@/components/TableSkeleton'
 
 // Util Imports
 import { getInitials } from '@/utils/getInitials'
@@ -76,7 +78,15 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 const columnHelper = createColumnHelper()
 
 // -------------------- component --------------------
-const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageSizeChange, isLoading = false }) => {
+const CustomerListTable = ({
+  customerData,
+  paginationData,
+  onPageChange,
+  onPageSizeChange,
+  isLoading = false,
+  onSearchChange,
+  refreshData
+}) => {
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
@@ -176,7 +186,7 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
                 <Typography
                   component={Link}
                   color='text.primary'
-                  href={`/apps/customers/details/${id || row.original.basic_info?.sl}`}
+                  href={`/apps/customers/details/${id}`}
                   className='font-medium hover:text-primary'
                 >
                   {name || 'No Name'}
@@ -231,26 +241,7 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
               iconButtonProps={{ size: 'medium' }}
               iconClassName='text-textSecondary'
               options={[
-                {
-                  text: 'Add Balance',
-                  icon: 'tabler-coin',
-                  menuItemProps: {
-                    onClick: () => {
-                      setSelectedCustomer(row.original)
-                      setBalanceForm({
-                        date: new Date().toISOString().split('T')[0],
-                        amount: '',
-                        transaction_Id: '',
-                        slip_img: null,
-                        note: '',
-                        payment_method: 'cash',
-                        balance_for: ''
-                      })
-                      setOpenBalanceModal(true)
-                    },
-                    className: 'flex items-center'
-                  }
-                },
+
                 {
                   text: 'Update Crate',
                   icon: 'tabler-box',
@@ -304,105 +295,10 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues()
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    getFacetedMinMaxValues: getFacetedMinMaxValues(),
+    manualGlobalFilter: true
   })
-
-  const handleBalanceSubmit = async () => {
-    // Validation
-    if (!balanceForm.amount || !balanceForm.transaction_Id || !balanceForm.payment_method) {
-      showInfo('Please fill in all required fields')
-
-      return
-    }
-
-    setIsAddingBalance(true)
-
-    try {
-      let slipImageUrl = balanceForm.slip_img
-
-      // ========== UPLOAD SLIP IMAGE IF FILE EXISTS ==========
-      if (balanceForm.slip_img && typeof balanceForm.slip_img !== 'string') {
-        const formData = new FormData()
-
-        formData.append('image', balanceForm.slip_img)
-
-        const uploadResult = await uploadImage(formData)
-
-        if (uploadResult.success) {
-          // Extract filename and construct proper URL
-          const imagePath = uploadResult.data?.filepath || uploadResult.data.imageUrl
-
-          slipImageUrl = imagePath
-        } else {
-          showError(`Slip image upload failed: ${uploadResult.error}`)
-          setIsAddingBalance(false)
-
-          return
-        }
-      }
-
-      // ========== PREPARE BALANCE DATA ==========
-      const balanceData = {
-        date: balanceForm.date,
-        amount: balanceForm.amount,
-        transaction_Id: balanceForm.transaction_Id,
-        note: balanceForm.note,
-        payment_method: balanceForm.payment_method,
-        balance_for: selectedCustomer._id,
-        role: 'customer', // Changed from 'supplier' to 'customer'
-        slip_img: slipImageUrl || null
-      }
-
-      // ========== CALL ADD BALANCE ACTION ==========
-      const result = await addBalance(balanceData)
-
-      if (result.success) {
-        // Update local state
-        setData(prev =>
-          prev.map(item => {
-            if (item._id === selectedCustomer._id) {
-              if (item.account_info) {
-                return {
-                  ...item,
-                  account_info: {
-                    ...item.account_info,
-                    balance: (item.account_info.balance || 0) + Number(balanceForm.amount)
-                  }
-                }
-              } else {
-                return {
-                  ...item,
-                  balance: (item.balance || 0) + Number(balanceForm.amount)
-                }
-              }
-            }
-
-            return item
-          })
-        )
-
-        showSuccess('Balance added successfully')
-
-        // Close modal and reset form
-        setOpenBalanceModal(false)
-        setBalanceForm({
-          date: new Date().toISOString().split('T')[0],
-          amount: '',
-          transaction_Id: '',
-          slip_img: null,
-          note: '',
-          payment_method: 'cash'
-        })
-      } else {
-        showError(result.error || 'Failed to add balance')
-      }
-    } catch (error) {
-      console.error('Error adding balance:', error)
-      showError('An unexpected error occurred')
-    } finally {
-      setIsAddingBalance(false)
-    }
-  }
 
   return (
     <>
@@ -410,7 +306,10 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
         <CardContent className='flex justify-between flex-wrap max-sm:flex-col sm:items-center gap-4'>
           <DebouncedInput
             value={globalFilter ?? ''}
-            onChange={value => setGlobalFilter(String(value))}
+            onChange={value => {
+              setGlobalFilter(String(value))
+              onSearchChange?.(String(value))
+            }}
             placeholder='Search name, phone, email'
             className='max-sm:is-full'
             disabled={isLoading}
@@ -480,16 +379,7 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
 
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td colSpan={table.getVisibleFlatColumns().length} className='text-center py-8'>
-                    <div className='flex flex-col items-center justify-center gap-2'>
-                      <i className='tabler-loader-2 animate-spin text-2xl text-primary' />
-                      <Typography variant='body2' className='text-textSecondary'>
-                        Loading customers...
-                      </Typography>
-                    </div>
-                  </td>
-                </tr>
+                <TableSkeleton columns={table.getVisibleFlatColumns().length} />
               ) : table.getFilteredRowModel().rows.length === 0 ? (
                 <tr>
                   <td colSpan={table.getVisibleFlatColumns().length} className='text-center py-8'>
@@ -540,184 +430,10 @@ const CustomerListTable = ({ customerData, paginationData, onPageChange, onPageS
         handleClose={() => setCustomerUserOpen(!customerUserOpen)}
         setData={setData}
         customerData={data}
+        refreshData={refreshData}
       />
 
-      {/* Add Balance Modal */}
-      {openBalanceModal && selectedCustomer && (
-        <div
-          className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4'
-          onClick={e => {
-            if (e.target === e.currentTarget) {
-              setOpenBalanceModal(false)
-            }
-          }}
-          style={{ backdropFilter: 'blur(4px)' }}
-        >
-          <div
-            className='w-full max-w-md bg-white text-gray-800 rounded-2xl shadow-2xl p-6 transition-all duration-300 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent'
-            onClick={e => e.stopPropagation()}
-          >
-            <Typography variant='h6' className='mb-4 font-semibold text-gray-900 text-center'>
-              Add Balance for <span className='text-primary'>{selectedCustomer.basic_info?.name}</span>
-            </Typography>
-
-            <Typography variant='body2' className='text-gray-600 mb-4 text-center'>
-              Fill in the transaction details below
-            </Typography>
-
-            {/* Date Input */}
-            <CustomTextField
-              fullWidth
-              label='Date'
-              type='date'
-              value={balanceForm.date}
-              onChange={e => setBalanceForm(prev => ({ ...prev, date: e.target.value }))}
-              InputLabelProps={{ shrink: true }}
-              InputProps={{
-                style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
-              }}
-              sx={{
-                '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
-                '& input': { color: '#111827' },
-                '& label': { color: '#6b7280' }
-              }}
-              className='mb-4'
-            />
-
-            {/* Amount Input */}
-            <CustomTextField
-              fullWidth
-              label='Amount (৳)'
-              type='number'
-              required
-              value={balanceForm.amount}
-              onChange={e => setBalanceForm(prev => ({ ...prev, amount: e.target.value }))}
-              InputProps={{
-                style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
-              }}
-              sx={{
-                '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
-                '& input': { color: '#111827' },
-                '& label': { color: '#6b7280' }
-              }}
-              className='mb-4'
-            />
-
-            {/* Transaction ID */}
-            <CustomTextField
-              fullWidth
-              label='Transaction ID'
-              required
-              value={balanceForm.transaction_Id}
-              onChange={e => setBalanceForm(prev => ({ ...prev, transaction_Id: e.target.value }))}
-              InputProps={{
-                style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
-              }}
-              sx={{
-                '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
-                '& input': { color: '#111827' },
-                '& label': { color: '#6b7280' }
-              }}
-              className='mb-4'
-            />
-
-            {/* Payment Method */}
-            <div className='mb-4'>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>
-                Payment Method <span className='text-red-500'>*</span>
-              </label>
-              <select
-                value={balanceForm.payment_method}
-                onChange={e => setBalanceForm(prev => ({ ...prev, payment_method: e.target.value }))}
-                className='w-full px-4 py-2.5 bg-[#f9fafb] border border-gray-300 rounded-lg text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 hover:border-gray-400 cursor-pointer appearance-none'
-                required
-              >
-                <option value='cash'>Cash</option>
-                <option value='bank'>Bank</option>
-                <option value='MFS'>MFS (Mobile Financial Service)</option>
-              </select>
-            </div>
-
-            {/* Note Text Area */}
-            <CustomTextField
-              fullWidth
-              label='Note (Optional)'
-              multiline
-              minRows={3}
-              value={balanceForm.note}
-              onChange={e => setBalanceForm(prev => ({ ...prev, note: e.target.value }))}
-              placeholder='Additional notes...'
-              InputProps={{
-                style: { backgroundColor: '#f9fafb', borderRadius: '8px', color: '#111827' }
-              }}
-              sx={{
-                '& .MuiInputBase-root': { bgcolor: '#f9fafb', borderRadius: '8px' },
-                '& textarea': { color: '#111827' },
-                '& label': { color: '#6b7280' }
-              }}
-              className='mb-4'
-            />
-
-            {/* Upload Slip Image */}
-            <div className='flex flex-col gap-2 mb-4'>
-              <label className='text-sm font-medium text-gray-700'>Upload Payment Slip (Optional)</label>
-              <input
-                type='file'
-                accept='image/*'
-                onChange={e => {
-                  const file = e.target.files?.[0]
-
-                  if (file) {
-                    setBalanceForm(prev => ({ ...prev, slip_img: file }))
-                  }
-                }}
-                className='w-full rounded-lg border border-gray-300 p-2 text-sm bg-gray-50 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition'
-              />
-              {balanceForm.slip_img && (
-                <div className='mt-2 flex justify-center'>
-                  <img
-                    src={URL.createObjectURL(balanceForm.slip_img)}
-                    alt='Payment Slip Preview'
-                    className='max-h-40 rounded-lg shadow-md object-contain border border-gray-200'
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Buttons */}
-            <div className='flex justify-end gap-3 mt-6 max-sm:flex-col'>
-              <Button
-                variant='outlined'
-                onClick={() => {
-                  setOpenBalanceModal(false)
-                  setBalanceForm({
-                    date: new Date().toISOString().split('T')[0],
-                    amount: '',
-                    transaction_Id: '',
-                    slip_img: null,
-                    note: '',
-                    payment_method: 'cash'
-                  })
-                }}
-                className='px-4 py-2 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100 transition w-full sm:w-auto'
-              >
-                Cancel
-              </Button>
-
-              <Button
-                variant='contained'
-                color='primary'
-                className='px-5 py-2 rounded-lg shadow-md w-full sm:w-auto'
-                onClick={handleBalanceSubmit}
-                disabled={isAddingBalance}
-                startIcon={isAddingBalance ? <i className='tabler-loader-2 animate-spin' /> : null}
-              >
-                {isAddingBalance ? 'Saving...' : 'Save'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+    
 
       {/* Update Crate Modal */}
       {openCrateModal && selectedCustomer && (

@@ -34,6 +34,7 @@ import TablePaginationComponent from '@/components/TablePaginationComponent'
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
 import { getIncomePeriods } from '@/actions/incomeActions'
+import TableSkeleton from '@/components/TableSkeleton'
 
 const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...props }) => {
   const [value, setValue] = useState(initialValue)
@@ -210,16 +211,6 @@ export default function ShowIncomeTable({
               <MenuItem value='50'>50</MenuItem>
               <MenuItem value='100'>100</MenuItem>
             </CustomTextField>
-
-            <Button
-              variant='contained'
-              color='primary'
-              className='max-sm:is-full'
-              startIcon={<i className='tabler-plus' />}
-              onClick={() => setOpenModal(true)}
-            >
-              Add Income
-            </Button>
           </div>
         </CardContent>
         <div className='overflow-x-auto'>
@@ -240,11 +231,7 @@ export default function ShowIncomeTable({
 
             {loading ? (
               <tbody>
-                <tr>
-                  <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
-                    Loading...
-                  </td>
-                </tr>
+                <TableSkeleton columns={table.getVisibleFlatColumns().length} />
               </tbody>
             ) : filteredData.length === 0 ? (
               <tbody>

@@ -10,7 +10,7 @@ const SalesListPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [data, setData] = useState([])
   const [paginationData, setPaginationData] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
 
   useEffect(() => {

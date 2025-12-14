@@ -35,6 +35,7 @@ import TablePaginationComponent from '@components/TablePaginationComponent'
 import tableStyles from '@core/styles/table.module.css'
 import ViewPurchaseModal from './ViewPurchaseModal'
 import { createLots, updatePurchaseStatus } from '@/actions/purchaseActions'
+import TableSkeleton from '@/components/TableSkeleton'
 
 const statusOptions = ['on the way', 'received', 'canceled']
 
@@ -307,11 +308,7 @@ const PurchaseListTable = ({ purchaseData = [], paginationData, loading, onPageC
 
             {loading ? (
               <tbody>
-                <tr>
-                  <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
-                    Loading...
-                  </td>
-                </tr>
+                <TableSkeleton columns={table.getVisibleFlatColumns().length} />
               </tbody>
             ) : table.getFilteredRowModel().rows.length === 0 ? (
               <tbody>

@@ -13,7 +13,7 @@ const ExpensesList = () => {
   // Data state
   const [data, setData] = useState([])
   const [paginationData, setPaginationData] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [expenseCategories, setExpenseCategories] = useState([])
   const [usersList, setUsersList] = useState([])
 
@@ -27,6 +27,7 @@ const ExpensesList = () => {
 
   // Debounced filters - this is what triggers the API call
   const [debouncedFilters, setDebouncedFilters] = useState(filters)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   // Debounce timeout ref
   const debounceTimerRef = useRef(null)
@@ -87,7 +88,7 @@ const ExpensesList = () => {
     }
 
     fetchExpenses()
-  }, [debouncedFilters, currentPage, pageSize])
+  }, [debouncedFilters, currentPage, pageSize, refreshTrigger])
 
   // Fetch expense categories
   useEffect(() => {
@@ -170,6 +171,13 @@ const ExpensesList = () => {
       filters={filters}
       onFilterChange={handleFilterChange}
       onClearFilters={handleClearFilters}
+      refreshData={() => {
+        // Trigger a re-fetch by toggling a dummy state or calling the fetch function if exposed
+        // Since fetchExpenses is inside useEffect, we can't call it directly.
+        // But we can depend on a refresh trigger.
+        // Let's create a refresh trigger state.
+        setRefreshTrigger(prev => prev + 1)
+      }}
     />
   )
 }

@@ -23,7 +23,7 @@ import { showError } from '@/utils/toastUtils'
 // import { createSupplier } from '@/app/actions/supplier-actions'
 
 const AddSupplierDrawer = props => {
-  const { open, handleClose, setData, supplierData } = props
+  const { open, handleClose, setData, supplierData, refreshData } = props
 
   const [loading, setLoading] = useState(false)
 
@@ -133,16 +133,10 @@ const AddSupplierDrawer = props => {
 
       if (result.success) {
         // Update local state with new supplier data
-        const newSupplier = {
-          id: result.data._id || Date.now(),
-          basic_info: supplierPayload.basic_info,
-          contact_info: supplierPayload.contact_info,
-          account_info: supplierPayload.account_info,
-          crate_info: supplierPayload.crate_info,
-          createdAt: new Date().toISOString()
+        if (refreshData) {
+          refreshData()
         }
-
-        setData([newSupplier, ...(supplierData ?? [])])
+        
         reset()
         handleClose()
 

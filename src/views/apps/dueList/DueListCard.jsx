@@ -33,53 +33,31 @@ const DueListCard = ({ tableData, selectedType }) => {
     }
   ]
 
-  // Hooks
-  const isBelowMdScreen = useMediaQuery(theme => theme.breakpoints.down('md'))
-  const isBelowSmScreen = useMediaQuery(theme => theme.breakpoints.down('sm'))
-
   return (
-    <Card>
-      <CardContent>
-        <Grid container spacing={6}>
-          {data.map((item, index) => (
-            <Grid
-              size={{ xs: 12, sm: 6, md: 3 }}
-              key={index}
-              className={classnames({
-                '[&:nth-of-type(odd)>div]:pie-6 [&:nth-of-type(odd)>div]:border-ie':
-                  isBelowMdScreen && !isBelowSmScreen,
-                '[&:not(:last-child)>div]:pie-6 [&:not(:last-child)>div]:border-ie': !isBelowMdScreen
-              })}
-            >
-              <div className='flex justify-between gap-4'>
-                <div className='flex flex-col items-start'>
-                  <Typography variant='h4' color='primary'>
-                    ৳{totalDue.toLocaleString()}
-                  </Typography>
-                  <Typography color='text.primary' className='font-medium'>
-                    {item.title}
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    {tableData?.length || 0} {selectedType === 'suppliers' ? 'Suppliers' : 'Customers'}
-                  </Typography>
-                </div>
-                <CustomAvatar variant='rounded' size={42} skin='light' color={item.color}>
-                  <i className={classnames(item.icon, 'text-[26px]')} />
-                </CustomAvatar>
+    <Grid container spacing={6}>
+      {data.map((item, index) => (
+        <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
+          <Card sx={{ borderBottom: 4, borderColor: `${item.color}.main` }}>
+            <CardContent className='flex justify-between gap-4'>
+              <div className='flex flex-col items-start'>
+                <Typography variant='h4' color={`${item.color}.main`} sx={{ fontWeight: 700 }}>
+                  ৳{item.value.toLocaleString()}
+                </Typography>
+                <Typography variant='body2' color='text.secondary'>
+                  {item.title}
+                </Typography>
+                <Typography variant='caption' color='text.disabled'>
+                  {tableData?.length || 0} {selectedType === 'suppliers' ? 'Suppliers' : 'Customers'}
+                </Typography>
               </div>
-              {isBelowMdScreen && !isBelowSmScreen && index < data.length - 2 && (
-                <Divider
-                  className={classnames('mbs-6', {
-                    'mie-6': index % 2 === 0
-                  })}
-                />
-              )}
-              {isBelowSmScreen && index < data.length - 1 && <Divider className='mbs-6' />}
-            </Grid>
-          ))}
+              <CustomAvatar variant='rounded' size={48} skin='light' color={item.color}>
+                <i className={classnames(item.icon, 'text-[28px]')} />
+              </CustomAvatar>
+            </CardContent>
+          </Card>
         </Grid>
-      </CardContent>
-    </Card>
+      ))}
+    </Grid>
   )
 }
 

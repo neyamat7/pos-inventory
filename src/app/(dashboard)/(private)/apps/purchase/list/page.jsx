@@ -9,7 +9,7 @@ const PurchaseListPage = () => {
   const [pageSize, setPageSize] = useState(10)
   const [data, setData] = useState([])
   const [paginationData, setPaginationData] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {

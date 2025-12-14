@@ -38,6 +38,7 @@ import Swal from 'sweetalert2'
 
 import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
+import TableSkeleton from '@/components/TableSkeleton'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
@@ -500,13 +501,7 @@ const ExpenseCategoryTable = ({
 
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={table.getVisibleFlatColumns().length} className='text-center py-8'>
-                    <div className='flex justify-center items-center'>
-                      <CircularProgress />
-                    </div>
-                  </td>
-                </tr>
+                <TableSkeleton columns={table.getVisibleFlatColumns().length} />
               ) : table.getFilteredRowModel().rows.length === 0 ? (
                 <tr>
                   <td colSpan={table.getVisibleFlatColumns().length} className='text-center py-8'>

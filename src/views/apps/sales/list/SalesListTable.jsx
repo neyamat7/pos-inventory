@@ -28,6 +28,7 @@ import TablePaginationComponent from '@components/TablePaginationComponent'
 import tableStyles from '@core/styles/table.module.css'
 import SalesListInvoice from './SalesListInvoice'
 import { showError, showSuccess } from '@/utils/toastUtils'
+import TableSkeleton from '@/components/TableSkeleton'
 
 const SalesListTable = ({
   salesData,
@@ -273,13 +274,7 @@ const SalesListTable = ({
 
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={columns.length} className='text-center py-8'>
-                    <div className='flex justify-center items-center'>
-                      <CircularProgress />
-                    </div>
-                  </td>
-                </tr>
+                <TableSkeleton columns={columns.length} />
               ) : salesData.length === 0 ? (
                 <tr>
                   <td colSpan={columns.length} className='text-center'>

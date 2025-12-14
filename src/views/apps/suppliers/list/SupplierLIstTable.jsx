@@ -42,12 +42,14 @@ import { getInitials } from '@/utils/getInitials'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
+
 import AddSupplierDrawer from './AddSupplierDrawer'
 import OptionMenu from '@/@core/components/option-menu'
 import { addBalance, updateSupplier } from '@/actions/supplierAction'
 import { showError, showInfo, showSuccess } from '@/utils/toastUtils'
 import { uploadImage } from '@/actions/imageActions'
 import { getImageUrl } from '@/utils/getImageUrl'
+import TableSkeleton from '@/components/TableSkeleton'
 
 export const paymentStatus = {
   1: { text: 'Paid', color: 'success' },
@@ -102,7 +104,8 @@ const SupplierListTable = ({
   paginationData,
   onPageChange,
   onPageSizeChange,
-  isLoading = false
+  isLoading = false,
+  refreshData
 }) => {
   const getCrateSummary = crateInfo => {
     if (!crateInfo) return '—'
@@ -482,16 +485,7 @@ const SupplierListTable = ({
 
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td colSpan={table.getVisibleFlatColumns().length} className='text-center py-8'>
-                    <div className='flex flex-col items-center justify-center gap-2'>
-                      <i className='tabler-loader-2 animate-spin text-2xl text-primary' />
-                      <Typography variant='body2' className='text-textSecondary'>
-                        Loading suppliers...
-                      </Typography>
-                    </div>
-                  </td>
-                </tr>
+                <TableSkeleton columns={table.getVisibleFlatColumns().length} />
               ) : table.getFilteredRowModel().rows.length === 0 ? (
                 <tr>
                   <td colSpan={table.getVisibleFlatColumns().length} className='text-center py-8'>
@@ -540,6 +534,7 @@ const SupplierListTable = ({
         handleClose={() => setCustomerUserOpen(!customerUserOpen)}
         setData={setData}
         supplierData={data}
+        refreshData={refreshData}
       />
 
       {/* Add Balance Modal */}

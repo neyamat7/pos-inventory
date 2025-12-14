@@ -14,13 +14,14 @@ const ProductsList = () => {
   const [data, setData] = useState([])
   const [paginationData, setPaginationData] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
 
       try {
-        const result = await getAllProducts({ page: currentPage, limit: pageSize })
+        const result = await getAllProducts({ page: currentPage, limit: pageSize, search })
 
         setData(result.products || [])
         setPaginationData({
@@ -39,7 +40,7 @@ const ProductsList = () => {
     }
 
     fetchData()
-  }, [currentPage, pageSize])
+  }, [currentPage, pageSize, search])
 
   const handlePageChange = newPage => {
     setCurrentPage(newPage)
@@ -47,6 +48,11 @@ const ProductsList = () => {
 
   const handlePageSizeChange = newSize => {
     setPageSize(newSize)
+    setCurrentPage(1)
+  }
+
+  const handleSearchChange = value => {
+    setSearch(value)
     setCurrentPage(1)
   }
 
@@ -59,6 +65,7 @@ const ProductsList = () => {
           loading={loading}
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
+          onSearchChange={handleSearchChange}
         />
       </Grid>
     </Grid>

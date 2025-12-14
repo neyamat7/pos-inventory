@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 import DueList from '@/views/apps/dueList'
 import { getSupplierDueList } from '@/actions/supplierAction'
@@ -86,10 +86,10 @@ const DueListPage = () => {
   }
 
   // Handle search
-  const handleSearch = searchValue => {
+  const handleSearch = useCallback(searchValue => {
     setSearchTerm(searchValue)
     setCurrentPage(1) // Reset to first page
-  }
+  }, [])
 
   return (
     <DueList

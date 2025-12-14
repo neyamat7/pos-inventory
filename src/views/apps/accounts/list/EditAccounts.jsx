@@ -15,6 +15,7 @@ import CustomTextField from '@core/components/mui/TextField'
 
 // Action Imports
 import { updateAccount } from '@/actions/accountActions'
+import { showSuccess } from '@/utils/toastUtils'
 
 const EditAccounts = ({ open, handleClose, rowData, setData }) => {
   // States
@@ -40,7 +41,7 @@ const EditAccounts = ({ open, handleClose, rowData, setData }) => {
 
   // Handle form submission
   const onSubmit = async data => {
-    if (!rowData?.id) {
+    if (!rowData?._id) {
       setError('No account ID provided')
 
       return
@@ -59,7 +60,7 @@ const EditAccounts = ({ open, handleClose, rowData, setData }) => {
         account_details: data.account_details?.trim() || ''
       }
 
-      const result = await updateAccount(rowData.id, accountPayload)
+      const result = await updateAccount(rowData._id, accountPayload)
 
       if (result.success) {
         // Update local state with updated account data
@@ -69,9 +70,10 @@ const EditAccounts = ({ open, handleClose, rowData, setData }) => {
           balance: accountPayload.balance
         }
 
-        setData(prev => prev.map(item => (item.id === rowData.id ? updatedAccount : item)))
+        setData(prev => prev.map(item => (item._id === rowData._id ? updatedAccount : item)))
 
         handleClose()
+        showSuccess('Account updated successfully!')
         // console.log('Account updated successfully!', result.data)
       } else {
         setError(result.error || 'Failed to update account')

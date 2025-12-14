@@ -38,6 +38,7 @@ import tableStyles from '@core/styles/table.module.css'
 import { adjustStock, getLotSaleSummary, updateLotStatus } from '@/actions/lotActions'
 import { showSuccess, showError } from '@/utils/toastUtils'
 import LotInvoicePrintHandler from '@/components/LotSaleInvoice/LotInvoicePrintHandler'
+import TableSkeleton from '@/components/TableSkeleton'
 
 const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...props }) => {
   const [value, setValue] = useState(initialValue)
@@ -57,7 +58,14 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
   return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
 }
 
-const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, onPageSizeChange }) => {
+const AllLotListTable = ({
+  lotData = [],
+  paginationData,
+  loading,
+  onPageChange,
+  onPageSizeChange,
+  onSearchChange
+}) => {
   // console.log('lot data', lotData)
 
   const [data, setData] = useState([])
@@ -75,6 +83,14 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
   useEffect(() => {
     setData(lotData)
   }, [lotData])
+
+  // Handle search change
+  const handleSearch = value => {
+    setGlobalFilter(String(value))
+    if (onSearchChange) {
+      onSearchChange(String(value))
+    }
+  }
 
   const fetchLotSaleSummary = async lotId => {
     setLoadingSaleData(true)
@@ -730,7 +746,7 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
       <CardContent className='flex justify-between max-sm:flex-col sm:items-center gap-4'>
         <DebouncedInput
           value={globalFilter ?? ''}
-          onChange={value => setGlobalFilter(String(value))}
+          onChange={handleSearch}
           placeholder='Search Lot'
           className='sm:is-auto'
         />
@@ -779,14 +795,7 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
 
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
-                  <div className='flex items-center justify-center gap-2 p-4'>
-                    <CircularProgress size={20} />
-                    <span>Loading data...</span>
-                  </div>
-                </td>
-              </tr>
+              <TableSkeleton columns={table.getVisibleFlatColumns().length} />
             ) : data.length === 0 ? (
               <tr>
                 <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>

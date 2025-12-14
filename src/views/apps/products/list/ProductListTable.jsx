@@ -35,6 +35,7 @@ import TableFilters from './TableFilters'
 import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
 import ProductViewModal from './ProductViewModal'
+import TableSkeleton from '@/components/TableSkeleton'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
@@ -67,7 +68,7 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 
 const columnHelper = createColumnHelper()
 
-const ProductListTable = ({ productData, paginationData, loading, onPageChange, onPageSizeChange }) => {
+const ProductListTable = ({ productData, paginationData, loading, onPageChange, onPageSizeChange, onSearchChange }) => {
   const [rowSelection, setRowSelection] = useState({})
   const [data, setData] = useState([])
   const [filteredData, setFilteredData] = useState([])
@@ -208,7 +209,9 @@ const ProductListTable = ({ productData, paginationData, loading, onPageChange, 
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues()
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    getFacetedMinMaxValues: getFacetedMinMaxValues(),
+    manualGlobalFilter: true
   })
 
   return (
@@ -216,12 +219,15 @@ const ProductListTable = ({ productData, paginationData, loading, onPageChange, 
       <Card>
         <h1 className='text-3xl font-semibold mt-3 ml-4'>Product List</h1>
         <CardHeader title='Filters' />
-        <TableFilters setData={setFilteredData} productData={data} />
+        {/* <TableFilters setData={setFilteredData} productData={data} /> */}
         <Divider />
         <div className='flex flex-wrap justify-between gap-4 p-6'>
           <DebouncedInput
             value={globalFilter ?? ''}
-            onChange={value => setGlobalFilter(String(value))}
+            onChange={value => {
+              setGlobalFilter(String(value))
+              onSearchChange?.(String(value))
+            }}
             placeholder='Search Product'
             className='max-sm:is-full'
           />
@@ -277,11 +283,7 @@ const ProductListTable = ({ productData, paginationData, loading, onPageChange, 
             {
               <tbody>
                 {loading ? (
-                  <tr>
-                    <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
-                      Loading...
-                    </td>
-                  </tr>
+                  <TableSkeleton columns={table.getVisibleFlatColumns().length} />
                 ) : table.getFilteredRowModel().rows.length === 0 ? (
                   <tr>
                     <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>

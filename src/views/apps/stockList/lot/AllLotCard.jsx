@@ -35,73 +35,59 @@ const AllLotCard = ({ lotData = [], loading = false }) => {
     {
       value: totalLot,
       title: 'Total Lots',
-      icon: 'tabler-package'
+      icon: 'tabler-package',
+      color: 'primary'
     },
     {
       value: totalCarat,
       title: 'Total Carat',
-      icon: 'tabler-weight'
+      icon: 'tabler-weight',
+      color: 'info'
     },
     {
       value: totalSoldAmount,
       title: 'Total Sold Amount',
-      icon: 'tabler-currency-taka'
+      icon: 'tabler-currency-taka',
+      color: 'success'
     },
     {
       value: totalProfit,
       title: 'Total Profit',
-      icon: 'tabler-chart-line'
+      icon: 'tabler-chart-line',
+      color: 'warning'
     }
   ]
 
-  // Hooks
-  const isBelowMdScreen = useMediaQuery(theme => theme.breakpoints.down('md'))
-  const isBelowSmScreen = useMediaQuery(theme => theme.breakpoints.down('sm'))
-
   return (
-    <Card>
-      <CardContent>
-        <Grid container spacing={6}>
-          {data.map((item, index) => (
-            <Grid
-              size={{ xs: 12, sm: 6, md: 3 }}
-              key={index}
-              className={classnames({
-                '[&:nth-of-type(odd)>div]:pie-6 [&:nth-of-type(odd)>div]:border-ie':
-                  isBelowMdScreen && !isBelowSmScreen,
-                '[&:not(:last-child)>div]:pie-6 [&:not(:last-child)>div]:border-ie': !isBelowMdScreen
-              })}
-            >
-              <div className='flex gap-8'>
-                <div className='flex flex-col items-start'>
-                  {loading ? (
-                    <Skeleton variant='text' width={80} height={40} />
-                  ) : (
-                    <Typography variant='h4'>{item.value.toLocaleString()}</Typography>
-                  )}
-                  {loading ? (
-                    <Skeleton variant='text' width={120} height={24} />
-                  ) : (
-                    <Typography>{item.title}</Typography>
-                  )}
-                </div>
-                <CustomAvatar variant='rounded' size={42} skin='light'>
-                  <i className={classnames(item.icon, 'text-[26px]')} />
-                </CustomAvatar>
+    <Grid container spacing={6}>
+      {data.map((item, index) => (
+        <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
+          <Card sx={{ borderBottom: 4, borderColor: `${item.color}.main` }}>
+            <CardContent className='flex justify-between gap-4'>
+              <div className='flex flex-col items-start'>
+                {loading ? (
+                  <Skeleton variant='text' width={80} height={40} />
+                ) : (
+                  <Typography variant='h4' color={`${item.color}.main`} sx={{ fontWeight: 700 }}>
+                    {item.value.toLocaleString()}
+                  </Typography>
+                )}
+                {loading ? (
+                  <Skeleton variant='text' width={120} height={24} />
+                ) : (
+                  <Typography variant='body2' color='text.secondary'>
+                    {item.title}
+                  </Typography>
+                )}
               </div>
-              {isBelowMdScreen && !isBelowSmScreen && index < data.length - 2 && (
-                <Divider
-                  className={classnames('mbs-6', {
-                    'mie-6': index % 2 === 0
-                  })}
-                />
-              )}
-              {isBelowSmScreen && index < data.length - 1 && <Divider className='mbs-6' />}
-            </Grid>
-          ))}
+              <CustomAvatar variant='rounded' size={48} skin='light' color={item.color}>
+                <i className={classnames(item.icon, 'text-[28px]')} />
+              </CustomAvatar>
+            </CardContent>
+          </Card>
         </Grid>
-      </CardContent>
-    </Card>
+      ))}
+    </Grid>
   )
 }
 

@@ -9,6 +9,7 @@ import { Menu, MenuItem, SubMenu } from '@menu/vertical-menu'
 
 // Hook Imports
 import useVerticalNav from '@menu/hooks/useVerticalNav'
+import { useSession } from 'next-auth/react'
 
 // Styled Component Imports
 import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNavExpandIcon'
@@ -23,8 +24,12 @@ const RenderExpandIcon = ({ open, transitionDuration }) => (
   </StyledVerticalNavExpandIcon>
 )
 
+
+
 const VerticalMenu = ({ scrollMenu }) => {
   const id = undefined
+  const session = useSession()
+  const isAdmin = session?.data?.user?.role === 'admin'
 
   // Hooks
   const theme = useTheme()
@@ -58,9 +63,11 @@ const VerticalMenu = ({ scrollMenu }) => {
           Dashboard
         </MenuItem>
 
-        <MenuItem href='/apps/users' icon={<i className='tabler-users' />}>
-          Users
-        </MenuItem>
+        {isAdmin && (
+          <MenuItem href='/apps/users' icon={<i className='tabler-users' />}>
+            Users
+          </MenuItem>
+        )}
 
         <SubMenu label='Products' icon={<i className='tabler-box' />}>
           <MenuItem href='/apps/products/list'>All Products</MenuItem>
@@ -80,64 +87,64 @@ const VerticalMenu = ({ scrollMenu }) => {
           </MenuItem>
         </SubMenu>
 
-        <SubMenu label='Suppliers' icon={<i className='tabler-building-store' />}>
-          <MenuItem href='/apps/suppliers/list' icon={<i className='tabler-smart-home' />}>
-            All Suppliers
-          </MenuItem>
+          <SubMenu label='Suppliers' icon={<i className='tabler-building-store' />}>
+            <MenuItem href='/apps/suppliers/list' icon={<i className='tabler-smart-home' />}>
+              All Suppliers
+            </MenuItem>
 
-          <MenuItem
-            href={`/apps/suppliers/details/${id}`}
-            disabled={!id}
-            icon={<i className='tabler-smart-home' />}
-            exactMatch={false}
-            activeUrl='/apps/suppliers/details'
-          >
-            Details
-          </MenuItem>
-        </SubMenu>
+            <MenuItem
+              href={`/apps/suppliers/details/${id}`}
+              disabled={!id}
+              icon={<i className='tabler-smart-home' />}
+              exactMatch={false}
+              activeUrl='/apps/suppliers/details'
+            >
+              Details
+            </MenuItem>
+          </SubMenu>
 
         <MenuItem href='/apps/cratesMangement' icon={<i className='tabler-receipt' />}>
           Crates
         </MenuItem>
 
-        <SubMenu label='Purchase' icon={<i className='tabler-shopping-bag' />}>
-          <MenuItem href='/apps/purchase/add'>Add Purchase</MenuItem>
-          <MenuItem href='/apps/purchase/list'>Purchase List</MenuItem>
-        </SubMenu>
+          <SubMenu label='Purchase' icon={<i className='tabler-shopping-bag' />}>
+            <MenuItem href='/apps/purchase/add'>Add Purchase</MenuItem>
+            <MenuItem href='/apps/purchase/list'>Purchase List</MenuItem>
+          </SubMenu>
 
-        <MenuItem href='/apps/stockList/lot' icon={<i className='tabler-packages' />}>
-          Stock List
-        </MenuItem>
+          <MenuItem href='/apps/stockList/lot' icon={<i className='tabler-packages' />}>
+            Stock List
+          </MenuItem>
 
         <SubMenu label='Sales' icon={<i className='tabler-cash' />}>
           <MenuItem href='/apps/sales/pos'>POS</MenuItem>
           <MenuItem href='/apps/sales/list'>Sales List</MenuItem>
         </SubMenu>
 
-        <MenuItem href='/apps/dueList' icon={<i className='tabler-receipt' />}>
-          Due List
-        </MenuItem>
+          <MenuItem href='/apps/dueList' icon={<i className='tabler-receipt' />}>
+            Due List
+          </MenuItem>
 
         <SubMenu label='Expenses' icon={<i className='tabler-wallet' />}>
           <MenuItem href='/apps/expenses/list'>Expense List</MenuItem>
           <MenuItem href='/apps/expenses/category'>Expense Category</MenuItem>
         </SubMenu>
 
-        <MenuItem href='/apps/income' icon={<i className='tabler-currency-taka' />}>
-          Income
-        </MenuItem>
+            <MenuItem href='/apps/income' icon={<i className='tabler-currency-taka' />}>
+              Income
+            </MenuItem>
 
-        <MenuItem href='/apps/accounts/list' icon={<i className='tabler-credit-card' />}>
-          Accounts
-        </MenuItem>
+            <MenuItem href='/apps/accounts/list' icon={<i className='tabler-credit-card' />}>
+              Accounts
+            </MenuItem>
 
-        <MenuItem href='/apps/profitLoss' icon={<i className='tabler-credit-card' />}>
-          Profit & Loss
-        </MenuItem>
+            <MenuItem href='/apps/profitLoss' icon={<i className='tabler-credit-card' />}>
+              Profit & Loss
+            </MenuItem>
 
-        <MenuItem href='/apps/activityLog' icon={<i className='tabler-chart-bar' />}>
-          Activity Log
-        </MenuItem>
+            <MenuItem href='/apps/activityLog' icon={<i className='tabler-chart-bar' />}>
+              Activity Log
+            </MenuItem>
       </Menu>
     </ScrollWrapper>
   )

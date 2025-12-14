@@ -39,6 +39,7 @@ import { getInitials } from '@/utils/getInitials'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
+import TableSkeleton from '@/components/TableSkeleton'
 
 // -------------------- utils --------------------
 const fuzzyFilter = (row, columnId, value, addMeta) => {
@@ -264,14 +265,7 @@ const DueListTable = ({
 
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
-                  <div className='flex items-center justify-center gap-2 p-4'>
-                    <i className='tabler-refresh animate-spin' />
-                    <span>Loading data...</span>
-                  </div>
-                </td>
-              </tr>
+              <TableSkeleton columns={table.getVisibleFlatColumns().length} />
             ) : table.getFilteredRowModel().rows.length === 0 ? (
               <tr>
                 <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>

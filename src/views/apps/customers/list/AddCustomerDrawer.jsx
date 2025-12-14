@@ -19,7 +19,7 @@ import CustomTextField from '@core/components/mui/TextField'
 import { createCustomer } from '@/actions/customerActions'
 
 const AddCustomerDrawer = props => {
-  const { open, handleClose, setData, customerData } = props
+  const { open, handleClose, setData, customerData, refreshData } = props
 
   // Add these states
   const [loading, setLoading] = useState(false)
@@ -41,7 +41,7 @@ const AddCustomerDrawer = props => {
       phone: '',
       location: '',
       account_number: '',
-      balance: '',
+      account_number: '',
       due: '',
       cost: '',
       type_1_qty: '',
@@ -109,7 +109,7 @@ const AddCustomerDrawer = props => {
         // Account & Balance Information
         account_info: {
           account_number: data.account_number?.trim() || '',
-          balance: Number(data.balance || 0),
+          account_number: data.account_number?.trim() || '',
           due: Number(data.due || 0),
           return_amount: Number(data.cost || 0)
         },
@@ -127,17 +127,10 @@ const AddCustomerDrawer = props => {
       const result = await createCustomer(customerPayload)
 
       if (result.success) {
-        // Update local state with new customer data
-        const newCustomer = {
-          id: result.data._id || Date.now(),
-          basic_info: customerPayload.basic_info,
-          contact_info: customerPayload.contact_info,
-          account_info: customerPayload.account_info,
-          crate_info: customerPayload.crate_info,
-          createdAt: new Date().toISOString()
+        if (refreshData) {
+          refreshData()
         }
-
-        setData([newCustomer, ...(customerData ?? [])])
+        
         reset()
         handleClose()
 
@@ -302,14 +295,7 @@ const AddCustomerDrawer = props => {
               )}
             />
 
-            <div className='grid grid-cols-2 gap-4'>
-              <Controller
-                name='balance'
-                control={control}
-                render={({ field }) => (
-                  <CustomTextField {...field} type='number' label='Balance' placeholder='0' fullWidth />
-                )}
-              />
+            <div className='grid grid-cols-1 gap-4'>
               <Controller
                 name='due'
                 control={control}

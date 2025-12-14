@@ -28,7 +28,7 @@ import { showSuccess } from '@/utils/toastUtils'
 
 const AddExpenseDrawer = props => {
   // Props
-  const { open, handleClose, setData, expenseData, expenseCategories, usersList = [] } = props
+  const { open, handleClose, setData, expenseData, expenseCategories, usersList = [], refreshData } = props
 
   // States
   const [loading, setLoading] = useState(false)
@@ -107,14 +107,25 @@ const AddExpenseDrawer = props => {
 
       if (result.success) {
         // Update local state if needed
+        // Update local state if needed
         if (setData && expenseData) {
+          // Find the employee object from the usersList to populate the name immediately
+          const employee = usersList.find(u => u._id === data.employeeId)
+
           const newData = {
-            _id: result.data._id, // Use the ID from the response
-            sl: (expenseData?.length && expenseData?.length + 1) || 1,
-            ...expensePayload
+            ...result.data, // Use the full response data which likely contains _id, createdAt etc.
+            // Ensure employeeId is populated for the table display
+            employeeId: employee || { _id: data.employeeId, name: 'Unknown' },
+            sl: 1 // New item is always first
           }
 
-          setData([...(expenseData ?? []), newData])
+          // Prepend the new item to the start of the list
+          setData([newData, ...(expenseData ?? [])])
+        }
+
+        // Refresh data from server to ensure consistency
+        if (refreshData) {
+          refreshData()
         }
 
         // Reset form and close
@@ -268,7 +279,7 @@ const AddExpenseDrawer = props => {
             <Controller
               name='employeeId'
               control={control}
-              rules={{ required: 'Employee is required' }}
+               
               render={({ field }) => (
                 <CustomTextField
                   select

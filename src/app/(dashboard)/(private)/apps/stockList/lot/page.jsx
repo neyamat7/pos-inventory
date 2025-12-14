@@ -11,6 +11,8 @@ const LotPage = () => {
   const [paginationData, setPaginationData] = useState(null)
   const [loading, setLoading] = useState(false)
 
+  const [search, setSearch] = useState('')
+
   // console.log('lot data in lot page', data)
 
   useEffect(() => {
@@ -18,7 +20,7 @@ const LotPage = () => {
       setLoading(true)
 
       try {
-        const result = await getAllLots({ page: currentPage, limit: pageSize })
+        const result = await getAllLots({ page: currentPage, limit: pageSize, search })
 
         // console.log('result', result)
 
@@ -39,7 +41,12 @@ const LotPage = () => {
     }
 
     fetchData()
-  }, [currentPage, pageSize])
+  }, [currentPage, pageSize, search])
+
+  const handleSearchChange = value => {
+    setSearch(value)
+    setCurrentPage(1)
+  }
 
   const handlePageChange = newPage => {
     setCurrentPage(newPage)
@@ -57,6 +64,7 @@ const LotPage = () => {
       loading={loading}
       onPageChange={handlePageChange}
       onPageSizeChange={handlePageSizeChange}
+      onSearchChange={handleSearchChange}
     />
   )
 }

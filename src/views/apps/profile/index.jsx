@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import Grid2 from '@mui/material/Grid2';
 
 import {
   Card,
@@ -8,7 +9,6 @@ import {
   Typography,
   Avatar,
   Box,
-  Grid,
   Chip,
   Paper,
   Checkbox,
@@ -124,7 +124,7 @@ const Profile = ({ user: initialUser, userId }) => {
         header: 'Amount',
         cell: ({ row }) => (
           <Typography fontWeight={600} color='primary'>
-            ${parseFloat(row.original.amount || 0).toLocaleString()}
+            ৳{parseFloat(row.original.amount || 0).toLocaleString()}
           </Typography>
         )
       },
@@ -191,64 +191,139 @@ const Profile = ({ user: initialUser, userId }) => {
   return (
     <div className='space-y-6'>
       {/* User Profile Card */}
-      <Card elevation={3}>
-        <CardContent>
-          <Grid container spacing={4} alignItems='center'>
-            <Grid item>
-              <Avatar src={getImageUrl(user.image)} alt={user.name} sx={{ width: 120, height: 120, fontSize: '3rem' }}>
+      <Card elevation={3} sx={{ overflow: 'visible', mt: 8 }}>
+        <Box
+          sx={{
+            height: 150,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: '8px 8px 0 0',
+            mx: -1,
+            mt: -1
+          }}
+        />
+        <CardContent sx={{ pt: 0 }}>
+          <Grid2 container spacing={4} alignItems='flex-end'>
+            <Grid2 size={{ xs: 12 }} sx={{ mt: -8, mb: 2, display: 'flex', justifyContent: 'center' }}>
+              <Avatar
+                src={getImageUrl(user.image)}
+                alt={user.name}
+                sx={{
+                  width: 140,
+                  height: 140,
+                  fontSize: '3.5rem',
+                  border: '5px solid white',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                }}
+              >
                 {user.name?.charAt(0).toUpperCase()}
               </Avatar>
-            </Grid>
+            </Grid2>
 
-            <Grid item xs>
-              <Typography variant='h4' gutterBottom fontWeight={600}>
+            <Grid2 size={{ xs: 12 }} textAlign='center'>
+              <Typography variant='h4' gutterBottom fontWeight={700}>
                 {user.name}
               </Typography>
 
-              <Box display='flex' gap={2} mb={2}>
-                <Chip label={user.role?.toUpperCase()} color='primary' size='small' />
-                <Chip label='Active' color='success' size='small' variant='outlined' />
+              <Box display='flex' gap={2} mb={3} justifyContent='center'>
+                <Chip
+                  label={user.role?.toUpperCase()}
+                  color='primary'
+                  size='small'
+                  sx={{ fontWeight: 600, borderRadius: '6px' }}
+                />
+                <Chip
+                  label='Active'
+                  color='green'
+                  size='small'
+                  variant='outlined'
+                  sx={{ fontWeight: 600, borderRadius: '6px', bgcolor: 'green.light', color: 'green.dark' }}
+                />
               </Box>
+            </Grid2>
 
-              <Grid container spacing={3} mt={1}>
-                <Grid item xs={12} sm={4}>
-                  <Box>
-                    <Typography variant='caption' color='textSecondary' display='flex' alignItems='center' gap={1}>
-                      <i className='tabler-mail' />
-                      Email
+            <Grid2 container size={{ xs: 12 }} spacing={3} sx={{ mt: 2 }}>
+              <Grid2 size={{ xs: 12, sm: 4 }}>
+                <Paper
+                  variant='outlined'
+                  sx={{
+                    p: 2.5,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    borderRadius: 2,
+                    bgcolor: 'background.default'
+                  }}
+                >
+                  <Avatar sx={{ bgcolor: 'primary.main', color: 'common.white', width: 48, height: 48 }}>
+                    <i className='tabler-mail text-xl' />
+                  </Avatar>
+                  <Box textAlign='center'>
+                    <Typography variant='caption' color='textSecondary' fontWeight={500}>
+                      Email Address
                     </Typography>
-                    <Typography variant='body1' fontWeight={500}>
+                    <Typography variant='body1' fontWeight={600} sx={{ wordBreak: 'break-all' }}>
                       {user.email}
                     </Typography>
                   </Box>
-                </Grid>
+                </Paper>
+              </Grid2>
 
-                <Grid item xs={12} sm={4}>
-                  <Box>
-                    <Typography variant='caption' color='textSecondary' display='flex' alignItems='center' gap={1}>
-                      <i className='tabler-phone' />
-                      Phone
+              <Grid2 size={{ xs: 12, sm: 4 }}>
+                <Paper
+                  variant='outlined'
+                  sx={{
+                    p: 2.5,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    borderRadius: 2,
+                    bgcolor: 'background.default'
+                  }}
+                >
+                  <Avatar sx={{ bgcolor: 'info.main', color: 'common.white', width: 48, height: 48 }}>
+                    <i className='tabler-phone text-xl' />
+                  </Avatar>
+                  <Box textAlign='center'>
+                    <Typography variant='caption' color='textSecondary' fontWeight={500}>
+                      Phone Number
                     </Typography>
-                    <Typography variant='body1' fontWeight={500}>
+                    <Typography variant='body1' fontWeight={600}>
                       {user.phone}
                     </Typography>
                   </Box>
-                </Grid>
+                </Paper>
+              </Grid2>
 
-                <Grid item xs={12} sm={4}>
-                  <Box>
-                    <Typography variant='caption' color='textSecondary' display='flex' alignItems='center' gap={1}>
-                      <i className='tabler-currency-dollar' />
+              <Grid2 size={{ xs: 12, sm: 4 }}>
+                <Paper
+                  variant='outlined'
+                  sx={{
+                    p: 2.5,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    borderRadius: 2,
+                    bgcolor: 'background.default'
+                  }}
+                >
+                  <Avatar sx={{ bgcolor: 'success.main', color: 'common.white', width: 48, height: 48 }}>
+                    <i className='tabler-currency-taka text-xl' />
+                  </Avatar>
+                  <Box textAlign='center'>
+                    <Typography variant='caption' color='textSecondary' fontWeight={500}>
                       Monthly Salary
                     </Typography>
-                    <Typography variant='h6' fontWeight={600} color='success.main'>
-                      ${user.salary?.toLocaleString()}
+                    <Typography variant='h6' fontWeight={700} color='success.main'>
+                      ৳{user.salary?.toLocaleString()}
                     </Typography>
                   </Box>
-                </Grid>
-              </Grid>
-            </Grid>
-          </Grid>
+                </Paper>
+              </Grid2>
+            </Grid2>
+          </Grid2>
         </CardContent>
       </Card>
 
