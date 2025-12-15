@@ -139,12 +139,12 @@ const VerticalMenu = ({ scrollMenu }) => {
               Income
             </MenuItem>
 
-            <MenuItem href='/apps/accounts/list' icon={<i className='tabler-credit-card' />}>
+            <MenuItem href='/apps/accounts/list' icon={<i className='tabler-building-bank' />}>
               Accounts
             </MenuItem>
 
             {isAdmin && (
-              <MenuItem href='/apps/profitLoss' icon={<i className='tabler-credit-card' />}>
+              <MenuItem href='/apps/profitLoss' icon={<i className='tabler-chart-pie-2' />}>
                 Profit & Loss
               </MenuItem>
             )}
