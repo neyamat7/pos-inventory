@@ -27,8 +27,12 @@ import { getAccounts } from '@/actions/accountActions'
 import { showSuccess } from '@/utils/toastUtils'
 
 const AddExpenseDrawer = props => {
+
   // Props
   const { open, handleClose, setData, expenseData, expenseCategories, usersList = [], refreshData } = props
+
+
+console.log('expense categories', expenseCategories)
 
   // States
   const [loading, setLoading] = useState(false)
@@ -243,11 +247,18 @@ const AddExpenseDrawer = props => {
                   disabled={loading}
                 >
                   {expenseCategories && expenseCategories.length > 0 ? (
-                    expenseCategories.map(category => (
-                      <MenuItem key={category._id} value={category.name}>
-                        {category.name}
-                      </MenuItem>
-                    ))
+                    expenseCategories
+                      .filter(category => {
+                        // If user is admin, show all categories
+                        if (session?.user?.role === 'admin') return true
+                        // If not admin, hide 'Salary' category (case-insensitive)
+                        return category.name.toLowerCase() !== 'salary'
+                      })
+                      .map(category => (
+                        <MenuItem key={category._id} value={category.name}>
+                          {category.name}
+                        </MenuItem>
+                      ))
                   ) : (
                     <MenuItem value='' disabled>
                       No categories available

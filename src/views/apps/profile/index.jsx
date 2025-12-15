@@ -242,7 +242,7 @@ const Profile = ({ user: initialUser, userId }) => {
             </Grid2>
 
             <Grid2 container size={{ xs: 12 }} spacing={3} sx={{ mt: 2 }}>
-              <Grid2 size={{ xs: 12, sm: 4 }}>
+              <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
                 <Paper
                   variant='outlined'
                   sx={{
@@ -269,7 +269,7 @@ const Profile = ({ user: initialUser, userId }) => {
                 </Paper>
               </Grid2>
 
-              <Grid2 size={{ xs: 12, sm: 4 }}>
+              <Grid2 size={{ xs: 12, sm: 4, md: 3 }}>
                 <Paper
                   variant='outlined'
                   sx={{
@@ -296,7 +296,7 @@ const Profile = ({ user: initialUser, userId }) => {
                 </Paper>
               </Grid2>
 
-              <Grid2 size={{ xs: 12, sm: 4 }}>
+              <Grid2 size={{ xs: 12, sm: 4, md: 3}}>
                 <Paper
                   variant='outlined'
                   sx={{
@@ -318,6 +318,33 @@ const Profile = ({ user: initialUser, userId }) => {
                     </Typography>
                     <Typography variant='h6' fontWeight={700} color='success.main'>
                       ৳{user.salary?.toLocaleString()}
+                    </Typography>
+                  </Box>
+                </Paper>
+              </Grid2>
+
+              <Grid2 size={{ xs: 12, sm: 4, md: 3}}>
+                <Paper
+                  variant='outlined'
+                  sx={{
+                    p: 2.5,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    borderRadius: 2,
+                    bgcolor: 'background.default'
+                  }}
+                >
+                  <Avatar sx={{ bgcolor: 'warning.main', color: 'common.white', width: 48, height: 48 }}>
+                    <i className='tabler-wallet text-xl' />
+                  </Avatar>
+                  <Box textAlign='center'>
+                    <Typography variant='caption' color='textSecondary' fontWeight={500}>
+                      Remaining Salary
+                    </Typography>
+                    <Typography variant='h6' fontWeight={700} color='warning.main'>
+                      ৳{(user.remaining_salary || 0).toLocaleString()}
                     </Typography>
                   </Box>
                 </Paper>

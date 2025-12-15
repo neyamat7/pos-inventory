@@ -4,8 +4,11 @@ import { useEffect, useState } from 'react'
 
 import ExpenseCategoryTable from '@/views/apps/expenses/category'
 import { getExpenseCategories } from '@/actions/expenseActions'
+import { useAdmin } from '@/hooks/useAdmin'
 
 export default function ExpenseCategoryPage() {
+  const { isAdmin, isLoading: adminLoading } = useAdmin()
+  
   // State for expense categories data
   const [categoryData, setCategoryData] = useState([])
   const [paginationData, setPaginationData] = useState(null)
@@ -18,6 +21,8 @@ export default function ExpenseCategoryPage() {
 
   // Fetch expense categories data
   useEffect(() => {
+    if (!isAdmin || adminLoading) return
+
     const fetchCategoryData = async () => {
       setLoading(true)
 
@@ -45,7 +50,7 @@ export default function ExpenseCategoryPage() {
     }
 
     fetchCategoryData()
-  }, [currentPage, pageSize, searchTerm])
+  }, [currentPage, pageSize, searchTerm, isAdmin, adminLoading])
 
   // Handle page change
   const handlePageChange = newPage => {
@@ -88,6 +93,22 @@ export default function ExpenseCategoryPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Show loading state
+  if (adminLoading) {
+    return <div className='flex items-center justify-center min-h-[50vh]'>Loading...</div>
+  }
+
+  // Show access denied if not admin
+  if (!isAdmin) {
+    return (
+      <div className='flex flex-col items-center justify-center min-h-[50vh] p-10 text-center'>
+        <div className='mb-4 text-6xl'>🚫</div>
+        <h1 className='text-2xl font-bold mb-2'>Access Denied</h1>
+        <p className='text-gray-500'>You do not have permission to view this page.</p>
+      </div>
+    )
   }
 
   return (

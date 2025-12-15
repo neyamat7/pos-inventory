@@ -42,6 +42,7 @@ import tableStyles from '@core/styles/table.module.css'
 import ViewUserModal from './ViewUserModal'
 import EditUserModal from './EditUserModal'
 import { getImageUrl } from '@/utils/getImageUrl'
+import TableSkeleton from '@/components/TableSkeleton'
 
 const fuzzyFilter = (row, columnId, value, addMeta) => {
   // Rank the item
@@ -78,7 +79,7 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const UserListTable = ({ userData, paginationData, loading, onPageChange, onPageSizeChange }) => {
+const UserListTable = ({ userData, paginationData, loading, onPageChange, onPageSizeChange, onRefresh }) => {
   // States
   const [addUserOpen, setAddUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
@@ -90,6 +91,8 @@ const UserListTable = ({ userData, paginationData, loading, onPageChange, onPage
   const [userModal, setUserModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState({})
+
+  console.log('user data', userData) 
 
   const handleEditUser = user => {
     setUserModal(false)
@@ -268,11 +271,7 @@ const UserListTable = ({ userData, paginationData, loading, onPageChange, onPage
             {
               <tbody>
                 {loading ? (
-                  <tr>
-                    <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
-                      Loading...
-                    </td>
-                  </tr>
+                  <TableSkeleton columns={table.getVisibleFlatColumns().length} />
                 ) : table.getFilteredRowModel().rows.length === 0 ? (
                   <tr>
                     <td colSpan={table.getVisibleFlatColumns().length} className='text-center'>
@@ -313,6 +312,7 @@ const UserListTable = ({ userData, paginationData, loading, onPageChange, onPage
         handleClose={() => setAddUserOpen(!addUserOpen)}
         userData={data}
         setData={setData}
+        onRefresh={onRefresh}
       />
 
       <ViewUserModal

@@ -395,7 +395,7 @@ const ExpenseCategoryTable = ({
             >
               Edit
             </Button>
-            <Button
+            {/* <Button
               variant='outlined'
               size='small'
               color='error'
@@ -403,7 +403,7 @@ const ExpenseCategoryTable = ({
               onClick={() => handleDelete(row.original)}
             >
               Delete
-            </Button>
+            </Button> */}
           </div>
         ),
         enableSorting: false

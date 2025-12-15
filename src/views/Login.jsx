@@ -118,7 +118,8 @@ const LoginV2 = ({ mode }) => {
       // console.log('response', response)
 
       showAlert('Login Successfully', 'success')
-      router.push('/dashboard')
+      // Force full page reload to ensure fresh session
+      window.location.href = '/dashboard'
 
       if (response?.error) {
         console.log('error', response?.error)

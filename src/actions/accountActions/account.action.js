@@ -54,9 +54,18 @@ export async function addAccount(accountData) {
   }
 }
 
-export async function getAccounts(page = 1, limit = 10) {
+export async function getAccounts(page = 1, limit = 10, search = '') {
   try {
-    const response = await api.get(`/account/all?page=${page}&limit=${limit}`)
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    })
+
+    if (search) {
+      params.append('search', search)
+    }
+
+    const response = await api.get(`/account/all?${params.toString()}`)
 
     // console.log('response', response)
 

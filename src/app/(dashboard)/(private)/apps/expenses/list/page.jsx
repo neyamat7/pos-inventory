@@ -1,11 +1,19 @@
 'use client'
 import { useState, useEffect, useRef, useCallback } from 'react'
 
+import { useSession } from 'next-auth/react'
+
 import ExpenseListTable from '@/views/apps/expenses/list/ExpenseListTable'
 import { getAllExpenses, getExpenseCategories } from '@/actions/expenseActions'
 import { getAllUsers } from '@/actions/authActions'
 
 const ExpensesList = () => {
+  const { data: session, status } = useSession()
+  const isAdmin = session?.user?.role === 'admin'
+  const isManager = session?.user?.role === 'manager'
+  const isAuthorized = isAdmin || isManager
+  const sessionLoading = status === 'loading'
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
@@ -58,6 +66,8 @@ const ExpensesList = () => {
 
   // Fetch data based on debounced filters
   useEffect(() => {
+    if (!isAuthorized || sessionLoading) return
+
     const fetchExpenses = async () => {
       setLoading(true)
 
@@ -88,10 +98,12 @@ const ExpensesList = () => {
     }
 
     fetchExpenses()
-  }, [debouncedFilters, currentPage, pageSize, refreshTrigger])
+  }, [debouncedFilters, currentPage, pageSize, refreshTrigger, isAuthorized, sessionLoading])
 
   // Fetch expense categories
   useEffect(() => {
+    if (!isAuthorized || sessionLoading) return
+
     const fetchCategories = async () => {
       try {
         const result = await getExpenseCategories({ page: 1, limit: 100 })
@@ -106,10 +118,12 @@ const ExpensesList = () => {
     }
 
     fetchCategories()
-  }, [])
+  }, [isAuthorized, sessionLoading])
 
   // Fetch users list
   useEffect(() => {
+    if (!isAuthorized || sessionLoading) return
+
     const fetchUsers = async () => {
       try {
         const result = await getAllUsers({ page: 1, limit: 100 })
@@ -124,7 +138,7 @@ const ExpensesList = () => {
     }
 
     fetchUsers()
-  }, [])
+  }, [isAuthorized, sessionLoading])
 
   // Handle page change
   const handlePageChange = useCallback(newPage => {
@@ -158,6 +172,20 @@ const ExpensesList = () => {
     })
     setCurrentPage(1)
   }, [])
+
+  if (sessionLoading) {
+    return <div className='flex items-center justify-center min-h-[50vh]'>Loading...</div>
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className='flex flex-col items-center justify-center min-h-[50vh] p-10 text-center'>
+        <div className='mb-4 text-6xl'>🚫</div>
+        <h1 className='text-2xl font-bold mb-2'>Access Denied</h1>
+        <p className='text-gray-500'>You do not have permission to view this page.</p>
+      </div>
+    )
+  }
 
   return (
     <ExpenseListTable

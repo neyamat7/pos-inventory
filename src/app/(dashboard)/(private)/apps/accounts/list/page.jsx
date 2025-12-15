@@ -8,13 +8,14 @@ const AccountsListPage = () => {
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
+  const [searchQuery, setSearchQuery] = useState('')
   const [data, setData] = useState([])
   const [paginationData, setPaginationData] = useState(null)
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
-      const result = await getAccounts(currentPage, pageSize)
+      const result = await getAccounts(currentPage, pageSize, searchQuery)
 
       // console.log('result in acc page', result.data)
       setLoading(false)
@@ -31,10 +32,15 @@ const AccountsListPage = () => {
     }
 
     fetchData()
-  }, [currentPage, pageSize])
+  }, [currentPage, pageSize, searchQuery])
 
   const handlePageChange = newPage => {
     setCurrentPage(newPage)
+  }
+
+  const handleSearch = query => {
+    setSearchQuery(query)
+    setCurrentPage(1) // Reset to first page when searching
   }
 
   return (
@@ -43,6 +49,7 @@ const AccountsListPage = () => {
       paginationData={paginationData}
       onPageChange={handlePageChange}
       onPageSizeChange={setPageSize}
+      onSearch={handleSearch}
       loading={loading}
     />
   )

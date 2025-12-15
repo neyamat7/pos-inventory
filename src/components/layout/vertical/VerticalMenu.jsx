@@ -30,6 +30,9 @@ const VerticalMenu = ({ scrollMenu }) => {
   const id = undefined
   const session = useSession()
   const isAdmin = session?.data?.user?.role === 'admin'
+  const isManager = session?.data?.user?.role === 'manager'
+
+  // console.log('is manager', isManager)
 
   // Hooks
   const theme = useTheme()
@@ -125,10 +128,12 @@ const VerticalMenu = ({ scrollMenu }) => {
             Due List
           </MenuItem>
 
-        <SubMenu label='Expenses' icon={<i className='tabler-wallet' />}>
-          <MenuItem href='/apps/expenses/list'>Expense List</MenuItem>
-          <MenuItem href='/apps/expenses/category'>Expense Category</MenuItem>
-        </SubMenu>
+        {(isAdmin || isManager) && (
+          <SubMenu label='Expenses' icon={<i className='tabler-wallet' />}>
+            <MenuItem href='/apps/expenses/list'>Expense List</MenuItem>
+            {isAdmin && <MenuItem href='/apps/expenses/category'>Expense Category</MenuItem>}
+          </SubMenu>
+        )}
 
             <MenuItem href='/apps/income' icon={<i className='tabler-currency-taka' />}>
               Income
@@ -138,13 +143,17 @@ const VerticalMenu = ({ scrollMenu }) => {
               Accounts
             </MenuItem>
 
-            <MenuItem href='/apps/profitLoss' icon={<i className='tabler-credit-card' />}>
-              Profit & Loss
-            </MenuItem>
+            {isAdmin && (
+              <MenuItem href='/apps/profitLoss' icon={<i className='tabler-credit-card' />}>
+                Profit & Loss
+              </MenuItem>
+            )}
 
-            <MenuItem href='/apps/activityLog' icon={<i className='tabler-chart-bar' />}>
-              Activity Log
-            </MenuItem>
+            {isAdmin && (
+              <MenuItem href='/apps/activityLog' icon={<i className='tabler-chart-bar' />}>
+                Activity Log
+              </MenuItem>
+            )}
       </Menu>
     </ScrollWrapper>
   )

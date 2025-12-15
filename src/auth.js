@@ -97,7 +97,7 @@ export const {
           image: token.image,
           role: token.role
         }
-        session.accessToken = jwt.sign({ id: token.id, email: token.email }, process.env.AUTH_SECRET, {
+        session.accessToken = jwt.sign({ id: token.id, email: token.email, role: token.role }, process.env.AUTH_SECRET, {
           expiresIn: '7d'
         })
       }

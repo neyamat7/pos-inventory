@@ -25,7 +25,18 @@ const userSchema = new Schema({
   },
   salary: {
     type: Number,
-  }
-})
+  },
+  remaining_salary: {
+    type: Number,
+    default: 0,
+  },
+  last_salary_reset_month: {
+    type: String,
+    default: "",
+  },
+},
+{ timestamps: true }
+)
 
-export const userModel = mongoose.models.users ?? mongoose.model('users', userSchema)
+// Properly handle model caching in development
+export const userModel = mongoose.models.users || mongoose.model('users', userSchema)

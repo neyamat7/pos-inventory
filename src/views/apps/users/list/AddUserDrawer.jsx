@@ -19,7 +19,7 @@ import { showError, showSuccess } from '@/utils/toastUtils'
 
 const AddUserDrawer = props => {
   // Props
-  const { open, handleClose, userData, setData } = props
+  const { open, handleClose, userData, setData, onRefresh } = props
 
   // States
   const [loading, setLoading] = useState(false)
@@ -110,21 +110,14 @@ const AddUserDrawer = props => {
       const result = await response.json()
 
       if (response.ok) {
-        // Add new user to local state
-        const newUser = {
-          id: Date.now(),
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-          role: data.role,
-          salary: data.salary,
-          image: imageUrl || null
-        }
-
-        setData([newUser, ...(userData ?? [])])
         handleClose()
         resetAll()
         showSuccess('User created successfully!')
+        
+        // Trigger refresh to fetch updated data from server
+        if (onRefresh) {
+          onRefresh()
+        }
       } else {
         showError(`Error: ${result.message}`)
       }

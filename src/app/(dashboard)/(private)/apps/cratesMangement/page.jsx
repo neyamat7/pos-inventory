@@ -8,6 +8,9 @@ import { getAllCrateTransactions, getCrateTotals } from '@/actions/crateActions'
 import { getCustomers } from '@/actions/customerActions'
 
 const CratesMangementPage = () => {
+  // Refresh trigger for instant updates
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
+
   // Separate pagination states for suppliers
   const [supplierCurrentPage, setSupplierCurrentPage] = useState(1)
   const [supplierPageSize, setSupplierPageSize] = useState(10)
@@ -69,7 +72,7 @@ const CratesMangementPage = () => {
     }
 
     fetchSupplierData()
-  }, [supplierCurrentPage, supplierPageSize, supplierSearchTerm])
+  }, [supplierCurrentPage, supplierPageSize, supplierSearchTerm, refreshTrigger])
 
   // fetch total crates
   useEffect(() => {
@@ -92,7 +95,7 @@ const CratesMangementPage = () => {
     }
 
     fetchTotalCrates()
-  }, [])
+  }, [refreshTrigger])
 
   // Fetch transactions
   useEffect(() => {
@@ -132,7 +135,7 @@ const CratesMangementPage = () => {
     }
 
     fetchTransactionData()
-  }, [transactionCurrentPage, transactionPageSize, transactionSearchTerm])
+  }, [transactionCurrentPage, transactionPageSize, transactionSearchTerm, refreshTrigger])
 
   // Fetch customers
   useEffect(() => {
@@ -159,7 +162,7 @@ const CratesMangementPage = () => {
     }
 
     fetchCustomerData()
-  }, [customerCurrentPage, customerPageSize, customerSearchTerm])
+  }, [customerCurrentPage, customerPageSize, customerSearchTerm, refreshTrigger])
 
   // Handle page change based on active tab
   const handlePageChange = newPage => {
@@ -200,6 +203,11 @@ const CratesMangementPage = () => {
     }
   }
 
+  // Function to trigger refresh of all data
+  const handleRefresh = () => {
+    setRefreshTrigger(prev => prev + 1)
+  }
+
   return (
     <CrateManagement
       supplierData={supplierData}
@@ -225,6 +233,7 @@ const CratesMangementPage = () => {
       customerData={customerData}
       customerPaginationData={customerPaginationData}
       customerLoading={isCustomerLoading}
+      onRefresh={handleRefresh}
     />
   )
 }

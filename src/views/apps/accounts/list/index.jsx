@@ -14,16 +14,11 @@ import Typography from '@mui/material/Typography'
 
 // Third-party Imports
 import classnames from 'classnames'
-import { rankItem } from '@tanstack/match-sorter-utils'
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   useReactTable,
-  getFilteredRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFacetedMinMaxValues,
   getSortedRowModel
 } from '@tanstack/react-table'
 
@@ -38,14 +33,6 @@ import TableSkeleton from '@/components/TableSkeleton'
 
 import EditAccounts from './EditAccounts'
 import AddAccounts from './AddAccounts'
-
-const fuzzyFilter = (row, columnId, value, addMeta) => {
-  const itemRank = rankItem(row.getValue(columnId), value)
-
-  addMeta({ itemRank })
-
-  return itemRank.passed
-}
 
 const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...props }) => {
   const [value, setValue] = useState(initialValue)
@@ -65,12 +52,12 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
   return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
 }
 
-const AccountList = ({ accountsData = [], paginationData, onPageChange, onPageSizeChange, loading = false }) => {
+const AccountList = ({ accountsData = [], paginationData, onPageChange, onPageSizeChange, onSearch, loading = false }) => {
   const [editOpenRow, setEditOpenRow] = useState(null)
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
   const [data, setData] = useState(accountsData)
-  const [globalFilter, setGlobalFilter] = useState('')
+  const [searchValue, setSearchValue] = useState('')
 
   // Update data when accountsData prop changes
   useEffect(() => {
@@ -159,23 +146,13 @@ const AccountList = ({ accountsData = [], paginationData, onPageChange, onPageSi
   const table = useReactTable({
     data: data,
     columns,
-    filterFns: {
-      fuzzy: fuzzyFilter
-    },
     state: {
-      rowSelection,
-      globalFilter
+      rowSelection
     },
     enableRowSelection: true,
-    globalFilterFn: fuzzyFilter,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
-    onGlobalFilterChange: setGlobalFilter,
-    getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues(),
 
     // Server-side pagination configuration
     manualPagination: true,
@@ -193,9 +170,14 @@ const AccountList = ({ accountsData = [], paginationData, onPageChange, onPageSi
       <Card>
         <CardContent className='flex justify-between flex-wrap max-sm:flex-col sm:items-center gap-4'>
           <DebouncedInput
-            value={globalFilter ?? ''}
-            onChange={value => setGlobalFilter(String(value))}
-            placeholder='Search accounts...'
+            value={searchValue}
+            onChange={value => {
+              setSearchValue(value)
+              if (onSearch) {
+                onSearch(String(value))
+              }
+            }}
+            placeholder='Search by account name or number...'
             className='max-sm:is-full'
           />
           <div className='flex max-sm:flex-col items-start sm:items-center gap-4 max-sm:is-full'>

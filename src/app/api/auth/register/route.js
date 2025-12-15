@@ -36,6 +36,8 @@ export async function POST(request) {
     const hashedPassword = await bcrypt.hash(password, 12)
 
     // Create user object
+    const salaryNumber = salary ? Number(salary) : 0
+    
     const userData = {
       name,
       email,
@@ -43,18 +45,20 @@ export async function POST(request) {
       password: hashedPassword,
       image: imageUrl || null,
       role,
-      salary
+      salary: salaryNumber,
+      remaining_salary: salaryNumber // Set remaining_salary equal to salary initially
     }
 
-    // console.log('User data to save:', userData)
+    console.log('User data to save:', userData)
 
     // Create and save user
     const user = new userModel(userData)
 
-    // console.log('User object before save:', user.toObject())
+    console.log('User object before save:', user.toObject())
 
     try {
       const savedUser = await user.save()
+      console.log('Saved user:', savedUser.toObject())
     } catch (err) {
       console.error('Error saving user:', err)
       console.error('Error details:', err.message)
@@ -113,6 +117,7 @@ export async function PUT(request) {
         phone,
         role,
         salary,
+        remaining_salary: salary,
         image: imageUrl || null
       },
       { new: true, runValidators: true }

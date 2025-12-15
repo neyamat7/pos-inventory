@@ -13,12 +13,12 @@ export async function addCrates(crateData) {
       }
     }
 
-    const { date, crate_type_1_qty, crate_type_2_qty, crate_type_1_price, crate_type_2_price, note, stockType } =
+    const { date, crate_type_1_qty, crate_type_2_qty, crate_type_1_price, crate_type_2_price, note, stockType, customerId } =
       crateData
 
     console.log('stock type', stockType)
 
-    const response = await api.post('/crates/add', {
+    const payload = {
       date,
       crate_type_1_qty,
       crate_type_2_qty,
@@ -26,7 +26,17 @@ export async function addCrates(crateData) {
       crate_type_2_price,
       stockType,
       note
-    })
+    }
+
+    // Add customerId only if it exists (for re-stock)
+    if (customerId) {
+      payload.customerId = customerId
+    }
+
+    const response = await api.post('/crates/add', payload)
+
+    // Revalidate the crates management page to refresh data
+    revalidatePath('/apps/cratesMangement')
 
     return {
       success: true,

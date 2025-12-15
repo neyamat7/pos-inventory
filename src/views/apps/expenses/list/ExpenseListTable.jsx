@@ -29,6 +29,7 @@ import {
 } from '@tanstack/react-table'
 
 // Component Imports
+import { useSession } from 'next-auth/react'
 import AddExpenseDrawer from './AddExpenseDrawer'
 import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
@@ -64,6 +65,9 @@ const ExpenseListTable = ({
   const [rowSelection, setRowSelection] = useState({})
   const [data, setData] = useState([])
   const [globalFilter, setGlobalFilter] = useState('')
+
+  const { data: session } = useSession()
+  const isAdmin = session?.user?.role === 'admin'
 
   // console.log('expense data', expenseData)
 
@@ -145,30 +149,30 @@ const ExpenseListTable = ({
         cell: ({ row }) => <Typography className='capitalize'>{row.original.payment_type}</Typography>
       },
       { accessorKey: 'reference_num', header: 'Reference Number' },
-      {
-        id: 'action',
-        header: 'Action',
-        cell: ({ row }) => (
-          <div className='flex items-center'>
-            <OptionMenu
-              tooltipProps={{ title: 'More options' }}
-              iconClassName='text-textSecondary'
-              iconButtonProps={{ size: 'small' }}
-              options={[
-                {
-                  text: 'Edit',
-                  icon: 'tabler-edit',
-                  menuItemProps: {
-                    onClick: () => setEditOpen(row.original),
-                    className: 'flex items-center'
-                  }
-                }
-              ]}
-            />
-          </div>
-        ),
-        enableSorting: false
-      }
+      // {
+      //   id: 'action',
+      //   header: 'Action',
+      //   cell: ({ row }) => (
+      //     <div className='flex items-center'>
+      //       <OptionMenu
+      //         tooltipProps={{ title: 'More options' }}
+      //         iconClassName='text-textSecondary'
+      //         iconButtonProps={{ size: 'small' }}
+      //         options={[
+      //           {
+      //             text: 'Edit',
+      //             icon: 'tabler-edit',
+      //             menuItemProps: {
+      //               onClick: () => setEditOpen(row.original),
+      //               className: 'flex items-center'
+      //             }
+      //           }
+      //         ]}
+      //       />
+      //     </div>
+      //   ),
+      //   enableSorting: false
+      // }
     ],
     [usersList]
   )
@@ -234,11 +238,16 @@ const ExpenseListTable = ({
                   }}
                 >
                   <MenuItem value=''>All Categories</MenuItem>
-                  {expenseCategories.map(category => (
-                    <MenuItem key={category._id} value={category.name}>
-                      {category.name}
-                    </MenuItem>
-                  ))}
+                  {expenseCategories
+                    .filter(category => {
+                      if (isAdmin) return true
+                      return category.name.toLowerCase() !== 'salary'
+                    })
+                    .map(category => (
+                      <MenuItem key={category._id} value={category.name}>
+                        {category.name}
+                      </MenuItem>
+                    ))}
                 </CustomTextField>
               </FormControl>
 

@@ -57,7 +57,7 @@ export async function getUserById(userId) {
   // console.log('getUserById called with userId:', userId)
   try {
     const data = await api.get(`/users/${userId}`)
-    console.log('getUserById API response:', data)
+    // console.log('getUserById API response:', data)
 
     if (data.user) return data.user
     if (data._id) return data

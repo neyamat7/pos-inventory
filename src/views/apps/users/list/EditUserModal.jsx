@@ -88,7 +88,8 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
           email: form.email,
           phone: form.phone,
           role: form.role,
-          salary: form.salary
+          salary: form.salary,
+          remaining_salary: form.salary // Update remaining_salary to match salary
         }
 
         setData(prev => prev.map(u => (u._id === user._id ? updatedUser : u)))

@@ -4,7 +4,7 @@ import Grid from '@mui/material/Grid2'
 // Component Imports
 import UserListTable from './UserListTable' 
 
-const UserList = ({ userData, paginationData, loading, onPageChange, onPageSizeChange }) => {
+const UserList = ({ userData, paginationData, loading, onPageChange, onPageSizeChange, onRefresh }) => {
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12 }}>
@@ -14,6 +14,7 @@ const UserList = ({ userData, paginationData, loading, onPageChange, onPageSizeC
           loading={loading}
           onPageChange={onPageChange}
           onPageSizeChange={onPageSizeChange}
+          onRefresh={onRefresh}
         />
       </Grid>
     </Grid>

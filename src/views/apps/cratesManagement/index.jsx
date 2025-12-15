@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect } from 'react'
 
 // MUI Imports
-import { useRouter } from 'next/navigation'
 
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -53,7 +52,8 @@ const CrateManagementTable = ({
   totalCrateLoading,
   customerData,
   customerPaginationData,
-  customerLoading
+  customerLoading,
+  onRefresh
 }) => {
   const [rowSelection, setRowSelection] = useState({})
   const [showAddCrateModal, setShowAddCrateModal] = useState(false)
@@ -64,7 +64,6 @@ const CrateManagementTable = ({
   const [addTotalCrateLoading, setAddTotalCrateLoading] = useState(false)
   const [addSupplierCrateLoading, setAddSupplierCrateLoading] = useState(false)
   const [updateLoading, setUpdateLoading] = useState(false)
-  const router = useRouter()
 
   const [updateForm, setUpdateForm] = useState({
     type1Quantity: '',
@@ -82,8 +81,11 @@ const CrateManagementTable = ({
     type2Price: '',
     notes: '',
     date: '',
-    stockType: 'new'
+    stockType: 'new',
+    customerId: ''
   })
+
+  // console.log('transactionsData', transactionsData)
 
   const handleSearch = value => {
     if (onSearch) {
@@ -145,6 +147,11 @@ const CrateManagementTable = ({
       if (result.success) {
         console.log('Crates sent to supplier successfully')
         showSuccess('Crates sent to supplier successfully!')
+        
+        // Trigger instant refresh of all data
+        if (onRefresh) {
+          onRefresh()
+        }
       } else {
         console.error('Failed to send crates to supplier')
         showError('Failed to send crates to supplier!')
@@ -182,11 +189,21 @@ const CrateManagementTable = ({
         stockType: modalForm.stockType
       }
 
+      // Add customerId only if stockType is 're-stock'
+      if (modalForm.stockType === 're-stock' && modalForm.customerId) {
+        crateData.customerId = modalForm.customerId
+      }
+
       const result = await addCrates(crateData)
 
       if (result.success) {
         console.log('Total crates added successfully:', result.data)
         showSuccess('Total crates added successfully!')
+        
+        // Trigger instant refresh of all data
+        if (onRefresh) {
+          onRefresh()
+        }
       } else {
         console.error('Failed to add total crates:', result.error)
         showError('Failed to add total crates!')
@@ -195,7 +212,7 @@ const CrateManagementTable = ({
       console.error('Error adding total crates:', error)
     } finally {
       setAddTotalCrateLoading(false)
-      setModalForm({ type1Quantity: '', type2Quantity: '', notes: '', date: '' })
+      setModalForm({ type1Quantity: '', type2Quantity: '', notes: '', date: '', stockType: 'new', customerId: '' })
       setShowAddTotalModal(false)
     }
   }
@@ -226,9 +243,13 @@ const CrateManagementTable = ({
       const result = await updateCrates(query, crateInfo)
 
       if (result.success) {
-        router.refresh()
         console.log('Update successful:', result.data)
         showSuccess(result.message || 'Update successful!')
+        
+        // Trigger instant refresh of all data
+        if (onRefresh) {
+          onRefresh()
+        }
       } else {
         console.error('Failed to update:', result.error)
         showError(result.error || 'Failed to update!')
@@ -388,6 +409,12 @@ const CrateManagementTable = ({
       {
         accessorKey: 'supplierId.basic_info.name',
         header: 'Supplier',
+        cell: info => <div className='font-medium'>{info.getValue() || '-'}</div>
+      },
+
+      {
+        accessorKey: 'customerId.basic_info.name',
+        header: 'Customer',
         cell: info => <div className='font-medium'>{info.getValue() || '-'}</div>
       },
 
@@ -1000,7 +1027,7 @@ const CrateManagementTable = ({
         open={showAddTotalModal}
         onClose={() => {
           setShowAddTotalModal(false)
-          setModalForm({ type1Quantity: '', type2Quantity: '', notes: '', stockType: 'new' })
+          setModalForm({ type1Quantity: '', type2Quantity: '', notes: '', stockType: 'new', customerId: '' })
         }}
         maxWidth='sm'
         fullWidth
@@ -1048,12 +1075,34 @@ const CrateManagementTable = ({
                 select
                 fullWidth
                 value={modalForm.stockType}
-                onChange={e => setModalForm({ ...modalForm, stockType: e.target.value })}
+                onChange={e => setModalForm({ ...modalForm, stockType: e.target.value, customerId: '' })}
               >
                 <MenuItem value='new'>New</MenuItem>
                 <MenuItem value='re-stock'>Re-Stock</MenuItem>
               </CustomTextField>
             </Box>
+
+            {modalForm.stockType === 're-stock' && (
+              <Box>
+                <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
+                  Select Customer
+                </Typography>
+                <CustomTextField
+                  select
+                  fullWidth
+                  value={modalForm.customerId}
+                  onChange={e => setModalForm({ ...modalForm, customerId: e.target.value })}
+                  placeholder='Select customer'
+                >
+                  <MenuItem value=''>Select a customer</MenuItem>
+                  {customerData?.map(customer => (
+                    <MenuItem key={customer._id} value={customer._id}>
+                      {customer.basic_info?.name || 'Unknown'}
+                    </MenuItem>
+                  ))}
+                </CustomTextField>
+              </Box>
+            )}
 
             <Box>
               <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
@@ -1141,7 +1190,7 @@ const CrateManagementTable = ({
             color='secondary'
             onClick={() => {
               setShowAddTotalModal(false)
-              setModalForm({ type1Quantity: '', type2Quantity: '', notes: '', stockType: 'new' })
+              setModalForm({ type1Quantity: '', type2Quantity: '', notes: '', stockType: 'new', customerId: '' })
             }}
           >
             Cancel
