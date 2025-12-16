@@ -70,3 +70,30 @@ export async function getProfitLoss() {
     }
   }
 }
+
+export async function getLotsAnalytics({ page = 1, limit = 10, month, supplierId } = {}) {
+  try {
+    const params = new URLSearchParams()
+
+    if (page) params.append('page', page.toString())
+    if (limit) params.append('limit', limit.toString())
+    if (month) params.append('month', month)
+    if (supplierId) params.append('supplierId', supplierId)
+
+    const response = await api.get(`/inventoryLots/analytics?${params.toString()}`)
+
+    return {
+      success: true,
+      data: response,
+      message: 'Analytics fetched successfully'
+    }
+  } catch (error) {
+    console.error('Get lots analytics error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch analytics'
+    }
+  }
+}
+

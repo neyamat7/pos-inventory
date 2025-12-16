@@ -9,7 +9,6 @@ import dayjs from 'dayjs'
 
 import CustomTextField from '@core/components/mui/TextField'
 import SalesTable from './tables/SalesTable'
-import { customerPayments, customerReturns } from '@/fake-db/apps/customerReportData'
 import CustomerReturnTable from './tables/CustomerReturnTable'
 import CustomerPaymentTable from './tables/PaymentTable'
 import { getCustomerCrateHistory, getSalesByCustomer } from '@/actions/customerActions'

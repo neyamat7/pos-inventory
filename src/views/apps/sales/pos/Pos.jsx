@@ -612,21 +612,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     return finalColumns
   }, [cartProducts.some(p => p.isCrated), showTooltip])
 
-  // Validation for balance payment
-  // const validateBalanceAmount = value => {
-  //   if (paymentType !== 'balance') return true
-
-  //   const amount = Number(value) || 0
-  //   const availableBalance = selectedCustomer?.account_info?.balance || 0
-
-  //   if (amount < 0) return 'Amount cannot be negative'
-
-  //   if (amount > availableBalance) {
-  //     return `Insufficient balance. Available: ৳${availableBalance.toFixed(2)}`
-  //   }
-
-  //   return true
-  // }
+  
 
   const tableData = useMemo(() => cartProducts, [cartProducts])
 

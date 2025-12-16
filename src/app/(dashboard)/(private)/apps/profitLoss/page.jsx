@@ -2,19 +2,13 @@
 
 import { useEffect, useState } from 'react'
 
-import { getProfitLoss } from '@/actions/incomeActions'
-import ProfitLoss from '@/views/apps/profitLoss/ind'
+import { getSuppliers } from '@/actions/supplierAction/supplier.action'
+import ProfitLoss from '@/views/apps/profitLoss'
 import { useAdmin } from '@/hooks/useAdmin'
 
 const ProfitLossPage = () => {
   const { isAdmin, isLoading: adminLoading } = useAdmin()
-  const [profitLossData, setProfitLossData] = useState({
-    totalCustomerProfit: 0,
-    totalLotProfit: 0,
-    totalCombinedProfit: 0,
-    totalLoss: 0,
-    recordCount: 0
-  })
+  const [suppliers, setSuppliers] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -22,10 +16,12 @@ const ProfitLossPage = () => {
 
     const fetchData = async () => {
       setLoading(true)
-      const result = await getProfitLoss()
+      const result = await getSuppliers(1, 100)
+
+      // console.log('suppliers data' ,result)
 
       if (result.success) {
-        setProfitLossData(result.data)
+        setSuppliers(result.data.suppliers)
       }
 
       setLoading(false)
@@ -50,7 +46,7 @@ const ProfitLossPage = () => {
     )
   }
 
-  return <ProfitLoss profitLossData={profitLossData} />
+  return <ProfitLoss suppliers={suppliers} />
 }
 
 export default ProfitLossPage
