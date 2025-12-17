@@ -142,7 +142,7 @@ const ViewPurchaseModal = ({ open, handleClose, data }) => {
               <CardContent>
                 <Box mb={2}>
                   <Typography variant='h6' fontWeight={600} gutterBottom component='div'>
-                    Item {itemIndex + 1} - {item.supplier?.basic_info?.name}
+                    Supplier {itemIndex + 1} - {item.supplier?.basic_info?.name}
                   </Typography>
                 </Box>
 

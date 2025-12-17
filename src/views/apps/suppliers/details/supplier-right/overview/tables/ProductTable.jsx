@@ -33,7 +33,7 @@ import TablePaginationComponent from '@components/TablePaginationComponent'
 import tableStyles from '@core/styles/table.module.css'
 
 import PaymentModal from './PaymentModal'
-import { getLotSaleSummary, getUnpaidStockOutLots } from '@/actions/lotActions'
+import { getLotSaleSummary, getUnpaidStockOutLotsBySupplier } from '@/actions/lotActions'
 import OptionMenu from '@/@core/components/option-menu'
 import LotInvoicePrintHandler from '@/components/LotSaleInvoice/LotInvoicePrintHandler'
 import { showSuccess, showError } from '@/utils/toastUtils'
@@ -41,7 +41,7 @@ import { updateLotExtraExpense } from '@/actions/lotActions'
 
 const columnHelper = createColumnHelper()
 
-const ProductTable = ({ data, pagination, total, onPaginationChange, loading, supplierData }) => {
+const ProductTable = ({ data, pagination, total, onPaginationChange, loading, supplierData, onPaymentSuccess }) => {
   const router = useRouter()
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
   const [unpaidLotsData, setUnpaidLotsData] = useState([])
@@ -62,8 +62,10 @@ const ProductTable = ({ data, pagination, total, onPaginationChange, loading, su
 
   useEffect(() => {
     const fetchUnpaidLots = async () => {
+      if (!supplierData?._id) return
+
       try {
-        const result = await getUnpaidStockOutLots()
+        const result = await getUnpaidStockOutLotsBySupplier(supplierData._id)
 
         if (result.success) {
           setUnpaidLotsData(result?.data || [])
@@ -74,7 +76,27 @@ const ProductTable = ({ data, pagination, total, onPaginationChange, loading, su
     }
 
     fetchUnpaidLots()
-  }, [])
+  }, [supplierData?._id])
+
+  // Function to handle payment success
+  const handlePaymentSuccess = async () => {
+    // Refetch unpaid lots
+    if (supplierData?._id) {
+      try {
+        const result = await getUnpaidStockOutLotsBySupplier(supplierData._id)
+        if (result.success) {
+          setUnpaidLotsData(result?.data || [])
+        }
+      } catch (error) {
+        console.error('Error refetching unpaid lots:', error)
+      }
+    }
+
+    // Call parent callback to refresh main table
+    if (onPaymentSuccess) {
+      onPaymentSuccess()
+    }
+  }
 
   const fetchLotSaleSummary = async lotId => {
     setLoadingSaleData(true)
@@ -194,7 +216,8 @@ const ProductTable = ({ data, pagination, total, onPaginationChange, loading, su
                     setSelectedLot(row.original)
                     setExpenseModalOpen(true)
                   },
-                  className: 'flex items-center'
+                  className: 'flex items-center',
+                  disabled: row.original.payment_status === 'paid'
                 }
               },
               {
@@ -305,6 +328,7 @@ const ProductTable = ({ data, pagination, total, onPaginationChange, loading, su
         supplierData={supplierData}
         lotsData={unpaidLotsData}
         supplierId={supplierData?._id}
+        onPaymentSuccess={handlePaymentSuccess}
       />
 
       <AddExpenseModal

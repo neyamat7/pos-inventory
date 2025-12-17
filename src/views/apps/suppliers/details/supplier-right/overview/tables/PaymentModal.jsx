@@ -24,8 +24,10 @@ import { showError, showInfo, showSuccess } from '@/utils/toastUtils'
 import { addPayment } from '@/actions/supplierAction'
 import { uploadImage } from '@/actions/imageActions'
 
-const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => {
-  const [lotRows, setLotRows] = useState([
+const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId, onPaymentSuccess }) => {
+
+
+const [lotRows, setLotRows] = useState([
     {
       id: 1,
       selectedLotId: '',
@@ -56,6 +58,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
 
   // State for validation error
   const [balanceError, setBalanceError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // ============ CALCULATED VALUES ============
   // Calculate summary totals
@@ -110,9 +113,13 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
     // Calculate paid amount: totalSell - totalExpense - discountAmount - newProfit
     const paidAmount = Math.max(0, totalSell - totalExpense - newProfit)
 
+    // Calculate baseExpense
+    const baseExpense = totalExpense - extraExpense
+
     return {
       totalSell,
       totalExpense,
+      baseExpense,
       extraExpense,
       originalProfit,
       profit: newProfit,
@@ -267,6 +274,8 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
       return
     }
 
+    setIsSubmitting(true)
+
     // Build payload object
     const payload = {
       date: paymentDate ? new Date(paymentDate).toISOString() : new Date().toISOString(),
@@ -294,16 +303,28 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
       note: note
     }
 
-    // console.log('Payment Payload:', payload)
+    console.log('Payment Payload:', payload)
 
-    const result = await addPayment(payload)
+    try {
+      const result = await addPayment(payload)
 
-    if (result.success) {
-      showSuccess('Payment added successfully!')
-      onClose()
-      resetDocumentState()
-    } else {
-      showError(result.error || 'Failed to add payment')
+      if (result.success) {
+        showSuccess('Payment added successfully!')
+        resetDocumentState()
+        
+        // Call success callback to refresh data
+        if (onPaymentSuccess) {
+          onPaymentSuccess()
+        }
+        
+        onClose()
+      } else {
+        showError(result.error || 'Failed to add payment')
+      }
+    } catch (error) {
+      showError('An error occurred while submitting payment')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -477,7 +498,7 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
               {/* Paid Amount */}
               <Box sx={{ width: 120, minWidth: 120, px: 1 }}>
                 <Typography variant='body2' fontWeight='bold' color='text.secondary'>
-                  Paid Amount
+                  Total Amount
                 </Typography>
               </Box>
 
@@ -842,9 +863,9 @@ const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId }) => 
           onClick={handleSubmit}
           variant='contained'
           sx={{ textTransform: 'none', minWidth: 120 }}
-          disabled={!!balanceError}
+          disabled={!!balanceError || isSubmitting}
         >
-          Payment
+          {isSubmitting ? 'Submitting...' : 'Payment'}
         </Button>
       </DialogActions>
     </Dialog>

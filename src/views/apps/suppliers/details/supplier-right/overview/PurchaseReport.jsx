@@ -204,6 +204,7 @@ const PurchaseReport = ({
             onPaginationChange={handlePaginationChange}
             loading={loading}
             supplierData={supplierData}
+            onPaymentSuccess={() => fetchLots(pagination.page, pagination.limit, searchValue, '', '')}
           />
         )
 

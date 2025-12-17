@@ -36,6 +36,7 @@ import tableStyles from '@core/styles/table.module.css'
 import ViewPurchaseModal from './ViewPurchaseModal'
 import { createLots, updatePurchaseStatus } from '@/actions/purchaseActions'
 import TableSkeleton from '@/components/TableSkeleton'
+import { showSuccess, showError } from '@/utils/toastUtils'
 
 const statusOptions = ['on the way', 'received', 'canceled']
 
@@ -72,6 +73,7 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 }
 
 const PurchaseListTable = ({ purchaseData = [], paginationData, loading, onPageChange, onPageSizeChange }) => {
+
   // States
   const [rowSelection, setRowSelection] = useState({})
   const [data, setData] = useState(purchaseData)
@@ -90,21 +92,15 @@ const PurchaseListTable = ({ purchaseData = [], paginationData, loading, onPageC
     // Store original value for rollback
     const originalStatus = data.find(purchase => purchase._id === purchaseId)?.status
 
-    // Optimistic update
-    setData(prev => prev.map(purchase => (purchase._id === purchaseId ? { ...purchase, status: newStatus } : purchase)))
-
+    // Call backend first (no optimistic update)
     const result = await updatePurchaseStatus(purchaseId, newStatus)
 
     if (result.success) {
-      alert('status changed')
-    }
-
-    if (!result.success) {
-      // Rollback on failure
-      setData(prev =>
-        prev.map(purchase => (purchase._id === purchaseId ? { ...purchase, status: originalStatus } : purchase))
-      )
-      console.error('Failed to update status:', result.error)
+      // Update state only after success
+      setData(prev => prev.map(purchase => (purchase._id === purchaseId ? { ...purchase, status: newStatus } : purchase)))
+      showSuccess('Status changed successfully!')
+    } else {
+      showError(result.error || 'Failed to update status')
     }
   }
 
@@ -120,15 +116,13 @@ const PurchaseListTable = ({ purchaseData = [], paginationData, loading, onPageC
     const result = await createLots(purchaseId)
 
     if (result.success) {
-      alert('lots created')
-    }
-
-    if (!result.success) {
+      showSuccess('Lots created successfully!')
+    } else {
       // Rollback on failure
       setData(prev =>
         prev.map(purchase => (purchase._id === purchaseId ? { ...purchase, is_lots_created: false } : purchase))
       )
-      console.error('Failed to create lots:', result.error)
+      showError(result.error || 'Failed to create lots')
     }
   }
 

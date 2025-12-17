@@ -511,6 +511,9 @@ const SalesListTable = ({
                                     KG
                                   </th>
                                   <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>
+                                    Box Quantity
+                                  </th>
+                                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>
                                     Unit Price
                                   </th>
                                   <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>
@@ -535,6 +538,7 @@ const SalesListTable = ({
                                   <tr key={lotIndex} style={{ borderBottom: '1px solid #eee' }}>
                                     <td style={{ padding: '12px' }}>{lot.lotId?.lot_name || 'N/A'}</td>
                                     <td style={{ padding: '12px' }}>{lot.kg || 0}</td>
+                                    <td style={{ padding: '12px' }}>{lot.box_quantity || 0}</td>
                                     <td style={{ padding: '12px' }}>৳{(lot.unit_price || 0).toLocaleString()}</td>
                                     <td style={{ padding: '12px', fontWeight: 600, color: '#667eea' }}>
                                       ৳{(lot.selling_price || 0).toLocaleString()}

@@ -213,7 +213,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
           const product = row.original
 
           return (
-            <Link href={`/apps/products/edit/p001`} className='hover:text-blue-600 hover:underline'>
+            <Link href={`/apps/products/edit/${product.product_id}`} className='hover:text-blue-600 hover:underline'>
               {product.product_name}
             </Link>
           )
