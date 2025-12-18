@@ -13,7 +13,9 @@ const BASE_DEFAULTS = {
   commissionRate: 0,
   allowCommission: false,
   isCrated: false,
-  isBoxed: false
+  isBoxed: false,
+  is_discountable: false,
+  sell_by_piece: false
 }
 
 export default function ProductFormProvider({

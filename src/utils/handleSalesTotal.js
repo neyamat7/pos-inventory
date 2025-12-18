@@ -13,10 +13,19 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
       // console.log('cratePrice', cratePrice)
 
       // Get kg, cost price, and selling price
+      // Get kg, cost price, and selling price
       const kg = Number(item.kg) || 0
       const costPrice = Number(item.cost_price) || 0
       const sellingPrice = Number(item.selling_price) || 0
-      const discountKg = Number(item.discount_kg) || 0
+      
+      let discountKg = Number(item.discount_kg) || 0
+
+      // For crated products, discount_kg is per crate
+      if (item.isCrated) {
+        const totalCrates = (item.crate_type_one || 0) + (item.crate_type_two || 0)
+
+        discountKg = discountKg * totalCrates
+      }
 
       // --- Calculate discounted amount ---
       // const discountedAmount = Number((discountKg * costPrice).toFixed(2))
@@ -26,24 +35,30 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
       if (item.isBoxed) {
         // For boxed products
         discountedAmount = Number(item.discount_amount) || 0
+      } else if (item.sell_by_piece) {
+        // For piece-based products
+        discountedAmount = Number(item.discount_amount) || 0
       } else {
         // For kg-based products
         discountedAmount = Number((discountKg * costPrice).toFixed(2))
       }
 
       // Calculate total based on selling price (excluding discounted kg)
-      // const productBase = (kg - discountKg) * sellingPrice
-
       let productBase = 0
 
       if (item.isBoxed) {
         // For boxed products
         const boxQty = Number(item.box_quantity) || 0
 
-        productBase = boxQty * sellingPrice - discountedAmount
+        productBase = Math.max(0, boxQty * sellingPrice - discountedAmount)
+      } else if (item.sell_by_piece) {
+        // For piece-based products
+        const pieceQty = Number(item.piece_quantity) || 0
+
+        productBase = Math.max(0, pieceQty * sellingPrice - discountedAmount)
       } else {
         // For kg-based products
-        productBase = (kg - discountKg) * sellingPrice
+        productBase = Math.max(0, (kg - discountKg) * sellingPrice)
       }
 
       const isCommissioned = item.isCommissionable
@@ -68,22 +83,17 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
         const boxQty = Number(item.box_quantity) || 0
 
         subtotal = Number((boxQty * sellingPrice).toFixed(2))
+      } else if (item.sell_by_piece) {
+        const pieceQty = Number(item.piece_quantity) || 0
+
+        subtotal = Number((pieceQty * sellingPrice).toFixed(2))
       } else {
         subtotal = Number((kg * sellingPrice).toFixed(2))
       }
 
       // Final total = productAfterCommission + cratePrice
-      const total = Number(productAfterCommission.toFixed(2))
-
-      // let profit
-
-      // if (isCommissioned) {
-      //   // For commissionable products: profit = commission amount
-      //   profit = commissionAmount
-      // } else {
-      //   // For non-commissionable products
-      //   profit = Math.max(0, (kg - discountKg) * sellingPrice - (kg - discountKg) * costPrice)
-      // }
+      const total = Math.max(0, Number((productAfterCommission + cratePrice).toFixed(2)))
+ 
 
       let profit
 
@@ -97,6 +107,11 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
           const boxQty = Number(item.box_quantity) || 0
 
           profit = Math.max(0, boxQty * sellingPrice - discountedAmount - boxQty * costPrice)
+        } else if (item.sell_by_piece) {
+          // For piece-based products
+          const pieceQty = Number(item.piece_quantity) || 0
+
+          profit = Math.max(0, pieceQty * sellingPrice - discountedAmount - pieceQty * costPrice)
         } else {
           // For kg-based products
           profit = Math.max(0, (kg - discountKg) * sellingPrice - (kg - discountKg) * costPrice)
@@ -112,7 +127,8 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
         subtotal,
         total,
         profit,
-        discount_amount: discountedAmount
+        discount_amount: discountedAmount,
+        total_discount_kg: discountKg
       }
     })
   )

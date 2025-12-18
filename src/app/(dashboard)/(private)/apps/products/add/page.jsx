@@ -37,7 +37,9 @@ const AddProductPage = () => {
         commissionRate: Number(values.commissionRate),
         allowCommission: values.allowCommission,
         isCrated: values.isCrated,
-        isBoxed: values.isBoxed
+        isBoxed: values.isBoxed,
+        is_discountable: values.is_discountable,
+        sell_by_piece: values.sell_by_piece
       }
 
       const result = await createProduct(productPayload)

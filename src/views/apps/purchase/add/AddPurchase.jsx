@@ -52,6 +52,36 @@ const handleBoxQuantity = (setCartProducts, productId, personId, value) => {
   )
 }
 
+const handlePieceQuantity = (setCartProducts, productId, personId, value) => {
+  setCartProducts(prevCart =>
+    prevCart.map(item => {
+      if (item.product_id === productId && (item.supplier_id === personId || item.customer_id === personId)) {
+        return {
+          ...item,
+          piece_quantity: value < 0 ? 0 : value
+        }
+      }
+
+      return item
+    })
+  )
+}
+
+const handleDiscountChange = (setCartProducts, productId, personId, value) => {
+  setCartProducts(prevCart =>
+    prevCart.map(item => {
+      if (item.product_id === productId && (item.supplier_id === personId || item.customer_id === personId)) {
+        return {
+          ...item,
+          discount_amount: value < 0 ? 0 : value
+        }
+      }
+
+      return item
+    })
+  )
+}
+
 export default function AddPurchase({ productsData = [], suppliersData = [], categoriesData = [] }) {
   const skipNextEffect = useRef(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -119,6 +149,55 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
       return
     }
 
+    const isPieceType = product.sell_by_piece || false
+    const hasPieceTypeInCart = cartProducts.some(item => item.sell_by_piece)
+
+    // --- Piece-Type Exclusivity Logic ---
+    if (isPieceType) {
+      // If clicking a piece-type product, clear the cart and add only this one
+      setCartProducts([
+        {
+          ...product,
+          product_id: product._id,
+          product_name: product.productName,
+          supplier_id: selectedSupplier._id,
+          supplier_sl: selectedSupplier.basic_info?.sl || '',
+          supplier_name: selectedSupplier.basic_info?.name || '',
+          crate_type_one: 0,
+          crate_type_two: 0,
+          cratePrice: 0,
+          cost: product.basePrice ?? 0,
+          commission_rate: product.commissionRate ?? 0,
+          transportation: 0,
+          moshjid: 0,
+          van_vara: 0,
+          trading_post: 0,
+          labour: 0,
+          expenses: 0,
+          other_expenses: 0,
+          box_quantity: 0,
+          isBoxed: product.isBoxed || false,
+          isCrated: product.isCrated || false,
+          allowCommission: product.allowCommission || false,
+          sell_by_piece: true,
+          piece_quantity: 0,
+          is_discountable: product.is_discountable || false,
+          discount_amount: 0
+        }
+      ])
+
+      return
+    }
+
+    // If clicking a non-piece product but cart has a piece product, block it
+    if (hasPieceTypeInCart) {
+      toast.warning('Piece-type products must be purchased separately. Please remove it first.', {
+        position: 'top-center'
+      })
+
+      return
+    }
+
     setCartProducts(prevCart => {
       const newCartItem = {
         ...product,
@@ -140,7 +219,13 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
         expenses: 0,
         other_expenses: 0,
         box_quantity: 0,
-        isBoxed: product.isBoxed || false
+        isBoxed: product.isBoxed || false,
+        isCrated: product.isCrated || false,
+        allowCommission: product.allowCommission || false,
+        sell_by_piece: product.sell_by_piece || false,
+        piece_quantity: 0,
+        is_discountable: product.is_discountable || false,
+        discount_amount: 0
       }
 
       return [...prevCart, newCartItem]
@@ -196,115 +281,159 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
     setCommissionModal({ open: false, productId: null, supplierId: null, value: 0 })
   }
 
+  // Calculate which columns should be visible based on cart content
+  const showPieceQuantity = cartProducts.some(p => p.sell_by_piece)
+  const showBoxQuantity = cartProducts.some(p => p.isBoxed)
+  const showCrated = cartProducts.some(p => p.isCrated)
+  const showDiscount = cartProducts.some(p => p.is_discountable)
+  const showCommission = cartProducts.some(p => p.allowCommission)
+
   const columns = useMemo(
-    () => [
-      {
-        accessorKey: 'supplier_sl',
-        header: 'SL'
-      },
-      {
-        accessorKey: 'supplier_name',
-        header: 'Supplier'
-      },
-      {
-        accessorKey: 'product_name',
-        header: 'Product',
-        cell: ({ row }) => {
-          const product = row.original
+    () => {
+      const baseColumns = [
+        {
+          accessorKey: 'supplier_sl',
+          header: 'SL'
+        },
+        {
+          accessorKey: 'supplier_name',
+          header: 'Supplier'
+        },
+        {
+          accessorKey: 'product_name',
+          header: 'Product',
+          cell: ({ row }) => {
+            const product = row.original
 
-          return (
-            <Link href={`/apps/products/edit/${product.product_id}`} className='hover:text-blue-600 hover:underline'>
-              {product.product_name}
-            </Link>
-          )
-        }
-      },
-
-      {
-        accessorKey: 'box_quantity',
-        header: 'Box Quantity',
-        cell: ({ row }) => {
-          const product = row.original
-
-          if (!product.isBoxed) {
-            return null
+            return (
+              <Link href={`/apps/products/edit/${product.product_id}`} className='hover:text-blue-600 hover:underline'>
+                {product.product_name}
+              </Link>
+            )
           }
-
-          return (
-            <input
-              type='number'
-              min='0'
-              value={product.box_quantity === 0 ? '' : (product.box_quantity ?? '')}
-              placeholder='0'
-              onChange={e => {
-                const value = parseInt(e.target.value) || 0
-
-                handleBoxQuantity(setCartProducts, product.product_id, product.supplier_id, value)
-                handleExpenseChange()
-              }}
-              className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
-            />
-          )
         }
-      },
+      ]
 
-      {
-        accessorKey: 'crate_type_one',
-        header: 'Crate Type 1',
-        cell: ({ row }) => {
-          const product = row.original
+      if (showPieceQuantity) {
+        baseColumns.push({
+          accessorKey: 'piece_quantity',
+          header: 'Piece Quantity',
+          cell: ({ row }) => {
+            const product = row.original
 
-          if (product.isBoxed) {
-            return null
+            if (!product.sell_by_piece) {
+              return null
+            }
+
+            return (
+              <input
+                type='number'
+                min='0'
+                value={product.piece_quantity === 0 ? '' : (product.piece_quantity ?? '')}
+                placeholder='0'
+                onChange={e => {
+                  const value = parseInt(e.target.value) || 0
+
+                  handlePieceQuantity(setCartProducts, product.product_id, product.supplier_id, value)
+                  handleExpenseChange()
+                }}
+                className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
+              />
+            )
           }
+        })
+      }
 
-          return (
-            <input
-              type='number'
-              min='0'
-              value={product.crate_type_one === 0 ? '' : (product.crate_type_one ?? '')}
-              placeholder='0'
-              onChange={e => {
-                const value = parseInt(e.target.value) || 0
+      if (showBoxQuantity) {
+        baseColumns.push({
+          accessorKey: 'box_quantity',
+          header: 'Box Quantity',
+          cell: ({ row }) => {
+            const product = row.original
 
-                handleCrateCount(setCartProducts, product.product_id, product.supplier_id, 'one', value)
-                handleExpenseChange()
-              }}
-              className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
-            />
-          )
-        }
-      },
+            if (!product.isBoxed) {
+              return null
+            }
 
-      {
-        accessorKey: 'crate_type_two',
-        header: 'Crate Type 2',
-        cell: ({ row }) => {
-          const product = row.original
+            return (
+              <input
+                type='number'
+                min='0'
+                value={product.box_quantity === 0 ? '' : (product.box_quantity ?? '')}
+                placeholder='0'
+                onChange={e => {
+                  const value = parseInt(e.target.value) || 0
 
-          if (product.isBoxed) {
-            return null
+                  handleBoxQuantity(setCartProducts, product.product_id, product.supplier_id, value)
+                  handleExpenseChange()
+                }}
+                className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
+              />
+            )
           }
+        })
+      }
 
-          return (
-            <input
-              type='number'
-              min='0'
-              value={product.crate_type_two === 0 ? '' : (product.crate_type_two ?? '')}
-              placeholder='0'
-              onChange={e => {
-                const value = parseInt(e.target.value) || 0
+      if (showCrated) {
+        baseColumns.push(
+          {
+            accessorKey: 'crate_type_one',
+            header: 'Crate Type 1',
+            cell: ({ row }) => {
+              const product = row.original
 
-                handleCrateCount(setCartProducts, product.product_id, product.supplier_id, 'two', value)
-                handleExpenseChange()
-              }}
-              className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
-            />
-          )
-        }
-      },
+              if (!product.isCrated) {
+                return null
+              }
 
-      {
+              return (
+                <input
+                  type='number'
+                  min='0'
+                  value={product.crate_type_one === 0 ? '' : (product.crate_type_one ?? '')}
+                  placeholder='0'
+                  onChange={e => {
+                    const value = parseInt(e.target.value) || 0
+
+                    handleCrateCount(setCartProducts, product.product_id, product.supplier_id, 'one', value)
+                    handleExpenseChange()
+                  }}
+                  className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
+                />
+              )
+            }
+          },
+          {
+            accessorKey: 'crate_type_two',
+            header: 'Crate Type 2',
+            cell: ({ row }) => {
+              const product = row.original
+
+              if (!product.isCrated) {
+                return null
+              }
+
+              return (
+                <input
+                  type='number'
+                  min='0'
+                  value={product.crate_type_two === 0 ? '' : (product.crate_type_two ?? '')}
+                  placeholder='0'
+                  onChange={e => {
+                    const value = parseInt(e.target.value) || 0
+
+                    handleCrateCount(setCartProducts, product.product_id, product.supplier_id, 'two', value)
+                    handleExpenseChange()
+                  }}
+                  className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
+                />
+              )
+            }
+          }
+        )
+      }
+
+      baseColumns.push({
         accessorKey: 'cost',
         header: 'Cost(unit)',
         cell: ({ row }) => {
@@ -331,48 +460,94 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
             />
           )
         }
-      },
-      {
-        accessorKey: 'transportation',
-        header: 'Transportation'
-      },
-      {
-        accessorKey: 'moshjid',
-        header: 'Moshjid'
-      },
-      {
-        accessorKey: 'van_vara',
-        header: 'Van Vara'
-      },
+      })
 
-      {
-        accessorKey: 'commission_rate',
-        header: 'Commission',
-        cell: ({ row }) => {
-          const product = row.original
-          const pct = Number(product?.commission_rate) || 0
+      if (showDiscount) {
+        baseColumns.push({
+          accessorKey: 'discount_amount',
+          header: 'Discount',
+          cell: ({ row }) => {
+            const product = row.original
 
-          // console.log('product', product)
+            if (!product.is_discountable) {
+              return null
+            }
 
-          return (
-            <div className='flex items-center gap-2'>
-              <span>{pct > 0 ? `${pct}%` : 'N/A'}</span>
-              {pct > 0 && (
-                <button
-                  type='button'
-                  onClick={() => openCommissionEditor(product)}
-                  className='text-blue-600 hover:text-blue-800'
-                  title='Edit commiss ion'
-                >
-                  <FaEdit />
-                </button>
-              )}
-            </div>
-          )
+            return (
+              <input
+                type='number'
+                min='0'
+                value={product.discount_amount === 0 ? '' : (product.discount_amount ?? '')}
+                placeholder='0'
+                onChange={e => {
+                  const value = parseFloat(e.target.value) || 0
+
+                  handleDiscountChange(setCartProducts, product.product_id, product.supplier_id, value)
+                  handleExpenseChange()
+                }}
+                className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
+              />
+            )
+          }
+        })
+      }
+
+      baseColumns.push(
+        {
+          accessorKey: 'transportation',
+          header: 'Transportation'
+        },
+        {
+          accessorKey: 'moshjid',
+          header: 'Moshjid'
+        },
+        {
+          accessorKey: 'van_vara',
+          header: 'Van Vara'
+        },
+        {
+          accessorKey: 'trading_post',
+          header: 'Trading Post'
+        },
+        {
+          accessorKey: 'labour',
+          header: 'Labour'
         }
-      },
+      )
 
-      {
+      if (showCommission) {
+        baseColumns.push({
+          accessorKey: 'commission_rate',
+          header: 'Commission',
+          cell: ({ row }) => {
+            const product = row.original
+
+            if (!product.allowCommission) {
+              return null
+            }
+
+            const pct = Number(product?.commission_rate) || 0
+
+            return (
+              <div className='flex items-center gap-2'>
+                <span>{pct > 0 ? `${pct}%` : 'N/A'}</span>
+                {pct > 0 && (
+                  <button
+                    type='button'
+                    onClick={() => openCommissionEditor(product)}
+                    className='text-blue-600 hover:text-blue-800'
+                    title='Edit commiss ion'
+                  >
+                    <FaEdit />
+                  </button>
+                )}
+              </div>
+            )
+          }
+        })
+      }
+
+      baseColumns.push({
         id: 'actions',
         header: 'Action',
         cell: ({ row }) => {
@@ -387,9 +562,11 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
             </button>
           )
         }
-      }
-    ],
-    []
+      })
+
+      return baseColumns
+    },
+    [showPieceQuantity, showBoxQuantity, showCrated, showDiscount, showCommission]
   )
 
   const tableData = useMemo(() => cartProducts, [cartProducts])
@@ -422,7 +599,15 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
       const cleanProductName = item.product_name?.replace(/\s+/g, '_').toUpperCase() || 'ITEM'
 
       // const totalCrates = (item.crate_type_one || 0) + (item.crate_type_two || 0)
-      const totalUnits = item.isBoxed ? item.box_quantity || 0 : (item.crate_type_one || 0) + (item.crate_type_two || 0)
+      let totalUnits = 0
+
+      if (item.sell_by_piece) {
+        totalUnits = item.piece_quantity || 0
+      } else if (item.isBoxed) {
+        totalUnits = item.box_quantity || 0
+      } else {
+        totalUnits = (item.crate_type_one || 0) + (item.crate_type_two || 0)
+      }
 
       const lot_name = `${initials}-${formattedDate}-${formattedTime}-${cleanProductName}-${totalUnits}`
 
@@ -446,11 +631,15 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
         lot_name: item.lot_name,
         unit_Cost: item.cost ?? 0,
         commission_rate: item.commission_rate ?? 0,
+        isCrated: item.isCrated || false,
+        isBoxed: item.isBoxed || false,
+        isPieced: item.sell_by_piece || false,
         carat: {
           carat_Type_1: item.crate_type_one || 0,
           carat_Type_2: item.crate_type_two || 0
         },
         box_quantity: item.box_quantity || 0,
+        piece_quantity: item.piece_quantity || 0,
         expenses: {
           labour: item.labour || 0,
           transportation: item.transportation || 0,
@@ -503,6 +692,8 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
       } else {
         showAlert(res?.error || 'Failed to create purchase', 'error')
       }
+
+      // console.log('Purchase payload:', payload)
     } catch (err) {
       console.error('handleSubmitPurchaseOrder error:', err)
       showAlert('Failed to create purchase', 'error')

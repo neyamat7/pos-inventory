@@ -2,6 +2,8 @@
 
 import React from 'react'
  
+import { getImageUrl } from '@/utils/getImageUrl'
+
 const ShowProductList = ({ filteredProducts = [], handleCartProductClick }) => {
   return (
     <div className='lg:w-4/12 xl:w-4/12'>
@@ -13,7 +15,7 @@ const ShowProductList = ({ filteredProducts = [], handleCartProductClick }) => {
             className='bg-white rounded-md p-3 border border-gray-200 hover:border-red-400 hover:shadow-md transition-shadow cursor-pointer h-fit'
           >
             <img
-              src={product.productImage || '/placeholder.svg'}
+              src={getImageUrl(product.productImage) || '/placeholder.svg'}
               alt={product.productName}
               className='w-full h-28 object-contain mb-2'
             />

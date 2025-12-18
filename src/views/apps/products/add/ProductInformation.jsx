@@ -90,11 +90,18 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
       } else {
         console.error('Image upload failed:', uploadResult.error)
 
+        // Clear the preview on failure
+        setImagePreview('')
+
         // You can add a toast notification here
         showError(`Image upload failed: ${uploadResult.error}`)
       }
     } catch (error) {
       console.error('Image upload error:', error)
+      
+      // Clear the preview on error
+      setImagePreview('')
+      
       showError('Error uploading image. Please try again.')
     } finally {
       setImageUploading(false)
@@ -273,53 +280,92 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
             />
           </Grid>
 
-          {/* PRODUCT IMAGE UPLOAD SECTION */}
+          {/* Is Discountable */}
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <Controller
+              name='is_discountable'
+              control={control}
+              render={({ field }) => (
+                <CustomTextField
+                  select
+                  fullWidth
+                  label='Is Discountable?'
+                  {...field}
+                  value={field.value ? 'yes' : 'no'}
+                  onChange={e => field.onChange(e.target.value === 'yes')}
+                  disabled={loading}
+                >
+                  <MenuItem value='yes'>Yes</MenuItem>
+                  <MenuItem value='no'>No</MenuItem>
+                </CustomTextField>
+              )}
+            />
+          </Grid>
 
+          {/* Sell by Piece */}
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <Controller
+              name='sell_by_piece'
+              control={control}
+              render={({ field }) => (
+                <CustomTextField
+                  select
+                  fullWidth
+                  label='Sell by Piece?'
+                  {...field}
+                  value={field.value ? 'yes' : 'no'}
+                  onChange={e => field.onChange(e.target.value === 'yes')}
+                  disabled={loading}
+                >
+                  <MenuItem value='yes'>Yes</MenuItem>
+                  <MenuItem value='no'>No</MenuItem>
+                </CustomTextField>
+              )}
+            />
+          </Grid>
+
+          {/* PRODUCT IMAGE UPLOAD SECTION */}
           {!isEdit && (
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <Card variant='outlined'>
-                <CardHeader title='Product Image' sx={{ pb: 2 }} />
-                <CardContent className='space-y-4'>
-                  {/*  FILE UPLOAD INPUT   */}
-                  <div className='flex flex-col gap-2'>
-                    <input
-                      type='file'
-                      accept='image/*'
-                      onChange={handleImageUpload}
-                      disabled={loading || imageUploading}
-                      className='block w-full text-sm text-textSecondary
-            file:mr-4 file:py-2 file:px-4
-            file:rounded-md file:border-0
-            file:text-sm file:font-medium
-            file:bg-primary file:text-white
-            hover:file:bg-primaryDark disabled:opacity-50'
+              <div className='flex flex-col gap-2'>
+                <div className='flex items-center gap-4'>
+                  <label className='text-sm font-medium text-textPrimary whitespace-nowrap'>
+                    Product Image
+                  </label>
+                  <input
+                    type='file'
+                    accept='image/*'
+                    onChange={handleImageUpload}
+                    disabled={loading || imageUploading}
+                    className='block w-full text-sm text-textSecondary
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-md file:border-0
+                      file:text-sm file:font-medium
+                      file:bg-primary file:text-white
+                      hover:file:bg-primaryDark disabled:opacity-50'
+                  />
+                </div>
+                {imageUploading && (
+                  <Typography variant='caption' color='text.secondary'>
+                    Uploading image...
+                  </Typography>
+                )}
+                {imagePreview && (
+                  <div className='mt-2'>
+                    <Typography variant='caption' color='text.secondary' className='mb-1 block'>
+                      Preview:
+                    </Typography>
+                    <img
+                      src={imagePreview}
+                      alt='Product preview'
+                      className='rounded-lg max-w-48 max-h-48 object-cover shadow-md border'
+                      onError={e => {
+                        e.target.style.display = 'none'
+                      }}
                     />
-                    {/* Uploading status indicator */}
-                    {imageUploading && (
-                      <Typography variant='body2' color='text.secondary'>
-                        Uploading image...
-                      </Typography>
-                    )}
                   </div>
-
-                  {/* ========== IMAGE PREVIEW ========== */}
-                  {imagePreview && (
-                    <div className='flex flex-col items-center gap-2'>
-                      <Typography variant='body2' color='text.secondary'>
-                        Preview:
-                      </Typography>
-                      <img
-                        src={imagePreview}
-                        alt='Product preview'
-                        className='rounded-lg max-w-48 max-h-48 object-cover shadow-md border'
-                        onError={e => {
-                          e.target.style.display = 'none'
-                        }}
-                      />
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                )}
+              </div>
             </Grid>
           )}
 

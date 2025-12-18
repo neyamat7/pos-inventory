@@ -215,6 +215,24 @@ const AllLotListTable = ({
       }
     },
     {
+      accessorKey: 'piece_quantity',
+      header: 'Total Pieces',
+      cell: ({ row }) => {
+        const pieceQty = row.original.piece_quantity || 0
+
+        return pieceQty > 0 ? pieceQty : '—'
+      }
+    },
+    {
+      accessorKey: 'remaining_pieces',
+      header: 'Remaining Pieces',
+      cell: ({ row }) => {
+        const remainingPieces = row.original.remaining_pieces || 0
+
+        return remainingPieces > 0 ? remainingPieces : '—'
+      }
+    },
+    {
       accessorKey: 'costs.unitCost',
       header: 'Unit Cost',
       cell: ({ getValue }) => {
@@ -443,9 +461,9 @@ const AllLotListTable = ({
                     <thead>
                       <tr className='bg-gray-100 border-b-2 border-gray-200'>
                         <th className='px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase'>#</th>
-                        {/* Conditionally show Kg column only for non-box products */}
-                        {!(selectedLot?.box_quantity > 0) && (
-                          <th className='px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase'>Kg</th>
+                        {/* Conditionally show Kg column only for non-box and non-piece products */}
+                        {!(selectedLot?.box_quantity > 0 || selectedLot?.isPieced) && (
+                          <th className='px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase'>Kg</th>
                         )}
                         
                           <th className='px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase'>
@@ -455,9 +473,9 @@ const AllLotListTable = ({
                         <th className='px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase'>
                           Unit Price
                         </th>
-                        {/* Show Box or Crate based on product type */}
+                        {/* Show Box, Piece or Crate based on product type */}
                         <th className='px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase'>
-                          {selectedLot?.box_quantity > 0 ? 'Box' : 'Crate'}
+                          {selectedLot?.isPieced ? 'Piece' : selectedLot?.box_quantity > 0 ? 'Box' : 'Crate'}
                         </th>
                         <th className='px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase'>Total</th>
                       </tr>
@@ -466,8 +484,8 @@ const AllLotListTable = ({
                       {lotSaleData.sales?.map((sale, index) => (
                         <tr key={index} className='border-b border-gray-200 hover:bg-gray-50 transition-colors'>
                           <td className='px-4 py-3 text-sm font-medium text-gray-700'>{index + 1}</td>
-                          {/* Conditionally show Kg column only for non-box products */}
-                          {!(selectedLot?.box_quantity > 0) && (
+                          {/* Conditionally show Kg column only for non-box and non-piece products */}
+                          {!(selectedLot?.box_quantity > 0 || selectedLot?.isPieced) && (
                             <td className='px-4 py-3 text-center'>
                               <span className='inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold'>
                                 {sale.kg || 0} kg
@@ -488,7 +506,11 @@ const AllLotListTable = ({
                           </td>
                           <td className='px-4 py-3 text-center'>
                             <span className='inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold'>
-                              {selectedLot?.box_quantity > 0 ? (sale.total_crate || 0) : (sale.total_crate || 0)}
+                              {selectedLot?.isPieced
+                                ? (sale.piece_quantity || 0)
+                                : selectedLot?.box_quantity > 0
+                                  ? (sale.total_crate || 0)
+                                  : (sale.total_crate || 0)}
                             </span>
                           </td>
                           <td className='px-4 py-3 text-right text-base font-bold text-green-600'>
@@ -588,8 +610,8 @@ const AllLotListTable = ({
                   <div>
                     <p className='text-sm font-medium text-gray-600 mb-3'>Sales Summary</p>
                     <div className='space-y-2'>
-                      {/* Conditionally show Total Kg Sold only for non-box products */}
-                      {!(selectedLot?.box_quantity > 0) && (
+                      {/* Conditionally show Total Kg Sold only for non-box and non-piece products */}
+                      {!(selectedLot?.box_quantity > 0 || selectedLot?.isPieced) && (
                         <div className='flex justify-between items-center'>
                           <span className='text-sm text-gray-600'>Total Kg Sold:</span>
                           <span className='text-base font-bold text-gray-800'>
@@ -599,12 +621,14 @@ const AllLotListTable = ({
                       )}
                       <div className='flex justify-between items-center'>
                         <span className='text-sm text-gray-600'>
-                          {selectedLot?.box_quantity > 0 ? 'Total Boxes:' : 'Total Crates:'}
+                          {selectedLot?.isPieced ? 'Total Pieces:' : selectedLot?.box_quantity > 0 ? 'Total Boxes:' : 'Total Crates:'}
                         </span>
                         <span className='text-base font-bold text-gray-800'>
-                          {selectedLot?.box_quantity > 0
-                            ? lotSaleData.sales?.reduce((sum, sale) => sum + (sale.total_crate || 0), 0)
-                            : lotSaleData.sales?.reduce((sum, sale) => sum + (sale.total_crate || 0), 0)}
+                          {lotSaleData.sales?.reduce((sum, sale) => {
+                            if (selectedLot?.isPieced) return sum + (sale.piece_quantity || 0)
+
+                            return sum + (sale.total_crate || 0)
+                          }, 0)}
                         </span>
                       </div>
                       <div className='flex justify-between items-center'>

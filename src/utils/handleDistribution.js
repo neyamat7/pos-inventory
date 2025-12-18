@@ -1,14 +1,4 @@
-// const calculateExpenseValue = (amount, type, totalCrates, itemCrates) => {
-//   if (type === 'divided') {
-//     // Divide proportionally based on crate count
-//     if (totalCrates === 0) return 0
-
-//     return Number(((Number(amount) * itemCrates) / totalCrates).toFixed(2))
-//   }
-
-//   // For 'each' type, return the full amount (will be handled per supplier)
-//   return Number(Number(amount).toFixed(2))
-// }
+ 
 
 const calculateExpenseValue = (amount, type, totalUnits, itemUnits) => {
   if (type === 'divided') {
@@ -25,17 +15,13 @@ const calculateExpenseValue = (amount, type, totalUnits, itemUnits) => {
 export const handleDistributionExpense = (data = {}, cartProducts, setCartProducts, suppliersData = []) => {
   const isDataEmpty = !data || Object.keys(data).length === 0
 
-  // Calculate total crates across all products
-  // const totalCrates = cartProducts.reduce((sum, item) => {
-  //   const typeOne = item.crate_type_one || 0
-  //   const typeTwo = item.crate_type_two || 0
-
-  //   return sum + typeOne + typeTwo
-  // }, 0)
+ 
 
   const totalUnits = cartProducts.reduce((sum, item) => {
     if (item.isBoxed) {
       return sum + (item.box_quantity || 0)
+    } else if (item.sell_by_piece) {
+      return sum + (item.piece_quantity || 0)
     } else {
       const typeOne = item.crate_type_one || 0
       const typeTwo = item.crate_type_two || 0
@@ -57,24 +43,7 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
     supplierGroups[supplierId].push(item.product_id)
   })
 
-  // Helper function to calculate expense for any type
-  // const getExpenseValue = (expenseKey, amountKey, typeKey, item, itemCrates, isFirstProductForSupplier) => {
-  //   if (isDataEmpty) {
-  //     return item[expenseKey] || 0
-  //   }
-
-  //   const amount = data[amountKey]
-  //   const type = data[typeKey]
-
-  //   if (type === 'divided') {
-  //     return calculateExpenseValue(amount, 'divided', totalCrates, itemCrates)
-  //   } else if (type === 'each' && isFirstProductForSupplier) {
-  //     return calculateExpenseValue(amount, 'each', totalCrates, itemCrates)
-  //   }
-
-  //   return 0
-  // }
-
+ 
   const getExpenseValue = (expenseKey, amountKey, typeKey, item, itemUnits, isFirstProductForSupplier) => {
     if (isDataEmpty) {
       return item[expenseKey] || 0
@@ -94,9 +63,16 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
 
   setCartProducts(prevCart =>
     prevCart.map(item => {
-      // Calculate item's crate count
-      // const itemCrates = (item.crate_type_one || 0) + (item.crate_type_two || 0)
-      const itemUnits = item.isBoxed ? item.box_quantity || 0 : (item.crate_type_one || 0) + (item.crate_type_two || 0)
+      // Calculate item's unit count based on type
+      let itemUnits = 0
+
+      if (item.isBoxed) {
+        itemUnits = item.box_quantity || 0
+      } else if (item.sell_by_piece) {
+        itemUnits = item.piece_quantity || 0
+      } else {
+        itemUnits = (item.crate_type_one || 0) + (item.crate_type_two || 0)
+      }
 
       // Check if this is the first product for this supplier (for "each" type)
       const isFirstProductForSupplier = supplierGroups[item.supplier_id]?.[0] === item.product_id
@@ -152,19 +128,10 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
       // --- get supplier info ---
       const supplier = suppliersData?.find(s => s._id === item.supplier_id)
 
-      // --- calculate crate prices for both types ---
-      // const crateInfo = supplier?.crate_info || {}
-      // const typeOnePrice = crateInfo.crate1Price || 0
-      // const typeTwoPrice = crateInfo.crate2Price || 0
-
-      // const typeOneQty = item.crate_type_one || 0
-      // const typeTwoQty = item.crate_type_two || 0
-
-      // const cratePrice = Number((typeOneQty * typeOnePrice + typeTwoQty * typeTwoPrice).toFixed(2))
-
+     
       let cratePrice = 0
 
-      if (!item.isBoxed) {
+      if (!item.isBoxed && !item.sell_by_piece) {
         const crateInfo = supplier?.crate_info || {}
         const typeOnePrice = crateInfo.crate1Price || 0
         const typeTwoPrice = crateInfo.crate2Price || 0

@@ -116,7 +116,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         piece_quantity: 0,
         sell_by_piece: product.sell_by_piece || false,
         discount_kg: 0,
-        total_discount_kg: 0,
         discount_amount: 0,
         subtotal: 0,
         total: 0,
@@ -213,7 +212,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   const vatAmount = +(totalDueAmount * vatRate).toFixed(2)
 
   // Update payable amount calculation
-  const payableAmount = +(totalDueAmount + vatAmount).toFixed(2)
+  const payableAmount = +(totalDueAmount + vatAmount + extraCrateType1Price + extraCrateType2Price).toFixed(2)
 
   // Open the commission editor for a row
   const openCommissionEditor = item => {
@@ -770,16 +769,32 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
       // ========== VALIDATE DISCOUNT ==========
       const kg = item.kg || 0
-      const totalDiscountKg = item.total_discount_kg || 0
+      const discountKg = item.discount_kg || 0
 
-      if (totalDiscountKg > kg) {
-        toast.error(
-          `Discount Kg exceeded for "${item.product_name}"! ` +
-            `Total Discount: ${totalDiscountKg} kg, Total Weight: ${kg} kg`
-        )
-        setIsSubmitting(false)
+      if (item.isCrated) {
+        const totalCrates = (item.crate_type_one || 0) + (item.crate_type_two || 0)
+        const totalDiscountKg = discountKg * totalCrates
 
-        return
+        if (totalDiscountKg > kg) {
+          toast.error(
+            `Discount Kg exceeded for "${item.product_name}"! ` +
+              `Total Discount: ${totalDiscountKg} kg, Total Weight: ${kg} kg`
+          )
+          setIsSubmitting(false)
+
+          return
+        }
+      } else if (!item.isBoxed && !item.sell_by_piece) {
+        // For regular kg products
+        if (discountKg > kg) {
+          toast.error(
+            `Discount Kg exceeded for "${item.product_name}"! ` +
+              `Discount: ${discountKg} kg, Total Weight: ${kg} kg`
+          )
+          setIsSubmitting(false)
+
+          return
+        }
       }
     }
 
@@ -789,13 +804,12 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       const kg = item.kg || 0
       const boxQty = item.box_quantity || 0
       const pieceQty = item.piece_quantity || 0
-      const discountKg = item.total_discount_kg || 0
+      const discountKg = item.discount_kg || 0
       const discountAmount = item.discount_amount || 0
       const sellingPrice = item.selling_price || 0
-      const unitCost = item.cost_price || 0
+      const unitCost = item.lot_selected.unit_cost || 0
       const isBoxed = item.isBoxed || false
       const isPieced = item.sell_by_piece || false
-      const isCrated = item.isCrated || false
 
       let totalPrice = 0
       let discountedPrice = 0
@@ -815,16 +829,16 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         // For kg-based products
         totalPrice = Number((kg * sellingPrice).toFixed(2))
         discountedPrice = Number(((kg - discountKg) * sellingPrice).toFixed(2))
-        finalDiscountAmount = Number((discountKg * sellingPrice).toFixed(2))
+        finalDiscountAmount = Number((discountKg * unitCost).toFixed(2))
       }
 
       // ========== LOT COMMISSION (from lot data) ==========
       const lotCommissionRate = item.lot_selected.commission_rate || 0
-      const lotCommissionAmount = Number((discountedPrice * (lotCommissionRate / 100)).toFixed(2))
+      const lotCommissionAmount = Number((totalPrice * (lotCommissionRate / 100)).toFixed(2))
 
       // ========== CUSTOMER COMMISSION (from cart item - now moved to lot level) ==========
       const customerCommissionRate = item.commission_rate || 0
-      const customerCommissionAmount = Number((discountedPrice * (customerCommissionRate / 100)).toFixed(2))
+      const customerCommissionAmount = Number((totalPrice * (customerCommissionRate / 100)).toFixed(2))
 
       // ========== LOT PROFIT CALCULATION ==========
       let lotProfit = 0
@@ -833,13 +847,13 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         lotProfit = customerCommissionAmount
       } else {
         if (isBoxed) {
-          // For boxed products: discountedPrice - (box_qty * unit_cost)
-          lotProfit = Number((discountedPrice - boxQty * unitCost).toFixed(2))
+          // For boxed products: (box_qty * selling_price - discount_amount) - (box_qty * unit_cost)
+          lotProfit = Number((boxQty * sellingPrice - finalDiscountAmount - boxQty * unitCost).toFixed(2))
         } else if (isPieced) {
-          // For piece-based products: discountedPrice - (piece_qty * unit_cost)
-          lotProfit = Number((discountedPrice - pieceQty * unitCost).toFixed(2))
+          // For piece-based products: (piece_qty * selling_price - discount_amount) - (piece_qty * unit_cost)
+          lotProfit = Number((pieceQty * sellingPrice - finalDiscountAmount - pieceQty * unitCost).toFixed(2))
         } else {
-          // For kg-based products: (kg - discountKg) * (sellingPrice - unitCost)
+          // For kg-based products
           lotProfit = Number(((kg - discountKg) * (sellingPrice - unitCost)).toFixed(2))
         }
 
@@ -852,13 +866,13 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         box_quantity: isBoxed ? boxQty : 0,
         isBoxed: isBoxed,
         isPieced: isPieced,
-        isCrated: isCrated,
         piece_quantity: isPieced ? pieceQty : 0,
         discount_Kg: isBoxed || isPieced ? 0 : discountKg,
         discount_amount: finalDiscountAmount,
         unit_price: sellingPrice,
         selling_price: discountedPrice,
         total_price: totalPrice,
+        discount_amount: discountAmount,
         crate_type1: item.crate_type_one || 0,
         crate_type2: item.crate_type_two || 0,
 
@@ -1008,11 +1022,9 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       return
     }
 
-    
-
     const lot = lotModal.selectedLot
     const sellQty = parseFloat(lot.sell_qty) || 0
-    const currentSold = parseFloat(lot.sales?.totalKgSold || 0)
+    const currentSold = parseFloat(lot.totalKgSold) || 0 // Use totalKgSold from sales
 
     // Validate: must enter a quantity
     if (sellQty <= 0) {
@@ -1025,15 +1037,12 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     setCartProducts(prev => {
       const updated = prev.map(item => {
         if (item.cart_item_id === lotModal.cartItemId) {
-          const isBoxed = item.isBoxed || false
-          const isPieced = item.sell_by_piece || false
-
           return {
             ...item,
             lot_selected: {
               lot_id: lot._id,
               lot_name: lot.lot_name,
-              supplier_id: lot.supplierId?._id,
+              supplier_id: lot.supplierId,
               supplier_name: lot.supplierId?.basic_info?.name,
               product_id: lot.productsId?._id,
               product_name: lot.productsId?.productName,
@@ -1046,17 +1055,16 @@ export default function POSSystem({ productsData = [], customersData = [], categ
               status: lot.status,
               carat_type_1: lot.carat?.carat_Type_1 || 0,
               carat_type_2: lot.carat?.carat_Type_2 || 0,
-              remaining_crate_Type_1: lot.carat?.remaining_crate_Type_1,
-              remaining_crate_Type_2: lot.carat?.remaining_crate_Type_2,
-              remaining_boxes: lot.remaining_boxes,
-              remaining_pieces: lot.remaining_pieces
+              remaining_crate_Type_1: lot?.carat?.remaining_crate_Type_1,
+              remaining_crate_Type_2: lot?.carat?.remaining_crate_Type_2,
+              remaining_boxes: lot?.remaining_boxes
             },
 
-            kg: isBoxed || isPieced ? 0 : sellQty,
-            box_quantity: isBoxed ? sellQty : 0,
-            piece_quantity: isPieced ? sellQty : 0,
-            cost_price: lot.costs?.unitCost || 0,
-            selling_price: item.selling_price || lot.costs?.unitCost || 0
+            // kg: sellQty, // Auto-fill kg field
+            kg: item.isBoxed ? 0 : sellQty,
+            box_quantity: item.isBoxed ? sellQty : 0,
+            cost_price: lot.costs?.unitCost || 0, // Update cost price from lot
+            selling_price: item.selling_price || lot.costs?.unitCost || 0 // Keep current or use cost
           }
         }
 

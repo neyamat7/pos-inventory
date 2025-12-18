@@ -62,7 +62,9 @@ export default function EditProduct({ id, productData: initialProductData }) {
         commissionRate: Number(values.commissionRate),
         allowCommission: values.allowCommission,
         isCrated: values.isCrated,
-        isBoxed: values.isBoxed
+        isBoxed: values.isBoxed,
+        is_discountable: values.is_discountable,
+        sell_by_piece: values.sell_by_piece
       }
 
       const result = await updateProduct(id, productPayload)
@@ -109,7 +111,9 @@ export default function EditProduct({ id, productData: initialProductData }) {
       commissionRate: product.commissionRate || 0,
       allowCommission: product.allowCommission || false,
       isCrated: product.isCrated || false,
-      isBoxed: product.isBoxed || false
+      isBoxed: product.isBoxed || false,
+      is_discountable: product.is_discountable || false,
+      sell_by_piece: product.sell_by_piece || false
     }
   }
 
