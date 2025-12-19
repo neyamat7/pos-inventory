@@ -184,3 +184,20 @@ export async function updateCrateStatus(id, status) {
     }
   }
 }
+export async function addCustomerBalance(balanceData) {
+  try {
+    const response = await api.post('/balance/add-customer-balance', balanceData)
+
+    return {
+      success: true,
+      data: response.data
+    }
+  } catch (error) {
+    console.error('Add customer balance error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to add customer balance'
+    }
+  }
+}

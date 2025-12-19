@@ -552,7 +552,7 @@ const SupplierListTable = ({
             style={{ backdropFilter: 'blur(4px)' }}
           >
             <div
-              className='w-full max-w-md bg-white/80 backdrop-blur-lg text-gray-800 rounded-2xl shadow-2xl p-6 transition-all duration-300 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent'
+              className='w-full max-w-md bg-white backdrop-blur-lg text-gray-800 rounded-2xl shadow-2xl p-6 transition-all duration-300 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent'
               onClick={e => e.stopPropagation()}
             >
               <Typography variant='h6' className='mb-4 font-semibold text-gray-900 text-center'>

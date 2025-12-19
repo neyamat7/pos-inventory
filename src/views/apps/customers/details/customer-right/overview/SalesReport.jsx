@@ -22,8 +22,8 @@ import CustomerCrateHistoryTable from './tables/CustomerCrateHistoryTable'
 const SalesReport = ({ customerId, initialSalesData, initialBalanceData, initialCrateHistoryData }) => {
   const [activeTab, setActiveTab] = useState('sales')
   const [searchValue, setSearchValue] = useState('')
-  const [fromDate, setFromDate] = useState(dayjs().subtract(1, 'month').format('YYYY-MM-DD'))
-  const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'))
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
 
   // State for sales data
   const [salesData, setSalesData] = useState(initialSalesData)
@@ -39,11 +39,11 @@ const SalesReport = ({ customerId, initialSalesData, initialBalanceData, initial
   const tabs = [
     { key: 'sales', label: 'Sales', icon: <ShoppingCart size={16} /> },
 
-    { key: 'crateHistory', label: 'Crate History', icon: <Package size={16} /> }
+    { key: 'crateHistory', label: 'Crate History', icon: <Package size={16} /> },
 
     // { key: 'payments', label: 'Payments', icon: <CreditCard size={16} /> },
 
-    // { key: 'balanceHistory', label: 'Balance History', icon: <CreditCard size={16} /> }
+    { key: 'balanceHistory', label: 'Balance History', icon: <CreditCard size={16} /> }
 
     // { key: 'returns', label: 'Returns', icon: <RotateCcw size={16} /> }
   ]
@@ -125,6 +125,8 @@ const SalesReport = ({ customerId, initialSalesData, initialBalanceData, initial
       fetchSales(1, pagination.limit, searchValue, fromDate, toDate)
     } else if (activeTab === 'crateHistory') {
       fetchCrateHistory(1, pagination.limit)
+    } else if (activeTab === 'balanceHistory') {
+      fetchBalanceHistory(1, pagination.limit, fromDate, toDate)
     }
   }, [searchValue, fromDate, toDate, activeTab])
 
@@ -134,6 +136,8 @@ const SalesReport = ({ customerId, initialSalesData, initialBalanceData, initial
       fetchSales(page, limit, searchValue, fromDate, toDate)
     } else if (activeTab === 'crateHistory') {
       fetchCrateHistory(page, limit)
+    } else if (activeTab === 'balanceHistory') {
+      fetchBalanceHistory(page, limit, fromDate, toDate)
     }
   }
 
@@ -162,16 +166,16 @@ const SalesReport = ({ customerId, initialSalesData, initialBalanceData, initial
           />
         )
 
-      // case 'balanceHistory':
-      //   return (
-      //     <BalanceHistoryTable
-      //       data={balanceData?.data?.balances}
-      //       pagination={pagination}
-      //       total={balanceData?.data?.total}
-      //       onPaginationChange={handlePaginationChange}
-      //       loading={loading}
-      //     />
-      //   )
+      case 'balanceHistory':
+        return (
+          <BalanceHistoryTable
+            data={balanceData?.data?.data?.balances || []}
+            pagination={pagination}
+            total={balanceData?.data?.data?.total || 0}
+            onPaginationChange={handlePaginationChange}
+            loading={loading}
+          />
+        )
 
       // case 'returns':
       //   return <CustomerReturnTable data={customerReturns} />

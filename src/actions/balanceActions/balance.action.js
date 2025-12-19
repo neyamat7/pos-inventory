@@ -14,9 +14,11 @@ export async function getBalanceHistory(id, page = 1, limit = 10, fromDate = '',
 
     const response = await api.get(`/balance/all/${id}?${params.toString()}`)
 
+    // console.log('Get balance history response:', response)
+
     return {
       success: true,
-      data: response.data
+      data: response
     }
   } catch (error) {
     console.error('Get balance history error:', error)

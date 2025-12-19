@@ -700,9 +700,18 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     for (const item of cartProducts) {
       // Check if this is a crate-based product
       if (item.isCrated) {
-        console.log('lot selected', item.lot_selected)
         const selectedCrateType1 = item.crate_type_one || 0
         const selectedCrateType2 = item.crate_type_two || 0
+
+        // Validate that at least one crate is provided
+        if (selectedCrateType1 === 0 && selectedCrateType2 === 0) {
+          toast.error(`Please provide crate quantity for crated product "${item.product_name}"`)
+          setIsSubmitting(false)
+
+          return
+        }
+
+        console.log('lot selected', item.lot_selected)
 
         // Get available crates from the selected lot
         const availableCrateType1 = item.lot_selected?.remaining_crate_Type_1 || 0
@@ -899,11 +908,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       return {
         productId: pid,
         selected_lots: selectedLots
-
-        // product_name: items[0].product_name,
-        // customer_commission_rate: customerCommissionRate,
-        // customer_commission_amount: customerCommissionAmount,
-        // profit: profit
       }
     })
 
@@ -973,22 +977,20 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     console.log('Sales payload:', JSON.stringify(payload, null, 2))
 
     try {
-      // const result = await createSale(payload)
+      const result = await createSale(payload)
 
-      // if (result.success) {
-      //   toast.success('Product sold successfully!')
+      if (result.success) {
+        toast.success('Product sold successfully!')
 
-      //   console.log('Sale response:', result.data)
+        console.log('Sale response:', result.data)
 
-      //   setLastSaleData({
-      //     ...payload,
-      //     printTrigger: Date.now()
-      //   })
-      // } else {
-      //   toast.error(result.error || 'Failed to create sale')
-      // }
-
-    console.log('Sale response:', payload)
+        setLastSaleData({
+          ...payload,
+          printTrigger: Date.now()
+        })
+      } else {
+        toast.error(result.error || 'Failed to create sale')
+      }
 
     } catch (error) {
       console.error('Sale submission error:', error)

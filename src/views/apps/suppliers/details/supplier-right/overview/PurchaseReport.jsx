@@ -30,8 +30,8 @@ const PurchaseReport = ({
 }) => {
   const [activeTab, setActiveTab] = useState('purchases')
   const [searchValue, setSearchValue] = useState('')
-  const [fromDate, setFromDate] = useState(dayjs().subtract(1, 'month').format('YYYY-MM-DD'))
-  const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'))
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
 
   // State for lots data
   const [lotsData, setLotsData] = useState(initialLotsData)
@@ -163,8 +163,7 @@ const PurchaseReport = ({
     } else if (activeTab === 'stock') {
       fetchLots(1, pagination.limit, searchValue, '', '')
     } else if (activeTab === 'balanceHistory') {
-      // Don't send dates - backend has date filtering issues
-      fetchBalanceHistory(1, pagination.limit, '', '')
+      fetchBalanceHistory(1, pagination.limit, fromDate, toDate)
     } else if (activeTab === 'payments') {
       fetchPayments(1, pagination.limit)
     }
@@ -177,7 +176,7 @@ const PurchaseReport = ({
     } else if (activeTab === 'stock') {
       fetchLots(page, limit, searchValue, fromDate, toDate)
     } else if (activeTab === 'balanceHistory') {
-      fetchBalanceHistory(page, limit, '', '')
+      fetchBalanceHistory(page, limit, fromDate, toDate)
     } else if (activeTab === 'payments') {
       fetchPayments(page, limit)
     }
@@ -221,9 +220,9 @@ const PurchaseReport = ({
       case 'balanceHistory':
         return (
           <BalanceHistoryTable
-            data={balanceData?.data?.balances || []}
+            data={balanceData?.data?.data?.balances || []}
             pagination={pagination}
-            total={balanceData?.data?.total || 0}
+            total={balanceData?.data?.data?.total || 0}
             onPaginationChange={handlePaginationChange}
             loading={loading}
           />

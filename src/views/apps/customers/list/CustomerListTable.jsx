@@ -46,10 +46,10 @@ import { getInitials } from '@/utils/getInitials'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
-import { updateCustomer } from '@/actions/customerActions'
-import { addBalance } from '@/actions/supplierAction'
+import { updateCustomer, addCustomerBalance } from '@/actions/customerActions'
 
 import { getImageUrl } from '@/utils/getImageUrl'
+import { createPortal } from 'react-dom'
 
 // -------------------- utils --------------------
 const fuzzyFilter = (row, columnId, value, addMeta) => {
@@ -243,6 +243,25 @@ const CustomerListTable = ({
               options={[
 
                 {
+                  text: 'Add Balance',
+                  icon: 'tabler-coin',
+                  menuItemProps: {
+                    onClick: () => {
+                      setSelectedCustomer(row.original)
+                      setBalanceForm({
+                        date: new Date().toISOString().split('T')[0],
+                        amount: '',
+                        transaction_Id: '',
+                        slip_img: null,
+                        note: '',
+                        payment_method: 'cash'
+                      })
+                      setOpenBalanceModal(true)
+                    },
+                    className: 'flex items-center'
+                  }
+                },
+                {
                   text: 'Update Crate',
                   icon: 'tabler-box',
                   menuItemProps: {
@@ -270,6 +289,90 @@ const CustomerListTable = ({
     ],
     []
   )
+
+  const handleBalanceSubmit = async () => {
+    if (!balanceForm.amount || !balanceForm.transaction_Id || !balanceForm.payment_method) {
+      showInfo('Please fill in all required fields')
+
+      return
+    }
+
+    setIsAddingBalance(true)
+
+    try {
+      let slipImageUrl = balanceForm.slip_img
+
+      if (balanceForm.slip_img && typeof balanceForm.slip_img !== 'string') {
+        const formData = new FormData()
+
+        formData.append('image', balanceForm.slip_img)
+
+        const uploadResult = await uploadImage(formData)
+
+        if (uploadResult.success) {
+          slipImageUrl = uploadResult.data?.filepath || uploadResult.data.imageUrl
+        } else {
+          showError(`Slip image upload failed: ${uploadResult.error}`)
+          setIsAddingBalance(false)
+
+          return
+        }
+      }
+
+      const balanceData = {
+        date: balanceForm.date,
+        amount: Number(balanceForm.amount),
+        transaction_Id: balanceForm.transaction_Id,
+        note: balanceForm.note,
+        payment_method: balanceForm.payment_method,
+        balance_for: selectedCustomer._id,
+        role: 'customer',
+        slip_img: slipImageUrl || null
+      }
+
+      const result = await addCustomerBalance(balanceData)
+
+      if (result.success) {
+        setData(prev =>
+          prev.map(item => {
+            if (item._id === selectedCustomer._id) {
+              const currentBalance = Number(item.account_info?.balance || 0)
+              const currentDue = Number(item.account_info?.due || 0)
+
+              return {
+                ...item,
+                account_info: {
+                  ...item.account_info,
+                  balance: currentBalance + Number(balanceForm.amount),
+                  due: currentDue - Number(balanceForm.amount)
+                }
+              }
+            }
+
+            return item
+          })
+        )
+
+        showSuccess('Balance added successfully')
+        setOpenBalanceModal(false)
+        setBalanceForm({
+          date: new Date().toISOString().split('T')[0],
+          amount: '',
+          transaction_Id: '',
+          slip_img: null,
+          note: '',
+          payment_method: 'cash'
+        })
+      } else {
+        showError(result.error || 'Failed to add balance')
+      }
+    } catch (error) {
+      console.error('Error adding balance:', error)
+      showError('An unexpected error occurred')
+    } finally {
+      setIsAddingBalance(false)
+    }
+  }
 
   // Table
   const table = useReactTable({
@@ -434,6 +537,141 @@ const CustomerListTable = ({
       />
 
     
+
+      {/* Add Balance Modal */}
+      {openBalanceModal &&
+        selectedCustomer &&
+        createPortal(
+          <div
+            className='fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4'
+            onClick={e => {
+              if (e.target === e.currentTarget) setOpenBalanceModal(false)
+            }}
+            style={{ backdropFilter: 'blur(4px)' }}
+          >
+            <div
+              className='w-full max-w-md bg-white backdrop-blur-lg text-gray-800 rounded-2xl shadow-2xl p-6 transition-all duration-300 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent'
+              onClick={e => e.stopPropagation()}
+            >
+              <Typography variant='h6' className='mb-4 font-semibold text-gray-900 text-center'>
+                Add Balance for <span className='text-primary'>{selectedCustomer.basic_info?.name}</span>
+              </Typography>
+
+              <Typography variant='body2' className='text-gray-600 mb-4 text-center'>
+                Fill in the transaction details below
+              </Typography>
+
+              <CustomTextField
+                fullWidth
+                label='Date'
+                type='date'
+                value={balanceForm.date}
+                onChange={e => setBalanceForm(prev => ({ ...prev, date: e.target.value }))}
+                InputLabelProps={{ shrink: true }}
+                className='mb-4'
+              />
+
+              <CustomTextField
+                fullWidth
+                label='Amount (৳)'
+                type='number'
+                required
+                value={balanceForm.amount}
+                onChange={e => setBalanceForm(prev => ({ ...prev, amount: e.target.value }))}
+                className='mb-4'
+              />
+
+              <CustomTextField
+                fullWidth
+                label='Transaction ID'
+                required
+                value={balanceForm.transaction_Id}
+                onChange={e => setBalanceForm(prev => ({ ...prev, transaction_Id: e.target.value }))}
+                className='mb-4'
+              />
+
+              <div className='mb-4'>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Payment Method <span className='text-red-500'>*</span>
+                </label>
+                <select
+                  value={balanceForm.payment_method}
+                  onChange={e => setBalanceForm(prev => ({ ...prev, payment_method: e.target.value }))}
+                  className='w-full px-4 py-2.5 bg-[#f9fafb] border border-gray-300 rounded-lg text-gray-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 hover:border-gray-400 cursor-pointer appearance-none'
+                  required
+                >
+                  <option value='cash'>Cash</option>
+                  <option value='bank'>Bank</option>
+                  <option value='MFS'>MFS</option>
+                </select>
+              </div>
+
+              <CustomTextField
+                fullWidth
+                label='Note (Optional)'
+                multiline
+                minRows={3}
+                value={balanceForm.note}
+                onChange={e => setBalanceForm(prev => ({ ...prev, note: e.target.value }))}
+                placeholder='Additional notes...'
+                className='mb-4'
+              />
+
+              <div className='flex flex-col gap-2 mb-4'>
+                <label className='text-sm font-medium text-gray-700'>
+                  Upload Payment Slip {isAddingBalance && '(Uploading...)'}
+                </label>
+                <input
+                  type='file'
+                  accept='image/*'
+                  onChange={e => {
+                    const file = e.target.files?.[0]
+
+                    if (file) setBalanceForm(prev => ({ ...prev, slip_img: file }))
+                  }}
+                  disabled={isAddingBalance}
+                  className={`w-full rounded-lg border border-gray-300 p-2 text-sm bg-gray-50 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition ${
+                    isAddingBalance ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                />
+                {balanceForm.slip_img && (
+                  <div className='mt-2 flex flex-col items-center gap-2'>
+                    <img
+                      src={
+                        typeof balanceForm.slip_img === 'string'
+                          ? balanceForm.slip_img
+                          : URL.createObjectURL(balanceForm.slip_img)
+                      }
+                      alt='Preview'
+                      className='max-h-40 rounded-lg shadow-md object-contain border border-gray-200'
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className='flex justify-end gap-3 mt-6 max-sm:flex-col'>
+                <Button
+                  variant='outlined'
+                  onClick={() => setOpenBalanceModal(false)}
+                  className='px-4 py-2 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-100 transition w-full sm:w-auto'
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant='contained'
+                  color='primary'
+                  className='px-5 py-2 rounded-lg shadow-md w-full sm:w-auto'
+                  onClick={handleBalanceSubmit}
+                  disabled={isAddingBalance}
+                  startIcon={isAddingBalance ? <i className='tabler-loader-2 animate-spin' /> : null}
+                >
+                  {isAddingBalance ? 'Saving...' : 'Save'}
+                </Button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
 
       {/* Update Crate Modal */}
       {openCrateModal && selectedCustomer && (
