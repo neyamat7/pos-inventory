@@ -25,7 +25,7 @@ import InvoicePrintHandler from '../invoice/InvoicePrintHandler'
 import { showError, showSuccess } from '@/utils/toastUtils'
 
 export default function POSSystem({ productsData = [], customersData = [], categoriesData = [], lotsData = [] }) {
-  console.log('lotsdata', lotsData)
+  // console.log('lotsdata', lotsData)
 
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
@@ -106,6 +106,8 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         product_id: product._id,
         cart_item_id: `${product._id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         isCrated: product.isCrated,
+        isPieced: product.sell_by_piece,
+        isBoxed: product.isBoxed,
         crate_type_one: 0,
         crate_type_one_price: 0,
         crate_type_two: 0,
@@ -672,8 +674,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     return finalColumns
   }, [showPieceQuantity, showBoxQuantity, showCrated, showKg, showDiscountKg, showDiscountAmount, showTooltip])
 
-  
-
   const tableData = useMemo(() => cartProducts, [cartProducts])
 
   const table = useReactTable({
@@ -794,7 +794,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       const sellingPrice = item.selling_price || 0
       const unitCost = item.cost_price || 0
       const isBoxed = item.isBoxed || false
-      const isPieced = item.sell_by_piece || false
+      const isPieced = item.isPieced || item.sell_by_piece || false
       const isCrated = item.isCrated || false
 
       let totalPrice = 0
@@ -1008,8 +1008,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       return
     }
 
-    
-
     const lot = lotModal.selectedLot
     const sellQty = parseFloat(lot.sell_qty) || 0
     const currentSold = parseFloat(lot.sales?.totalKgSold || 0)
@@ -1025,11 +1023,13 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     setCartProducts(prev => {
       const updated = prev.map(item => {
         if (item.cart_item_id === lotModal.cartItemId) {
-          const isBoxed = item.isBoxed || false
-          const isPieced = item.sell_by_piece || false
+          const isBoxed = item.isBoxed || lot.isBoxed || false
+          const isPieced = item.sell_by_piece || lot.isPieced || false
 
           return {
             ...item,
+            isBoxed,
+            isPieced,
             lot_selected: {
               lot_id: lot._id,
               lot_name: lot.lot_name,
