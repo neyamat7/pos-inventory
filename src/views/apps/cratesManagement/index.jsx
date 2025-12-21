@@ -153,8 +153,8 @@ const CrateManagementTable = ({
           onRefresh()
         }
       } else {
-        console.error('Failed to send crates to supplier')
-        showError('Failed to send crates to supplier!')
+        console.error('Failed to send crates to supplier:', result.error)
+        showError(result.error || 'Failed to send crates to supplier!')
       }
     } catch (error) {
       console.error('Error sending crates to supplier:', error)
@@ -185,6 +185,8 @@ const CrateManagementTable = ({
         date: modalForm.date || new Date().toISOString(),
         crate_type_1_qty: type1Qty,
         crate_type_2_qty: type2Qty,
+        crate_type_1_price: parseInt(modalForm.type1Price) || 0,
+        crate_type_2_price: parseInt(modalForm.type2Price) || 0,
         note: modalForm.notes || '',
         stockType: modalForm.stockType
       }
@@ -206,13 +208,22 @@ const CrateManagementTable = ({
         }
       } else {
         console.error('Failed to add total crates:', result.error)
-        showError('Failed to add total crates!')
+        showError(result.error)
       }
     } catch (error) {
       console.error('Error adding total crates:', error)
     } finally {
       setAddTotalCrateLoading(false)
-      setModalForm({ type1Quantity: '', type2Quantity: '', notes: '', date: '', stockType: 'new', customerId: '' })
+      setModalForm({
+        type1Quantity: '',
+        type2Quantity: '',
+        type1Price: '',
+        type2Price: '',
+        notes: '',
+        date: '',
+        stockType: 'new',
+        customerId: ''
+      })
       setShowAddTotalModal(false)
     }
   }
@@ -1101,33 +1112,89 @@ const CrateManagementTable = ({
                     </MenuItem>
                   ))}
                 </CustomTextField>
+                {modalForm.customerId && (
+                  <Box sx={{ mt: 1, p: 1.5, bgcolor: 'primary.lighter', borderRadius: 1, border: '1px dashed', borderColor: 'primary.main' }}>
+                    {(() => {
+                      const selectedCustomer = customerData?.find(c => c._id === modalForm.customerId);
+                      if (!selectedCustomer) return null;
+                      return (
+                        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-around' }}>
+                          <Box sx={{ textAlign: 'center' }}>
+                            <Typography variant='caption' sx={{ fontWeight: 600, color: 'primary.main', display: 'block' }}>
+                              Type 1 Due
+                            </Typography>
+                            <Typography variant='body2' sx={{ fontWeight: 700 }}>
+                              {selectedCustomer.crate_info?.type_1 || 0} (৳{selectedCustomer.crate_info?.type_1_price || 0})
+                            </Typography>
+                          </Box>
+                          <Box sx={{ textAlign: 'center' }}>
+                            <Typography variant='caption' sx={{ fontWeight: 600, color: 'secondary.main', display: 'block' }}>
+                              Type 2 Due
+                            </Typography>
+                            <Typography variant='body2' sx={{ fontWeight: 700 }}>
+                              {selectedCustomer.crate_info?.type_2 || 0} (৳{selectedCustomer.crate_info?.type_2_price || 0})
+                            </Typography>
+                          </Box>
+                        </Box>
+                      );
+                    })()}
+                  </Box>
+                )}
               </Box>
             )}
 
-            <Box>
-              <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
-                Type 1 Crates
-              </Typography>
-              <CustomTextField
-                fullWidth
-                type='number'
-                value={modalForm.type1Quantity}
-                onChange={e => setModalForm({ ...modalForm, type1Quantity: e.target.value })}
-                placeholder='Enter Type 1 quantity'
-              />
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+              <Box>
+                <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
+                  Type 1 Crates
+                </Typography>
+                <CustomTextField
+                  fullWidth
+                  type='number'
+                  value={modalForm.type1Quantity}
+                  onChange={e => setModalForm({ ...modalForm, type1Quantity: e.target.value })}
+                  placeholder='Quantity'
+                />
+              </Box>
+              <Box>
+                <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
+                  Type 1 Price (৳)
+                </Typography>
+                <CustomTextField
+                  fullWidth
+                  type='number'
+                  value={modalForm.type1Price}
+                  onChange={e => setModalForm({ ...modalForm, type1Price: e.target.value })}
+                  placeholder='Price'
+                />
+              </Box>
             </Box>
 
-            <Box>
-              <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
-                Type 2 Crates
-              </Typography>
-              <CustomTextField
-                fullWidth
-                type='number'
-                value={modalForm.type2Quantity}
-                onChange={e => setModalForm({ ...modalForm, type2Quantity: e.target.value })}
-                placeholder='Enter Type 2 quantity'
-              />
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+              <Box>
+                <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
+                  Type 2 Crates
+                </Typography>
+                <CustomTextField
+                  fullWidth
+                  type='number'
+                  value={modalForm.type2Quantity}
+                  onChange={e => setModalForm({ ...modalForm, type2Quantity: e.target.value })}
+                  placeholder='Quantity'
+                />
+              </Box>
+              <Box>
+                <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
+                  Type 2 Price (৳)
+                </Typography>
+                <CustomTextField
+                  fullWidth
+                  type='number'
+                  value={modalForm.type2Price}
+                  onChange={e => setModalForm({ ...modalForm, type2Price: e.target.value })}
+                  placeholder='Price'
+                />
+              </Box>
             </Box>
 
             {((parseInt(modalForm.type1Quantity) || 0) > 0 || (parseInt(modalForm.type2Quantity) || 0) > 0) && (
@@ -1169,6 +1236,21 @@ const CrateManagementTable = ({
                     }}
                   >
                     <Typography variant='body2' sx={{ fontWeight: 700 }}>
+                      Total Cost:
+                    </Typography>
+                    <Typography variant='body2' sx={{ fontWeight: 700, color: 'error.main' }}>
+                      ৳{((parseInt(modalForm.type1Quantity) || 0) * (parseInt(modalForm.type1Price) || 0)) +
+                        ((parseInt(modalForm.type2Quantity) || 0) * (parseInt(modalForm.type2Price) || 0))}
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      pt: 1
+                    }}
+                  >
+                    <Typography variant='body2' sx={{ fontWeight: 700 }}>
                       Total Bought:
                     </Typography>
                     <Typography variant='body2' sx={{ fontWeight: 700, color: 'success.main' }}>
@@ -1190,7 +1272,15 @@ const CrateManagementTable = ({
             color='secondary'
             onClick={() => {
               setShowAddTotalModal(false)
-              setModalForm({ type1Quantity: '', type2Quantity: '', notes: '', stockType: 'new', customerId: '' })
+              setModalForm({
+                type1Quantity: '',
+                type2Quantity: '',
+                type1Price: '',
+                type2Price: '',
+                notes: '',
+                stockType: 'new',
+                customerId: ''
+              })
             }}
           >
             Cancel

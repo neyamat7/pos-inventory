@@ -22,8 +22,8 @@ export async function addCrates(crateData) {
       date,
       crate_type_1_qty,
       crate_type_2_qty,
-      crate_type_1_price,
-      crate_type_2_price,
+      crate_type_1_price: crate_type_1_price || 0,
+      crate_type_2_price: crate_type_2_price || 0,
       stockType,
       note
     }
