@@ -53,7 +53,11 @@ const CrateManagementTable = ({
   customerData,
   customerPaginationData,
   customerLoading,
-  onRefresh
+  onRefresh,
+  filterYear,
+  setFilterYear,
+  filterMonth,
+  setFilterMonth
 }) => {
   const [rowSelection, setRowSelection] = useState({})
   const [showAddCrateModal, setShowAddCrateModal] = useState(false)
@@ -236,11 +240,11 @@ const CrateManagementTable = ({
 
       // Check if it's a supplier update or transaction update
       if (selectedSupplier?.isSupplier) {
-        // Updating from supplier list
-        query = { supplierId: selectedSupplier._id }
-      } else if (selectedSupplier?.isTransaction) {
-        // Updating from transaction history
-        query = { inventoryCratesId: selectedSupplier.transactionId }
+        query.supplierId = selectedSupplier._id
+      }
+      
+      if (selectedSupplier?.isTransaction) {
+        query.inventoryCratesId = selectedSupplier.transactionId
       }
 
       // Prepare crate info from updateForm
@@ -357,42 +361,6 @@ const CrateManagementTable = ({
             >
               Add
             </Button>
-
-            <Button
-              variant='outlined'
-              onClick={() => {
-                setSelectedSupplier({
-                  _id: info.row.original._id,
-                  isSupplier: true,
-                  supplierData: info.row.original
-                })
-                setShowUpdateModal(true)
-                setUpdateForm({
-                  type1Quantity: info.row.original.crate_info.crate1?.toString() || '',
-                  type2Quantity: info.row.original.crate_info.crate2?.toString() || '',
-                  type1Price: info.row.original.crate_info.crate1Price?.toString() || '',
-                  type2Price: info.row.original.crate_info.crate2Price?.toString() || '',
-                  notes: ''
-                })
-              }}
-              sx={{
-                borderColor: '#666',
-                color: '#666',
-                '&:hover': {
-                  borderColor: '#333',
-                  backgroundColor: 'rgba(102, 102, 102, 0.04)'
-                },
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                padding: '6px 12px',
-                minWidth: 'auto',
-                textTransform: 'none',
-                borderRadius: '6px'
-              }}
-              startIcon={<i className='tabler-edit' style={{ fontSize: '16px' }} />}
-            >
-              Update
-            </Button>
           </div>
         ),
         enableSorting: false
@@ -462,33 +430,37 @@ const CrateManagementTable = ({
       {
         accessorKey: 'note',
         header: 'Notes',
-        cell: info => <div className='text-sm text-gray-600 max-w-xs truncate'>{info.getValue() || '-'}</div>
+        cell: info => <div className='text-sm text-gray-600 max-w-xs whitespace-normal break-words'>{info.getValue() || '-'}</div>
       },
 
       {
         id: 'action',
         header: 'Action',
         cell: info => {
-          const isReStock = info.row.original.stockType === 're-stock'
           const isOut = info.row.original.status === 'OUT'
+          const transaction = info.row.original
+          const supplier = transaction.supplierId
 
           return (
             <>
-              {!isOut && !isReStock && (
+              {(!isOut || supplier) && (
                 <Button
                   variant='outlined'
                   onClick={() => {
                     setSelectedSupplier({
-                      transactionId: info.row.original._id,
-                      isTransaction: true
+                      transactionId: transaction._id,
+                      isTransaction: true,
+                      _id: supplier ? (supplier._id || supplier) : null,
+                      isSupplier: !!supplier,
+                      supplierData: supplier
                     })
                     setShowUpdateModal(true)
                     setUpdateForm({
-                      type1Quantity: info.row.original.crate_type_1_qty?.toString() || '',
-                      type2Quantity: info.row.original.crate_type_2_qty?.toString() || '',
-                      type1Price: '',
-                      type2Price: '',
-                      notes: info.row.original.note || ''
+                      type1Quantity: transaction.crate_type_1_qty?.toString() || '',
+                      type2Quantity: transaction.crate_type_2_qty?.toString() || '',
+                      type1Price: transaction.crate_type_1_price?.toString() || '',
+                      type2Price: transaction.crate_type_2_price?.toString() || '',
+                      notes: transaction.note || ''
                     })
                   }}
                   sx={{
@@ -579,16 +551,86 @@ const CrateManagementTable = ({
 
   return (
     <>
-      {/* Add Crate Button */}
-      <Box sx={{ mb: 3 }}>
+      {/* Add Crate Button & Filters */}
+      <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'flex-end' }}>
         <Button
           variant='contained'
           color='primary'
           startIcon={<i className='tabler-plus' />}
           onClick={() => setShowAddTotalModal(true)}
+          sx={{ height: '40px' }}
         >
           Add Crates to Collection
         </Button>
+
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <CustomTextField
+            select
+            label='Year'
+            value={filterYear}
+            onChange={e => setFilterYear(e.target.value)}
+            sx={{ minWidth: 120 }}
+            size='small'
+            SelectProps={{ displayEmpty: true }}
+          >
+            <MenuItem value=''>All Years</MenuItem>
+            {[2025, 2026, 2027, 2028, 2029, 2030].map(year => (
+              <MenuItem key={year} value={year.toString()}>
+                {year}
+              </MenuItem>
+            ))}
+          </CustomTextField>
+
+          <CustomTextField
+            select
+            label='Month'
+            value={filterMonth}
+            onChange={e => {
+              const month = e.target.value
+              setFilterMonth(month)
+              if (month && !filterYear) {
+                setFilterYear(new Date().getFullYear().toString())
+              }
+            }}
+            sx={{ minWidth: 150 }}
+            size='small'
+            SelectProps={{ displayEmpty: true }}
+          >
+            <MenuItem value=''>All Months</MenuItem>
+            {[
+              { val: '1', label: 'January' },
+              { val: '2', label: 'February' },
+              { val: '3', label: 'March' },
+              { val: '4', label: 'April' },
+              { val: '5', label: 'May' },
+              { val: '6', label: 'June' },
+              { val: '7', label: 'July' },
+              { val: '8', label: 'August' },
+              { val: '9', label: 'September' },
+              { val: '10', label: 'October' },
+              { val: '11', label: 'November' },
+              { val: '12', label: 'December' }
+            ].map(m => (
+              <MenuItem key={m.val} value={m.val}>
+                {m.label}
+              </MenuItem>
+            ))}
+          </CustomTextField>
+
+          {(filterYear || filterMonth) && (
+            <Button
+              variant='text'
+              color='error'
+              onClick={() => {
+                setFilterYear('')
+                setFilterMonth('')
+              }}
+              size='small'
+            >
+              Clear
+            </Button>
+          )}
+        </Box>
       </Box>
 
       {/* Stats Cards */}
@@ -600,7 +642,7 @@ const CrateManagementTable = ({
           mb: 3
         }}
       >
-        {/* Total Crates Bought */}
+        {/* Total Crates Bought Type 1 */}
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -612,14 +654,22 @@ const CrateManagementTable = ({
               Total Bought Type 1
             </Typography>
             <Typography variant='h4' sx={{ fontWeight: 700, color: 'success.main' }}>
-              {totalCrates?.type_1_total || 0}
+              {(filterYear || filterMonth) 
+                ? totalCrates?.period_new_stock?.type_1_total || 0 
+                : totalCrates?.lifetime_totals?.type_1_total || 0}
+            </Typography>
+            <Typography variant='body2' sx={{ fontWeight: 600, mt: 1 }}>
+              Cost: ৳{(filterYear || filterMonth)
+                ? totalCrates?.period_new_stock?.type_1_total_cost || 0
+                : totalCrates?.lifetime_totals?.type_1_total_cost || 0}
             </Typography>
             <Typography variant='caption' color='text.secondary'>
-              Total purchased this year
+              {filterYear || filterMonth ? 'Total for selected period' : 'Lifetime total'}
             </Typography>
           </CardContent>
         </Card>
 
+        {/* Total Crates Bought Type 2 */}
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -631,10 +681,17 @@ const CrateManagementTable = ({
               Total Bought Type 2
             </Typography>
             <Typography variant='h4' sx={{ fontWeight: 700, color: 'success.main' }}>
-              {totalCrates?.type_2_total || 0}
+              {(filterYear || filterMonth)
+                ? totalCrates?.period_new_stock?.type_2_total || 0
+                : totalCrates?.lifetime_totals?.type_2_total || 0}
+            </Typography>
+            <Typography variant='body2' sx={{ fontWeight: 600, mt: 1 }}>
+              Cost: ৳{(filterYear || filterMonth)
+                ? totalCrates?.period_new_stock?.type_2_total_cost || 0
+                : totalCrates?.lifetime_totals?.type_2_total_cost || 0}
             </Typography>
             <Typography variant='caption' color='text.secondary'>
-              Total purchased this year
+              {filterYear || filterMonth ? 'Total for selected period' : 'Lifetime total'}
             </Typography>
           </CardContent>
         </Card>
@@ -651,10 +708,10 @@ const CrateManagementTable = ({
               Remaining Type 1
             </Typography>
             <Typography variant='h4' sx={{ fontWeight: 700, color: 'primary.main' }}>
-              {totalCrates?.remaining_type_1 || 0}
+              {totalCrates?.lifetime_totals?.remaining_type_1 || 0}
             </Typography>
             <Typography variant='caption' color='text.secondary'>
-              Available in stock
+              Available in stock (Lifetime)
             </Typography>
           </CardContent>
         </Card>
@@ -671,10 +728,10 @@ const CrateManagementTable = ({
               Remaining Type 2
             </Typography>
             <Typography variant='h4' sx={{ fontWeight: 700, color: 'secondary.main' }}>
-              {totalCrates?.remaining_type_2 || 0}
+              {totalCrates?.lifetime_totals?.remaining_type_2 || 0}
             </Typography>
             <Typography variant='caption' color='text.secondary'>
-              Available in stock
+              Available in stock (Lifetime)
             </Typography>
           </CardContent>
         </Card>
@@ -807,7 +864,7 @@ const CrateManagementTable = ({
                 table.getRowModel().rows.map(row => (
                   <tr key={row.id}>
                     {row.getVisibleCells().map(cell => (
-                      <td className='whitespace-nowrap border-r' key={cell.id}>
+                      <td className='border-r' key={cell.id}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </td>
                     ))}
@@ -1102,7 +1159,16 @@ const CrateManagementTable = ({
                   select
                   fullWidth
                   value={modalForm.customerId}
-                  onChange={e => setModalForm({ ...modalForm, customerId: e.target.value })}
+                  onChange={e => {
+                    const customerId = e.target.value
+                    const selectedCustomer = customerData?.find(c => c._id === customerId)
+                    setModalForm({
+                      ...modalForm,
+                      customerId,
+                      type1Price: selectedCustomer?.crate_info?.type_1_price?.toString() || '',
+                      type2Price: selectedCustomer?.crate_info?.type_2_price?.toString() || ''
+                    })
+                  }}
                   placeholder='Select customer'
                 >
                   <MenuItem value=''>Select a customer</MenuItem>
@@ -1291,6 +1357,8 @@ const CrateManagementTable = ({
             onClick={handleAddTotalCrates}
             disabled={
               ((parseInt(modalForm.type1Quantity) || 0) === 0 && (parseInt(modalForm.type2Quantity) || 0) === 0) ||
+              ((parseInt(modalForm.type1Quantity) || 0) > 0 && (parseInt(modalForm.type1Price) || 0) <= 0) ||
+              ((parseInt(modalForm.type2Quantity) || 0) > 0 && (parseInt(modalForm.type2Price) || 0) <= 0) ||
               addTotalCrateLoading
             }
             startIcon={addTotalCrateLoading ? <CircularProgress size={16} /> : null}
@@ -1375,7 +1443,7 @@ const CrateManagementTable = ({
                 />
               </Box>
             </Box>
-            {selectedSupplier?.isSupplier && (
+            {(selectedSupplier?.isSupplier || selectedSupplier?.isTransaction) && (
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
                 <Box>
                   <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>

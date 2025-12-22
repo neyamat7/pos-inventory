@@ -47,6 +47,10 @@ const CratesMangementPage = () => {
   const [customerPaginationData, setCustomerPaginationData] = useState(null)
   const [isCustomerLoading, setIsCustomerLoading] = useState(true)
 
+  // Filter states for crate totals
+  const [filterYear, setFilterYear] = useState('')
+  const [filterMonth, setFilterMonth] = useState('')
+
   // Fetch suppliers
   useEffect(() => {
     const fetchSupplierData = async () => {
@@ -80,7 +84,7 @@ const CratesMangementPage = () => {
       setTotalCrateLoading(true)
 
       try {
-        const result = await getCrateTotals()
+        const result = await getCrateTotals(filterYear, filterMonth)
 
         // console.log('result of crates', result)
 
@@ -88,14 +92,14 @@ const CratesMangementPage = () => {
           setTotalCrates(result.data || {})
         }
       } catch (error) {
-        console.error('Error fetching suppliers:', error)
+        console.error('Error fetching crate totals:', error)
       } finally {
         setTotalCrateLoading(false)
       }
     }
 
     fetchTotalCrates()
-  }, [refreshTrigger])
+  }, [refreshTrigger, filterYear, filterMonth])
 
   // Fetch transactions
   useEffect(() => {
@@ -234,6 +238,10 @@ const CratesMangementPage = () => {
       customerPaginationData={customerPaginationData}
       customerLoading={isCustomerLoading}
       onRefresh={handleRefresh}
+      filterYear={filterYear}
+      setFilterYear={setFilterYear}
+      filterMonth={filterMonth}
+      setFilterMonth={setFilterMonth}
     />
   )
 }

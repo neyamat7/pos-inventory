@@ -172,13 +172,18 @@ export async function getAllCrateTransactions(page = 1, limit = 10, searchTerm =
   }
 }
 
-export async function getCrateTotals() {
+export async function getCrateTotals(year, month) {
   try {
-    const response = await api.get('/crates/totals')
+    const params = new URLSearchParams()
+    if (year) params.append('year', year)
+    if (month) params.append('month', month)
+
+    const url = `/crates/totals${params.toString() ? `?${params.toString()}` : ''}`
+    const response = await api.get(url)
 
     return {
       success: true,
-      data: response.totals,
+      data: response.data,
       message: 'Crate totals fetched successfully'
     }
   } catch (error) {
