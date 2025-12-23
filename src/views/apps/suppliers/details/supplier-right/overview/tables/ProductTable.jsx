@@ -30,6 +30,7 @@ import Grid from '@mui/material/Grid2'
 import { DollarSign, Printer, X } from 'lucide-react'
 
 import TablePaginationComponent from '@components/TablePaginationComponent'
+import TableSkeleton from '@/components/TableSkeleton'
 import tableStyles from '@core/styles/table.module.css'
 
 import PaymentModal from './PaymentModal'
@@ -293,7 +294,9 @@ const ProductTable = ({ data, pagination, total, onPaginationChange, loading, su
           ))}
         </thead>
         <tbody>
-          {table.getRowModel().rows.length === 0 ? (
+          {loading ? (
+            <TableSkeleton columns={stockColumns.length} />
+          ) : table.getRowModel().rows.length === 0 ? (
             <tr>
               <td colSpan={stockColumns.length} className='text-center p-4'>
                 No data available

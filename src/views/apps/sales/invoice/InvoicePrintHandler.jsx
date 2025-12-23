@@ -9,6 +9,8 @@ import SaleInvoice from './SaleInvoice'
 const InvoicePrintHandler = ({ saleData, onPrintComplete, onPrintError, triggerPrint }) => {
   const componentRef = useRef(null)
 
+  // console.log('saleData in print handler', JSON.stringify(saleData))
+
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
     documentTitle: `Invoice_${saleData?.sale_date || 'Sale'}_${saleData?.customer_name || 'Customer'}`,

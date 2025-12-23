@@ -4,7 +4,6 @@ import { useState } from 'react'
 
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table'
 import {
-  TablePagination,
   IconButton,
   Dialog,
   DialogContent,
@@ -17,6 +16,7 @@ import {
 import { Eye } from 'lucide-react'
 
 import TablePaginationComponent from '@components/TablePaginationComponent'
+import TableSkeleton from '@/components/TableSkeleton'
 import tableStyles from '@core/styles/table.module.css'
 import { getImageUrl } from '@/utils/getImageUrl'
 
@@ -405,11 +405,7 @@ const PaymentTable = ({ data, pagination, total, onPaginationChange, loading }) 
         </thead>
         <tbody>
           {loading ? (
-            <tr>
-              <td colSpan={columns.length} className='text-center p-4'>
-                Loading...
-              </td>
-            </tr>
+            <TableSkeleton columns={columns.length} />
           ) : data.length === 0 ? (
             <tr>
               <td colSpan={columns.length} className='text-center p-4'>
@@ -429,22 +425,15 @@ const PaymentTable = ({ data, pagination, total, onPaginationChange, loading }) 
       </table>
 
       {/* Server-side Pagination */}
-      <TablePagination
-        component={() => (
-          <TablePaginationComponent
-            table={table}
-            paginationData={{
-              total,
-              currentPage: pagination?.page || 1,
-              limit: pagination?.limit || 10
-            }}
-            onPageChange={page => onPaginationChange(page, pagination?.limit || 10)}
-          />
-        )}
-        count={total}
-        rowsPerPage={pagination?.limit || 10}
-        page={(pagination?.page || 1) - 1}
-        onPageChange={(_, page) => onPaginationChange(page + 1, pagination?.limit || 10)}
+      <TablePaginationComponent
+        table={table}
+        paginationData={{
+          total,
+          currentPage: pagination?.page || 1,
+          limit: pagination?.limit || 10,
+          totalPages: Math.ceil(total / (pagination?.limit || 10))
+        }}
+        onPageChange={page => onPaginationChange(page, pagination?.limit || 10)}
       />
 
       {/* Payment Detail Modal */}

@@ -11,7 +11,6 @@ import {
 } from '@tanstack/react-table'
 import {
   Typography,
-  TablePagination,
   CircularProgress,
   Box,
   IconButton,
@@ -25,11 +24,17 @@ import Grid from '@mui/material/Grid2'
 import { Eye } from 'lucide-react'
 
 import TablePaginationComponent from '@components/TablePaginationComponent'
+import TableSkeleton from '@/components/TableSkeleton'
 import tableStyles from '@core/styles/table.module.css'
 
 const columnHelper = createColumnHelper()
 
 const PurchaseTable = ({ data, pagination, total, onPaginationChange, loading }) => {
+
+  // console.log('purchase data', JSON.stringify(data))
+  // console.log('purchase pagination', JSON.stringify(pagination))
+  // console.log('purchase total', JSON.stringify(total))
+
   const [selectedPurchase, setSelectedPurchase] = useState(null)
   const [modalOpen, setModalOpen] = useState(false)
 
@@ -127,13 +132,13 @@ const PurchaseTable = ({ data, pagination, total, onPaginationChange, loading })
     }
   })
 
-  if (loading) {
-    return (
-      <Box className='flex justify-center items-center p-8'>
-        <CircularProgress />
-      </Box>
-    )
-  }
+  // if (loading) {
+  //   return (
+  //     <Box className='flex justify-center items-center p-8'>
+  //       <CircularProgress />
+  //     </Box>
+  //   )
+  // }
 
   return (
     <>
@@ -148,7 +153,9 @@ const PurchaseTable = ({ data, pagination, total, onPaginationChange, loading })
           ))}
         </thead>
         <tbody>
-          {table.getRowModel().rows.length === 0 ? (
+          {loading ? (
+            <TableSkeleton columns={purchaseColumns.length} />
+          ) : table.getRowModel().rows.length === 0 ? (
             <tr>
               <td colSpan={purchaseColumns.length} className='text-center p-4'>
                 No purchases found
@@ -167,13 +174,15 @@ const PurchaseTable = ({ data, pagination, total, onPaginationChange, loading })
       </table>
 
       {table.getRowModel().rows.length > 0 && (
-        <TablePagination
-          component={() => <TablePaginationComponent table={table} />}
-          count={total}
-          rowsPerPage={pagination.limit}
-          page={pagination.page - 1}
-          onPageChange={(_, page) => onPaginationChange(page + 1, pagination.limit)}
-          onRowsPerPageChange={event => onPaginationChange(1, parseInt(event.target.value, 10))}
+        <TablePaginationComponent
+          table={table}
+          paginationData={{
+            total: total,
+            currentPage: pagination.page,
+            limit: pagination.limit,
+            totalPages: Math.ceil(total / pagination.limit)
+          }}
+          onPageChange={page => onPaginationChange(page, pagination.limit)}
         />
       )}
 

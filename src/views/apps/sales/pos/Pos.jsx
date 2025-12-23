@@ -146,13 +146,13 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     return cartProducts.reduce((sum, item) => sum + (Number(item.subtotal) || 0), 0)
   }, [cartProducts])
 
-  const { extraCrateType1Price, extraCrateType2Price, extraCrateType1, extraCrateType2 } = useMemo(() => {
+  const { totalCrateType1Price, totalCrateType2Price, totalCrateType1, totalCrateType2 } = useMemo(() => {
     if (!selectedCustomer?._id || cartProducts.length === 0) {
       return {
-        extraCrateType1Price: 0,
-        extraCrateType2Price: 0,
-        extraCrateType1: 0,
-        extraCrateType2: 0
+        totalCrateType1Price: 0,
+        totalCrateType2Price: 0,
+        totalCrateType1: 0,
+        totalCrateType2: 0
       }
     }
 
@@ -160,23 +160,15 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     const totalCrateType1Sold = cartProducts.reduce((sum, item) => sum + (item.crate_type_one || 0), 0)
     const totalCrateType2Sold = cartProducts.reduce((sum, item) => sum + (item.crate_type_two || 0), 0)
 
-    // Get customer's available crates
-    const customerCrateType1Available = selectedCustomer.crate_info?.type_1 || 0
-    const customerCrateType2Available = selectedCustomer.crate_info?.type_2 || 0
-
-    // Calculate extra crates
-    const extraType1 = Math.max(0, totalCrateType1Sold - customerCrateType1Available)
-    const extraType2 = Math.max(0, totalCrateType2Sold - customerCrateType2Available)
-
-    // Calculate extra crate prices
-    const extraType1Price = Number((extraType1 * (selectedCustomer.crate_info?.type_1_price || 0)).toFixed(2))
-    const extraType2Price = Number((extraType2 * (selectedCustomer.crate_info?.type_2_price || 0)).toFixed(2))
+    // Calculate total crate prices
+    const totalType1Price = Number((totalCrateType1Sold * (selectedCustomer.crate_info?.type_1_price || 0)).toFixed(2))
+    const totalType2Price = Number((totalCrateType2Sold * (selectedCustomer.crate_info?.type_2_price || 0)).toFixed(2))
 
     return {
-      extraCrateType1Price: extraType1Price,
-      extraCrateType2Price: extraType2Price,
-      extraCrateType1: extraType1,
-      extraCrateType2: extraType2
+      totalCrateType1Price: totalType1Price,
+      totalCrateType2Price: totalType2Price,
+      totalCrateType1: totalCrateType1Sold,
+      totalCrateType2: totalCrateType2Sold
     }
   }, [cartProducts, selectedCustomer])
 
@@ -698,6 +690,9 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
     // ========== VALIDATE CRATE AND BOX AVAILABILITY ==========
     for (const item of cartProducts) {
+
+      console.log('item', item)
+
       // Check if this is a crate-based product
       if (item.isCrated) {
         const selectedCrateType1 = item.crate_type_one || 0
@@ -710,8 +705,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
           return
         }
-
-        console.log('lot selected', item.lot_selected)
 
         // Get available crates from the selected lot
         const availableCrateType1 = item.lot_selected?.remaining_crate_Type_1 || 0
@@ -868,8 +861,8 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         unit_price: sellingPrice,
         selling_price: discountedPrice,
         total_price: totalPrice,
-        crate_type1: item.crate_type_one || 0,
-        crate_type2: item.crate_type_two || 0,
+        crate_type1: Number(item.crate_type_one) || 0,
+        crate_type2: Number(item.crate_type_two) || 0,
 
         // ========== LOT COMMISSION ==========
         lot_commission_rate: lotCommissionRate,
@@ -894,6 +887,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
     // ==========  Build items array ==========
     const items = Object.entries(grouped).map(([pid, items]) => {
+
       // Get customer commission rate (should be same for all lots of this product)
       const customerCommissionRate = items[0].commission_rate || 0
 
@@ -907,6 +901,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
       return {
         productId: pid,
+        product_name: items[0].productName || '',
         selected_lots: selectedLots
       }
     })
@@ -955,21 +950,25 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     const payload = {
       sale_date: date,
       customerId: selectedCustomer._id,
+      customer_name: selectedCustomer?.basic_info?.name,
+      customer_location: selectedCustomer?.contact_info?.location,
 
       total_custom_commission: total_custom_commission,
       total_lots_commission: total_lots_commission,
       total_profit: total_profit + total_lots_commission,
       items: items,
       payment_details: {
-        extra_crate_type1_price: extraCrateType1Price,
-        extra_crate_type2_price: extraCrateType2Price,
-        payable_amount: payableAmount || 0,
+        // total_crate_type1: Number(totalCrateType1) || 0,
+        // total_crate_type2: Number(totalCrateType2) || 0,
+        total_crate_type1_price: Number(totalCrateType1Price) || 0,
+        total_crate_type2_price: Number(totalCrateType2Price) || 0,
+        payable_amount: Number(payableAmount) || 0,
         received_amount: Number(data.receiveAmount) || 0,
 
         // received_amount_from_balance: Number(data.received_amount_from_balance) || 0,
         due_amount: Number(data.dueAmount) || 0,
         payment_type: data.paymentType || 'cash',
-        vat: vatAmount || 0,
+        vat: Number(vatAmount) || 0,
         note: data.note || ''
       }
     }
@@ -1277,17 +1276,17 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                     <span className='font-medium'>৳ {totalSubtotal}</span>
                   </div>
 
-                  {extraCrateType1 > 0 && (
+                  {totalCrateType1 > 0 && (
                     <div className='flex items-center justify-between'>
-                      <span className='text-sm'>Crate Type 1 ({extraCrateType1} pcs)</span>
-                      <span className='text-sm'>৳ {extraCrateType1Price.toFixed(2)}</span>
+                      <span className='text-sm'>Crate Type 1 ({totalCrateType1} pcs)</span>
+                      <span className='text-sm'>৳ {totalCrateType1Price.toFixed(2)}</span>
                     </div>
                   )}
 
-                  {extraCrateType2 > 0 && (
+                  {totalCrateType2 > 0 && (
                     <div className='flex items-center justify-between'>
-                      <span className='text-sm'>Crate Type 2 ({extraCrateType2} pcs)</span>
-                      <span className='text-sm'>৳ {extraCrateType2Price.toFixed(2)}</span>
+                      <span className='text-sm'>Crate Type 2 ({totalCrateType2} pcs)</span>
+                      <span className='text-sm'>৳ {totalCrateType2Price.toFixed(2)}</span>
                     </div>
                   )}
 

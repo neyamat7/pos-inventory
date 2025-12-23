@@ -10,7 +10,6 @@ import {
   createColumnHelper
 } from '@tanstack/react-table'
 import {
-  TablePagination,
   Typography,
   Box,
   CircularProgress,
@@ -25,6 +24,7 @@ import Grid from '@mui/material/Grid2'
 import { Eye } from 'lucide-react'
 
 import TablePaginationComponent from '@components/TablePaginationComponent'
+import TableSkeleton from '@/components/TableSkeleton'
 import tableStyles from '@core/styles/table.module.css'
 import { getImageUrl } from '@/utils/getImageUrl'
 
@@ -254,13 +254,13 @@ const BalanceHistoryTable = ({ data, pagination, total, onPaginationChange, load
     }
   })
 
-  if (loading) {
-    return (
-      <Box className='flex justify-center items-center p-8'>
-        <CircularProgress />
-      </Box>
-    )
-  }
+  // if (loading) {
+  //   return (
+  //     <Box className='flex justify-center items-center p-8'>
+  //       <CircularProgress />
+  //     </Box>
+  //   )
+  // }
 
   return (
     <>
@@ -275,7 +275,9 @@ const BalanceHistoryTable = ({ data, pagination, total, onPaginationChange, load
           ))}
         </thead>
         <tbody>
-          {table.getRowModel().rows.length === 0 ? (
+          {loading ? (
+            <TableSkeleton columns={balanceColumns.length} />
+          ) : table.getRowModel().rows.length === 0 ? (
             <tr>
               <td colSpan={balanceColumns.length} className='text-center p-4'>
                 No balance history available
@@ -294,13 +296,15 @@ const BalanceHistoryTable = ({ data, pagination, total, onPaginationChange, load
       </table>
 
       {table.getRowModel().rows.length > 0 && (
-        <TablePagination
-          component={() => <TablePaginationComponent table={table} />}
-          count={total}
-          rowsPerPage={pagination.limit}
-          page={pagination.page - 1}
-          onPageChange={(_, page) => onPaginationChange(page + 1, pagination.limit)}
-          onRowsPerPageChange={event => onPaginationChange(1, parseInt(event.target.value, 10))}
+        <TablePaginationComponent
+          table={table}
+          paginationData={{
+            total: total,
+            currentPage: pagination.page,
+            limit: pagination.limit,
+            totalPages: Math.ceil(total / pagination.limit)
+          }}
+          onPageChange={page => onPaginationChange(page, pagination.limit)}
         />
       )}
 

@@ -43,6 +43,9 @@ const SalesListTable = ({
   const [openModal, setOpenModal] = useState(false)
   const [selectedSale, setSelectedSale] = useState(null)
 
+
+  // console.log('selectedSale', JSON.stringify(selectedSale))
+
   const [printSale, setPrintSale] = useState(null)
   const componentRef = useRef(null)
 
@@ -82,8 +85,11 @@ const SalesListTable = ({
     },
     pageStyle: `
       @page {
-        size: A4 portrait;
-        margin: 0.3in;
+        size: 12cm 25cm;
+        margin-top: 8cm;
+        margin-bottom: 3cm;
+        margin-left: 0.5cm;
+        margin-right: 0.5cm;
       }
       @media print {
         body {
@@ -367,6 +373,14 @@ const SalesListTable = ({
                       </Box>
                       <Box>
                         <Typography variant='body2' color='text.secondary'>
+                          Location
+                        </Typography>
+                        <Typography variant='body1' sx={{ fontWeight: 500 }}>
+                          {selectedSale.customerId?.contact_info?.location || 'N/A'}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant='body2' color='text.secondary'>
                           Sale Date
                         </Typography>
                         <Typography variant='body1' sx={{ fontWeight: 500 }}>
@@ -428,6 +442,24 @@ const SalesListTable = ({
                             textTransform: 'uppercase'
                           }}
                         />
+                      </Box>
+                      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                        <Box>
+                          <Typography variant='body2' color='text.secondary'>
+                            Crate Type 1 Total Amount
+                          </Typography>
+                          <Typography variant='body1' sx={{ fontWeight: 600 }}>
+                            ৳{(selectedSale.payment_details?.total_crate_type1_price || 0).toLocaleString()}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant='body2' color='text.secondary'>
+                            Crate Type 2 Total Amount
+                          </Typography>
+                          <Typography variant='body1' sx={{ fontWeight: 600 }}>
+                            ৳{(selectedSale.payment_details?.total_crate_type2_price || 0).toLocaleString()}
+                          </Typography>
+                        </Box>
                       </Box>
                       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                         <Box>
@@ -514,6 +546,9 @@ const SalesListTable = ({
                                     Box Quantity
                                   </th>
                                   <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>
+                                    Piece Quantity
+                                  </th>
+                                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>
                                     Unit Price
                                   </th>
                                   <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>
@@ -539,6 +574,7 @@ const SalesListTable = ({
                                     <td style={{ padding: '12px' }}>{lot.lotId?.lot_name || 'N/A'}</td>
                                     <td style={{ padding: '12px' }}>{lot.kg || 0}</td>
                                     <td style={{ padding: '12px' }}>{lot.box_quantity || 0}</td>
+                                    <td style={{ padding: '12px' }}>{lot.piece_quantity || 0}</td>
                                     <td style={{ padding: '12px' }}>৳{(lot.unit_price || 0).toLocaleString()}</td>
                                     <td style={{ padding: '12px', fontWeight: 600, color: '#667eea' }}>
                                       ৳{(lot.selling_price || 0).toLocaleString()}
@@ -548,8 +584,8 @@ const SalesListTable = ({
                                       {lot.crate_type1 || 0} / {lot.crate_type2 || 0}
                                     </td>
                                     <td style={{ padding: '12px' }}>
-                                      ৳{(lot.lot_commission_amount || 0).toLocaleString()} (
-                                      {lot.lot_commission_rate || 0}%)
+                                      ৳{(lot.customer_commission_amount || 0).toLocaleString()} (
+                                      {lot.customer_commission_rate || 0}%)
                                     </td>
                                     <td style={{ padding: '12px', fontWeight: 600, color: '#4caf50' }}>
                                       ৳{(lot.lot_profit || 0).toLocaleString()}
