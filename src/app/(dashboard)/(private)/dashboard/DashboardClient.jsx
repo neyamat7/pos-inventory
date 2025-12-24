@@ -4,15 +4,18 @@ import { useState, useEffect } from 'react'
 
 import Grid from '@mui/material/Grid2'
 
-import { FormControl, InputLabel, Select, MenuItem } from '@mui/material'
+import { FormControl, InputLabel, Select, MenuItem, Card, CardContent, Button, Box, Typography } from '@mui/material'
 
 import CardStatVertical from '@/components/card-statistics/Vertical'
+import CustomAvatar from '@core/components/mui/Avatar'
 import EarningReports from '@/views/dashboards/crm/EarningReports'
 import EarningReportsWithTabs from '@/views/dashboards/crm/EarningReportsWithTabs'
 import PopularProducts from '@/views/dashboards/crm/PopularProducts'
 import { getAnalysisStats } from '@/actions/dashboardActions'
+import { useRouter } from 'next/navigation'
 
-export default function DashboardClient({ initialData, monthlySummary }) {
+export default function DashboardClient({ initialData, monthlySummary, initialDailyCash }) {
+  const router = useRouter()
   const [filter, setFilter] = useState('daily')
   const [statsData, setStatsData] = useState(initialData)
 
@@ -46,6 +49,34 @@ export default function DashboardClient({ initialData, monthlySummary }) {
         </FormControl>
       </Grid>
       <Grid size={{ xs: 0, md: 4, lg: 8 }}></Grid>
+
+       {/* Daily Cash Summary */}
+      <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+        <Card>
+          <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
+            <div className='flex flex-col gap-2'>
+              {/* <CustomAvatar variant='rounded' skin='light' size={44} color='primary'>
+                <i className='tabler-wallet text-[28px]' />
+              </CustomAvatar> */}
+              <div className='flex flex-col gap-0.5'>
+                <Typography variant='h5'>Daily Cash</Typography>
+                <Typography variant='body2' color='text.disabled'>Today's Summary</Typography>
+                <Box sx={{ mt: 0.5, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                  <Typography variant='body2' color='text.secondary'>
+                    Opening: <Typography component='span' variant='body2' fontWeight={600} color='text.primary'>৳{initialDailyCash?.openingCash || 0}</Typography>
+                  </Typography>
+                  <Typography variant='body2' color='text.secondary'>
+                    Closing: <Typography component='span' variant='body2' fontWeight={600} color='text.primary'>৳{initialDailyCash?.closingCash || 0}</Typography>
+                  </Typography>
+                </Box>
+                <Button variant='tonal' size='small' fullWidth sx={{ mt: 1 }} onClick={() => router.push('/apps/cash-transactions')}>
+                  Cash Transactions
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </Grid>
 
       {/* Total Sales */}
       <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
@@ -158,6 +189,8 @@ export default function DashboardClient({ initialData, monthlySummary }) {
           chipVariant='tonal'
         />
       </Grid>
+      
+     
 
       <Grid size={{ xs: 12, lg: 12 }}>
         <EarningReportsWithTabs monthlySummary={monthlySummary} />

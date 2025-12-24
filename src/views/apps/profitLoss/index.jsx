@@ -12,7 +12,8 @@ import {
   Chip,
   Avatar,
   TablePagination,
-  IconButton
+  IconButton,
+  Skeleton
 } from '@mui/material'
 import Grid2 from '@mui/material/Grid2'
 import {
@@ -249,7 +250,11 @@ export default function ProfitLoss({ suppliers = [] }) {
                     TOTAL COMBINED PROFIT
                   </Typography>
                   <Typography variant='h4' fontWeight={700} color='primary.dark' sx={{ my: 1 }}>
-                    ৳{data.totals.totalCombinedProfit?.toLocaleString()}
+                    {loading ? (
+                      <Skeleton width={120} height={40} />
+                    ) : (
+                      `৳${data.totals.totalCombinedProfit?.toLocaleString()}`
+                    )}
                   </Typography>
                 </Box>
                 <Avatar sx={{ bgcolor: 'primary.main' }}>
@@ -269,7 +274,11 @@ export default function ProfitLoss({ suppliers = [] }) {
                     TOTAL LOT PROFIT
                   </Typography>
                   <Typography variant='h4' fontWeight={700} color='success.dark' sx={{ my: 1 }}>
-                    ৳{data.totals.totalLotProfit?.toLocaleString()}
+                    {loading ? (
+                      <Skeleton width={120} height={40} />
+                    ) : (
+                      `৳${data.totals.totalLotProfit?.toLocaleString()}`
+                    )}
                   </Typography>
                 </Box>
                 <Avatar sx={{ bgcolor: 'success.main' }}>
@@ -289,7 +298,11 @@ export default function ProfitLoss({ suppliers = [] }) {
                     TOTAL CUSTOMER PROFIT
                   </Typography>
                   <Typography variant='h4' fontWeight={700} color='info.dark' sx={{ my: 1 }}>
-                    ৳{data.totals.totalCustomerProfit?.toLocaleString()}
+                    {loading ? (
+                      <Skeleton width={120} height={40} />
+                    ) : (
+                      `৳${data.totals.totalCustomerProfit?.toLocaleString()}`
+                    )}
                   </Typography>
                 </Box>
                 <Avatar sx={{ bgcolor: 'info.main' }}>
@@ -309,7 +322,11 @@ export default function ProfitLoss({ suppliers = [] }) {
                     TOTAL LOSS
                   </Typography>
                   <Typography variant='h4' fontWeight={700} color='error.dark' sx={{ my: 1 }}>
-                    ৳{data.totals.totalLoss?.toLocaleString()}
+                    {loading ? (
+                      <Skeleton width={120} height={40} />
+                    ) : (
+                      `৳${data.totals.totalLoss?.toLocaleString()}`
+                    )}
                   </Typography>
                 </Box>
                 <Avatar sx={{ bgcolor: 'error.main' }}>

@@ -322,6 +322,7 @@ const AllLotListTable = ({
                   className: 'flex items-center gap-2'
                 }
               },
+
               {
                 text: 'Adjust Stock',
                 icon: 'tabler-edit',
@@ -350,7 +351,22 @@ const AllLotListTable = ({
     pageCount: paginationData?.totalPages || 1
   })
 
-  const ViewDetailsModal = () => (
+  const ViewDetailsModal = () => {
+    // Determine which columns to show based on sale data
+    const hasDiscount = lotSaleData?.sales?.some(sale => (sale.discount_Kg || 0) > 0) || false
+    const hasCrate = lotSaleData?.sales?.some(sale => (sale.total_crate || 0) > 0 || (sale.crate_type1 || 0) > 0 || (sale.crate_type2 || 0) > 0) || false
+    const hasBox = lotSaleData?.sales?.some(sale => sale.isBoxed && (sale.box_quantity || 0) > 0) || false
+    const hasPiece = lotSaleData?.sales?.some(sale => sale.isPieced && (sale.piece_quantity || 0) > 0) || false
+    const hasKg = lotSaleData?.sales?.some(sale => (sale.kg || 0) > 0) || false
+
+    // Calculate totals
+    const totalKg = lotSaleData?.sales?.reduce((sum, sale) => sum + (sale.kg || 0), 0) || 0
+    const totalBox = lotSaleData?.sales?.reduce((sum, sale) => sum + (sale.box_quantity || 0), 0) || 0
+    const totalPiece = lotSaleData?.sales?.reduce((sum, sale) => sum + (sale.piece_quantity || 0), 0) || 0
+    const totalCrate = lotSaleData?.sales?.reduce((sum, sale) => sum + (sale.total_crate || 0), 0) || 0
+    const totalPrice = lotSaleData?.sales?.reduce((sum, sale) => sum + (sale.total_price || 0), 0) || 0
+
+    return (
     <Dialog
       open={viewOpen}
       onClose={() => {
@@ -461,22 +477,18 @@ const AllLotListTable = ({
                     <thead>
                       <tr className='bg-gray-100 border-b-2 border-gray-200'>
                         <th className='px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase'>#</th>
-                        {/* Conditionally show Kg column only for non-box and non-piece products */}
-                        {!(selectedLot?.box_quantity > 0 || selectedLot?.isPieced) && (
-                          <th className='px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase'>Kg</th>
-                        )}
-                        
-                          <th className='px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase'>
-                            Discount
-                          </th>
-                        
+                        {hasKg && <th className='px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase'>Kg</th>}
+                        {hasBox && <th className='px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase'>Box</th>}
+                        {hasPiece && <th className='px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase'>Piece</th>}
                         <th className='px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase'>
                           Unit Price
                         </th>
-                        {/* Show Box, Piece or Crate based on product type */}
-                        <th className='px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase'>
-                          {selectedLot?.isPieced ? 'Piece' : selectedLot?.box_quantity > 0 ? 'Box' : 'Crate'}
-                        </th>
+                        {hasDiscount && <th className='px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase'>
+                          Discount
+                        </th>}
+                        {hasCrate && <th className='px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase'>
+                          Crate
+                        </th>}
                         <th className='px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase'>Total</th>
                       </tr>
                     </thead>
@@ -484,15 +496,31 @@ const AllLotListTable = ({
                       {lotSaleData.sales?.map((sale, index) => (
                         <tr key={index} className='border-b border-gray-200 hover:bg-gray-50 transition-colors'>
                           <td className='px-4 py-3 text-sm font-medium text-gray-700'>{index + 1}</td>
-                          {/* Conditionally show Kg column only for non-box and non-piece products */}
-                          {!(selectedLot?.box_quantity > 0 || selectedLot?.isPieced) && (
+                          {hasKg && (
                             <td className='px-4 py-3 text-center'>
                               <span className='inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold'>
                                 {sale.kg || 0} kg
                               </span>
                             </td>
                           )}
-                         
+                          {hasBox && (
+                            <td className='px-4 py-3 text-center'>
+                              <span className='inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold'>
+                                {sale.box_quantity || 0}
+                              </span>
+                            </td>
+                          )}
+                          {hasPiece && (
+                            <td className='px-4 py-3 text-center'>
+                              <span className='inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-semibold'>
+                                {sale.piece_quantity || 0}
+                              </span>
+                            </td>
+                          )}
+                          <td className='px-4 py-3 text-right text-sm font-semibold text-gray-700'>
+                            ৳{sale.unit_price?.toFixed(2) || 0}
+                          </td>
+                          {hasDiscount && (
                             <td className='px-4 py-3 text-center text-sm text-gray-600'>
                               {sale.discount_Kg > 0 ? (
                                 <span className='text-orange-600 font-medium'>{sale.discount_Kg} kg</span>
@@ -500,19 +528,14 @@ const AllLotListTable = ({
                                 <span className='text-gray-400'>—</span>
                               )}
                             </td>
-                          
-                          <td className='px-4 py-3 text-right text-sm font-semibold text-gray-700'>
-                            ৳{sale.unit_price?.toFixed(2) || 0}
-                          </td>
-                          <td className='px-4 py-3 text-center'>
-                            <span className='inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold'>
-                              {selectedLot?.isPieced
-                                ? (sale.piece_quantity || 0)
-                                : selectedLot?.box_quantity > 0
-                                  ? (sale.total_crate || 0)
-                                  : (sale.total_crate || 0)}
-                            </span>
-                          </td>
+                          )}
+                          {hasCrate && (
+                            <td className='px-4 py-3 text-center'>
+                              <span className='inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold'>
+                                {sale.total_crate || 0}
+                              </span>
+                            </td>
+                          )}
                           <td className='px-4 py-3 text-right text-base font-bold text-green-600'>
                             ৳{sale.total_price?.toFixed(2) || 0}
                           </td>
@@ -610,31 +633,34 @@ const AllLotListTable = ({
                   <div>
                     <p className='text-sm font-medium text-gray-600 mb-3'>Sales Summary</p>
                     <div className='space-y-2'>
-                      {/* Conditionally show Total Kg Sold only for non-box and non-piece products */}
-                      {!(selectedLot?.box_quantity > 0 || selectedLot?.isPieced) && (
+                      {hasKg && totalKg > 0 && (
                         <div className='flex justify-between items-center'>
                           <span className='text-sm text-gray-600'>Total Kg Sold:</span>
-                          <span className='text-base font-bold text-gray-800'>
-                            {lotSaleData.sales?.reduce((sum, sale) => sum + (sale.kg || 0), 0)} kg
-                          </span>
+                          <span className='text-base font-bold text-gray-800'>{totalKg} kg</span>
+                        </div>
+                      )}
+                      {hasBox && totalBox > 0 && (
+                        <div className='flex justify-between items-center'>
+                          <span className='text-sm text-gray-600'>Total Boxes:</span>
+                          <span className='text-base font-bold text-gray-800'>{totalBox}</span>
+                        </div>
+                      )}
+                      {hasPiece && totalPiece > 0 && (
+                        <div className='flex justify-between items-center'>
+                          <span className='text-sm text-gray-600'>Total Pieces:</span>
+                          <span className='text-base font-bold text-gray-800'>{totalPiece}</span>
+                        </div>
+                      )}
+                      {hasCrate && totalCrate > 0 && (
+                        <div className='flex justify-between items-center'>
+                          <span className='text-sm text-gray-600'>Total Crates:</span>
+                          <span className='text-base font-bold text-gray-800'>{totalCrate}</span>
                         </div>
                       )}
                       <div className='flex justify-between items-center'>
-                        <span className='text-sm text-gray-600'>
-                          {selectedLot?.isPieced ? 'Total Pieces:' : selectedLot?.box_quantity > 0 ? 'Total Boxes:' : 'Total Crates:'}
-                        </span>
-                        <span className='text-base font-bold text-gray-800'>
-                          {lotSaleData.sales?.reduce((sum, sale) => {
-                            if (selectedLot?.isPieced) return sum + (sale.piece_quantity || 0)
-
-                            return sum + (sale.total_crate || 0)
-                          }, 0)}
-                        </span>
-                      </div>
-                      <div className='flex justify-between items-center'>
                         <span className='text-sm text-gray-600'>Total Sales Amount:</span>
                         <span className='text-lg font-bold text-green-600'>
-                          ৳{lotSaleData.sales?.reduce((sum, sale) => sum + (sale.total_price || 0), 0).toFixed(2)}
+                          ৳{totalPrice.toFixed(2)}
                         </span>
                       </div>
                     </div>
@@ -652,7 +678,7 @@ const AllLotListTable = ({
                       <div className='flex justify-between items-center p-3 bg-purple-100 rounded-lg'>
                         <span className='text-base font-bold text-purple-700'>Grand Total:</span>
                         <span className='text-2xl font-bold text-purple-700'>
-                          ৳{lotSaleData.sales?.reduce((sum, sale) => sum + (sale.total_price || 0), 0).toFixed(2)}
+                          ৳{totalPrice.toFixed(2)}
                         </span>
                       </div>
                     </div>
@@ -713,6 +739,7 @@ const AllLotListTable = ({
       </DialogActions>
     </Dialog>
   )
+  }
 
   const AdjustStockModal = () => {
     const [unitQuantity, setUnitQuantity] = useState('')
@@ -895,12 +922,14 @@ const AllLotListTable = ({
             ...lotSaleData,
             printTrigger: Date.now()
           }}
+
           triggerPrint={printTrigger}
           onPrintComplete={() => {
             console.log('Lot invoice print completed')
             setPrintTrigger(false)
             showSuccess('Invoice printed successfully!')
           }}
+
           onPrintError={error => {
             console.error('Print failed:', error)
             setPrintTrigger(false)

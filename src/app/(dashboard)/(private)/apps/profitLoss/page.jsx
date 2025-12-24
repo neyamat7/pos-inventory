@@ -30,13 +30,8 @@ const ProfitLossPage = () => {
     fetchData()
   }, [isAdmin, adminLoading])
 
-  // Show loading state
-  if (adminLoading || loading) {
-    return <div className='flex items-center justify-center min-h-[50vh]'>Loading...</div>
-  }
-
-  // Show access denied if not admin
-  if (!isAdmin) {
+  // Show access denied if not admin (only after loading is finished)
+  if (!adminLoading && !isAdmin) {
     return (
       <div className='flex flex-col items-center justify-center min-h-[50vh] p-10 text-center'>
         <div className='mb-4 text-6xl'>🚫</div>

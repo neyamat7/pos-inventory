@@ -31,6 +31,7 @@ import {
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
+import TableSkeleton from '@/components/TableSkeleton'
 import CustomAvatar from '@core/components/mui/Avatar'
 
 // Util Imports
@@ -308,11 +309,7 @@ const ActivityLogs = ({ activityLogsData = [], paginationData, loading, onPageCh
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={table.getVisibleFlatColumns().length} className='text-center py-8'>
-                  <Typography>Loading activity logs...</Typography>
-                </td>
-              </tr>
+              <TableSkeleton columns={table.getVisibleFlatColumns().length} />
             ) : table.getFilteredRowModel().rows.length === 0 ? (
               <tr>
                 <td colSpan={table.getVisibleFlatColumns().length} className='text-center py-8'>

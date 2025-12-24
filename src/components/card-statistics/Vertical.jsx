@@ -16,18 +16,18 @@ const CardStatsVertical = props => {
     props
 
   return (
-    <Card className='min-h-[220px]'>
-      <CardContent className='flex flex-col gap-y-3 h-full'>
-        <CustomAvatar variant='rounded' skin={avatarSkin} size={avatarSize} color={avatarColor}>
-          <i className={classnames(avatarIcon, 'text-[28px]')} />
-        </CustomAvatar>
-        <div className='flex flex-col gap-y-1'>
-          <Typography variant='h5'>{title}</Typography>
-          <Typography color='text.disabled'>{subtitle}</Typography>
-          <Typography color='text.primary'>{stats}</Typography>
+    <Card>
+      <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
+        <div className='flex flex-col gap-2'>
+          <CustomAvatar variant='rounded' skin={avatarSkin} size={avatarSize} color={avatarColor}>
+            <i className={classnames(avatarIcon, 'text-[28px]')} />
+          </CustomAvatar>
+          <div className='flex flex-col gap-0.5'>
+            <Typography variant='h5'>{title}</Typography>
+            <Typography variant='body2' color='text.disabled'>{subtitle}</Typography>
+            <Typography variant='h6' color='text.primary' sx={{ mt: 0.5 }}>{stats}</Typography>
+          </div>
         </div>
-        <div className='flex-1'></div>
-        {/* <Chip label={chipText} color={chipColor} variant={chipVariant} size='small' /> */}
       </CardContent>
     </Card>
   )
