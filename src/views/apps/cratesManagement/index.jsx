@@ -21,6 +21,7 @@ import Chip from '@mui/material/Chip'
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
 import { customerColumns } from './customerColumns'
+import CrateTransactionPrintHandler from './CrateTransactionPrintHandler'
 
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
@@ -76,6 +77,11 @@ const CrateManagementTable = ({
     type2Price: '',
     notes: ''
   })
+
+  // Print state
+  const [printTrigger, setPrintTrigger] = useState(false)
+  const [transactionToPrint, setTransactionToPrint] = useState(null)
+
 
   // Modal form state
   const [modalForm, setModalForm] = useState({
@@ -440,9 +446,13 @@ const CrateManagementTable = ({
           const isOut = info.row.original.status === 'OUT'
           const transaction = info.row.original
           const supplier = transaction.supplierId
+          const customer = transaction.customerId
+          
+          // Show print button if transaction has customer or supplier
+          const canPrint = !!(customer || supplier)
 
           return (
-            <>
+            <div className='flex gap-2'>
               {(!isOut || supplier) && (
                 <Button
                   variant='outlined'
@@ -482,7 +492,35 @@ const CrateManagementTable = ({
                   Update
                 </Button>
               )}
-            </>
+              
+              {canPrint && (
+                <Button
+                  variant='contained'
+                  onClick={() => {
+                    setTransactionToPrint(transaction)
+                    setPrintTrigger(true)
+                    setTimeout(() => setPrintTrigger(false), 1000)
+                  }}
+                  sx={{
+                    backgroundColor: '#4caf50',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: '#45a049',
+                      boxShadow: '0 4px 8px rgba(76, 175, 80, 0.3)'
+                    },
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    padding: '6px 12px',
+                    minWidth: 'auto',
+                    textTransform: 'none',
+                    borderRadius: '6px'
+                  }}
+                  startIcon={<i className='tabler-printer' style={{ fontSize: '16px' }} />}
+                >
+                  Print
+                </Button>
+              )}
+            </div>
           )
         },
         enableSorting: false
@@ -952,6 +990,7 @@ const CrateManagementTable = ({
                     type='number'
                     value={modalForm.type1Quantity}
                     onChange={e => setModalForm({ ...modalForm, type1Quantity: e.target.value })}
+                    onWheel={e => e.target.blur()}
                     placeholder='Enter Type 1 quantity'
                   />
                   {calculation?.type1.message && (
@@ -970,6 +1009,7 @@ const CrateManagementTable = ({
                     type='number'
                     value={modalForm.type1Price || selectedSupplier?.crate_info?.crate1Price}
                     onChange={e => setModalForm({ ...modalForm, type1Price: e.target.value })}
+                    onWheel={e => e.target.blur()}
                     placeholder='Enter Type 1 price'
                   />
                 </Box>
@@ -983,6 +1023,7 @@ const CrateManagementTable = ({
                     type='number'
                     value={modalForm.type2Quantity}
                     onChange={e => setModalForm({ ...modalForm, type2Quantity: e.target.value })}
+                    onWheel={e => e.target.blur()}
                     placeholder='Enter Type 2 quantity'
                   />
                   {calculation?.type2.message && (
@@ -1001,6 +1042,7 @@ const CrateManagementTable = ({
                     type='number'
                     value={modalForm.type2Price || selectedSupplier?.crate_info?.crate2Price}
                     onChange={e => setModalForm({ ...modalForm, type2Price: e.target.value })}
+                    onWheel={e => e.target.blur()}
                     placeholder='Enter Type 2 price'
                   />
                 </Box>
@@ -1219,6 +1261,7 @@ const CrateManagementTable = ({
                   type='number'
                   value={modalForm.type1Quantity}
                   onChange={e => setModalForm({ ...modalForm, type1Quantity: e.target.value })}
+                  onWheel={e => e.target.blur()}
                   placeholder='Quantity'
                 />
               </Box>
@@ -1231,6 +1274,7 @@ const CrateManagementTable = ({
                   type='number'
                   value={modalForm.type1Price}
                   onChange={e => setModalForm({ ...modalForm, type1Price: e.target.value })}
+                  onWheel={e => e.target.blur()}
                   placeholder='Price'
                 />
               </Box>
@@ -1246,6 +1290,7 @@ const CrateManagementTable = ({
                   type='number'
                   value={modalForm.type2Quantity}
                   onChange={e => setModalForm({ ...modalForm, type2Quantity: e.target.value })}
+                  onWheel={e => e.target.blur()}
                   placeholder='Quantity'
                 />
               </Box>
@@ -1258,6 +1303,7 @@ const CrateManagementTable = ({
                   type='number'
                   value={modalForm.type2Price}
                   onChange={e => setModalForm({ ...modalForm, type2Price: e.target.value })}
+                  onWheel={e => e.target.blur()}
                   placeholder='Price'
                 />
               </Box>
@@ -1426,6 +1472,7 @@ const CrateManagementTable = ({
                   type='number'
                   value={updateForm.type1Quantity}
                   onChange={e => setUpdateForm({ ...updateForm, type1Quantity: e.target.value })}
+                  onWheel={e => e.target.blur()}
                   placeholder='Enter new quantity'
                 />
               </Box>
@@ -1439,6 +1486,7 @@ const CrateManagementTable = ({
                   type='number'
                   value={updateForm.type2Quantity}
                   onChange={e => setUpdateForm({ ...updateForm, type2Quantity: e.target.value })}
+                  onWheel={e => e.target.blur()}
                   placeholder='Enter new quantity'
                 />
               </Box>
@@ -1454,6 +1502,7 @@ const CrateManagementTable = ({
                     type='number'
                     value={updateForm.type1Price}
                     onChange={e => setUpdateForm({ ...updateForm, type1Price: e.target.value })}
+                    onWheel={e => e.target.blur()}
                     placeholder='Enter Type 1 price'
                   />
                 </Box>
@@ -1467,6 +1516,7 @@ const CrateManagementTable = ({
                     type='number'
                     value={updateForm.type2Price}
                     onChange={e => setUpdateForm({ ...updateForm, type2Price: e.target.value })}
+                    onWheel={e => e.target.blur()}
                     placeholder='Enter Type 2 price'
                   />
                 </Box>
@@ -1518,6 +1568,21 @@ const CrateManagementTable = ({
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Print Handler */}
+      <CrateTransactionPrintHandler
+        transactionData={transactionToPrint}
+        triggerPrint={printTrigger}
+        onPrintComplete={() => {
+          console.log('Print completed successfully')
+          setPrintTrigger(false)
+        }}
+        onPrintError={(error) => {
+          console.error('Print failed:', error)
+          setPrintTrigger(false)
+          showError('Failed to print invoice')
+        }}
+      />
     </>
   )
 }

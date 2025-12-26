@@ -318,7 +318,7 @@ const AddSupplierDrawer = props => {
                   name='balance'
                   control={control}
                   render={({ field }) => (
-                    <CustomTextField {...field} type='number' label='Balance' placeholder='5000' fullWidth />
+                    <CustomTextField {...field} type='number' label='Balance' placeholder='5000' fullWidth onWheel={e => e.target.blur()} />
                   )}
                 />
               </Grid>
@@ -328,7 +328,7 @@ const AddSupplierDrawer = props => {
                   name='due'
                   control={control}
                   render={({ field }) => (
-                    <CustomTextField {...field} type='number' label='Due Amount' placeholder='3875' fullWidth />
+                    <CustomTextField {...field} type='number' label='Due Amount' placeholder='3875' fullWidth onWheel={e => e.target.blur()} />
                   )}
                 />
               </Grid>
@@ -345,7 +345,7 @@ const AddSupplierDrawer = props => {
                   name='crate1Price'
                   control={control}
                   render={({ field }) => (
-                    <CustomTextField {...field} type='number' label='Crate 1 Price' placeholder='0' fullWidth />
+                    <CustomTextField {...field} type='number' label='Crate 1 Price' placeholder='0' fullWidth onWheel={e => e.target.blur()} />
                   )}
                 />
               </Grid>
@@ -355,7 +355,7 @@ const AddSupplierDrawer = props => {
                   name='crate2Price'
                   control={control}
                   render={({ field }) => (
-                    <CustomTextField {...field} type='number' label='Crate 2 Price' placeholder='0' fullWidth />
+                    <CustomTextField {...field} type='number' label='Crate 2 Price' placeholder='0' fullWidth onWheel={e => e.target.blur()} />
                   )}
                 />
               </Grid>

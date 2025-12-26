@@ -461,6 +461,7 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
                             type='number'
                             label='Balance'
                             placeholder='7500'
+                            onWheel={e => e.target.blur()}
                             sx={{
                               '& .MuiOutlinedInput-root': {
                                 borderRadius: 2,
@@ -483,6 +484,7 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
                             type='number'
                             label='Due Amount'
                             placeholder='2000'
+                            onWheel={e => e.target.blur()}
                             sx={{
                               '& .MuiOutlinedInput-root': {
                                 borderRadius: 2,
@@ -529,6 +531,7 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
                             type='number'
                             label='Crate 1 Price'
                             placeholder='55'
+                            onWheel={e => e.target.blur()}
                             sx={{
                               '& .MuiOutlinedInput-root': {
                                 borderRadius: 2,
@@ -551,6 +554,7 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
                             type='number'
                             label='Remaining Crate 1'
                             placeholder='10'
+                            onWheel={e => e.target.blur()}
                             sx={{
                               '& .MuiOutlinedInput-root': {
                                 borderRadius: 2,
@@ -573,6 +577,7 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
                             type='number'
                             label='Crate 2 Price'
                             placeholder='80'
+                            onWheel={e => e.target.blur()}
                             sx={{
                               '& .MuiOutlinedInput-root': {
                                 borderRadius: 2,
@@ -595,6 +600,7 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
                             type='number'
                             label='Remaining Crate 2'
                             placeholder='5'
+                            onWheel={e => e.target.blur()}
                             sx={{
                               '& .MuiOutlinedInput-root': {
                                 borderRadius: 2,
