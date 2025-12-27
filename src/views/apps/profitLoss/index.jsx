@@ -55,7 +55,21 @@ export default function ProfitLoss({ suppliers = [] }) {
       totalCustomerProfit: 0,
       totalLotProfit: 0,
       totalCombinedProfit: 0,
-      totalLoss: 0
+      totalLoss: 0,
+      totalExpenses: 0,
+      expenseBreakdown: {
+        expenseRecords: 0,
+        cashOutTransactions: 0
+      },
+      totalCrateProfit: 0,
+      crateProfitBreakdown: {
+        type1Profit: 0,
+        type2Profit: 0,
+        type1Quantity: 0,
+        type2Quantity: 0
+      },
+      grossProfit: 0,
+      netProfit: 0
     },
     total: 0,
     totalPages: 0
@@ -83,6 +97,8 @@ export default function ProfitLoss({ suppliers = [] }) {
 
       if (result.success) {
         setData(result.data)
+
+        // console.log('result', result.data)
       }
     } catch (error) {
       console.error('Error fetching analytics:', error)
@@ -241,19 +257,20 @@ export default function ProfitLoss({ suppliers = [] }) {
 
       {/* Totals Cards */}
       <Grid2 container spacing={3} mb={4}>
-        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+        {/* Gross Profit */}
+        <Grid2 size={{ xs: 12, sm: 6, md: 4, xl: 2.4 }}>
           <Card elevation={0} sx={{ bgcolor: 'primary.50', border: 1, borderColor: 'primary.main' }}>
             <CardContent>
               <Box display='flex' justifyContent='space-between' alignItems='flex-start'>
                 <Box>
                   <Typography variant='caption' fontWeight={600} color='text.secondary'>
-                    TOTAL COMBINED PROFIT
+                    GROSS PROFIT
                   </Typography>
                   <Typography variant='h4' fontWeight={700} color='primary.dark' sx={{ my: 1 }}>
                     {loading ? (
                       <Skeleton width={120} height={40} />
                     ) : (
-                      `৳${data.totals.totalCombinedProfit?.toLocaleString()}`
+                      `৳${data.totals.grossProfit?.toLocaleString()}`
                     )}
                   </Typography>
                 </Box>
@@ -265,13 +282,39 @@ export default function ProfitLoss({ suppliers = [] }) {
           </Card>
         </Grid2>
 
-        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+        {/* Net Profit */}
+        <Grid2 size={{ xs: 12, sm: 6, md: 4, xl: 2.4 }}>
+          <Card elevation={0} sx={{ bgcolor: 'secondary.50', border: 1, borderColor: 'secondary.main' }}>
+            <CardContent>
+              <Box display='flex' justifyContent='space-between' alignItems='flex-start'>
+                <Box>
+                  <Typography variant='caption' fontWeight={600} color='text.secondary'>
+                    NET PROFIT
+                  </Typography>
+                  <Typography variant='h4' fontWeight={700} color='secondary.dark' sx={{ my: 1 }}>
+                    {loading ? (
+                      <Skeleton width={120} height={40} />
+                    ) : (
+                      `৳${data.totals.netProfit?.toLocaleString()}`
+                    )}
+                  </Typography>
+                </Box>
+                <Avatar sx={{ bgcolor: 'secondary.main' }}>
+                  <TrendingUp />
+                </Avatar>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid2>
+
+        {/* Lot Profit */}
+        <Grid2 size={{ xs: 12, sm: 6, md: 4, xl: 2.4 }}>
           <Card elevation={0} sx={{ bgcolor: 'success.50', border: 1, borderColor: 'success.main' }}>
             <CardContent>
               <Box display='flex' justifyContent='space-between' alignItems='flex-start'>
                 <Box>
                   <Typography variant='caption' fontWeight={600} color='text.secondary'>
-                    TOTAL LOT PROFIT
+                    LOT PROFIT
                   </Typography>
                   <Typography variant='h4' fontWeight={700} color='success.dark' sx={{ my: 1 }}>
                     {loading ? (
@@ -282,20 +325,21 @@ export default function ProfitLoss({ suppliers = [] }) {
                   </Typography>
                 </Box>
                 <Avatar sx={{ bgcolor: 'success.main' }}>
-                  <TrendingUp />
+                  <AttachMoney />
                 </Avatar>
               </Box>
             </CardContent>
           </Card>
         </Grid2>
 
-        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+        {/* Customer Profit */}
+        <Grid2 size={{ xs: 12, sm: 6, md: 4, xl: 2.4 }}>
           <Card elevation={0} sx={{ bgcolor: 'info.50', border: 1, borderColor: 'info.main' }}>
             <CardContent>
               <Box display='flex' justifyContent='space-between' alignItems='flex-start'>
                 <Box>
                   <Typography variant='caption' fontWeight={600} color='text.secondary'>
-                    TOTAL CUSTOMER PROFIT
+                    CUSTOMER PROFIT
                   </Typography>
                   <Typography variant='h4' fontWeight={700} color='info.dark' sx={{ my: 1 }}>
                     {loading ? (
@@ -306,30 +350,31 @@ export default function ProfitLoss({ suppliers = [] }) {
                   </Typography>
                 </Box>
                 <Avatar sx={{ bgcolor: 'info.main' }}>
-                  <AttachMoney />
+                  <TrendingDown />
                 </Avatar>
               </Box>
             </CardContent>
           </Card>
         </Grid2>
 
-        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-          <Card elevation={0} sx={{ bgcolor: 'error.50', border: 1, borderColor: 'error.main' }}>
+        {/* Crate Profit */}
+        <Grid2 size={{ xs: 12, sm: 6, md: 4, xl: 2.4 }}>
+          <Card elevation={0} sx={{ bgcolor: 'warning.50', border: 1, borderColor: 'warning.main' }}>
             <CardContent>
               <Box display='flex' justifyContent='space-between' alignItems='flex-start'>
                 <Box>
                   <Typography variant='caption' fontWeight={600} color='text.secondary'>
-                    TOTAL LOSS
+                    CRATE PROFIT
                   </Typography>
-                  <Typography variant='h4' fontWeight={700} color='error.dark' sx={{ my: 1 }}>
+                  <Typography variant='h4' fontWeight={700} color='warning.dark' sx={{ my: 1 }}>
                     {loading ? (
                       <Skeleton width={120} height={40} />
                     ) : (
-                      `৳${data.totals.totalLoss?.toLocaleString()}`
+                      `৳${data.totals.totalCrateProfit?.toLocaleString()}`
                     )}
                   </Typography>
                 </Box>
-                <Avatar sx={{ bgcolor: 'error.main' }}>
+                <Avatar sx={{ bgcolor: 'warning.main' }}>
                   <MoneyOff />
                 </Avatar>
               </Box>

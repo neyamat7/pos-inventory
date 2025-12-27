@@ -63,7 +63,7 @@ const CrateTransactionInvoice = ({ transactionData }) => {
       {/* Header - Centered */}
       <div style={{ textAlign: 'center', marginBottom: '8px', paddingBottom: '4px', borderBottom: '0.5px solid #000' }}>
         <div style={{ fontSize: '11px', marginBottom: '2px' }}>
-          {isCustomer ? 'ক্রেট পুনঃস্টক চালান' : 'ক্রেট লেনদেন চালান'}
+          {isCustomer ? 'ক্যারেট রি-স্টক' : 'ক্যারেট লেনদেন'}
         </div>
         <div style={{ fontSize: '8px', marginBottom: '1px' }}>
           তারিখ: {transactionDate}
@@ -73,7 +73,7 @@ const CrateTransactionInvoice = ({ transactionData }) => {
       {/* Party Info */}
       <div style={{ marginBottom: '6px' }}>
         <div style={{ fontSize: '9px', marginBottom: '1px' }}>
-          {isCustomer ? 'ক্রেতা' : 'সরবরাহকারী'}: {name}
+          {isCustomer ? 'ক্রেতা' : 'সাপ্লাইয়ার'}: {name}
         </div>
         <div style={{ fontSize: '8px', marginBottom: '1px' }}>ফোন: {phone}</div>
         <div style={{ fontSize: '8px', marginBottom: '2px' }}>ঠিকানা: {location}</div>
@@ -90,7 +90,7 @@ const CrateTransactionInvoice = ({ transactionData }) => {
         <thead>
           <tr>
             <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center', fontSize: '8px' }}>
-              ক্রেট টাইপ
+              ক্যারেট টাইপ
             </th>
             <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center', fontSize: '8px' }}>
               পরিমাণ
@@ -185,7 +185,7 @@ const CrateTransactionInvoice = ({ transactionData }) => {
           }}
         >
           <div style={{ marginBottom: '4px', fontSize: '9px', textAlign: 'center', fontWeight: 'bold' }}>
-            {isCustomer ? 'ক্রেতার বাকি ক্রেট' : 'সরবরাহকারীকে দিতে হবে'}
+            {isCustomer ? 'ক্রেতার বাকি ক্যারেট' : 'সাপ্লাইয়ারকে দিতে হবে'}
           </div>
           
           {dueType1 > 0 && (

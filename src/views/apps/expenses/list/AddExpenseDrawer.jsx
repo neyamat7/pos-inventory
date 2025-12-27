@@ -32,7 +32,7 @@ const AddExpenseDrawer = props => {
   const { open, handleClose, setData, expenseData, expenseCategories, usersList = [], refreshData } = props
 
 
-console.log('expense categories', expenseCategories)
+// console.log('expense categories', expenseCategories)
 
   // States
   const [loading, setLoading] = useState(false)

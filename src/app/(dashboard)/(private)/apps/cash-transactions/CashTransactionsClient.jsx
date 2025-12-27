@@ -410,6 +410,7 @@ export default function CashTransactionsClient({ initialData }) {
               onChange={e => setCashInData(prev => ({ ...prev, date: e.target.value }))}
               fullWidth
               InputLabelProps={{ shrink: true }}
+              disabled
             />
             <TextField
               type='number'
@@ -472,6 +473,7 @@ export default function CashTransactionsClient({ initialData }) {
               onChange={e => setCashOutData(prev => ({ ...prev, date: e.target.value }))}
               fullWidth
               InputLabelProps={{ shrink: true }}
+              disabled
             />
             <TextField
               type='number'
