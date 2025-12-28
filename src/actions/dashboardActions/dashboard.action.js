@@ -29,7 +29,7 @@ export async function getMonthlySummary() {
   try {
     const response = await api.get(`/analysis/monthly-summary`)
 
-    console.log('monthly res', response)
+    // console.log('monthly res', response)
 
     return {
       success: true,

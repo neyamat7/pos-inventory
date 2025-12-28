@@ -1,52 +1,52 @@
 'use client'
 
 // React Imports
-import { useState, useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 // MUI Imports
 import Link from 'next/link'
 
+import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import TablePagination from '@mui/material/TablePagination'
-import MenuItem from '@mui/material/MenuItem'
-import Button from '@mui/material/Button'
-import Typography from '@mui/material/Typography'
 import Checkbox from '@mui/material/Checkbox'
+import MenuItem from '@mui/material/MenuItem'
+import TablePagination from '@mui/material/TablePagination'
+import Typography from '@mui/material/Typography'
 
 // Third-party Imports
-import classnames from 'classnames'
 import { rankItem } from '@tanstack/match-sorter-utils'
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
-  useReactTable,
-  getFilteredRowModel,
+  getFacetedMinMaxValues,
   getFacetedRowModel,
   getFacetedUniqueValues,
-  getFacetedMinMaxValues,
-  getSortedRowModel
+  getFilteredRowModel,
+  getSortedRowModel,
+  useReactTable
 } from '@tanstack/react-table'
+import classnames from 'classnames'
 
-import { showError, showInfo, showSuccess } from '@/utils/toastUtils'
 import { uploadImage } from '@/actions/imageActions'
+import { showError, showInfo, showSuccess } from '@/utils/toastUtils'
 
 // Component Imports
-import AddCustomerDrawer from './AddCustomerDrawer'
+import TablePaginationComponent from '@components/TablePaginationComponent'
 import CustomAvatar from '@core/components/mui/Avatar'
 import CustomTextField from '@core/components/mui/TextField'
-import TablePaginationComponent from '@components/TablePaginationComponent'
+import AddCustomerDrawer from './AddCustomerDrawer'
 
-import OptionMenu from '@core/components/option-menu'
 import TableSkeleton from '@/components/TableSkeleton'
+import OptionMenu from '@core/components/option-menu'
 
 // Util Imports
 import { getInitials } from '@/utils/getInitials'
 
 // Style Imports
+import { addCustomerBalance, updateCustomer } from '@/actions/customerActions'
 import tableStyles from '@core/styles/table.module.css'
-import { updateCustomer, addCustomerBalance } from '@/actions/customerActions'
 
 import { getImageUrl } from '@/utils/getImageUrl'
 import { createPortal } from 'react-dom'
@@ -62,11 +62,21 @@ const fuzzyFilter = (row, columnId, value, addMeta) => {
 
 const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...props }) => {
   const [value, setValue] = useState(initialValue)
-
-  useEffect(() => setValue(initialValue), [initialValue])
+  const isTypingRef = useRef(false)
 
   useEffect(() => {
-    const timeout = setTimeout(() => onChange(value), debounce)
+    // Only update if user is not actively typing
+    if (!isTypingRef.current) {
+      setValue(initialValue)
+    }
+  }, [initialValue])
+
+  useEffect(() => {
+    isTypingRef.current = true
+    const timeout = setTimeout(() => {
+      onChange(value)
+      isTypingRef.current = false
+    }, debounce)
 
     return () => clearTimeout(timeout)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -85,13 +95,17 @@ const CustomerListTable = ({
   onPageSizeChange,
   isLoading = false,
   onSearchChange,
-  refreshData
+  refreshData,
+  searchValue = ''
 }) => {
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
   const [data, setData] = useState([])
   const [globalFilter, setGlobalFilter] = useState('')
+  
+  // Ref to maintain input focus
+  const searchInputRef = useRef(null)
 
   // For modals
   const [openBalanceModal, setOpenBalanceModal] = useState(false)
@@ -110,16 +124,20 @@ const CustomerListTable = ({
     payment_method: 'cash'
   })
 
-  // Re-sync data if prop changes
+  // Use customerData directly - no need to sync to local state
+  const tableData = Array.isArray(customerData) 
+    ? customerData 
+    : customerData?.customers || []
+
+  // Maintain focus on search input after re-renders
   useEffect(() => {
-    if (Array.isArray(customerData)) {
-      setData(customerData)
-    } else if (customerData && customerData.customers) {
-      setData(customerData.customers)
-    } else {
-      setData([])
+    if (searchInputRef.current && document.activeElement !== searchInputRef.current) {
+      const wasSearchInputFocused = document.activeElement?.placeholder === 'Search name, phone, email'
+      if (wasSearchInputFocused) {
+        searchInputRef.current.focus()
+      }
     }
-  }, [customerData])
+  }, [tableData])
 
   const getCrateSummary = crateInfo => {
     if (!crateInfo) return '—'
@@ -261,25 +279,25 @@ const CustomerListTable = ({
                     className: 'flex items-center'
                   }
                 },
-                {
-                  text: 'Update Crate',
-                  icon: 'tabler-box',
-                  menuItemProps: {
-                    onClick: () => {
-                      setSelectedCustomer(row.original)
-                      const crateInfo = row.original.crate_info || {}
+                // {
+                //   text: 'Update Crate',
+                //   icon: 'tabler-box',
+                //   menuItemProps: {
+                //     onClick: () => {
+                //       setSelectedCustomer(row.original)
+                //       const crateInfo = row.original.crate_info || {}
 
-                      setCrateForm({
-                        type_1: crateInfo.type_1 || 0,
-                        type_1_price: crateInfo.type_1_price || 0,
-                        type_2: crateInfo.type_2 || 0,
-                        type_2_price: crateInfo.type_2_price || 0
-                      })
-                      setOpenCrateModal(true)
-                    },
-                    className: 'flex items-center'
-                  }
-                }
+                //       setCrateForm({
+                //         type_1: crateInfo.type_1 || 0,
+                //         type_1_price: crateInfo.type_1_price || 0,
+                //         type_2: crateInfo.type_2 || 0,
+                //         type_2_price: crateInfo.type_2_price || 0
+                //       })
+                //       setOpenCrateModal(true)
+                //     },
+                //     className: 'flex items-center'
+                //   }
+                // }
               ]}
             />
           </div>
@@ -344,7 +362,7 @@ const CustomerListTable = ({
                 account_info: {
                   ...item.account_info,
                   balance: currentBalance + Number(balanceForm.amount),
-                  due: currentDue - Number(balanceForm.amount)
+                  due: Math.max(0, currentDue - Number(balanceForm.amount))
                 }
               }
             }
@@ -376,7 +394,7 @@ const CustomerListTable = ({
 
   // Table
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
     filterFns: { fuzzy: fuzzyFilter },
     state: {
@@ -398,21 +416,17 @@ const CustomerListTable = ({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues(),
-    manualGlobalFilter: true
+    getFacetedMinMaxValues: getFacetedMinMaxValues()
   })
 
   return (
     <>
       <Card>
         <CardContent className='flex justify-between flex-wrap max-sm:flex-col sm:items-center gap-4'>
-          <DebouncedInput
-            value={globalFilter ?? ''}
-            onChange={value => {
-              setGlobalFilter(String(value))
-              onSearchChange?.(String(value))
-            }}
+          <CustomTextField
+            inputRef={searchInputRef}
+            value={searchValue}
+            onChange={e => onSearchChange(e.target.value)}
             placeholder='Search name, phone, email'
             className='max-sm:is-full'
             disabled={isLoading}

@@ -22,9 +22,17 @@ export async function createSupplier(supplierData) {
   }
 }
 
-export async function getSuppliers(page = 1, limit = 10) {
+export async function getSuppliers(page = 1, limit = 10, search = '') {
   try {
-    const response = await api.get(`/suppliers/all?page=${page}&limit=${limit}`)
+    // Build query parameters
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    })
+
+    if (search) params.append('search', search)
+
+    const response = await api.get(`/suppliers/all?${params.toString()}`)
 
     return {
       success: true,
@@ -174,12 +182,15 @@ export async function addPayment(paymentData) {
   }
 }
 
-export async function getSupplierPayments({ supplierId, page = 1, limit = 10 }) {
+export async function getSupplierPayments({ supplierId, page = 1, limit = 10, fromDate = '', toDate = '' }) {
   try {
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString()
     })
+
+    if (fromDate) params.append('fromDate', fromDate)
+    if (toDate) params.append('toDate', toDate)
 
     const response = await api.get(`/payment/all/${supplierId}?${params.toString()}`)
 

@@ -15,12 +15,12 @@ const InvoicePrintHandler = ({ saleData, onPrintComplete, onPrintError, triggerP
     contentRef: componentRef,
     documentTitle: `Invoice_${saleData?.sale_date || 'Sale'}_${saleData?.customer_name || 'Customer'}`,
     onBeforePrint: () => {
-      console.log('Preparing invoice for printing...')
+      // console.log('Preparing invoice for printing...')
 
       return Promise.resolve()
     },
     onAfterPrint: () => {
-      console.log('Print completed')
+      // console.log('Print completed')
       onPrintComplete?.()
     },
     onPrintError: (errorLocation, error) => {
@@ -49,7 +49,7 @@ const InvoicePrintHandler = ({ saleData, onPrintComplete, onPrintError, triggerP
 
   useEffect(() => {
     if (triggerPrint && saleData && componentRef.current) {
-      console.log('Triggering print with data:', saleData)
+      // console.log('Triggering print with data:', saleData)
 
       const timer = setTimeout(() => {
         handlePrint()

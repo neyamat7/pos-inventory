@@ -1,48 +1,46 @@
 'use client'
 
 // React Imports
-import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
+import { useEffect, useMemo, useState } from 'react'
 
 // MUI Imports
+import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardHeader from '@mui/material/CardHeader'
-import Button from '@mui/material/Button'
-import Typography from '@mui/material/Typography'
-import Checkbox from '@mui/material/Checkbox'
 import IconButton from '@mui/material/IconButton'
-import TablePagination from '@mui/material/TablePagination'
 import MenuItem from '@mui/material/MenuItem'
+import TablePagination from '@mui/material/TablePagination'
+import Typography from '@mui/material/Typography'
 
 // Third-party Imports
-import classnames from 'classnames'
 import { rankItem } from '@tanstack/match-sorter-utils'
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
-  useReactTable,
-  getFilteredRowModel,
+  getFacetedMinMaxValues,
   getFacetedRowModel,
   getFacetedUniqueValues,
-  getFacetedMinMaxValues,
-  getSortedRowModel
+  getFilteredRowModel,
+  getSortedRowModel,
+  useReactTable
 } from '@tanstack/react-table'
+import classnames from 'classnames'
 
 // Component Imports
-import Swal from 'sweetalert2'
 
-import TableFilters from './TableFilters'
-import AddUserDrawer from './AddUserDrawer'
 import TablePaginationComponent from '@components/TablePaginationComponent'
 import CustomTextField from '@core/components/mui/TextField'
+import AddUserDrawer from './AddUserDrawer'
+import TableFilters from './TableFilters'
 
 // Style Imports
-import tableStyles from '@core/styles/table.module.css'
-import ViewUserModal from './ViewUserModal'
-import EditUserModal from './EditUserModal'
-import { getImageUrl } from '@/utils/getImageUrl'
 import TableSkeleton from '@/components/TableSkeleton'
+import { getImageUrl } from '@/utils/getImageUrl'
+import tableStyles from '@core/styles/table.module.css'
+import EditUserModal from './EditUserModal'
+import ViewUserModal from './ViewUserModal'
 
 const fuzzyFilter = (row, columnId, value, addMeta) => {
   // Rank the item
@@ -92,7 +90,7 @@ const UserListTable = ({ userData, paginationData, loading, onPageChange, onPage
   const [editModal, setEditModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState({})
 
-  console.log('user data', userData) 
+  // console.log('user data', userData) 
 
   const handleEditUser = user => {
     setUserModal(false)

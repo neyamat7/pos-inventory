@@ -192,7 +192,7 @@ const CustomerCrateHistoryTable = ({ data, pagination, total, onPaginationChange
         const quantity = getValue()
 
         return (
-          <div className='text-center'>
+          <div className=''>
             <div className='font-semibold text-blue-600'>{quantity || 0}</div>
           </div>
         )
@@ -203,7 +203,7 @@ const CustomerCrateHistoryTable = ({ data, pagination, total, onPaginationChange
       cell: ({ getValue }) => {
         const price = getValue()
 
-        return <div className='text-center font-semibold'>৳{price || 0}</div>
+        return <div className='font-semibold'>৳{price || 0}</div>
       }
     }),
     columnHelper.accessor('crate_type2', {
@@ -212,7 +212,7 @@ const CustomerCrateHistoryTable = ({ data, pagination, total, onPaginationChange
         const quantity = getValue()
 
         return (
-          <div className='text-center'>
+          <div className=''>
             <div className='font-semibold text-purple-600'>{quantity || 0}</div>
           </div>
         )
@@ -223,82 +223,82 @@ const CustomerCrateHistoryTable = ({ data, pagination, total, onPaginationChange
       cell: ({ getValue }) => {
         const price = getValue()
 
-        return <div className='text-center font-semibold'>৳{price || 0}</div>
+        return <div className='font-semibold'>৳{price || 0}</div>
       }
     }),
 
-    columnHelper.accessor('status', {
-      header: 'Status',
-      cell: ({ row, getValue }) => {
-        const status = getValue()
-        const isReturned = status === 'returned'
-        const statusColor = status === 'given' ? 'primary' : status === 'returned' ? 'success' : 'warning'
+    // columnHelper.accessor('status', {
+    //   header: 'Status',
+    //   cell: ({ row, getValue }) => {
+    //     const status = getValue()
+    //     const isReturned = status === 'returned'
+    //     const statusColor = status === 'given' ? 'primary' : status === 'returned' ? 'success' : 'warning'
 
-        const handleStatusChange = async newStatus => {
-          try {
-            const result = await updateCrateStatus(row.original._id, newStatus)
+    //     const handleStatusChange = async newStatus => {
+    //       try {
+    //         const result = await updateCrateStatus(row.original._id, newStatus)
 
-            if (result.success) {
-              showSuccess('Status updated successfully')
+    //         if (result.success) {
+    //           showSuccess('Status updated successfully')
 
-              setLocalData(prevData =>
-                prevData.map(item => (item._id === row.original._id ? { ...item, status: newStatus } : item))
-              )
+    //           setLocalData(prevData =>
+    //             prevData.map(item => (item._id === row.original._id ? { ...item, status: newStatus } : item))
+    //           )
 
-              //   if (onDataUpdate) {
-              //     onDataUpdate()
-              //   }
-            } else {
-              showError('Failed to update status:')
-            }
-          } catch (error) {
-            console.error('Error updating status:', error)
-          }
-        }
+    //           //   if (onDataUpdate) {
+    //           //     onDataUpdate()
+    //           //   }
+    //         } else {
+    //           showError('Failed to update status:')
+    //         }
+    //       } catch (error) {
+    //         console.error('Error updating status:', error)
+    //       }
+    //     }
 
-        // If status is returned, show Chip (non-editable)
-        if (isReturned) {
-          return <Chip label='Returned' size='small' color={statusColor} variant='tonal' />
-        }
+    //     // If status is returned, show Chip (non-editable)
+    //     if (isReturned) {
+    //       return <Chip label='Returned' size='small' color={statusColor} variant='tonal' />
+    //     }
 
-        // If status is given, show dropdown (editable) - FIXED PROPS
-        return (
-          <CustomTextField
-            select
-            value={status}
-            onChange={e => handleStatusChange(e.target.value)}
-            size='small'
-            sx={{
-              minWidth: '120px',
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: 'transparent',
-                '& fieldset': {
-                  borderColor: 'primary.main'
-                },
-                '&:hover fieldset': {
-                  borderColor: 'primary.dark'
-                }
-              },
-              '& .MuiSelect-select': {
-                padding: '4px 8px',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: 'text.primary'
-              }
-            }}
+    //     // If status is given, show dropdown (editable) - FIXED PROPS
+    //     return (
+    //       <CustomTextField
+    //         select
+    //         value={status}
+    //         onChange={e => handleStatusChange(e.target.value)}
+    //         size='small'
+    //         sx={{
+    //           minWidth: '120px',
+    //           '& .MuiOutlinedInput-root': {
+    //             backgroundColor: 'transparent',
+    //             '& fieldset': {
+    //               borderColor: 'primary.main'
+    //             },
+    //             '&:hover fieldset': {
+    //               borderColor: 'primary.dark'
+    //             }
+    //           },
+    //           '& .MuiSelect-select': {
+    //             padding: '4px 8px',
+    //             fontSize: '0.75rem',
+    //             fontWeight: 600,
+    //             color: 'text.primary'
+    //           }
+    //         }}
 
-            // REMOVED displayEmpty and inputProps
-          >
-            <MenuItem value='given' sx={{ fontSize: '0.75rem', fontWeight: 600 }}>
-              Given
-            </MenuItem>
-            <MenuItem value='returned' sx={{ fontSize: '0.75rem', fontWeight: 600 }}>
-              Returned
-            </MenuItem>
-          </CustomTextField>
-        )
-      }
-    }),
+    //         // REMOVED displayEmpty and inputProps
+    //       >
+    //         <MenuItem value='given' sx={{ fontSize: '0.75rem', fontWeight: 600 }}>
+    //           Given
+    //         </MenuItem>
+    //         <MenuItem value='returned' sx={{ fontSize: '0.75rem', fontWeight: 600 }}>
+    //           Returned
+    //         </MenuItem>
+    //       </CustomTextField>
+    //     )
+    //   }
+    // }),
 
     // Add Actions Column
     {

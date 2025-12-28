@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { getCustomers } from '@/actions/customerActions'
 import CustomerListTable from '@/views/apps/customers/list/CustomerListTable'
@@ -11,12 +11,22 @@ const CustomerListTablePage = () => {
   const [paginationData, setPaginationData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search)
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [search])
 
   const fetchData = async () => {
     setIsLoading(true)
 
     try {
-      const result = await getCustomers(currentPage, pageSize, search)
+      const result = await getCustomers(currentPage, pageSize, debouncedSearch)
 
       if (result.success) {
         setData(result.data.customers || [])
@@ -36,7 +46,7 @@ const CustomerListTablePage = () => {
 
   useEffect(() => {
     fetchData()
-  }, [currentPage, pageSize, search])
+  }, [currentPage, pageSize, debouncedSearch])
 
   const handlePageChange = newPage => {
     setCurrentPage(newPage)
@@ -56,6 +66,7 @@ const CustomerListTablePage = () => {
       onSearchChange={handleSearchChange}
       isLoading={isLoading}
       refreshData={fetchData}
+      searchValue={search}
     />
   )
 }

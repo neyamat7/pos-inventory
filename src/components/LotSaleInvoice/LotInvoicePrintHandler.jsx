@@ -14,13 +14,13 @@ const LotInvoicePrintHandler = ({ lotSaleData, onPrintComplete, onPrintError, tr
     documentTitle: `Lot_Invoice_${lotSaleData?.lot_name || 'Summary'}_${new Date().toISOString().split('T')[0]}`,
 
     onBeforePrint: () => {
-      console.log('Preparing lot invoice for printing...')
+      // console.log('Preparing lot invoice for printing...')
 
       return Promise.resolve()
     },
 
     onAfterPrint: () => {
-      console.log('Lot invoice print completed or cancelled')
+      // console.log('Lot invoice print completed or cancelled')
       onPrintComplete?.()
     },
 
@@ -53,7 +53,7 @@ const LotInvoicePrintHandler = ({ lotSaleData, onPrintComplete, onPrintError, tr
 
   useEffect(() => {
     if (triggerPrint && lotSaleData && componentRef.current) {
-      console.log('Triggering lot invoice print with data:', lotSaleData)
+      // console.log('Triggering lot invoice print with data:', lotSaleData)
 
       const timer = setTimeout(() => {
         handlePrint()

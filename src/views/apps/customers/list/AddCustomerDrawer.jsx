@@ -43,7 +43,6 @@ const AddCustomerDrawer = props => {
       account_number: '',
       account_number: '',
       due: '',
-      cost: '',
       type_1_qty: '',
       type_1_price: '',
       type_2_qty: '',
@@ -110,8 +109,7 @@ const AddCustomerDrawer = props => {
         account_info: {
           account_number: data.account_number?.trim() || '',
           account_number: data.account_number?.trim() || '',
-          due: Number(data.due || 0),
-          return_amount: Number(data.cost || 0)
+          due: Number(data.due || 0)
         },
 
         // Crate Information
@@ -305,13 +303,7 @@ const AddCustomerDrawer = props => {
               />
             </div>
 
-            <Controller
-              name='cost'
-              control={control}
-              render={({ field }) => (
-                <CustomTextField {...field} type='number' label='Return Amount' placeholder='0' fullWidth />
-              )}
-            />
+
 
             {/* Crate Information Section */}
             <Typography color='text.primary' className='font-medium'>

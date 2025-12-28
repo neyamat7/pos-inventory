@@ -1,7 +1,7 @@
 'use client'
 
 // React Imports
-import { useState, useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 // Next Imports
 import Link from 'next/link'
@@ -9,33 +9,33 @@ import Link from 'next/link'
 import { createPortal } from 'react-dom'
 
 // MUI Imports
+import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import Button from '@mui/material/Button'
-import Typography from '@mui/material/Typography'
 import Checkbox from '@mui/material/Checkbox'
-import TablePagination from '@mui/material/TablePagination'
 import MenuItem from '@mui/material/MenuItem'
+import TablePagination from '@mui/material/TablePagination'
+import Typography from '@mui/material/Typography'
 
 // Third-party Imports
-import classnames from 'classnames'
 import { rankItem } from '@tanstack/match-sorter-utils'
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
-  useReactTable,
-  getFilteredRowModel,
+  getFacetedMinMaxValues,
   getFacetedRowModel,
   getFacetedUniqueValues,
-  getFacetedMinMaxValues,
-  getSortedRowModel
+  getFilteredRowModel,
+  getSortedRowModel,
+  useReactTable
 } from '@tanstack/react-table'
+import classnames from 'classnames'
 
 // Component Imports
+import TablePaginationComponent from '@components/TablePaginationComponent'
 import CustomAvatar from '@core/components/mui/Avatar'
 import CustomTextField from '@core/components/mui/TextField'
-import TablePaginationComponent from '@components/TablePaginationComponent'
 
 // Util Imports
 import { getInitials } from '@/utils/getInitials'
@@ -43,13 +43,13 @@ import { getInitials } from '@/utils/getInitials'
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
 
-import AddSupplierDrawer from './AddSupplierDrawer'
 import OptionMenu from '@/@core/components/option-menu'
-import { addBalance, updateSupplier } from '@/actions/supplierAction'
-import { showError, showInfo, showSuccess } from '@/utils/toastUtils'
 import { uploadImage } from '@/actions/imageActions'
-import { getImageUrl } from '@/utils/getImageUrl'
+import { addBalance } from '@/actions/supplierAction'
 import TableSkeleton from '@/components/TableSkeleton'
+import { getImageUrl } from '@/utils/getImageUrl'
+import { showError, showInfo, showSuccess } from '@/utils/toastUtils'
+import AddSupplierDrawer from './AddSupplierDrawer'
 
 export const paymentStatus = {
   1: { text: 'Paid', color: 'success' },
@@ -105,7 +105,9 @@ const SupplierListTable = ({
   onPageChange,
   onPageSizeChange,
   isLoading = false,
-  refreshData
+  refreshData,
+  searchValue = '',
+  onSearchChange
 }) => {
   const getCrateSummary = crateInfo => {
     if (!crateInfo) return '—'
@@ -423,10 +425,10 @@ const SupplierListTable = ({
     <>
       <Card>
         <CardContent className='flex justify-between flex-wrap max-sm:flex-col sm:items-center gap-4'>
-          <DebouncedInput
-            value={globalFilter ?? ''}
-            onChange={value => setGlobalFilter(String(value))}
-            placeholder='Search'
+          <CustomTextField
+            value={searchValue}
+            onChange={e => onSearchChange(e.target.value)}
+            placeholder='Search by supplier name...'
             className='max-sm:is-full'
           />
           <div className='flex max-sm:flex-col items-start sm:items-center gap-4 max-sm:is-full'>

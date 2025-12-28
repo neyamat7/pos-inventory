@@ -66,7 +66,7 @@ const AllLotListTable = ({
   onPageSizeChange,
   onSearchChange
 }) => {
-  console.log('lot data', lotData)
+  // console.log('lot data', lotData)
 
   const [data, setData] = useState([])
   const [globalFilter, setGlobalFilter] = useState('')
@@ -80,7 +80,7 @@ const AllLotListTable = ({
   const [loadingSaleData, setLoadingSaleData] = useState(false)
   const [printTrigger, setPrintTrigger] = useState(false)
 
-  console.log('lot sale data', lotSaleData)
+  // console.log('lot sale data', lotSaleData)
 
   useEffect(() => {
     setData(lotData)
@@ -925,7 +925,7 @@ const AllLotListTable = ({
 
           triggerPrint={printTrigger}
           onPrintComplete={() => {
-            console.log('Lot invoice print completed')
+            // console.log('Lot invoice print completed')
             setPrintTrigger(false)
             showSuccess('Invoice printed successfully!')
           }}

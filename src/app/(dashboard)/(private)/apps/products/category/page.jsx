@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 // Import the table component
-import ProductCategoryTable from '@/views/apps/products/category/ProductCategoryTable'
 import { getAllCategories } from '@/actions/categoryActions'
+import ProductCategoryTable from '@/views/apps/products/category/ProductCategoryTable'
 
 const ProductCategory = () => {
   const [currentPage, setCurrentPage] = useState(1)
@@ -50,6 +50,29 @@ const ProductCategory = () => {
     setCurrentPage(1) // Reset to first page when page size changes
   }
 
+  // Function to refresh data (can be called after adding/editing categories)
+  const refreshData = async () => {
+    setLoading(true)
+
+    try {
+      const result = await getAllCategories({ page: currentPage, limit: pageSize })
+
+      setData(result.categories || [])
+      setPaginationData({
+        total: result.total,
+        totalPages: result.totalPages,
+        currentPage: result.page,
+        limit: result.limit
+      })
+    } catch (error) {
+      console.error('Error fetching categories:', error)
+      setData([])
+      setPaginationData(null)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <ProductCategoryTable
       categoryData={data}
@@ -57,6 +80,7 @@ const ProductCategory = () => {
       loading={loading}
       onPageChange={handlePageChange}
       onPageSizeChange={handlePageSizeChange}
+      onRefresh={refreshData}
     />
   )
 }

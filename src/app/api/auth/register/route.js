@@ -49,16 +49,16 @@ export async function POST(request) {
       remaining_salary: salaryNumber // Set remaining_salary equal to salary initially
     }
 
-    console.log('User data to save:', userData)
+    // console.log('User data to save:', userData)
 
     // Create and save user
     const user = new userModel(userData)
 
-    console.log('User object before save:', user.toObject())
+    // console.log('User object before save:', user.toObject())
 
     try {
       const savedUser = await user.save()
-      console.log('Saved user:', savedUser.toObject())
+      // console.log('Saved user:', savedUser.toObject())
     } catch (err) {
       console.error('Error saving user:', err)
       console.error('Error details:', err.message)

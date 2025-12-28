@@ -3,7 +3,7 @@
 const LotSaleInvoice = ({ lotSaleData }) => {
   if (!lotSaleData) return null
 
-  console.log('lotSaleData', lotSaleData)
+  // console.log('lotSaleData', lotSaleData)
 
   // Determine which columns to show based on data
   const hasDiscount = lotSaleData.sales?.some(sale => (sale.discount_Kg || 0) > 0) || false

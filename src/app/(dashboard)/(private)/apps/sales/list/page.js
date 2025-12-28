@@ -13,7 +13,7 @@ const SalesListPage = () => {
   const [loading, setLoading] = useState(true)
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
 
-  console.log('sales data in sale page', data)
+  // console.log('sales data in sale page', data)
 
   useEffect(() => {
     const timer = setTimeout(() => {

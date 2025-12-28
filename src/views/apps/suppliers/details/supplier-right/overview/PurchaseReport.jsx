@@ -124,7 +124,7 @@ const PurchaseReport = ({
     try {
       const result = await getBalanceHistory(supplierId, page, limit, from, to)
 
-      console.log('resss', result)
+      // console.log('resss', result)
 
       if (result.success) {
         setBalanceData(result)
@@ -137,13 +137,13 @@ const PurchaseReport = ({
     }
   }
 
-  const fetchPayments = async (page = pagination.page, limit = pagination.limit) => {
+  const fetchPayments = async (page = pagination.page, limit = pagination.limit, from = fromDate, to = toDate) => {
     if (!supplierId) return
 
     setLoading(true)
 
     try {
-      const result = await getSupplierPayments({ supplierId, page, limit })
+      const result = await getSupplierPayments({ supplierId, page, limit, fromDate: from, toDate: to })
 
       if (result.success) {
         setPaymentData(result)
@@ -161,11 +161,11 @@ const PurchaseReport = ({
     if (activeTab === 'purchases') {
       fetchPurchases(1, pagination.limit, searchValue, fromDate, toDate)
     } else if (activeTab === 'stock') {
-      fetchLots(1, pagination.limit, searchValue, '', '')
+      fetchLots(1, pagination.limit, searchValue, fromDate, toDate)
     } else if (activeTab === 'balanceHistory') {
       fetchBalanceHistory(1, pagination.limit, fromDate, toDate)
     } else if (activeTab === 'payments') {
-      fetchPayments(1, pagination.limit)
+      fetchPayments(1, pagination.limit, fromDate, toDate)
     }
   }, [searchValue, fromDate, toDate, activeTab])
 
@@ -178,7 +178,7 @@ const PurchaseReport = ({
     } else if (activeTab === 'balanceHistory') {
       fetchBalanceHistory(page, limit, fromDate, toDate)
     } else if (activeTab === 'payments') {
-      fetchPayments(page, limit)
+      fetchPayments(page, limit, fromDate, toDate)
     }
   }
 
@@ -203,7 +203,7 @@ const PurchaseReport = ({
             onPaginationChange={handlePaginationChange}
             loading={loading}
             supplierData={supplierData}
-            onPaymentSuccess={() => fetchLots(pagination.page, pagination.limit, searchValue, '', '')}
+            onPaymentSuccess={() => fetchLots(pagination.page, pagination.limit, searchValue, fromDate, toDate)}
           />
         )
 
@@ -277,12 +277,14 @@ const PurchaseReport = ({
           <CustomTextField type='date' label='To Date' value={toDate} onChange={e => setToDate(e.target.value)} />
         </div>
 
-        <CustomTextField
-          placeholder='Search...'
-          value={searchValue}
-          onChange={e => setSearchValue(e.target.value)}
-          className='w-full md:w-60'
-        />
+        {activeTab !== 'payments' && activeTab !== 'balanceHistory' && (
+          <CustomTextField
+            placeholder='Search...'
+            value={searchValue}
+            onChange={e => setSearchValue(e.target.value)}
+            className='w-full md:w-60'
+          />
+        )}
       </CardContent>
 
       <Divider />

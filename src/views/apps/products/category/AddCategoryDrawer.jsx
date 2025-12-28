@@ -2,15 +2,15 @@
 import { useState } from 'react'
 
 // MUI Imports
+import Alert from '@mui/material/Alert'
 import Button from '@mui/material/Button'
+import Divider from '@mui/material/Divider'
 import Drawer from '@mui/material/Drawer'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
-import Divider from '@mui/material/Divider'
-import Alert from '@mui/material/Alert'
 
 // Third-party Imports
-import { useForm, Controller } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 
 // Components Imports
 import CustomTextField from '@core/components/mui/TextField'
@@ -20,7 +20,7 @@ import { createCategory } from '@/actions/categoryActions'
 
 const AddCategoryDrawer = props => {
   // Props
-  const { open, handleClose } = props
+  const { open, handleClose, onSuccess } = props
 
   // States
   const [loading, setLoading] = useState(false)
@@ -59,8 +59,10 @@ const AddCategoryDrawer = props => {
       if (result.success) {
         handleReset()
 
-        // You can add a success callback here if needed
-        // console.log('Category created successfully')
+        // Trigger data refresh in parent component
+        if (onSuccess) {
+          onSuccess()
+        }
       } else {
         setError(result.error)
       }

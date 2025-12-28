@@ -28,7 +28,7 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
     }
   }, 0)
 
-  console.log('Distribution Debug:', { totalUnits, isDataEmpty, data })
+  // console.log('Distribution Debug:', { totalUnits, isDataEmpty, data })
 
   const getExpenseValue = (expenseKey, amountKey, typeKey, item, itemUnits) => {
     if (isDataEmpty) {

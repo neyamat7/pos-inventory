@@ -1,28 +1,26 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import {
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  MenuItem,
-  TextField,
-  Chip,
-  Avatar,
-  TablePagination,
-  IconButton,
-  Skeleton
-} from '@mui/material'
-import Grid2 from '@mui/material/Grid2'
-import {
-  TrendingUp,
-  TrendingDown,
+  AccountBalance,
   AttachMoney,
   MoneyOff,
-  AccountBalance
+  TrendingDown,
+  TrendingUp
 } from '@mui/icons-material'
+import {
+  Avatar,
+  Box,
+  Card,
+  CardContent,
+  Chip,
+  MenuItem,
+  Skeleton,
+  TablePagination,
+  Typography
+} from '@mui/material'
+import Grid2 from '@mui/material/Grid2'
 
 import {
   createColumnHelper,
@@ -31,7 +29,6 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 
-import classnames from 'classnames'
 
 import { getLotsAnalytics } from '@/actions/incomeActions/income.action'
 import TableSkeleton from '@/components/TableSkeleton'
@@ -259,22 +256,35 @@ export default function ProfitLoss({ suppliers = [] }) {
       <Grid2 container spacing={3} mb={4}>
         {/* Gross Profit */}
         <Grid2 size={{ xs: 12, sm: 6, md: 4, xl: 2.4 }}>
-          <Card elevation={0} sx={{ bgcolor: 'primary.50', border: 1, borderColor: 'primary.main' }}>
+          <Card 
+            elevation={0} 
+            sx={{ 
+              bgcolor: filters.supplierId ? 'grey.100' : 'primary.50', 
+              border: 1, 
+              borderColor: filters.supplierId ? 'grey.300' : 'primary.main',
+              opacity: filters.supplierId ? 0.6 : 1
+            }}
+          >
             <CardContent>
               <Box display='flex' justifyContent='space-between' alignItems='flex-start'>
                 <Box>
                   <Typography variant='caption' fontWeight={600} color='text.secondary'>
                     GROSS PROFIT
                   </Typography>
-                  <Typography variant='h4' fontWeight={700} color='primary.dark' sx={{ my: 1 }}>
+                  <Typography 
+                    variant='h4' 
+                    fontWeight={700} 
+                    color={filters.supplierId ? 'text.disabled' : 'primary.dark'} 
+                    sx={{ my: 1 }}
+                  >
                     {loading ? (
                       <Skeleton width={120} height={40} />
                     ) : (
-                      `৳${data.totals.grossProfit?.toLocaleString()}`
+                      filters.supplierId ? '৳0' : `৳${data.totals.grossProfit?.toLocaleString()}`
                     )}
                   </Typography>
                 </Box>
-                <Avatar sx={{ bgcolor: 'primary.main' }}>
+                <Avatar sx={{ bgcolor: filters.supplierId ? 'grey.400' : 'primary.main' }}>
                   <AccountBalance />
                 </Avatar>
               </Box>
@@ -284,22 +294,35 @@ export default function ProfitLoss({ suppliers = [] }) {
 
         {/* Net Profit */}
         <Grid2 size={{ xs: 12, sm: 6, md: 4, xl: 2.4 }}>
-          <Card elevation={0} sx={{ bgcolor: 'secondary.50', border: 1, borderColor: 'secondary.main' }}>
+          <Card 
+            elevation={0} 
+            sx={{ 
+              bgcolor: filters.supplierId ? 'grey.100' : 'secondary.50', 
+              border: 1, 
+              borderColor: filters.supplierId ? 'grey.300' : 'secondary.main',
+              opacity: filters.supplierId ? 0.6 : 1
+            }}
+          >
             <CardContent>
               <Box display='flex' justifyContent='space-between' alignItems='flex-start'>
                 <Box>
                   <Typography variant='caption' fontWeight={600} color='text.secondary'>
                     NET PROFIT
                   </Typography>
-                  <Typography variant='h4' fontWeight={700} color='secondary.dark' sx={{ my: 1 }}>
+                  <Typography 
+                    variant='h4' 
+                    fontWeight={700} 
+                    color={filters.supplierId ? 'text.disabled' : 'secondary.dark'} 
+                    sx={{ my: 1 }}
+                  >
                     {loading ? (
                       <Skeleton width={120} height={40} />
                     ) : (
-                      `৳${data.totals.netProfit?.toLocaleString()}`
+                      filters.supplierId ? '৳0' : `৳${data.totals.netProfit?.toLocaleString()}`
                     )}
                   </Typography>
                 </Box>
-                <Avatar sx={{ bgcolor: 'secondary.main' }}>
+                <Avatar sx={{ bgcolor: filters.supplierId ? 'grey.400' : 'secondary.main' }}>
                   <TrendingUp />
                 </Avatar>
               </Box>
@@ -375,6 +398,69 @@ export default function ProfitLoss({ suppliers = [] }) {
                   </Typography>
                 </Box>
                 <Avatar sx={{ bgcolor: 'warning.main' }}>
+                  <MoneyOff />
+                </Avatar>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid2>
+
+        {/* Total Loss */}
+        <Grid2 size={{ xs: 12, sm: 6, md: 4, xl: 2.4 }}>
+          <Card elevation={0} sx={{ bgcolor: 'error.50', border: 1, borderColor: 'error.main' }}>
+            <CardContent>
+              <Box display='flex' justifyContent='space-between' alignItems='flex-start'>
+                <Box>
+                  <Typography variant='caption' fontWeight={600} color='text.secondary'>
+                    TOTAL LOSS
+                  </Typography>
+                  <Typography variant='h4' fontWeight={700} color='error.dark' sx={{ my: 1 }}>
+                    {loading ? (
+                      <Skeleton width={120} height={40} />
+                    ) : (
+                      `৳${data.totals.totalLoss?.toLocaleString()}`
+                    )}
+                  </Typography>
+                </Box>
+                <Avatar sx={{ bgcolor: 'error.main' }}>
+                  <TrendingDown />
+                </Avatar>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid2>
+
+        {/* Total Expense */}
+        <Grid2 size={{ xs: 12, sm: 6, md: 4, xl: 2.4 }}>
+          <Card 
+            elevation={0} 
+            sx={{ 
+              bgcolor: filters.supplierId ? 'grey.100' : 'grey.50', 
+              border: 1, 
+              borderColor: filters.supplierId ? 'grey.300' : 'grey.400',
+              opacity: filters.supplierId ? 0.6 : 1
+            }}
+          >
+            <CardContent>
+              <Box display='flex' justifyContent='space-between' alignItems='flex-start'>
+                <Box>
+                  <Typography variant='caption' fontWeight={600} color='text.secondary'>
+                    TOTAL EXPENSE
+                  </Typography>
+                  <Typography 
+                    variant='h4' 
+                    fontWeight={700} 
+                    color={filters.supplierId ? 'text.disabled' : 'text.primary'} 
+                    sx={{ my: 1 }}
+                  >
+                    {loading ? (
+                      <Skeleton width={120} height={40} />
+                    ) : (
+                      filters.supplierId ? '৳0' : `৳${data.totals.totalExpenses?.toLocaleString()}`
+                    )}
+                  </Typography>
+                </Box>
+                <Avatar sx={{ bgcolor: filters.supplierId ? 'grey.400' : 'grey.600' }}>
                   <MoneyOff />
                 </Avatar>
               </Box>

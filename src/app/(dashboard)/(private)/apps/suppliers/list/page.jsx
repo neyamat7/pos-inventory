@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 
-import SupplierListTable from '@/views/apps/suppliers/list/SupplierLIstTable'
 import { getSuppliers } from '@/actions/supplierAction'
+import SupplierListTable from '@/views/apps/suppliers/list/SupplierLIstTable'
 
 const SupplierListTablePage = () => {
   const [currentPage, setCurrentPage] = useState(1)
@@ -11,12 +11,23 @@ const SupplierListTablePage = () => {
   const [data, setData] = useState([])
   const [paginationData, setPaginationData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [searchValue, setSearchValue] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchValue)
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchValue])
 
   const fetchData = async () => {
     setIsLoading(true)
 
     try {
-      const result = await getSuppliers(currentPage, pageSize)
+      const result = await getSuppliers(currentPage, pageSize, debouncedSearch)
 
       if (result.success) {
         setData(result.data.suppliers || [])
@@ -36,7 +47,7 @@ const SupplierListTablePage = () => {
 
   useEffect(() => {
     fetchData()
-  }, [currentPage, pageSize])
+  }, [currentPage, pageSize, debouncedSearch])
 
   const handlePageChange = newPage => {
     setCurrentPage(newPage)
@@ -50,6 +61,8 @@ const SupplierListTablePage = () => {
       onPageSizeChange={setPageSize}
       isLoading={isLoading}
       refreshData={fetchData}
+      searchValue={searchValue}
+      onSearchChange={setSearchValue}
     />
   )
 }

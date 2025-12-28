@@ -4,43 +4,39 @@
 import { useEffect, useMemo, useState } from 'react'
 
 // MUI Imports
-import Card from '@mui/material/Card'
 import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
 import Checkbox from '@mui/material/Checkbox'
-import IconButton from '@mui/material/IconButton'
-import TablePagination from '@mui/material/TablePagination'
 import MenuItem from '@mui/material/MenuItem'
+import TablePagination from '@mui/material/TablePagination'
 import Typography from '@mui/material/Typography'
 
 // Third-party Imports
-import classnames from 'classnames'
 import { rankItem } from '@tanstack/match-sorter-utils'
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
-  useReactTable,
-  getFilteredRowModel,
+  getFacetedMinMaxValues,
   getFacetedRowModel,
   getFacetedUniqueValues,
-  getFacetedMinMaxValues,
-  getPaginationRowModel,
-  getSortedRowModel
+  getFilteredRowModel,
+  getSortedRowModel,
+  useReactTable
 } from '@tanstack/react-table'
+import classnames from 'classnames'
 
 // Component Imports
-import Swal from 'sweetalert2'
 
-import AddCategoryDrawer from './AddCategoryDrawer'
-import OptionMenu from '@core/components/option-menu'
-import CustomTextField from '@core/components/mui/TextField'
-import TablePaginationComponent from '@components/TablePaginationComponent'
 import TableSkeleton from '@/components/TableSkeleton'
+import TablePaginationComponent from '@components/TablePaginationComponent'
+import CustomTextField from '@core/components/mui/TextField'
+import OptionMenu from '@core/components/option-menu'
+import AddCategoryDrawer from './AddCategoryDrawer'
 
 // Style Imports
 import tableStyles from '@core/styles/table.module.css'
 import EditCategoryModal from './EditCategoryModal'
-import { deleteCategory } from '@/actions/categoryActions'
 
 const fuzzyFilter = (row, columnId, value, addMeta) => {
   // Rank the item
@@ -77,7 +73,7 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 // Column Definitions
 const columnHelper = createColumnHelper()
 
-const ProductCategoryTable = ({ categoryData, paginationData, loading, onPageChange, onPageSizeChange }) => {
+const ProductCategoryTable = ({ categoryData, paginationData, loading, onPageChange, onPageSizeChange, onRefresh }) => {
   const [editOpen, setEditOpen] = useState(null)
 
   // States
@@ -193,12 +189,13 @@ const ProductCategoryTable = ({ categoryData, paginationData, loading, onPageCha
     <>
       <Card>
         <div className='flex flex-wrap justify-between gap-4 p-6'>
-          <DebouncedInput
+          {/* <DebouncedInput
             value={globalFilter ?? ''}
             onChange={value => setGlobalFilter(String(value))}
             placeholder='Search'
             className='max-sm:is-full'
-          />
+          /> */}
+          <div></div>
           <div className='flex max-sm:flex-col items-start sm:items-center gap-4 max-sm:is-full'>
             <CustomTextField
               select
@@ -290,6 +287,7 @@ const ProductCategoryTable = ({ categoryData, paginationData, loading, onPageCha
         open={addCategoryOpen}
         setData={setData}
         handleClose={() => setAddCategoryOpen(!addCategoryOpen)}
+        onSuccess={onRefresh}
       />
 
       {/* Edit Modal */}

@@ -22,6 +22,7 @@ import { useForm, Controller } from 'react-hook-form'
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
 import { updateCustomer } from '@/actions/customerActions'
+import { showSuccess } from '@/utils/toastUtils'
 
 // Action Imports
 // import { updateCustomer } from '@/app/actions/customer-actions'
@@ -50,12 +51,9 @@ const EditCustomerInfo = ({ open, handleClose, customerData, onSave }) => {
       account_number: '',
       balance: '',
       due: '',
-      return_amount: '',
 
-      // Crate Info
-      type_1: '',
+      // Crate Prices
       type_1_price: '',
-      type_2: '',
       type_2_price: ''
     }
   })
@@ -77,12 +75,9 @@ const EditCustomerInfo = ({ open, handleClose, customerData, onSave }) => {
         account_number: customerData.account_info?.account_number || '',
         balance: customerData.account_info?.balance || '',
         due: customerData.account_info?.due || '',
-        return_amount: customerData.account_info?.return_amount || '',
 
-        // Crate Info
-        type_1: customerData.crate_info?.type_1 || '',
+        // Crate Prices
         type_1_price: customerData.crate_info?.type_1_price || '',
-        type_2: customerData.crate_info?.type_2 || '',
         type_2_price: customerData.crate_info?.type_2_price || ''
       })
     }
@@ -113,14 +108,14 @@ const EditCustomerInfo = ({ open, handleClose, customerData, onSave }) => {
           account_number: data.account_number?.trim() || '',
           balance: Number(data.balance || 0),
           due: Number(data.due || 0),
-          return_amount: Number(data.return_amount || 0)
+          return_amount: Number(customerData.account_info?.return_amount || 0)
         },
 
-        // Crate Information
+        // Crate Information (preserve quantities from backend, update prices)
         crate_info: {
-          type_1: Number(data.type_1 || 0),
+          type_1: Number(customerData.crate_info?.type_1 || 0),
           type_1_price: Number(data.type_1_price || 0),
-          type_2: Number(data.type_2 || 0),
+          type_2: Number(customerData.crate_info?.type_2 || 0),
           type_2_price: Number(data.type_2_price || 0)
         }
       }
@@ -131,6 +126,7 @@ const EditCustomerInfo = ({ open, handleClose, customerData, onSave }) => {
       if (result.success) {
         onSave(result.data)
         handleClose()
+        showSuccess('Customer updated successfully')
       } else {
         setError(result.error)
       }
@@ -492,27 +488,7 @@ const EditCustomerInfo = ({ open, handleClose, customerData, onSave }) => {
                       />
                     </Grid>
 
-                    <Grid size={{ xs: 12 }}>
-                      <Controller
-                        name='return_amount'
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTextField
-                            {...field}
-                            fullWidth
-                            type='number'
-                            label='Return Amount'
-                            placeholder='300'
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: '#f8fafc'
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                    </Grid>
+
                   </Grid>
 
                   <Typography
@@ -540,28 +516,6 @@ const EditCustomerInfo = ({ open, handleClose, customerData, onSave }) => {
                   <Grid container spacing={3}>
                     <Grid size={{ xs: 12, sm: 6 }}>
                       <Controller
-                        name='type_1'
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTextField
-                            {...field}
-                            fullWidth
-                            type='number'
-                            label='Type 1 Quantity'
-                            placeholder='15'
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: '#f8fafc'
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                    </Grid>
-
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <Controller
                         name='type_1_price'
                         control={control}
                         render={({ field }) => (
@@ -571,28 +525,6 @@ const EditCustomerInfo = ({ open, handleClose, customerData, onSave }) => {
                             type='number'
                             label='Type 1 Price'
                             placeholder='55'
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: '#f8fafc'
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                    </Grid>
-
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <Controller
-                        name='type_2'
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTextField
-                            {...field}
-                            fullWidth
-                            type='number'
-                            label='Type 2 Quantity'
-                            placeholder='8'
                             sx={{
                               '& .MuiOutlinedInput-root': {
                                 borderRadius: 2,
@@ -626,6 +558,7 @@ const EditCustomerInfo = ({ open, handleClose, customerData, onSave }) => {
                       />
                     </Grid>
                   </Grid>
+
                 </CardContent>
               </Card>
             </Grid>

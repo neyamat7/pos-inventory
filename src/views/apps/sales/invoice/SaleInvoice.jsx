@@ -49,7 +49,7 @@ const SaleInvoice = ({ saleData }) => {
   const hasAnyCrate = productSummary.some(p => p.isCrated)
   const hasAnyCommission = productSummary.some(p => p.customer_commission_rate > 0)
 
-  console.log('productSummary', JSON.stringify(productSummary))
+  // console.log('productSummary', JSON.stringify(productSummary))
 
   return (
     <div

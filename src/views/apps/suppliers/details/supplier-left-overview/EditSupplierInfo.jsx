@@ -22,6 +22,7 @@ import { useForm, Controller } from 'react-hook-form'
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
 import { updateSupplier } from '@/actions/supplierAction'
+import { showSuccess } from '@/utils/toastUtils'
 
 // import { updateSupplier } from '@/actions/supplierActions'
 
@@ -48,15 +49,7 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
       // Account Info
       accountNumber: '',
       balance: '',
-      due: '',
-
-      // Crate Info
-
-      crate1Price: '',
-      remainingCrate1: '',
-
-      crate2Price: '',
-      remainingCrate2: ''
+      due: ''
     }
   })
 
@@ -76,15 +69,7 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
         // Account Info
         accountNumber: supplierData.account_info?.accountNumber || '',
         balance: supplierData.account_info?.balance || '',
-        due: supplierData.account_info?.due || '',
-
-        // Crate Info
-
-        crate1Price: supplierData.crate_info?.crate1Price || '',
-        remainingCrate1: supplierData.crate_info?.remainingCrate1 || '',
-
-        crate2Price: supplierData.crate_info?.crate2Price || '',
-        remainingCrate2: supplierData.crate_info?.remainingCrate2 || ''
+        due: supplierData.account_info?.due || ''
       })
     }
   }, [supplierData, reset])
@@ -117,13 +102,12 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
           due: Number(data.due || 0)
         },
 
-        // Crate Information
-        crate_info: {
-          crate1Price: Number(data.crate1Price || 0),
-          remainingCrate1: Number(data.remainingCrate1 || 0),
-
-          crate2Price: Number(data.crate2Price || 0),
-          remainingCrate2: Number(data.remainingCrate2 || 0)
+        // Crate Information (preserve existing data from backend)
+        crate_info: supplierData.crate_info || {
+          crate1Price: 0,
+          remainingCrate1: 0,
+          crate2Price: 0,
+          remainingCrate2: 0
         }
       }
 
@@ -132,6 +116,7 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
 
       if (result.success) {
         onSave(result.data)
+        showSuccess('Supplier updated successfully')
         handleClose()
       } else {
         setError(result.error)
@@ -497,121 +482,7 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
                     </Grid>
                   </Grid>
 
-                  <Typography
-                    variant='h6'
-                    sx={{
-                      mt: 4,
-                      mb: 3,
-                      color: 'primary.main',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 4,
-                        height: 20,
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        borderRadius: 2
-                      }}
-                    />
-                    Crate Information
-                  </Typography>
 
-                  <Grid container spacing={3}>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <Controller
-                        name='crate1Price'
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTextField
-                            {...field}
-                            fullWidth
-                            type='number'
-                            label='Crate 1 Price'
-                            placeholder='55'
-                            onWheel={e => e.target.blur()}
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: '#f8fafc'
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                    </Grid>
-
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <Controller
-                        name='remainingCrate1'
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTextField
-                            {...field}
-                            fullWidth
-                            type='number'
-                            label='Remaining Crate 1'
-                            placeholder='10'
-                            onWheel={e => e.target.blur()}
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: '#f8fafc'
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                    </Grid>
-
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <Controller
-                        name='crate2Price'
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTextField
-                            {...field}
-                            fullWidth
-                            type='number'
-                            label='Crate 2 Price'
-                            placeholder='80'
-                            onWheel={e => e.target.blur()}
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: '#f8fafc'
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                    </Grid>
-
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <Controller
-                        name='remainingCrate2'
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTextField
-                            {...field}
-                            fullWidth
-                            type='number'
-                            label='Remaining Crate 2'
-                            placeholder='5'
-                            onWheel={e => e.target.blur()}
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                backgroundColor: '#f8fafc'
-                              }
-                            }}
-                          />
-                        )}
-                      />
-                    </Grid>
-                  </Grid>
                 </CardContent>
               </Card>
             </Grid>

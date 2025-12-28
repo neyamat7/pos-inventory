@@ -155,7 +155,7 @@ const CrateManagementTable = ({
       const result = await addCratesForSupplier(selectedSupplier._id, crateInfo)
 
       if (result.success) {
-        console.log('Crates sent to supplier successfully')
+        // console.log('Crates sent to supplier successfully')
         showSuccess('Crates sent to supplier successfully!')
         
         // Trigger instant refresh of all data
@@ -209,7 +209,7 @@ const CrateManagementTable = ({
       const result = await addCrates(crateData)
 
       if (result.success) {
-        console.log('Total crates added successfully:', result.data)
+        // console.log('Total crates added successfully:', result.data)
         showSuccess('Total crates added successfully!')
         
         // Trigger instant refresh of all data
@@ -264,7 +264,7 @@ const CrateManagementTable = ({
       const result = await updateCrates(query, crateInfo)
 
       if (result.success) {
-        console.log('Update successful:', result.data)
+        // console.log('Update successful:', result.data)
         showSuccess(result.message || 'Update successful!')
         
         // Trigger instant refresh of all data
@@ -578,12 +578,12 @@ const CrateManagementTable = ({
   }, [paginationData, transactionsPaginationData, activeTab, table])
 
   const handlePageChangeWrapper = newPage => {
-    console.log('Page change requested:', {
-      activeTab,
-      newPage,
-      supplierCurrentPage: paginationData?.currentPage,
-      transactionCurrentPage: transactionsPaginationData?.currentPage
-    })
+    // console.log('Page change requested:', {
+    //   activeTab,
+    //   newPage,
+    //   supplierCurrentPage: paginationData?.currentPage,
+    //   transactionCurrentPage: transactionsPaginationData?.currentPage
+    // })
     onPageChange(newPage)
   }
 

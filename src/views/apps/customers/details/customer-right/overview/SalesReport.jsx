@@ -1,20 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
-import { Card, CardContent, Divider, Box } from '@mui/material'
-import { ShoppingCart, CreditCard, RotateCcw, Package } from 'lucide-react'
+import { Box, Card, CardContent, Divider } from '@mui/material'
+import { CreditCard, Package, ShoppingCart } from 'lucide-react'
 
-import dayjs from 'dayjs'
 
-import CustomTextField from '@core/components/mui/TextField'
-import SalesTable from './tables/SalesTable'
-import CustomerReturnTable from './tables/CustomerReturnTable'
-import CustomerPaymentTable from './tables/PaymentTable'
-import { getCustomerCrateHistory, getSalesByCustomer } from '@/actions/customerActions'
-import BalanceHistoryTable from './tables/BalanceHistoryTable'
 import { getBalanceHistory } from '@/actions/balanceActions'
+import { getCustomerCrateHistory, getSalesByCustomer } from '@/actions/customerActions'
+import CustomTextField from '@core/components/mui/TextField'
+import BalanceHistoryTable from './tables/BalanceHistoryTable'
 import CustomerCrateHistoryTable from './tables/CustomerCrateHistoryTable'
+import SalesTable from './tables/SalesTable'
 
 // -------------------------------------------------------------
 // MAIN COMPONENT
@@ -222,17 +219,23 @@ const SalesReport = ({ customerId, initialSalesData, initialBalanceData, initial
 
       {/* 🔹 Filter Section */}
       <CardContent className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4'>
-        <div className='flex flex-wrap items-center gap-3'>
-          <CustomTextField type='date' label='From Date' value={fromDate} onChange={e => setFromDate(e.target.value)} />
-          <CustomTextField type='date' label='To Date' value={toDate} onChange={e => setToDate(e.target.value)} />
-        </div>
+        {/* Date Filters - Show for sales and balanceHistory tabs only */}
+        {(activeTab === 'sales' || activeTab === 'balanceHistory') && (
+          <div className='flex flex-wrap items-center gap-3'>
+            <CustomTextField type='date' label='From Date' value={fromDate} onChange={e => setFromDate(e.target.value)} />
+            <CustomTextField type='date' label='To Date' value={toDate} onChange={e => setToDate(e.target.value)} />
+          </div>
+        )}
 
-        <CustomTextField
-          placeholder='Search...'
-          value={searchValue}
-          onChange={e => setSearchValue(e.target.value)}
-          className='w-full md:w-60'
-        />
+        {/* Search Input - Show for sales tab only */}
+        {activeTab === 'sales' && (
+          <CustomTextField
+            placeholder='Search by product name...'
+            value={searchValue}
+            onChange={e => setSearchValue(e.target.value)}
+            className='w-full md:w-60'
+          />
+        )}
       </CardContent>
 
       <Divider />

@@ -16,7 +16,7 @@ export async function addCrates(crateData) {
     const { date, crate_type_1_qty, crate_type_2_qty, crate_type_1_price, crate_type_2_price, note, stockType, customerId } =
       crateData
 
-    console.log('stock type', stockType)
+    // console.log('stock type', stockType)
 
     const payload = {
       date,

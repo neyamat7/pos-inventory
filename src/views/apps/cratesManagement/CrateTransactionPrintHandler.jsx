@@ -17,12 +17,12 @@ const CrateTransactionPrintHandler = ({ transactionData, onPrintComplete, onPrin
       'Party'
     }`,
     onBeforePrint: () => {
-      console.log('Preparing crate transaction invoice for printing...')
+      // console.log('Preparing crate transaction invoice for printing...')
 
       return Promise.resolve()
     },
     onAfterPrint: () => {
-      console.log('Print completed')
+      // console.log('Print completed')
       onPrintComplete?.()
     },
     onPrintError: (errorLocation, error) => {
@@ -51,7 +51,7 @@ const CrateTransactionPrintHandler = ({ transactionData, onPrintComplete, onPrin
 
   useEffect(() => {
     if (triggerPrint && transactionData && componentRef.current) {
-      console.log('Triggering print with transaction data:', transactionData)
+      // console.log('Triggering print with transaction data:', transactionData)
 
       const timer = setTimeout(() => {
         handlePrint()

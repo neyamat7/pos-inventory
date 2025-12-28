@@ -69,12 +69,12 @@ const SalesListTable = ({
     contentRef: componentRef,
     documentTitle: `Invoice_${printSale?._id || 'Sale'}_${new Date().toISOString().split('T')[0]}`,
     onBeforePrint: () => {
-      console.log('Preparing invoice for printing...')
+      // console.log('Preparing invoice for printing...')
 
       return Promise.resolve()
     },
     onAfterPrint: () => {
-      console.log('Print completed')
+      // console.log('Print completed')
       showSuccess('Invoice printed successfully!')
       setPrintSale(null)
     },
@@ -105,7 +105,7 @@ const SalesListTable = ({
 
   // Handle print button click
   const handlePrintInvoice = sale => {
-    console.log('Print invoice for sale:', sale._id)
+    // console.log('Print invoice for sale:', sale._id)
     setPrintSale(sale)
 
     // Trigger print after state update

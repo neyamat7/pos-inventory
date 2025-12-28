@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react'
 
-import CrateManagement from '@/views/apps/cratesManagement'
-import { getSuppliers } from '@/actions/supplierAction'
 import { getAllCrateTransactions, getCrateTotals } from '@/actions/crateActions'
 import { getCustomers } from '@/actions/customerActions'
+import { getSuppliers } from '@/actions/supplierAction'
+import CrateManagement from '@/views/apps/cratesManagement'
 
 const CratesMangementPage = () => {
   // Refresh trigger for instant updates
@@ -147,7 +147,7 @@ const CratesMangementPage = () => {
       setIsCustomerLoading(true)
 
       try {
-        const result = await getCustomers(customerCurrentPage, customerPageSize)
+        const result = await getCustomers(customerCurrentPage, customerPageSize, customerSearchTerm)
 
         if (result.success) {
           setCustomerData(result.data.customers || [])

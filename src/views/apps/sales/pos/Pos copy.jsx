@@ -25,7 +25,7 @@ import InvoicePrintHandler from '../invoice/InvoicePrintHandler'
 import { showError, showSuccess } from '@/utils/toastUtils'
 
 export default function POSSystem({ productsData = [], customersData = [], categoriesData = [], lotsData = [] }) {
-  console.log('lotsdata', lotsData)
+  // console.log('lotsdata', lotsData)
 
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
@@ -699,7 +699,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     for (const item of cartProducts) {
       // Check if this is a crate-based product
       if (item.isCrated) {
-        console.log('lot selected', item.lot_selected)
+        // console.log('lot selected', item.lot_selected)
         const selectedCrateType1 = item.crate_type_one || 0
         const selectedCrateType2 = item.crate_type_two || 0
 
@@ -1002,7 +1002,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       //   toast.error(result.error || 'Failed to create sale')
       // }
 
-    console.log('Sale response:', payload)
+    // console.log('Sale response:', payload)
 
     } catch (error) {
       console.error('Sale submission error:', error)
@@ -1542,7 +1542,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
           cartProducts={cartProducts}
           triggerPrint={true}
           onPrintComplete={() => {
-            console.log('Invoice print completed')
+            // console.log('Invoice print completed')
 
             // Clear cart and reset after successful print
             setCartProducts([])

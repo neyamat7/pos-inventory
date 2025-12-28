@@ -3,7 +3,7 @@
 import api from '@/libs/api'
 
 export async function uploadImage(formData) {
-  console.log('formdata in action', formData)
+  // console.log('formdata in action', formData)
 
   try {
     // Don't use api.post for FormData - use native fetch instead

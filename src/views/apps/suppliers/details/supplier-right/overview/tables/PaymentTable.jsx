@@ -320,7 +320,7 @@ const PaymentDetailModal = ({ open, onClose, payment }) => {
 }
 
 const PaymentTable = ({ data, pagination, total, onPaginationChange, loading }) => {
-  console.log('payments', data)
+  // console.log('payments', data)
 
   const [selectedPayment, setSelectedPayment] = useState(null)
   const [modalOpen, setModalOpen] = useState(false)

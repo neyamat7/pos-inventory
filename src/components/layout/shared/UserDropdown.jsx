@@ -47,7 +47,7 @@ const UserDropdown = () => {
   const { data: session, status } = useSession()
 
   if (status !== 'loading') {
-    console.log('session got in dropdown', session)
+    // console.log('session got in dropdown', session)
   }
 
   // console.log('session got in dropdown', session, status)

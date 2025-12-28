@@ -6,23 +6,23 @@ import Link from 'next/link'
 
 import { useForm } from 'react-hook-form'
 
-import { FaTimes, FaEdit } from 'react-icons/fa'
+import { FaEdit, FaTimes } from 'react-icons/fa'
 
-import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table'
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
 import { toast } from 'react-toastify'
 
 import PosHeader from './PosHeader'
 import SearchProduct from './SearchProduct'
 
-import { handleCrateCount } from '@/utils/handleCrateCount'
-import { calculateTotalDue } from '@/utils/calculateTotalDue'
-import ShowProductList from '@/components/layout/shared/ShowProductList'
-import { handleSalesTotal } from '@/utils/handleSalesTotal'
-import { useGlobalTooltip } from '@/components/layout/shared/useGlobalTooltip'
 import { createSale } from '@/actions/saleActions'
-import InvoicePrintHandler from '../invoice/InvoicePrintHandler'
+import ShowProductList from '@/components/layout/shared/ShowProductList'
+import { useGlobalTooltip } from '@/components/layout/shared/useGlobalTooltip'
+import { calculateTotalDue } from '@/utils/calculateTotalDue'
+import { handleCrateCount } from '@/utils/handleCrateCount'
+import { handleSalesTotal } from '@/utils/handleSalesTotal'
 import { showError, showSuccess } from '@/utils/toastUtils'
+import InvoicePrintHandler from '../invoice/InvoicePrintHandler'
 
 export default function POSSystem({ productsData = [], customersData = [], categoriesData = [], lotsData = [] }) {
   // console.log('lotsdata', lotsData)
@@ -691,7 +691,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     // ========== VALIDATE CRATE AND BOX AVAILABILITY ==========
     for (const item of cartProducts) {
 
-      console.log('item', item)
+      // console.log('item', item)
 
       // Check if this is a crate-based product
       if (item.isCrated) {
@@ -973,7 +973,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       }
     }
 
-    console.log('Sales payload:', JSON.stringify(payload, null, 2))
+    // console.log('Sales payload:', JSON.stringify(payload, null, 2))
 
     try {
       const result = await createSale(payload)
@@ -981,7 +981,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       if (result.success) {
         toast.success('Product sold successfully!')
 
-        console.log('Sale response:', result.data)
+        // console.log('Sale response:', result.data)
 
         setLastSaleData({
           ...payload,
@@ -1462,8 +1462,11 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                       Supplier: {lotModal.selectedLot.supplierId?.basic_info?.name || 'N/A'}
                     </p>
                     <p className='text-sm text-gray-600'>
-                      Already Sold: {lotModal.selectedLot.totalKgSold || 0}{' '}
-                      {cartProducts.find(p => p.cart_item_id === lotModal.cartItemId)?.isBoxed ? 'boxes' : 'kg'}
+                      Already Sold: 
+                      {lotModal.selectedLot.sales?.totalBoxSold > 0 && ` ${lotModal.selectedLot.sales.totalBoxSold} boxes`}
+                      {lotModal.selectedLot.sales?.totalPieceSold > 0 && ` ${lotModal.selectedLot.sales.totalPieceSold} pieces`}
+                      {lotModal.selectedLot.sales?.totalKgSold > 0 && ` ${lotModal.selectedLot.sales.totalKgSold} kg`}
+                      {!lotModal.selectedLot.sales?.totalBoxSold && !lotModal.selectedLot.sales?.totalPieceSold && !lotModal.selectedLot.sales?.totalKgSold && ' None'}
                     </p>
                     <p className='text-sm text-gray-600'>Unit Cost: ৳{lotModal.selectedLot.costs?.unitCost || 0}</p>
                     <p className='text-sm text-gray-600'>
@@ -1535,7 +1538,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
           cartProducts={cartProducts}
           triggerPrint={true}
           onPrintComplete={() => {
-            console.log('Invoice print completed')
+            // console.log('Invoice print completed')
 
             // Clear cart and reset after successful print
             setCartProducts([])
