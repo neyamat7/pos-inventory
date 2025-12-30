@@ -1,48 +1,50 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 import {
-  useReactTable,
-  getCoreRowModel,
-  flexRender,
-  getPaginationRowModel,
-  createColumnHelper
-} from '@tanstack/react-table'
-import {
-  TablePagination,
-  Button,
   Box,
+  Button,
+  CircularProgress,
   Dialog,
-  DialogTitle,
-  DialogContent,
-  TextField,
   DialogActions,
-  Typography,
-  Paper,
+  DialogContent,
+  DialogTitle,
   Divider,
   IconButton,
-  CircularProgress
+  Paper,
+  TablePagination,
+  TextField,
+  Typography
 } from '@mui/material'
 import Grid from '@mui/material/Grid2'
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  useReactTable
+} from '@tanstack/react-table'
 
-import { DollarSign, Printer, X } from 'lucide-react'
+import { Printer, X } from 'lucide-react'
 
-import TablePaginationComponent from '@components/TablePaginationComponent'
 import TableSkeleton from '@/components/TableSkeleton'
+import TablePaginationComponent from '@components/TablePaginationComponent'
 import tableStyles from '@core/styles/table.module.css'
 
-import PaymentModal from './PaymentModal'
-import { getLotSaleSummary, getUnpaidStockOutLotsBySupplier } from '@/actions/lotActions'
 import OptionMenu from '@/@core/components/option-menu'
+import { getLotSaleSummary, getUnpaidStockOutLotsBySupplier, updateLotExtraExpense } from '@/actions/lotActions'
 import LotInvoicePrintHandler from '@/components/LotSaleInvoice/LotInvoicePrintHandler'
-import { showSuccess, showError } from '@/utils/toastUtils'
-import { updateLotExtraExpense } from '@/actions/lotActions'
+import { showError, showSuccess } from '@/utils/toastUtils'
+import PaymentModal from './PaymentModal'
 
 const columnHelper = createColumnHelper()
 
-const ProductTable = ({ data, pagination, total, onPaginationChange, loading, supplierData, onPaymentSuccess }) => {
+const ProductTable = ({ data, summary, pagination, total, onPaginationChange, loading, supplierData, onPaymentSuccess }) => {
+
+  // console.log('data in supplier lot tab', data)
+
   const router = useRouter()
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
   const [unpaidLotsData, setUnpaidLotsData] = useState([])
@@ -144,7 +146,8 @@ const ProductTable = ({ data, pagination, total, onPaginationChange, loading, su
       header: 'Lot Name',
       cell: info => info.getValue() || 'N/A'
     }),
-    columnHelper.accessor('productsId[0].productName', {
+    columnHelper.accessor(row => row.productsId?.[0]?.productName, {
+      id: 'productName',
       header: 'Product Name',
       cell: info => info.getValue() || 'N/A'
     }),
@@ -270,7 +273,70 @@ const ProductTable = ({ data, pagination, total, onPaginationChange, loading, su
 
   return (
     <>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
+        {/* Summary Stats - Only show when summary data is available */}
+        {summary && (
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', flex: 1 }}>
+            {/* Only show Total Crates Sold if value > 0 */}
+            {summary.totalCratesSold > 0 && (
+              <Paper elevation={2} sx={{ px: 2, py: 1, borderRadius: 2, bgcolor: '#f0f9ff' }}>
+                <Typography variant='caption' color='text.secondary' display='block'>
+                  Total Crates Sold
+                </Typography>
+                <Typography variant='h6' fontWeight='bold' color='primary'>
+                  {summary.totalCratesSold}
+                </Typography>
+              </Paper>
+            )}
+            
+            {/* Only show Total Boxes Sold if value > 0 */}
+            {summary.totalBoxesSold > 0 && (
+              <Paper elevation={2} sx={{ px: 2, py: 1, borderRadius: 2, bgcolor: '#f0fdf4' }}>
+                <Typography variant='caption' color='text.secondary' display='block'>
+                  Total Boxes Sold
+                </Typography>
+                <Typography variant='h6' fontWeight='bold' color='success.main'>
+                  {summary.totalBoxesSold}
+                </Typography>
+              </Paper>
+            )}
+            
+            {/* Only show Total Pieces Sold if value > 0 */}
+            {summary.totalPiecesSold > 0 && (
+              <Paper elevation={2} sx={{ px: 2, py: 1, borderRadius: 2, bgcolor: '#fef3c7' }}>
+                <Typography variant='caption' color='text.secondary' display='block'>
+                  Total Pieces Sold
+                </Typography>
+                <Typography variant='h6' fontWeight='bold' color='warning.main'>
+                  {summary.totalPiecesSold}
+                </Typography>
+              </Paper>
+            )}
+            
+            {/* Always show Total Sold Amount */}
+            <Paper elevation={2} sx={{ px: 2, py: 1, borderRadius: 2, bgcolor: '#fce7f3' }}>
+              <Typography variant='caption' color='text.secondary' display='block'>
+                Total Sold Amount
+              </Typography>
+              <Typography variant='h6' fontWeight='bold' color='secondary.main'>
+                ৳ {summary.totalSoldAmount?.toLocaleString() || 0}
+              </Typography>
+            </Paper>
+            
+            {/* Always show Supplier Due */}
+            <Paper elevation={2} sx={{ px: 2, py: 1, borderRadius: 2, bgcolor: '#fee2e2' }}>
+              <Typography variant='caption' color='text.secondary' display='block'>
+                Supplier Due
+              </Typography>
+              <Typography variant='h6' fontWeight='bold' color='error.main'>
+                ৳ {summary.supplierDue?.toLocaleString() || 0}
+              </Typography>
+            </Paper>
+          </Box>
+        )}
+        
+        <div></div>
+
         <Button
           variant='contained'
           color='primary'
@@ -368,6 +434,14 @@ const AddExpenseModal = ({ open, onClose, lot, onSuccess }) => {
   const [expenseReason, setExpenseReason] = useState('')
   const [loading, setLoading] = useState(false)
 
+  // Pre-fill form with existing expense data when modal opens
+  useEffect(() => {
+    if (open && lot) {
+      setExpenseAmount(lot?.expenses?.extra_expense || '')
+      setExpenseReason(lot?.expenses?.extra_expense_note || '')
+    }
+  }, [open, lot])
+
   const handleSubmit = async () => {
     if (!expenseAmount || !expenseReason) {
       showError('Please fill in all fields')
@@ -417,6 +491,8 @@ const AddExpenseModal = ({ open, onClose, lot, onSuccess }) => {
           fullWidth
           value={expenseAmount}
           onChange={e => setExpenseAmount(e.target.value)}
+          onWheel={e => e.target.blur()} // Disable mouse wheel scroll
+          inputProps={{ min: 0 }} // Prevent negative values
           sx={{ mb: 2 }}
         />
         <TextField

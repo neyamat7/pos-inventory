@@ -1,42 +1,40 @@
 // React Imports
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 // MUI Imports
+import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import TablePagination from '@mui/material/TablePagination'
-import MenuItem from '@mui/material/MenuItem'
 import Chip from '@mui/material/Chip'
-import Button from '@mui/material/Button'
+import MenuItem from '@mui/material/MenuItem'
+import TablePagination from '@mui/material/TablePagination'
 
 // Third-party Imports
-import classnames from 'classnames'
 import { rankItem } from '@tanstack/match-sorter-utils'
 import {
   flexRender,
   getCoreRowModel,
-  useReactTable,
-  getFilteredRowModel,
+  getFacetedMinMaxValues,
   getFacetedRowModel,
   getFacetedUniqueValues,
-  getFacetedMinMaxValues,
-  getPaginationRowModel,
-  getSortedRowModel
+  getFilteredRowModel,
+  getSortedRowModel,
+  useReactTable
 } from '@tanstack/react-table'
+import classnames from 'classnames'
 
 // Component Imports
-import Swal from 'sweetalert2'
 
-import OptionMenu from '@core/components/option-menu'
-import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
+import CustomTextField from '@core/components/mui/TextField'
+import OptionMenu from '@core/components/option-menu'
 
 // Style Imports
-import tableStyles from '@core/styles/table.module.css'
-import ViewPurchaseModal from './ViewPurchaseModal'
 import { createLots, updatePurchaseStatus } from '@/actions/purchaseActions'
 import TableSkeleton from '@/components/TableSkeleton'
-import { showSuccess, showError } from '@/utils/toastUtils'
+import { showError, showSuccess } from '@/utils/toastUtils'
+import tableStyles from '@core/styles/table.module.css'
+import ViewPurchaseModal from './ViewPurchaseModal'
 
 const statusOptions = ['on the way', 'received', 'canceled']
 
@@ -185,9 +183,9 @@ const PurchaseListTable = ({ purchaseData = [], paginationData, loading, onPageC
       id: 'action',
       header: 'Action',
       cell: ({ row }) => {
-        const isStatusOnTheWay = row.original.status === 'on the way'
+        const isStatusReceived = row.original.status === 'received'
         const isLotsCreated = row.original.is_lots_created
-        const isCreateLotsDisabled = isStatusOnTheWay || isLotsCreated
+        const isCreateLotsDisabled = isLotsCreated || !isStatusReceived
 
         return (
           <div className='flex items-center gap-2'>

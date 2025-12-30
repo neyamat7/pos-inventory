@@ -1,20 +1,20 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
-import { Card, CardContent, Divider, Box } from '@mui/material'
-import { ShoppingCart, CreditCard, RotateCcw, ClipboardList } from 'lucide-react'
+import { Box, Card, CardContent, Divider } from '@mui/material'
+import { ClipboardList, CreditCard, ShoppingCart } from 'lucide-react'
 
 import dayjs from 'dayjs'
 
 import CustomTextField from '@core/components/mui/TextField'
-import PurchaseTable from './tables/PurchaseTable'
 import PaymentTable from './tables/PaymentTable'
 import ProductTable from './tables/ProductTable'
+import PurchaseTable from './tables/PurchaseTable'
 
 // Mock data imports
-import { getLotsBySupplier, getPurchaseBySupplier, getSupplierPayments } from '@/actions/supplierAction'
 import { getBalanceHistory } from '@/actions/balanceActions'
+import { getLotsBySupplier, getPurchaseBySupplier, getSupplierPayments } from '@/actions/supplierAction'
 import BalanceHistoryTable from './tables/BalanceHistoryTable'
 
 // -------------------------------------------------------------
@@ -31,7 +31,7 @@ const PurchaseReport = ({
   const [activeTab, setActiveTab] = useState('purchases')
   const [searchValue, setSearchValue] = useState('')
   const [fromDate, setFromDate] = useState('')
-  const [toDate, setToDate] = useState('')
+  const [toDate, setToDate] = useState(dayjs().format('YYYY-MM-DD'))
 
   // State for lots data
   const [lotsData, setLotsData] = useState(initialLotsData)
@@ -198,6 +198,7 @@ const PurchaseReport = ({
         return (
           <ProductTable
             data={lotsData?.data?.lots || []}
+            summary={lotsData?.data?.summary}
             pagination={pagination}
             total={lotsData?.data?.total || 0}
             onPaginationChange={handlePaginationChange}

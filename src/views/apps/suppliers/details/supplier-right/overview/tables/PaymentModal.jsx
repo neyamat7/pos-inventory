@@ -1,28 +1,28 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  MenuItem,
+  Alert,
   Box,
-  Typography,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   IconButton,
+  MenuItem,
   Paper,
-  Alert
+  TextField,
+  Typography
 } from '@mui/material'
-import { X, Plus } from 'lucide-react'
 import Grid from '@mui/material/Grid2'
+import { Plus, X } from 'lucide-react'
 
-import { showError, showInfo, showSuccess } from '@/utils/toastUtils'
-import { addPayment } from '@/actions/supplierAction'
 import { uploadImage } from '@/actions/imageActions'
+import { addPayment } from '@/actions/supplierAction'
+import { showError, showInfo, showSuccess } from '@/utils/toastUtils'
 
 const PaymentModal = ({ open, onClose, supplierData, lotsData, supplierId, onPaymentSuccess }) => {
 
@@ -59,6 +59,11 @@ const [lotRows, setLotRows] = useState([
   // State for validation error
   const [balanceError, setBalanceError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [validationErrors, setValidationErrors] = useState({
+    paymentDate: false,
+    paymentMethod: false,
+    paidAmount: false
+  })
 
   // ============ CALCULATED VALUES ============
   // Calculate summary totals
@@ -258,6 +263,21 @@ const [lotRows, setLotRows] = useState([
   const handleSubmit = async () => {
     // console.log('submit called')
 
+    // Validation: Check required fields
+    const errors = {
+      paymentDate: !paymentDate,
+      paymentMethod: !paymentMethod,
+      paidAmount: !paidAmountInput || Number(paidAmountInput) <= 0
+    }
+
+    setValidationErrors(errors)
+
+    // If any validation error exists, show error and return
+    if (errors.paymentDate || errors.paymentMethod || errors.paidAmount) {
+      showError('Please fill in all required fields (Payment Date, Payment Method, Paid Amount)')
+      return
+    }
+
     // Validation: Check if at least one lot is selected
     const hasSelectedLots = lotRows.some(row => row.selectedLotId !== '')
 
@@ -303,7 +323,7 @@ const [lotRows, setLotRows] = useState([
       note: note
     }
 
-    console.log('Payment Payload:', payload)
+    // console.log('Payment Payload:', payload)
 
     try {
       const result = await addPayment(payload)
@@ -708,9 +728,15 @@ const [lotRows, setLotRows] = useState([
                 type='date'
                 label='Payment Date'
                 value={paymentDate}
-                onChange={e => setPaymentDate(e.target.value)}
+                onChange={e => {
+                  setPaymentDate(e.target.value)
+                  setValidationErrors(prev => ({ ...prev, paymentDate: false }))
+                }}
                 InputLabelProps={{ shrink: true }}
                 size='small'
+                required
+                error={validationErrors.paymentDate}
+                helperText={validationErrors.paymentDate ? 'Payment date is required' : ''}
               />
             </Grid>
 
@@ -721,8 +747,14 @@ const [lotRows, setLotRows] = useState([
                 fullWidth
                 label='Payment Method'
                 value={paymentMethod}
-                onChange={e => setPaymentMethod(e.target.value)}
+                onChange={e => {
+                  setPaymentMethod(e.target.value)
+                  setValidationErrors(prev => ({ ...prev, paymentMethod: false }))
+                }}
                 size='small'
+                required
+                error={validationErrors.paymentMethod}
+                helperText={validationErrors.paymentMethod ? 'Payment method is required' : ''}
               >
                 <MenuItem value='MFS'>MFS</MenuItem>
                 <MenuItem value='bank'>Bank</MenuItem>
@@ -769,9 +801,16 @@ const [lotRows, setLotRows] = useState([
                 label='Paid Amount'
                 placeholder='0'
                 value={paidAmountInput}
-                onChange={e => setPaidAmountInput(e.target.value)}
+                onChange={e => {
+                  setPaidAmountInput(e.target.value)
+                  setValidationErrors(prev => ({ ...prev, paidAmount: false }))
+                }}
+                onWheel={e => e.target.blur()}
                 size='small'
                 inputProps={{ min: 0 }}
+                required
+                error={validationErrors.paidAmount}
+                helperText={validationErrors.paidAmount ? 'Paid amount is required and must be greater than 0' : ''}
               />
             </Grid>
 

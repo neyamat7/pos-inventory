@@ -1,26 +1,27 @@
 'use client'
 
-import { useEffect, useState, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import Link from 'next/link'
 
 import { useForm } from 'react-hook-form'
 
-import { FaTimes, FaEdit } from 'react-icons/fa'
+import { FaEdit, FaTimes } from 'react-icons/fa'
 
-import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table'
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
 import { toast } from 'react-toastify'
 
-import PurchaseHeader from './PurchaseHeader'
-import SearchProduct from './SearchProduct'
-import { handleDistributionExpense } from '@/utils/handleDistribution'
 import CategoryModal from '@/components/layout/shared/CategoryModal'
 import { filteredProductsData } from '@/utils/filteredProductsData'
+import { handleDistributionExpense } from '@/utils/handleDistribution'
+import PurchaseHeader from './PurchaseHeader'
+import SearchProduct from './SearchProduct'
 
-import { showAlert } from '@/utils/showAlert'
-import ShowProductList from '@/components/layout/shared/ShowProductList'
 import { createPurchase } from '@/actions/purchaseActions'
+import ShowProductList from '@/components/layout/shared/ShowProductList'
+import { showAlert } from '@/utils/showAlert'
+import { showError } from '@/utils/toastUtils'
 
 const handleCrateCount = (setCartProducts, productId, personId, type, value) => {
   setCartProducts(prevCart =>
@@ -578,6 +579,47 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
   })
 
   const handleSubmitPurchaseOrder = async () => {
+    // Validation: Check for zero or negative quantities based on product type
+    for (const item of cartProducts) {
+      // Check for crated products
+      if (item.isCrated) {
+        const crateType1 = Number(item.crate_type_one) || 0
+        const crateType2 = Number(item.crate_type_two) || 0
+        
+        if (crateType1 <= 0 && crateType2 <= 0) {
+          showError(`Product "${item.product_name}" must have at least one crate (Type 1 or Type 2) with a value greater than 0`, 'error')
+          return
+        }
+      }
+      
+      // Check for boxed products
+      if (item.isBoxed) {
+        const boxQuantity = Number(item.box_quantity) || 0
+        
+        if (boxQuantity <= 0) {
+          showError(`Product "${item.product_name}" must have box quantity greater than 0`, 'error')
+          return
+        }
+      }
+      
+      // Check for piece products
+      if (item.sell_by_piece) {
+        const pieceQuantity = Number(item.piece_quantity) || 0
+        
+        if (pieceQuantity <= 0) {
+          showAlert(`Product "${item.product_name}" must have piece quantity greater than 0`, 'error')
+          return
+        }
+      }
+      
+      // Check unit cost is not zero or negative
+      const cost = Number(item.cost) || 0
+      if (cost <= 0) {
+        showAlert(`Product "${item.product_name}" must have a unit cost greater than 0`, 'error')
+        return
+      }
+    }
+
     setIsSubmitting(true)
 
     //  generate lot_name for each cart item
