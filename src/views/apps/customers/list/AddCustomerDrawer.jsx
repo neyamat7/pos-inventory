@@ -2,21 +2,21 @@ import { useState } from 'react'
 
 // MUI Imports
 import Button from '@mui/material/Button'
-import Drawer from '@mui/material/Drawer'
 import Divider from '@mui/material/Divider'
+import Drawer from '@mui/material/Drawer'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
 
 // Third-party Imports
+import { Controller, useForm } from 'react-hook-form'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { useForm, Controller } from 'react-hook-form'
 
-import { showError, showSuccess } from '@/utils/toastUtils'
 import { uploadImage } from '@/actions/imageActions'
+import { showError, showSuccess } from '@/utils/toastUtils'
 
 // Component Imports
-import CustomTextField from '@core/components/mui/TextField'
 import { createCustomer } from '@/actions/customerActions'
+import CustomTextField from '@core/components/mui/TextField'
 
 const AddCustomerDrawer = props => {
   const { open, handleClose, setData, customerData, refreshData } = props
@@ -34,7 +34,6 @@ const AddCustomerDrawer = props => {
     setValue
   } = useForm({
     defaultValues: {
-      sl: '',
       name: '',
       email: '',
       image: '',
@@ -92,7 +91,6 @@ const AddCustomerDrawer = props => {
       const customerPayload = {
         // Basic Information
         basic_info: {
-          sl: data.sl.toString(),
           name: data.name.trim(),
           role: 'customer',
           avatar: data.image
@@ -178,20 +176,6 @@ const AddCustomerDrawer = props => {
               Basic Information
             </Typography>
 
-            <Controller
-              name='sl'
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <CustomTextField
-                  {...field}
-                  label='SL'
-                  placeholder='1'
-                  fullWidth
-                  {...(errors.sl && { error: true, helperText: 'Required' })}
-                />
-              )}
-            />
 
             <Controller
               name='name'
