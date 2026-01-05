@@ -3,21 +3,21 @@ import { useState } from 'react'
 
 // MUI Imports
 import Button from '@mui/material/Button'
-import Drawer from '@mui/material/Drawer'
 import Divider from '@mui/material/Divider'
+import Drawer from '@mui/material/Drawer'
+import Grid from '@mui/material/Grid'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
-import Grid from '@mui/material/Grid'
 
 // Third-party Imports
+import { Controller, useForm } from 'react-hook-form'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { useForm, Controller } from 'react-hook-form'
 
 // Component Imports
-import CustomTextField from '@core/components/mui/TextField'
-import { createSupplier } from '@/actions/supplierAction'
 import { uploadImage } from '@/actions/imageActions'
+import { createSupplier } from '@/actions/supplierAction'
 import { showError } from '@/utils/toastUtils'
+import CustomTextField from '@core/components/mui/TextField'
 
 // Action Imports
 // import { createSupplier } from '@/app/actions/supplier-actions'
@@ -39,7 +39,6 @@ const AddSupplierDrawer = props => {
   } = useForm({
     defaultValues: {
       // Basic Info
-      sl: '',
       name: '',
       avatar: '',
 
@@ -101,7 +100,6 @@ const AddSupplierDrawer = props => {
       const supplierPayload = {
         // Basic Information
         basic_info: {
-          sl: data.sl.toString(),
           name: data.name.trim(),
           role: 'supplier',
           avatar: data.avatar
@@ -184,23 +182,6 @@ const AddSupplierDrawer = props => {
             </Typography>
 
             <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
-                <Controller
-                  name='sl'
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <CustomTextField
-                      {...field}
-                      label='SL Number'
-                      placeholder='1'
-                      fullWidth
-                      {...(errors.sl && { error: true, helperText: 'Required' })}
-                    />
-                  )}
-                />
-              </Grid>
-
               <Grid item xs={12} sm={6}>
                 <Controller
                   name='name'
