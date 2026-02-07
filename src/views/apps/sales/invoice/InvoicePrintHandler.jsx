@@ -1,12 +1,12 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { useReactToPrint } from 'react-to-print'
 
 import SaleInvoice from './SaleInvoice'
 
-const InvoicePrintHandler = ({ saleData, onPrintComplete, onPrintError, triggerPrint }) => {
+const InvoicePrintHandler = ({ saleData, customerData, onPrintComplete, onPrintError, triggerPrint }) => {
   const componentRef = useRef(null)
 
   // console.log('saleData in print handler', JSON.stringify(saleData))
@@ -66,7 +66,7 @@ const InvoicePrintHandler = ({ saleData, onPrintComplete, onPrintError, triggerP
   return (
     <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
       <div ref={componentRef}>
-        <SaleInvoice saleData={saleData} />
+        <SaleInvoice saleData={saleData} customerData={customerData} />
       </div>
     </div>
   )
