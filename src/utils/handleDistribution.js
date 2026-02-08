@@ -17,14 +17,14 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
 
   const totalUnits = cartProducts.reduce((sum, item) => {
     if (item.isBoxed) {
-      return Number(sum) + Number(item.box_quantity || 0)
+      return sum + (item.box_quantity || 0)
     } else if (item.sell_by_piece) {
-      return Number(sum) + Number(item.piece_quantity || 0)
+      return sum + (item.piece_quantity || 0)
     } else {
-      const typeOne = Number(item.crate_type_one || 0)
-      const typeTwo = Number(item.crate_type_two || 0)
+      const typeOne = item.crate_type_one || 0
+      const typeTwo = item.crate_type_two || 0
 
-      return Number(sum) + typeOne + typeTwo
+      return sum + typeOne + typeTwo
     }
   }, 0)
 
@@ -32,7 +32,7 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
 
   const getExpenseValue = (expenseKey, amountKey, typeKey, item, itemUnits) => {
     if (isDataEmpty) {
-      return Number(item[expenseKey] || 0)
+      return item[expenseKey] || 0
     }
 
     const amount = Number(data[amountKey] || 0)
@@ -55,11 +55,11 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
       let itemUnits = 0
 
       if (item.isBoxed) {
-        itemUnits = Number(item.box_quantity || 0)
+        itemUnits = item.box_quantity || 0
       } else if (item.sell_by_piece) {
-        itemUnits = Number(item.piece_quantity || 0)
+        itemUnits = item.piece_quantity || 0
       } else {
-        itemUnits = Number(item.crate_type_one || 0) + Number(item.crate_type_two || 0)
+        itemUnits = (item.crate_type_one || 0) + (item.crate_type_two || 0)
       }
 
       // Calculate all expenses using helper

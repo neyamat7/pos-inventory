@@ -6,16 +6,13 @@ import Link from 'next/link'
 
 import { useForm } from 'react-hook-form'
 
-import { Autocomplete, CircularProgress, TextField } from '@mui/material'
 import { FaEdit, FaTimes } from 'react-icons/fa'
 
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
 import { toast } from 'react-toastify'
 
-import { getSuppliers } from '@/actions/supplierAction/supplier.action'
 import CategoryModal from '@/components/layout/shared/CategoryModal'
-import { debounce } from '@/utils/debounce'
 import { filteredProductsData } from '@/utils/filteredProductsData'
 import { handleDistributionExpense } from '@/utils/handleDistribution'
 import PurchaseHeader from './PurchaseHeader'
@@ -95,10 +92,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
   const [brandSearch, setBrandSearch] = useState('')
 
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
-  const [selectedSupplier, setSelectedSupplier] = useState(null)
-  const [supplierOptions, setSupplierOptions] = useState(suppliersData || [])
-  const [supplierSearchInput, setSupplierSearchInput] = useState('')
-  const [loadingSuppliers, setLoadingSuppliers] = useState(false)
+  const [selectedSupplier, setSelectedSupplier] = useState({})
   const [cartProducts, setCartProducts] = useState([])
   const { register, handleSubmit } = useForm()
   const [selectedCategory, setSelectedCategory] = useState([])
@@ -145,7 +139,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
     }
 
     const isAlreadyAdded = cartProducts.some(
-      item => item.product_id === product._id && item.supplier_id === selectedSupplier?._id
+      item => item.product_id === product._id && item.supplier_id === selectedSupplier._id
     )
 
     if (isAlreadyAdded) {
@@ -210,9 +204,9 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
         ...product,
         product_id: product._id,
         product_name: product.productName,
-        supplier_id: selectedSupplier?._id,
-        supplier_sl: selectedSupplier?.basic_info?.sl || '',
-        supplier_name: selectedSupplier?.basic_info?.name || '',
+        supplier_id: selectedSupplier._id,
+        supplier_sl: selectedSupplier.basic_info?.sl || '',
+        supplier_name: selectedSupplier.basic_info?.name || '',
         crate_type_one: 0,
         crate_type_two: 0,
         cratePrice: 0,
@@ -288,45 +282,6 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
     setCommissionModal({ open: false, productId: null, supplierId: null, value: 0 })
   }
 
-  // Create debounced fetch function for suppliers (following POS pattern)
-  const debouncedFetchSuppliers = useMemo(
-    () =>
-      debounce(async searchQuery => {
-        setLoadingSuppliers(true)
-        try {
-          const result = await getSuppliers(1, 50, searchQuery)
-
-          if (result.success) {
-            setSupplierOptions(result.data?.suppliers || [])
-          }
-        } catch (error) {
-          console.error('Error fetching suppliers:', error)
-          toast.error('Failed to search suppliers')
-        } finally {
-          setLoadingSuppliers(false)
-        }
-      }, 500),
-    []
-  )
-
-  // Handle supplier search input change
-  useEffect(() => {
-    if (supplierSearchInput === '') {
-      setSupplierOptions(suppliersData)
-
-      return
-    }
-
-    debouncedFetchSuppliers(supplierSearchInput)
-  }, [supplierSearchInput, suppliersData, debouncedFetchSuppliers])
-
-  // Sync options when initial data changes
-  useEffect(() => {
-    if (suppliersData && suppliersData.length > 0 && supplierSearchInput === '') {
-      setSupplierOptions(suppliersData)
-    }
-  }, [suppliersData, supplierSearchInput])
-
   // Calculate which columns should be visible based on cart content
   const showPieceQuantity = cartProducts.some(p => p.sell_by_piece)
   const showBoxQuantity = cartProducts.some(p => p.isBoxed)
@@ -378,7 +333,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                 value={product.piece_quantity === 0 ? '' : (product.piece_quantity ?? '')}
                 placeholder='0'
                 onChange={e => {
-                  const value = e.target.value
+                  const value = parseInt(e.target.value) || 0
 
                   handlePieceQuantity(setCartProducts, product.product_id, product.supplier_id, value)
                   handleExpenseChange()
@@ -408,7 +363,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                 value={product.box_quantity === 0 ? '' : (product.box_quantity ?? '')}
                 placeholder='0'
                 onChange={e => {
-                  const value = e.target.value
+                  const value = parseInt(e.target.value) || 0
 
                   handleBoxQuantity(setCartProducts, product.product_id, product.supplier_id, value)
                   handleExpenseChange()
@@ -439,7 +394,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                   value={product.crate_type_one === 0 ? '' : (product.crate_type_one ?? '')}
                   placeholder='0'
                   onChange={e => {
-                    const value = e.target.value
+                    const value = parseInt(e.target.value) || 0
 
                     handleCrateCount(setCartProducts, product.product_id, product.supplier_id, 'one', value)
                     handleExpenseChange()
@@ -466,7 +421,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                   value={product.crate_type_two === 0 ? '' : (product.crate_type_two ?? '')}
                   placeholder='0'
                   onChange={e => {
-                    const value = e.target.value
+                    const value = parseInt(e.target.value) || 0
 
                     handleCrateCount(setCartProducts, product.product_id, product.supplier_id, 'two', value)
                     handleExpenseChange()
@@ -496,7 +451,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                 setCartProducts(prev =>
                   prev.map(item =>
                     item.product_id === product.product_id && item.supplier_id === product.supplier_id
-                      ? { ...item, cost: rawValue === '' ? 0 : rawValue }
+                      ? { ...item, cost: rawValue === '' ? 0 : parseFloat(rawValue) }
                       : item
                   )
                 )
@@ -526,7 +481,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                 value={product.discount_amount === 0 ? '' : (product.discount_amount ?? '')}
                 placeholder='0'
                 onChange={e => {
-                  const value = e.target.value
+                  const value = parseFloat(e.target.value) || 0
 
                   handleDiscountChange(setCartProducts, product.product_id, product.supplier_id, value)
                   handleExpenseChange()
@@ -824,62 +779,37 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
             />
             <input
               type='date'
-              value={date}
+              defaultValue={date}
               className='px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500'
               onChange={e => setDate(e.target.value)}
             />
-            <div className='flex-1'>
-              <Autocomplete
-                fullWidth
-                size='small'
-                options={supplierOptions}
-                loading={loadingSuppliers}
-                getOptionLabel={option => option.basic_info?.name || ''}
-                value={selectedSupplier}
-                onChange={(event, newValue) => {
-                  setSelectedSupplier(newValue || null)
-                }}
-                inputValue={supplierSearchInput}
-                onInputChange={(event, newInputValue) => {
-                  setSupplierSearchInput(newInputValue)
-                }}
-                renderInput={params => (
-                  <TextField
-                    {...params}
-                    placeholder='Select Supplier'
-                    InputProps={{
-                      ...params.InputProps,
-                      endAdornment: (
-                        <>
-                          {loadingSuppliers ? <CircularProgress color='inherit' size={20} /> : null}
-                          {params.InputProps.endAdornment}
-                        </>
-                      )
-                    }}
-                  />
-                )}
-                renderOption={(props, option) => {
-                  // Destructure key out to avoid React warnings when using custom renderOption
-                  const { key, ...otherProps } = props
+            <div className='flex items-center'>
+              <select
+                value={selectedSupplier._id || ''}
+                onChange={e => {
+                  const supplierId = e.target.value
+                  const supplier = suppliersData.find(s => s._id === supplierId)
 
-                  return (
-                    <li key={option._id} {...otherProps}>
-                      <div className='flex flex-col'>
-                        <span>{option.basic_info?.name}</span>
-                      </div>
-                    </li>
-                  )
+                  setSelectedSupplier(supplier || {})
                 }}
-                isOptionEqualToValue={(option, value) => option._id === value._id}
-              />
+                className='flex-1 px-3 py-2 border border-gray-300 rounded-l focus:outline-none'
+              >
+                <option value=''>Select Supplier</option>
+                {suppliersData.map(supplier => (
+                  <option key={supplier._id} value={supplier._id}>
+                    {supplier.basic_info?.name}
+                  </option>
+                ))}
+              </select>
+
+              {/* {selectedSupplier.basic_info?.avatar && (
+                <img
+                  src={selectedSupplier.basic_info.avatar}
+                  alt={selectedSupplier.basic_info.name}
+                  className='w-10 h-10 rounded-full border ml-2'
+                />
+              )} */}
             </div>
-            {/* {selectedSupplier?.basic_info?.avatar && (
-              <img
-                src={selectedSupplier.basic_info.avatar}
-                alt={selectedSupplier.basic_info.name}
-                className='w-10 h-10 rounded-full border ml-2'
-              />
-            )} */}
           </div>
 
           {/* Items Table */}
