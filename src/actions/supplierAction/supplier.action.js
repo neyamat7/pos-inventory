@@ -22,7 +22,7 @@ export async function createSupplier(supplierData) {
   }
 }
 
-export async function getSuppliers(page = 1, limit = 10, search = '') {
+export async function getSuppliers(page = 1, limit = 100, search = '') {
   try {
     // Build query parameters
     const params = new URLSearchParams({

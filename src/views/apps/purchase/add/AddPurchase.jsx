@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import Link from 'next/link'
 
 import { useForm } from 'react-hook-form'
 
 import { FaEdit, FaTimes } from 'react-icons/fa'
+
 
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
@@ -22,8 +23,10 @@ import { createPurchase } from '@/actions/purchaseActions'
 import ShowProductList from '@/components/layout/shared/ShowProductList'
 import { showAlert } from '@/utils/showAlert'
 import { showError } from '@/utils/toastUtils'
+import { Autocomplete, CircularProgress, TextField } from '@mui/material'
 
 const handleCrateCount = (setCartProducts, productId, personId, type, value) => {
+  console.log('📝 handleCrateCount:', { productId, personId, type, value })
   setCartProducts(prevCart =>
     prevCart.map(item => {
       if (item.product_id === productId && (item.supplier_id === personId || item.customer_id === personId)) {
@@ -84,7 +87,9 @@ const handleDiscountChange = (setCartProducts, productId, personId, value) => {
 }
 
 export default function AddPurchase({ productsData = [], suppliersData = [], categoriesData = [] }) {
-  const skipNextEffect = useRef(false)
+  // console.log('🎨 AddPurchase Rendered')
+
+  // const skipNextEffect = useRef(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryModalOpen, setCategoryModalOpen] = useState(false)
   const [brandModalOpen, setBrandModalOpen] = useState(false)
@@ -92,11 +97,14 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
   const [brandSearch, setBrandSearch] = useState('')
 
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
-  const [selectedSupplier, setSelectedSupplier] = useState({})
+  const [selectedSupplier, setSelectedSupplier] = useState(null)
   const [cartProducts, setCartProducts] = useState([])
   const { register, handleSubmit } = useForm()
   const [selectedCategory, setSelectedCategory] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [supplierOptions, setSupplierOptions] = useState(suppliersData || [])
+  const [supplierSearchInput, setSupplierSearchInput] = useState('')
+  const [loadingSuppliers, setLoadingSuppliers] = useState(false)
 
   const [commissionModal, setCommissionModal] = useState({
     open: false,
@@ -235,27 +243,21 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
 
   // Function to handle distribute form submission
   const handleDistributeSubmit = data => {
-    skipNextEffect.current = true
+    // skipNextEffect.current = true
 
     handleDistributionExpense(data, cartProducts, setCartProducts, suppliersData)
     setHasExpenseChanges(false)
   }
 
+
+
+  /*
   useEffect(() => {
-    if (skipNextEffect.current) {
-      skipNextEffect.current = false
-
-      return
+    if (cartProducts.length > 0) {
+      handleDistributionExpense({}, cartProducts, setCartProducts, suppliersData)
     }
-
-    const timeout = setTimeout(() => {
-      if (cartProducts.length > 0) {
-        handleDistributionExpense({}, cartProducts, setCartProducts, suppliersData)
-      }
-    }, 100)
-
-    return () => clearTimeout(timeout)
   }, [cartProducts, setCartProducts, suppliersData])
+  */
 
   // Open the commission editor for a row
   const openCommissionEditor = item => {
@@ -783,24 +785,49 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
               className='px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500'
               onChange={e => setDate(e.target.value)}
             />
-            <div className='flex items-center'>
-              <select
-                value={selectedSupplier._id || ''}
-                onChange={e => {
-                  const supplierId = e.target.value
-                  const supplier = suppliersData.find(s => s._id === supplierId)
-
-                  setSelectedSupplier(supplier || {})
+            <div className='flex-1'>
+              <Autocomplete
+                fullWidth
+                size='small'
+                options={supplierOptions}
+                loading={loadingSuppliers}
+                getOptionLabel={option => option.basic_info?.name || ''}
+                value={selectedSupplier}
+                onChange={(event, newValue) => {
+                  setSelectedSupplier(newValue || null)
                 }}
-                className='flex-1 px-3 py-2 border border-gray-300 rounded-l focus:outline-none'
-              >
-                <option value=''>Select Supplier</option>
-                {suppliersData.map(supplier => (
-                  <option key={supplier._id} value={supplier._id}>
-                    {supplier.basic_info?.name}
-                  </option>
-                ))}
-              </select>
+                inputValue={supplierSearchInput}
+                onInputChange={(event, newInputValue) => {
+                  setSupplierSearchInput(newInputValue)
+                }}
+                renderInput={params => (
+                  <TextField
+                    {...params}
+                    placeholder='Select Supplier'
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {loadingSuppliers ? <CircularProgress color='inherit' size={20} /> : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      )
+                    }}
+                  />
+                )}
+                renderOption={(props, option) => {
+                  const { key, ...otherProps } = props
+                  return (
+                    <li key={option._id} {...otherProps}>
+                      <div className='flex flex-col'>
+                        <span>{option.basic_info?.name}</span>
+                      </div>
+                    </li>
+                  )
+                }}
+                isOptionEqualToValue={(option, value) => option._id === value._id}
+              />
+            </div>
 
               {/* {selectedSupplier.basic_info?.avatar && (
                 <img
@@ -809,7 +836,6 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                   className='w-10 h-10 rounded-full border ml-2'
                 />
               )} */}
-            </div>
           </div>
 
           {/* Items Table */}

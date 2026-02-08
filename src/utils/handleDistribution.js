@@ -49,8 +49,10 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
     return 0
   }
 
-  setCartProducts(prevCart =>
-    prevCart.map(item => {
+  setCartProducts(prevCart => {
+    let hasChanges = false
+
+    const newCart = prevCart.map(item => {
       // Calculate item's unit count based on type
       let itemUnits = 0
 
@@ -102,17 +104,35 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
 
         cratePrice = Number((typeOneQty * typeOnePrice + typeTwoQty * typeTwoPrice).toFixed(2))
       }
+      
+      const newExpenses = Number(expenses.toFixed(2))
 
-      return {
-        ...item,
-        transportation: transportationValue,
-        moshjid: moshjidValue,
-        van_vara: vanVaraValue,
-        trading_post: tradingPostValue,
-        labour: labourValue,
-        expenses: Number(expenses.toFixed(2)),
-        cratePrice
+      // Check if any value actually changed
+      if (
+        item.transportation !== transportationValue ||
+        item.moshjid !== moshjidValue ||
+        item.van_vara !== vanVaraValue ||
+        item.trading_post !== tradingPostValue ||
+        item.labour !== labourValue ||
+        item.expenses !== newExpenses ||
+        item.cratePrice !== cratePrice
+      ) {
+        hasChanges = true
+        return {
+          ...item,
+          transportation: transportationValue,
+          moshjid: moshjidValue,
+          van_vara: vanVaraValue,
+          trading_post: tradingPostValue,
+          labour: labourValue,
+          expenses: newExpenses,
+          cratePrice
+        }
       }
+
+      return item
     })
-  )
+
+    return hasChanges ? newCart : prevCart
+  })
 }
