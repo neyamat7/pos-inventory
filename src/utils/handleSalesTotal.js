@@ -120,7 +120,7 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
 
       return {
         ...item,
-        kg,
+        // kg, // Don't overwrite kg as it might be a string input
         cratePrice,
         commission: commissionAmount,
         lot_commission: lotCommissionAmount,

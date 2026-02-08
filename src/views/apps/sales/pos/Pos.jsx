@@ -6,6 +6,7 @@ import Link from 'next/link'
 
 import { useForm } from 'react-hook-form'
 
+import CircularProgress from '@mui/material/CircularProgress'
 import { FaEdit, FaTimes } from 'react-icons/fa'
 
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
@@ -22,6 +23,8 @@ import { calculateTotalDue } from '@/utils/calculateTotalDue'
 import { handleCrateCount } from '@/utils/handleCrateCount'
 import { handleSalesTotal } from '@/utils/handleSalesTotal'
 import { showError, showSuccess } from '@/utils/toastUtils'
+
+import { Autocomplete, TextField } from '@mui/material'
 import InvoicePrintHandler from '../invoice/InvoicePrintHandler'
 
 export default function POSSystem({ productsData = [], customersData = [], categoriesData = [], lotsData = [] }) {
@@ -32,8 +35,11 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   const [categorySearch, setCategorySearch] = useState('')
 
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
-  const [selectedCustomer, setSelectedCustomer] = useState({})
+  const [selectedCustomer, setSelectedCustomer] = useState(null)
   const [cartProducts, setCartProducts] = useState([])
+  const [customerOptions, setCustomerOptions] = useState(customersData || [])
+  const [customerSearchInput, setCustomerSearchInput] = useState('')
+  const [loadingCustomers, setLoadingCustomers] = useState(false)
   const showTooltip = useGlobalTooltip()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -340,7 +346,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                 setCartProducts(prev =>
                   prev.map(item =>
                     item.cart_item_id === product.cart_item_id
-                      ? { ...item, selling_price: val === '' ? 0 : parseFloat(val) }
+                      ? { ...item, selling_price: val === '' ? 0 : val }
                       : item
                   )
                 )
@@ -368,10 +374,8 @@ export default function POSSystem({ productsData = [], customersData = [], categ
               value={product.kg === 0 ? '' : (product.kg ?? '')}
               onChange={e => {
                 const val = e.target.value
-                const parsed = val === '' ? 0 : parseFloat(val) || 0
-
                 setCartProducts(prev =>
-                  prev.map(item => (item.cart_item_id === product.cart_item_id ? { ...item, kg: parsed } : item))
+                  prev.map(item => (item.cart_item_id === product.cart_item_id ? { ...item, kg: val } : item))
                 )
               }}
               placeholder='0'
@@ -398,11 +402,9 @@ export default function POSSystem({ productsData = [], customersData = [], categ
               value={product.box_quantity === 0 ? '' : (product.box_quantity ?? '')}
               onChange={e => {
                 const val = e.target.value
-                const parsed = val === '' ? 0 : parseFloat(val) || 0
-
                 setCartProducts(prev =>
                   prev.map(item =>
-                    item.cart_item_id === product.cart_item_id ? { ...item, box_quantity: parsed } : item
+                    item.cart_item_id === product.cart_item_id ? { ...item, box_quantity: val } : item
                   )
                 )
               }}
@@ -454,7 +456,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
               value={product.discount_kg === 0 ? '' : (product.discount_kg ?? '')}
               onChange={e => {
                 const val = e.target.value
-                const parsed = val === '' ? 0 : parseFloat(val)
+                const parsed = val === '' ? 0 : val
 
                 setCartProducts(prev =>
                   prev.map(item =>
@@ -485,7 +487,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
               value={product.discount_amount === 0 ? '' : (product.discount_amount ?? '')}
               onChange={e => {
                 const val = e.target.value
-                const parsed = val === '' ? 0 : parseFloat(val)
+                const parsed = val === '' ? 0 : val
 
                 setCartProducts(prev =>
                   prev.map(item =>
@@ -514,7 +516,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
               value={product.total === 0 ? '' : (product.total ?? '')}
               onChange={e => {
                 const val = e.target.value
-                const parsed = val === '' ? 0 : parseFloat(val)
+                const parsed = val === '' ? 0 : val
 
                 setCartProducts(prev =>
                   prev.map(item => (item.cart_item_id === product.cart_item_id ? { ...item, total: parsed } : item))
@@ -563,7 +565,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
               onWheel={e => e.currentTarget.blur()}
               value={val === 0 ? '' : val}
               onChange={e => {
-                const parsed = e.target.value === '' ? 0 : parseInt(e.target.value) || 0
+                const parsed = e.target.value === '' ? 0 : e.target.value
 
                 handleCrateCount(setCartProducts, product.cart_item_id, 'type_one', parsed)
               }}
@@ -589,7 +591,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
               onWheel={e => e.currentTarget.blur()}
               value={val === 0 ? '' : val}
               onChange={e => {
-                const parsed = e.target.value === '' ? 0 : parseInt(e.target.value) || 0
+                const parsed = e.target.value === '' ? 0 : e.target.value
 
                 handleCrateCount(setCartProducts, product.cart_item_id, 'type_two', parsed)
               }}
@@ -620,7 +622,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
             value={product.piece_quantity === 0 ? '' : (product.piece_quantity ?? '')}
             onChange={e => {
               const val = e.target.value
-              const parsed = val === '' ? 0 : parseFloat(val) || 0
+              const parsed = val === '' ? 0 : val
 
               setCartProducts(prev =>
                 prev.map(item =>
@@ -1121,28 +1123,53 @@ export default function POSSystem({ productsData = [], customersData = [], categ
             />
             <input
               type='date'
-              defaultValue={date}
+              value={date}
               className='px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500'
               onChange={e => setDate(e.target.value)}
             />
 
-            <div className='flex'>
-              <select
-                value={selectedCustomer?._id || ''}
-                onChange={e => {
-                  const customer = customersData.find(c => c._id === e.target.value)
-
-                  setSelectedCustomer(customer || {})
+            <div className='flex-1'>
+              <Autocomplete
+                fullWidth
+                size='small'
+                options={customerOptions}
+                loading={loadingCustomers}
+                getOptionLabel={option => option.basic_info?.name || ''}
+                value={selectedCustomer}
+                onChange={(event, newValue) => {
+                  setSelectedCustomer(newValue || null)
                 }}
-                className='flex-1 px-3 py-2 border border-gray-300 rounded-l focus:outline-none'
-              >
-                <option value=''>Select Customer</option>
-                {customersData.map(customer => (
-                  <option key={customer._id} value={customer._id}>
-                    {customer.basic_info.name}
-                  </option>
-                ))}
-              </select>
+                inputValue={customerSearchInput}
+                onInputChange={(event, newInputValue) => {
+                  setCustomerSearchInput(newInputValue)
+                }}
+                renderInput={params => (
+                  <TextField
+                    {...params}
+                    placeholder='Select Customer'
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {loadingCustomers ? <CircularProgress color='inherit' size={20} /> : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      )
+                    }}
+                  />
+                )}
+                renderOption={(props, option) => {
+                  const { key, ...otherProps } = props
+                  return (
+                    <li key={option._id} {...otherProps}>
+                      <div className='flex flex-col'>
+                        <span>{option.basic_info?.name}</span>
+                      </div>
+                    </li>
+                  )
+                }}
+                isOptionEqualToValue={(option, value) => option._id === value._id}
+              />
             </div>
           </div>
 
@@ -1486,7 +1513,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                       placeholder='0'
                       value={lotModal.selectedLot.sell_qty === 0 ? '' : lotModal.selectedLot.sell_qty}
                       onChange={e => {
-                        const val = parseFloat(e.target.value) || 0
+                        const val = e.target.value
 
                         setLotModal(prev => ({
                           ...prev,
