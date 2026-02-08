@@ -22,7 +22,7 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
 
       // For crated products, discount_kg is per crate
       if (item.isCrated) {
-        const totalCrates = (item.crate_type_one || 0) + (item.crate_type_two || 0)
+        const totalCrates = (Number(item.crate_type_one) || 0) + (Number(item.crate_type_two) || 0)
 
         discountKg = discountKg * totalCrates
       }
@@ -127,7 +127,7 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
         subtotal,
         total,
         profit,
-        discount_amount: discountedAmount,
+        discount_amount: item.isBoxed || item.sell_by_piece ? item.discount_amount : discountedAmount,
         total_discount_kg: discountKg
       }
     })
