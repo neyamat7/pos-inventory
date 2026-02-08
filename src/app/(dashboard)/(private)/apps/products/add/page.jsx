@@ -10,8 +10,8 @@ import Grid from '@mui/material/Grid2'
 // Component Imports
 import Swal from 'sweetalert2'
 
-import ProductFormProvider from '@/views/apps/products/add/ProductFormProvider'
 import ProductAddHeader from '@/views/apps/products/add/ProductAddHeader'
+import ProductFormProvider from '@/views/apps/products/add/ProductFormProvider'
 import ProductInformation from '@/views/apps/products/add/ProductInformation'
 
 // Action Imports
@@ -30,6 +30,7 @@ const AddProductPage = () => {
       // Transform form data to match API schema
       const productPayload = {
         productName: values.productName.trim(),
+        productNameBn: values.productNameBn?.trim() || '',
         basePrice: Number(values.basePrice),
         productImage: values.productImage?.trim() || '',
         description: values.description?.trim() || '',

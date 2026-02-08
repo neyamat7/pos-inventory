@@ -4,7 +4,7 @@ import { convertToBanglaNumber } from '@/utils/convert-to-bangla'
 
 const SaleInvoice = ({ saleData, customerData }) => {
 
-  console.log('customerData in invoice pdf generation page', JSON.stringify(customerData))
+  console.log('saleData in invoice pdf generation page', JSON.stringify(saleData))
 
   // Group lots by product and calculate product totals
   const productSummary =
@@ -30,7 +30,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
       const isCrated = firstLot.isCrated || false
 
       return {
-        product_name: item.product_name || 'N/A',
+        product_name: item.productId?.productNameBn || item.product_name_bn || item.productId?.productName || item.product_name || 'N/A',
         isBoxed,
         isPieced,
         isCrated,
@@ -125,10 +125,10 @@ const SaleInvoice = ({ saleData, customerData }) => {
               </td>
               <td style={{ border: '0.5px solid #000', padding: '2px', fontSize: '11px', textAlign: 'center' }}>
                 {product.isBoxed 
-                  ? `${convertToBanglaNumber(product.totalBox)} box` 
+                  ? `${convertToBanglaNumber(product.totalBox)} বক্স` 
                   : product.isPieced 
-                    ? `${convertToBanglaNumber(product.totalPiece)} pcs` 
-                    : `${convertToBanglaNumber(product.totalKg)} kg`}
+                    ? `${convertToBanglaNumber(product.totalPiece)} পিস` 
+                    : `${convertToBanglaNumber(product.totalKg)} কেজি`}
               </td>
               <td style={{ border: '0.5px solid #000', padding: '2px', fontSize: '11px', textAlign: 'center' }}>
                 {convertToBanglaNumber(product.unit_price || 0)}
@@ -229,7 +229,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
           marginTop: '8px',
           paddingTop: '2px',
           borderTop: '0.5px dashed #000',
-          fontSize: '11px',
+          fontSize: '9px',
           textAlign: 'center'
         }}
       >

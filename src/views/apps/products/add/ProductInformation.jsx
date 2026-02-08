@@ -3,25 +3,24 @@
 import { useEffect, useState } from 'react'
 
 import Typography from '@mui/material/Typography'
-import Divider from '@mui/material/Divider'
 
 import MenuItem from '@mui/material/MenuItem'
 
-import Grid from '@mui/material/Grid2'
 import Card from '@mui/material/Card'
-import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
+import Grid from '@mui/material/Grid2'
 
-import { useFormContext, Controller, useWatch } from 'react-hook-form'
+import { Controller, useFormContext, useWatch } from 'react-hook-form'
 
 import { Button } from '@mui/material'
 
 import CustomTextField from '@core/components/mui/TextField'
 
 // Style Imports
-import '@/libs/styles/tiptapEditor.css'
 import { getAllCategories } from '@/actions/categoryActions'
 import { uploadImage } from '@/actions/imageActions'
+import '@/libs/styles/tiptapEditor.css'
 import { showError } from '@/utils/toastUtils'
 
 const ProductInformation = ({ mode = 'create', loading = false }) => {
@@ -124,6 +123,25 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
                   fullWidth
                   label='Product Name'
                   placeholder='Fresh Mango'
+                  {...field}
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  disabled={loading}
+                />
+              )}
+            />
+          </Grid>
+
+          {/* Product Name (Bangla) */}
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <Controller
+              name='productNameBn'
+              control={control}
+              render={({ field, fieldState }) => (
+                <CustomTextField
+                  fullWidth
+                  label='Product Name (Bangla)'
+                  placeholder='ফ্রেশ আম'
                   {...field}
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message}

@@ -126,6 +126,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         cost_price: product.basePrice ?? 0,
         selling_price: product.basePrice ?? 0,
         product_name: product.productName,
+        productNameBn: product.productNameBn,
         isCommissionable: product.allowCommission,
         commission_rate: product.commissionRate || 0,
         commission: 0,
@@ -902,6 +903,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       return {
         productId: pid,
         product_name: items[0].productName || '',
+        product_name_bn: items[0].productNameBn || '',
         selected_lots: selectedLots
       }
     })

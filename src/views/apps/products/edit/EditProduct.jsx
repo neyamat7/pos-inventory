@@ -4,17 +4,17 @@ import { useEffect, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import Grid from '@mui/material/Grid2'
-import CircularProgress from '@mui/material/CircularProgress'
-import Box from '@mui/material/Box'
 import Alert from '@mui/material/Alert'
+import Box from '@mui/material/Box'
+import CircularProgress from '@mui/material/CircularProgress'
+import Grid from '@mui/material/Grid2'
 
 import Swal from 'sweetalert2'
 
-import ProductFormProvider from '../add/ProductFormProvider'
-import ProductAddHeader from '../add/ProductAddHeader'
-import ProductInformation from '../add/ProductInformation'
 import { getProductById, updateProduct } from '@/actions/productActions'
+import ProductAddHeader from '../add/ProductAddHeader'
+import ProductFormProvider from '../add/ProductFormProvider'
+import ProductInformation from '../add/ProductInformation'
 
 export default function EditProduct({ id, productData: initialProductData }) {
   const [product, setProduct] = useState(initialProductData)
@@ -56,6 +56,7 @@ export default function EditProduct({ id, productData: initialProductData }) {
       // Transform form data to match API schema
       const productPayload = {
         productName: values.productName.trim(),
+        productNameBn: values.productNameBn?.trim() || '',
         basePrice: Number(values.basePrice),
         description: values.description?.trim() || '',
         categoryId: values.categoryId || null,
@@ -105,6 +106,7 @@ export default function EditProduct({ id, productData: initialProductData }) {
 
     return {
       productName: product.productName || '',
+      productNameBn: product.productNameBn || '',
       basePrice: product.basePrice || 0,
       description: product.description || '',
       categoryId: product.categoryId?._id || product.categoryId || '',
