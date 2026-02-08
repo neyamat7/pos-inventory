@@ -127,7 +127,7 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
         subtotal,
         total,
         profit,
-        discount_amount: discountedAmount,
+        discount_amount: item.isBoxed || item.sell_by_piece ? item.discount_amount : discountedAmount,
         total_discount_kg: discountKg
       }
     })
