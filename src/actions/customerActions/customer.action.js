@@ -201,3 +201,26 @@ export async function addCustomerBalance(balanceData) {
     }
   }
 }
+
+// Archive customer (soft delete)
+export async function archiveCustomer(customerId) {
+  try {
+    const response = await api.delete(`/customer/delete/${customerId}`)
+    
+    // Revalidate the customer list page
+    revalidatePath('/apps/customers/list')
+    
+    return {
+      success: true,
+      data: response,
+      message: 'Customer archived successfully'
+    }
+  } catch (error) {
+    console.error('Archive customer error:', error)
+    
+    return {
+      success: false,
+      error: error.message || 'Failed to archive customer'
+    }
+  }
+}

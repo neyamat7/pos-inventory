@@ -45,10 +45,11 @@ import tableStyles from '@core/styles/table.module.css'
 
 import OptionMenu from '@/@core/components/option-menu'
 import { uploadImage } from '@/actions/imageActions'
-import { addBalance } from '@/actions/supplierAction'
+import { addBalance, archiveSupplier } from '@/actions/supplierAction'
 import TableSkeleton from '@/components/TableSkeleton'
 import { getImageUrl } from '@/utils/getImageUrl'
 import { showError, showInfo, showSuccess } from '@/utils/toastUtils'
+import Swal from 'sweetalert2'
 import AddSupplierDrawer from './AddSupplierDrawer'
 
 export const paymentStatus = {
@@ -290,6 +291,52 @@ const SupplierListTable = ({
                       setOpenBalanceModal(true)
                     },
                     className: 'flex items-center'
+                  }
+                },
+                {
+                  text: 'Delete',
+                  icon: 'tabler-trash',
+                  menuItemProps: {
+                    onClick: async () => {
+                      const supplier = row.original
+                      const result = await Swal.fire({
+                        title: 'Delete Supplier?',
+                        html: `<p>Are you sure you want to delete <strong>${supplier.basic_info?.name || supplier.name}</strong>?</p><p class="text-sm text-gray-500 mt-2">This supplier will be moved to deleted list and won't appear in active suppliers.</p>`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Yes, Archive',
+                        cancelButtonText: 'Cancel'
+                      })
+
+                      if (result.isConfirmed) {
+                        Swal.fire({
+                          title: 'Archiving...',
+                          allowOutsideClick: false,
+                          didOpen: () => Swal.showLoading()
+                        })
+
+                        const response = await archiveSupplier(supplier._id)
+
+                        if (response.success) {
+                          Swal.fire({
+                            title: 'Archived!',
+                            text: response.message,
+                            icon: 'success',
+                            timer: 2000
+                          })
+                          refreshData()
+                        } else {
+                          Swal.fire({
+                            title: 'Error!',
+                            text: response.error,
+                            icon: 'error'
+                          })
+                        }
+                      }
+                    },
+                    className: 'flex items-center text-error'
                   }
                 }
               ]}

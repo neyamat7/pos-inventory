@@ -240,3 +240,26 @@ export async function getSupplierDueList({ page = 1, limit = 10 } = {}) {
     }
   }
 }
+
+// Archive supplier (soft delete)
+export async function archiveSupplier(supplierId) {
+  try {
+    const response = await api.delete(`/suppliers/delete/${supplierId}`)
+    
+    // Revalidate the supplier list page
+    revalidatePath('/apps/suppliers/list')
+    
+    return {
+      success: true,
+      data: response,
+      message: 'Supplier archived successfully'
+    }
+  } catch (error) {
+    console.error('Archive supplier error:', error)
+    
+    return {
+      success: false,
+      error: error.message || 'Failed to archive supplier'
+    }
+  }
+}

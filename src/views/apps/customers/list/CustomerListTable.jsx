@@ -31,6 +31,7 @@ import classnames from 'classnames'
 
 import { uploadImage } from '@/actions/imageActions'
 import { showError, showInfo, showSuccess } from '@/utils/toastUtils'
+import Swal from 'sweetalert2'
 
 // Component Imports
 import TablePaginationComponent from '@components/TablePaginationComponent'
@@ -45,7 +46,7 @@ import OptionMenu from '@core/components/option-menu'
 import { getInitials } from '@/utils/getInitials'
 
 // Style Imports
-import { addCustomerBalance, updateCustomer } from '@/actions/customerActions'
+import { addCustomerBalance, archiveCustomer, updateCustomer } from '@/actions/customerActions'
 import tableStyles from '@core/styles/table.module.css'
 
 import { getImageUrl } from '@/utils/getImageUrl'
@@ -277,6 +278,52 @@ const CustomerListTable = ({
                       setOpenBalanceModal(true)
                     },
                     className: 'flex items-center'
+                  }
+                },
+                {
+                  text: 'Delete',
+                  icon: 'tabler-trash',
+                  menuItemProps: {
+                    onClick: async () => {
+                      const customer = row.original
+                      const result = await Swal.fire({
+                        title: 'Delete Customer?',
+                        html: `<p>Are you sure you want to delete <strong>${customer.basic_info?.name}</strong>?</p><p class="text-sm text-gray-500 mt-2">This customer will be moved to deleted list and won't appear in active customers.</p>`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Yes, Archive',
+                        cancelButtonText: 'Cancel'
+                      })
+
+                      if (result.isConfirmed) {
+                        Swal.fire({
+                          title: 'Archiving...',
+                          allowOutsideClick: false,
+                          didOpen: () => Swal.showLoading()
+                        })
+
+                        const response = await archiveCustomer(customer._id)
+
+                        if (response.success) {
+                          Swal.fire({
+                            title: 'Archived!',
+                            text: response.message,
+                            icon: 'success',
+                            timer: 2000
+                          })
+                          refreshData()
+                        } else {
+                          Swal.fire({
+                            title: 'Error!',
+                            text: response.error,
+                            icon: 'error'
+                          })
+                        }
+                      }
+                    },
+                    className: 'flex items-center text-error'
                   }
                 },
                 // {
