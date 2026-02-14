@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 
 import CircularProgress from '@mui/material/CircularProgress'
-import { FaEdit, FaPlus, FaTimes } from 'react-icons/fa'
+import { FaEdit, FaPlus, FaThumbtack, FaTimes } from 'react-icons/fa'
 
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
@@ -24,7 +24,7 @@ import { handleCrateCount } from '@/utils/handleCrateCount'
 import { handleSalesTotal } from '@/utils/handleSalesTotal'
 import { showError, showSuccess } from '@/utils/toastUtils'
 
-import { getCustomers } from '@/actions/customerActions'
+import { getCustomers, toggleCustomerPin } from '@/actions/customerActions'
 import { Autocomplete, IconButton, TextField } from '@mui/material'
 import AddCustomerDrawer from '../../customers/list/AddCustomerDrawer'
 import InvoicePrintHandler from '../invoice/InvoicePrintHandler'
@@ -1182,10 +1182,48 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                 )}
                 renderOption={(props, option) => {
                   const { key, ...otherProps } = props
+                  
+                  // Handle caching Pin click
+                  const handlePinClick = async (e) => {
+                    e.stopPropagation() // Prevent selection
+                    try {
+                      const res = await toggleCustomerPin(option._id)
+                      if (res.success) {
+                        toast.success('Customer pin status updated')
+                        refreshCustomers() // Refresh list to update order
+                      } else {
+                        toast.error(res.error || 'Failed to update pin status')
+                      }
+                    } catch (error) {
+                      console.error(error)
+                      toast.error('Something went wrong')
+                    }
+                  }
+
                   return (
-                    <li key={option._id} {...otherProps}>
-                      <div className='flex flex-col'>
-                        <span>{option.basic_info?.name}</span>
+                    <li 
+                      key={option._id} 
+                      {...otherProps}
+                      className={`${otherProps.className || ''} group ${option.isPinned ? 'bg-orange-50 hover:bg-orange-100' : ''}`}
+                    >
+                      <div className='flex items-center justify-between w-full'>
+                        <div className='flex flex-col'>
+                          <span className={`flex items-center gap-2 ${option.isPinned ? 'font-medium text-orange-700' : ''}`}>
+                            {option.isPinned && <FaThumbtack className="text-xs" />}
+                            {option.basic_info?.name}
+                          </span>
+                        </div>
+                        
+                        <div 
+                          onClick={handlePinClick}
+                          className={`
+                            p-1.5 rounded-full cursor-pointer transition-opacity
+                            ${option.isPinned ? 'opacity-100 text-orange-600 bg-orange-100' : 'opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 hover:bg-gray-100'}
+                          `}
+                          title={option.isPinned ? "Unpin customer" : "Pin customer to top"}
+                        >
+                          <FaThumbtack size={12} className={option.isPinned ? 'rotate-45' : ''} />
+                        </div>
                       </div>
                     </li>
                   )

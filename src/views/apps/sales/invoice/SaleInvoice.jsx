@@ -4,7 +4,7 @@ import { convertToBanglaNumber } from '@/utils/convert-to-bangla'
 
 const SaleInvoice = ({ saleData, customerData }) => {
 
-  console.log('saleData in invoice pdf generation page', JSON.stringify(saleData))
+  // console.log('customerData in invoice pdf generation page', JSON.stringify(customerData))
 
   // Group lots by product and calculate product totals
   const productSummary =
@@ -192,6 +192,11 @@ const SaleInvoice = ({ saleData, customerData }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
           <span>পূর্বের ব্যালেন্স:</span>
           <span>{convertToBanglaNumber(customerData?.account_info?.balance || 0)}</span>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
+          <span>পূর্বের বকেয়া:</span>
+          <span>{convertToBanglaNumber(customerData?.account_info?.due || 0)}</span>
         </div>
 
         <div

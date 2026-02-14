@@ -226,3 +226,26 @@ export async function archiveCustomer(customerId) {
     }
   }
 }
+
+// Toggle customer pin status
+export async function toggleCustomerPin(customerId) {
+  try {
+    const response = await api.patch(`/customer/pin/${customerId}`)
+    
+    // Revalidate the POS page or customer list if needed
+    revalidatePath('/apps/sales/pos')
+    
+    return {
+      success: true,
+      data: response,
+      message: 'Customer pin status updated successfully'
+    }
+  } catch (error) {
+    console.error('Toggle customer pin error:', error)
+    
+    return {
+      success: false,
+      error: error.message || 'Failed to update customer pin status'
+    }
+  }
+}
