@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 
 import CircularProgress from '@mui/material/CircularProgress'
-import { FaEdit, FaTimes } from 'react-icons/fa'
+import { FaEdit, FaPlus, FaTimes } from 'react-icons/fa'
 
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
@@ -24,7 +24,9 @@ import { handleCrateCount } from '@/utils/handleCrateCount'
 import { handleSalesTotal } from '@/utils/handleSalesTotal'
 import { showError, showSuccess } from '@/utils/toastUtils'
 
-import { Autocomplete, TextField } from '@mui/material'
+import { getCustomers } from '@/actions/customerActions'
+import { Autocomplete, IconButton, TextField } from '@mui/material'
+import AddCustomerDrawer from '../../customers/list/AddCustomerDrawer'
 import InvoicePrintHandler from '../invoice/InvoicePrintHandler'
 
 export default function POSSystem({ productsData = [], customersData = [], categoriesData = [], lotsData = [] }) {
@@ -49,6 +51,26 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     supplierId: null,
     value: 0
   })
+
+  // Add Customer Drawer State
+  const [addCustomerOpen, setAddCustomerOpen] = useState(false)
+
+  const refreshCustomers = async () => {
+    setLoadingCustomers(true)
+    try {
+      // Fetch all customers (using a large limit to get all)
+      const res = await getCustomers(1, 1000)
+      
+      if (res.success && res.data?.customers) {
+        setCustomerOptions(res.data.customers) // Update the options list
+      }
+    } catch (error) {
+      console.error('Failed to refresh customers:', error)
+      toast.error('Failed to refresh customer list')
+    } finally {
+      setLoadingCustomers(false)
+    }
+  }
 
   const [lotModal, setLotModal] = useState({
     open: false,
@@ -1128,7 +1150,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
               onChange={e => setDate(e.target.value)}
             />
 
-            <div className='flex-1'>
+            <div className='flex-1 flex gap-2 items-center'>
               <Autocomplete
                 fullWidth
                 size='small'
@@ -1170,6 +1192,13 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                 }}
                 isOptionEqualToValue={(option, value) => option._id === value._id}
               />
+              <IconButton 
+                onClick={() => setAddCustomerOpen(true)}
+                className='bg-indigo-100 text-indigo-600 rounded hover:bg-indigo-200'
+                size='medium'
+              >
+                <FaPlus />
+              </IconButton>
             </div>
           </div>
 
@@ -1435,6 +1464,12 @@ export default function POSSystem({ productsData = [], customersData = [], categ
           </div>
         </div>
       )}
+
+      <AddCustomerDrawer
+        open={addCustomerOpen}
+        handleClose={() => setAddCustomerOpen(false)}
+        refreshData={refreshCustomers}
+      />
 
       {/* Single lot selection modal */}
       {lotModal.open && (

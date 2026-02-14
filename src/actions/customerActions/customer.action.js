@@ -17,6 +17,8 @@ export async function createCustomer(customerData) {
     // Make API call to create customer without token
     const response = await api.post('/customer/add', customerData)
 
+    revalidatePath('/apps/sales/pos')
+
     return {
       success: true,
       data: response,
@@ -34,7 +36,7 @@ export async function createCustomer(customerData) {
 
 export async function getCustomers(page, limit, search = '') {
   try {
-    const response = await api.get(`/customer/all?page=${page}&limit=${limit}&search=${search}`)
+    const response = await api.get(`/customer/all?page=${page}&limit=${limit}&search=${search}`, { cache: 'no-store' })
 
     return {
       success: true,
