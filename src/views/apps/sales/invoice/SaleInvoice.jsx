@@ -58,15 +58,13 @@ const SaleInvoice = ({ saleData, customerData }) => {
 
   return (
     <div
+      className='invoice-content'
       style={{
         fontFamily: "'Hind Siliguri', 'SolaimanLipi', 'Siyam Rupali', sans-serif",
         fontSize: '9px',
         lineHeight: '1.2',
         color: '#000',
-        backgroundColor: '#fff',
-        width: '11cm',
-        margin: '0 auto',
-        padding: '0 0.3cm'
+        backgroundColor: '#fff'
       }}
     >
       {/* Header - Centered */}

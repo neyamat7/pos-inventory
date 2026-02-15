@@ -36,6 +36,17 @@ const InvoicePrintHandler = ({ saleData, customerData, onPrintComplete, onPrintE
         margin-left: 0.5cm;
         margin-right: 0.5cm;
       }
+      .invoice-content {
+        width: 11cm;
+        margin: 0 auto;
+        padding: 0 0.3cm;
+      }
+      @media screen and (max-width: 768px) {
+        .invoice-content {
+          width: 100% !important;
+          padding: 0 0.1cm !important;
+        }
+      }
       @media print {
         body {
           -webkit-print-color-adjust: exact;
