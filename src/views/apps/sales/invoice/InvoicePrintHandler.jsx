@@ -9,18 +9,13 @@ import SaleInvoice from './SaleInvoice'
 const InvoicePrintHandler = ({ saleData, customerData, onPrintComplete, onPrintError, triggerPrint }) => {
   const componentRef = useRef(null)
 
-  // console.log('saleData in print handler', JSON.stringify(saleData))
-
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
     documentTitle: `Invoice_${saleData?.sale_date || 'Sale'}_${saleData?.customer_name || 'Customer'}`,
-    onBeforePrint: () => {
-      // console.log('Preparing invoice for printing...')
-
+    onBeforePrint: () => { 
       return Promise.resolve()
     },
-    onAfterPrint: () => {
-      // console.log('Print completed')
+    onAfterPrint: () => { 
       onPrintComplete?.()
     },
     onPrintError: (errorLocation, error) => {
@@ -60,8 +55,7 @@ const InvoicePrintHandler = ({ saleData, customerData, onPrintComplete, onPrintE
   })
 
   useEffect(() => {
-    if (triggerPrint && saleData && componentRef.current) {
-      // console.log('Triggering print with data:', saleData)
+    if (triggerPrint && saleData && componentRef.current) { 
 
       const timer = setTimeout(() => {
         handlePrint()
