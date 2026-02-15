@@ -30,7 +30,8 @@ const InvoicePrintHandler = ({ saleData, customerData, onPrintComplete, onPrintE
     pageStyle: `
       @page {
         size: 12cm 25cm;
-        margin-top: 8cm;
+        // margin-top: 8cm;
+        margin-top: 2.56in;
         margin-bottom: 3cm;
         margin-left: 0.5cm;
         margin-right: 0.5cm;
