@@ -186,8 +186,8 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     }
 
     // Calculate total crates sold
-    const totalCrateType1Sold = cartProducts.reduce((sum, item) => sum + (item.crate_type_one || 0), 0)
-    const totalCrateType2Sold = cartProducts.reduce((sum, item) => sum + (item.crate_type_two || 0), 0)
+    const totalCrateType1Sold = cartProducts.reduce((sum, item) => sum + (Number(item.crate_type_one) || 0), 0)
+    const totalCrateType2Sold = cartProducts.reduce((sum, item) => sum + (Number(item.crate_type_two) || 0), 0)
 
     // Calculate total crate prices
     const totalType1Price = Number((totalCrateType1Sold * (selectedCustomer.crate_info?.type_1_price || 0)).toFixed(2))

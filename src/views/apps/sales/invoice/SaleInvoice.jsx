@@ -4,7 +4,9 @@ import { convertToBanglaNumber } from '@/utils/convert-to-bangla'
 
 const SaleInvoice = ({ saleData, customerData }) => {
 
-  // console.log('customerData in invoice pdf generation page', JSON.stringify(customerData))
+  console.log('customerData in invoice pdf generation page', JSON.stringify(customerData))
+
+  console.log('saleData in invoice pdf generation page', JSON.stringify(saleData))
 
   // Group lots by product and calculate product totals
   const productSummary =
@@ -53,6 +55,24 @@ const SaleInvoice = ({ saleData, customerData }) => {
   const hasAnyDiscount = productSummary.some(p => p.totalDiscount >= 1)
   const hasAnyCrate = productSummary.some(p => p.isCrated)
   const hasAnyCommission = productSummary.some(p => p.customer_commission_rate > 0)
+
+  // Calculation for Payment Summary
+  const previousDue = customerData?.account_info?.due || 0
+  const currentBill = paymentDetails.payable_amount || 0
+  const totalDue = previousDue + currentBill
+  const previousBalance = customerData?.account_info?.balance || 0
+  // Net payable logic: Total Due - Previous Balance
+  const netPayable = Math.max(0, totalDue - previousBalance)
+
+  const totalProductPrice = productSummary.reduce((sum, item) => sum + (Number(item.productTotal) || 0), 0)
+  const totalCrate1Price = Number(paymentDetails.total_crate_type1_price) || 0
+  const totalCrate2Price = Number(paymentDetails.total_crate_type2_price) || 0
+  
+  // Total table sum (Products + Crates)
+  const tableTotal = totalProductPrice + totalCrate1Price + totalCrate2Price
+
+  // Calculate colSpan for Total Price row (Product + Qty + Rate + [Commission] + [Discount] + [Crate])
+  const colSpanCount = 3 + (hasAnyCommission ? 1 : 0) + (hasAnyDiscount ? 1 : 0) + (hasAnyCrate ? 1 : 0)
 
   // console.log('productSummary', JSON.stringify(productSummary))
 
@@ -153,6 +173,87 @@ const SaleInvoice = ({ saleData, customerData }) => {
               </td>
             </tr>
           ))}
+          
+          {/* Crate Type 1 Price Row */}
+          {totalCrate1Price > 0 && (
+            <tr>
+              <td 
+                colSpan={colSpanCount} 
+                style={{ 
+                  border: '0.5px solid #000', 
+                  padding: '2px', 
+                  fontSize: '11px', 
+                  textAlign: 'right',  
+                }}
+              >
+                ক্যারেট (টাইপ ১):
+              </td>
+              <td 
+                style={{ 
+                  border: '0.5px solid #000', 
+                  padding: '2px', 
+                  fontSize: '11px', 
+                  textAlign: 'center',  
+                }}
+              >
+                {convertToBanglaNumber(totalCrate1Price)}
+              </td>
+            </tr>
+          )}
+
+          {/* Crate Type 2 Price Row */}
+          {totalCrate2Price > 0 && (
+            <tr>
+              <td 
+                colSpan={colSpanCount} 
+                style={{ 
+                  border: '0.5px solid #000', 
+                  padding: '2px', 
+                  fontSize: '11px', 
+                  textAlign: 'right',  
+                }}
+              >
+                ক্যারেট (টাইপ ২):
+              </td>
+              <td 
+                style={{ 
+                  border: '0.5px solid #000', 
+                  padding: '2px', 
+                  fontSize: '11px', 
+                  textAlign: 'center',  
+                }}
+              >
+                {convertToBanglaNumber(totalCrate2Price)}
+              </td>
+            </tr>
+          )}
+
+          {/* Total Price Row */}
+          <tr>
+            <td 
+              colSpan={colSpanCount} 
+              style={{ 
+                border: '0.5px solid #000', 
+                padding: '2px', 
+                fontSize: '11px', 
+                textAlign: 'right', 
+                fontWeight: 'bold' 
+              }}
+            >
+              মোট মূল্য:
+            </td>
+            <td 
+              style={{ 
+                border: '0.5px solid #000', 
+                padding: '2px', 
+                fontSize: '11px', 
+                textAlign: 'center', 
+                fontWeight: 'bold' 
+              }}
+            >
+              {convertToBanglaNumber(tableTotal)}
+            </td>
+          </tr>
         </tbody>
       </table>
 
@@ -166,51 +267,62 @@ const SaleInvoice = ({ saleData, customerData }) => {
       >
         <div style={{ marginBottom: '4px', fontSize: '11px', textAlign: 'center' }}>পরিশোধ বিবরণ</div>
 
-        {paymentDetails.total_crate_type1_price > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
-            <span>ক্যারেট (টাইপ ১):</span>
-            <span>{convertToBanglaNumber(paymentDetails.total_crate_type1_price || 0)}</span>
-          </div>
-        )}
-
-        {paymentDetails.total_crate_type2_price > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span>ক্যারেট (টাইপ ২):</span>
-            <span>{convertToBanglaNumber(paymentDetails.total_crate_type2_price || 0)}</span>
-          </div>
-        )}
-
-        {paymentDetails.vat > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
-            <span>ভ্যাট:</span>
-            <span>{convertToBanglaNumber(paymentDetails.vat || 0)}</span>
-          </div>
-        )}
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
-          <span>পূর্বের ব্যালেন্স:</span>
-          <span>{convertToBanglaNumber(customerData?.account_info?.balance || 0)}</span>
-        </div>
-
+        {/* 1. Previous Due */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
           <span>পূর্বের বকেয়া:</span>
-          <span>{convertToBanglaNumber(customerData?.account_info?.due || 0)}</span>
+          <span>{convertToBanglaNumber(previousDue)}</span>
         </div>
 
+        {/* 2. Current Bill (includes Crate & VAT) */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
+          <span>বর্তমান বিল:</span>
+          <span>{convertToBanglaNumber(currentBill)}</span>
+        </div>
+
+        {/* Breakdown of Current Bill (Optional, but helpful context) */}
+        {paymentDetails.vat > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px', fontSize: '9px', color: '#555', paddingLeft: '8px' }}>
+            <span>(ভ্যাট সহ)</span>
+            <span>{convertToBanglaNumber(paymentDetails.vat)}</span>
+          </div>
+        )}
+
+        {/* 3. Total Due */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          marginBottom: '1px', 
+          borderTop: '0.5px dotted #000',
+          paddingTop: '2px'
+        }}>
+          <span>সর্বমোট বকেয়া:</span>
+          <span>{convertToBanglaNumber(totalDue)}</span>
+        </div>
+
+        {/* 4. Previous Balance (Hide if < 1) */}
+        {previousBalance >= 1 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
+            <span>পূর্বের জমা:</span>
+            <span>{convertToBanglaNumber(previousBalance)}</span>
+          </div>
+        )}
+
+        {/* 5. Total Payable */}
         <div
           style={{
             display: 'flex',
             justifyContent: 'space-between',
             marginTop: '3px',
             paddingTop: '2px',
-            borderTop: '0.5px solid #000'
+            borderTop: '0.5px solid #000',
+            fontWeight: 'bold'
           }}
         >
-          <span>পরিশোধযোগ্য টাকা:</span>
-          <span>{convertToBanglaNumber(paymentDetails.payable_amount || 0)}</span>
+          <span>সর্বমোট পরিশোধযোগ্য:</span>
+          <span>{convertToBanglaNumber(netPayable)}</span>
         </div>
 
-        {/* Additional Payment Info if available */}
+        {/* Paid Amount */}
         {paymentDetails.received_amount > 0 && (
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
             <span>প্রদত্ত টাকা:</span>
@@ -218,11 +330,11 @@ const SaleInvoice = ({ saleData, customerData }) => {
           </div>
         )}
 
-        {paymentDetails.due_amount > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
-            <span>বাকি:</span>
-            <span>{convertToBanglaNumber(paymentDetails.due_amount || 0)}</span>
-          </div>
+        {/* Note if any */}
+        {paymentDetails.note && (
+           <div style={{ marginTop: '4px', fontSize: '10px', borderTop: '0.5px dotted #ccc', paddingTop: '2px' }}>
+             নোট: {paymentDetails.note}
+           </div>
         )}
       </div>
 
