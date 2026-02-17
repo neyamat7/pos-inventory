@@ -6,7 +6,7 @@ import Link from 'next/link'
 
 import { useForm } from 'react-hook-form'
 
-import { FaEdit, FaTimes } from 'react-icons/fa'
+import { FaEdit, FaPlus, FaTimes } from 'react-icons/fa'
 
 
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
@@ -20,10 +20,12 @@ import PurchaseHeader from './PurchaseHeader'
 import SearchProduct from './SearchProduct'
 
 import { createPurchase } from '@/actions/purchaseActions'
+import { getSuppliers } from '@/actions/supplierAction'
 import ShowProductList from '@/components/layout/shared/ShowProductList'
 import { showAlert } from '@/utils/showAlert'
 import { showError } from '@/utils/toastUtils'
-import { Autocomplete, CircularProgress, TextField } from '@mui/material'
+import { Autocomplete, CircularProgress, IconButton, TextField } from '@mui/material'
+import AddSupplierDrawer from '../../suppliers/list/AddSupplierDrawer'
 
 const handleCrateCount = (setCartProducts, productId, personId, type, value) => {
   console.log('📝 handleCrateCount:', { productId, personId, type, value })
@@ -105,6 +107,25 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
   const [supplierOptions, setSupplierOptions] = useState(suppliersData || [])
   const [supplierSearchInput, setSupplierSearchInput] = useState('')
   const [loadingSuppliers, setLoadingSuppliers] = useState(false)
+  const [addSupplierOpen, setAddSupplierOpen] = useState(false)
+
+  const refreshSuppliers = async () => {
+    setLoadingSuppliers(true)
+    try {
+      const res = await getSuppliers(1, 1000)
+      if (res.success && res.data?.data?.suppliers) {
+         // Verify data structure matches API response
+         setSupplierOptions(res.data.data.suppliers)
+      } else if (res.success && res.data?.suppliers) {
+         setSupplierOptions(res.data.suppliers)
+      }
+    } catch (error) {
+      console.error('Failed to refresh customers:', error)
+      toast.error('Failed to refresh customer list')
+    } finally {
+      setLoadingSuppliers(false)
+    }
+  }
 
   const [commissionModal, setCommissionModal] = useState({
     open: false,
@@ -785,7 +806,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
               className='px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500'
               onChange={e => setDate(e.target.value)}
             />
-            <div className='flex-1'>
+            <div className='flex-1 flex items-center gap-2'>
               <Autocomplete
                 fullWidth
                 size='small'
@@ -801,9 +822,9 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                   setSupplierSearchInput(newInputValue)
                 }}
                 renderInput={params => (
-                  <TextField
-                    {...params}
-                    placeholder='Select Supplier'
+                  <TextField 
+                    {...params} 
+                    placeholder='Select Supplier' 
                     InputProps={{
                       ...params.InputProps,
                       endAdornment: (
@@ -826,6 +847,22 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                   )
                 }}
                 isOptionEqualToValue={(option, value) => option._id === value._id}
+              />
+               <IconButton
+                color='primary'
+                onClick={() => setAddSupplierOpen(true)}
+               className='bg-indigo-100 text-indigo-600 rounded hover:bg-indigo-200'
+                size='medium'
+              >
+                <FaPlus />
+              </IconButton>
+              
+               <AddSupplierDrawer
+                  open={addSupplierOpen}
+                  handleClose={() => setAddSupplierOpen(false)}
+                  setData={setSupplierOptions}
+                  supplierData={supplierOptions}
+                  refreshData={refreshSuppliers}
               />
             </div>
 
