@@ -12,8 +12,8 @@ const calculateExpenseValue = (amount, type, totalUnits, itemUnits) => {
   return Number(amount.toFixed(2))
 }
 
-export const handleDistributionExpense = (data = {}, cartProducts, setCartProducts, suppliersData = []) => {
-  const isDataEmpty = !data || Object.keys(data).length === 0
+export const handleDistributionExpense = (data = {}, cartProducts, setCartProducts, suppliersData = [], customExpenses = []) => {
+  const isDataEmpty = (!data || Object.keys(data).length === 0) && customExpenses.length === 0
 
   const totalUnits = cartProducts.reduce((sum, item) => {
     if (item.isBoxed) {
@@ -28,10 +28,9 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
     }
   }, 0)
 
-  // console.log('Distribution Debug:', { totalUnits, isDataEmpty, data })
-
+  // Helper to get fixed expense value
   const getExpenseValue = (expenseKey, amountKey, typeKey, item, itemUnits) => {
-    if (isDataEmpty) {
+    if (!data || Object.keys(data).length === 0) {
       return item[expenseKey] || 0
     }
 
@@ -47,6 +46,27 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
     }
 
     return 0
+  }
+  
+  // Helper to calculate custom expenses array for an item
+  const getCustomExpensesForItem = (itemUnits) => {
+      if (customExpenses.length === 0) return []
+      
+      return customExpenses.map(exp => {
+          const amount = Number(exp.amount || 0)
+          let val = 0
+          
+          if (exp.type === 'divided') {
+               val = calculateExpenseValue(amount, 'divided', totalUnits, itemUnits)
+          } else {
+               val = calculateExpenseValue(amount, 'each', totalUnits, itemUnits)
+          }
+          
+          return {
+              name: exp.name,
+              amount: val
+          }
+      })
   }
 
   setCartProducts(prevCart => {
@@ -86,8 +106,12 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
       )
 
       const labourValue = getExpenseValue('labour', 'labourAmount', 'labourType', item, itemUnits)
+      
+      // Calculate Custom Expenses
+      const itemCustomExpenses = getCustomExpensesForItem(itemUnits)
+      const totalCustomExpenseValue = itemCustomExpenses.reduce((sum, exp) => sum + exp.amount, 0)
 
-      const expenses = transportationValue + moshjidValue + vanVaraValue + tradingPostValue + labourValue
+      const expenses = transportationValue + moshjidValue + vanVaraValue + tradingPostValue + labourValue + totalCustomExpenseValue
 
       // --- get supplier info ---
       const supplier = suppliersData?.find(s => s._id === item.supplier_id)
@@ -106,6 +130,14 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
       }
       
       const newExpenses = Number(expenses.toFixed(2))
+    
+      
+      // Helper to compare arrays
+      const areCustomExpensesEqual = (arr1, arr2) => {
+          if (!arr1 && !arr2) return true;
+          if (!arr1 || !arr2 || arr1.length !== arr2.length) return false;
+          return arr1.every((val, index) => val.name === arr2[index].name && val.amount === arr2[index].amount);
+      }
 
       // Check if any value actually changed
       if (
@@ -115,7 +147,8 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
         item.trading_post !== tradingPostValue ||
         item.labour !== labourValue ||
         item.expenses !== newExpenses ||
-        item.cratePrice !== cratePrice
+        item.cratePrice !== cratePrice ||
+        !areCustomExpensesEqual(item.custom_expenses, itemCustomExpenses)
       ) {
         hasChanges = true
         return {
@@ -126,7 +159,10 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
           trading_post: tradingPostValue,
           labour: labourValue,
           expenses: newExpenses,
-          cratePrice
+          cratePrice,
+          // Store the detailed array
+          custom_expenses: itemCustomExpenses,
+          other_expenses: item.other_expenses || 0 
         }
       }
 

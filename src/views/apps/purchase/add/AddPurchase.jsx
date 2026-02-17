@@ -6,7 +6,7 @@ import Link from 'next/link'
 
 import { useForm } from 'react-hook-form'
 
-import { FaEdit, FaPlus, FaTimes } from 'react-icons/fa'
+import { FaEdit, FaPlus, FaTimes, FaTrash } from 'react-icons/fa'
 
 
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
@@ -108,6 +108,23 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
   const [supplierSearchInput, setSupplierSearchInput] = useState('')
   const [loadingSuppliers, setLoadingSuppliers] = useState(false)
   const [addSupplierOpen, setAddSupplierOpen] = useState(false)
+  
+  // Custom Expenses State
+  const [customExpenses, setCustomExpenses] = useState([])
+  
+  const handleAddCustomExpense = () => {
+    setCustomExpenses([...customExpenses, { id: Date.now(), name: '', amount: 0, type: 'divided' }])
+  }
+
+  const handleRemoveCustomExpense = (id) => {
+    setCustomExpenses(customExpenses.filter(exp => exp.id !== id))
+  }
+
+  const handleCustomExpenseChange = (id, field, value) => {
+    setCustomExpenses(customExpenses.map(exp => 
+      exp.id === id ? { ...exp, [field]: value } : exp
+    ))
+  }
 
   const refreshSuppliers = async () => {
     setLoadingSuppliers(true)
@@ -266,7 +283,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
   const handleDistributeSubmit = data => {
     // skipNextEffect.current = true
 
-    handleDistributionExpense(data, cartProducts, setCartProducts, suppliersData)
+    handleDistributionExpense(data, cartProducts, setCartProducts, supplierOptions, customExpenses)
     setHasExpenseChanges(false)
   }
 
@@ -711,7 +728,8 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
           van_vara: item.van_vara || 0,
           moshjid: item.moshjid || 0,
           trading_post: item.trading_post || 0,
-          other_expenses: item.other_expenses || 0
+          other_expenses: item.other_expenses || 0,
+          custom_expenses: item.custom_expenses || []
         }
       })
 
@@ -724,16 +742,33 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
     //   calculate total_expenses across ALL lots
     const totalExpenses = updatedCartProducts.reduce(
       (acc, it) => {
+        // Aggregate custom expenses differently since it's an array
+        const itCustomExpenses = it.custom_expenses || []
+        const currentCustomExpenses = acc.custom_expenses || []
+        
+        // Merge custom expenses by name
+        const mergedCustomExpenses = [...currentCustomExpenses]
+        
+        itCustomExpenses.forEach(exp => {
+            const existingExp = mergedCustomExpenses.find(e => e.name === exp.name)
+            if (existingExp) {
+                existingExp.amount = Number((existingExp.amount + exp.amount).toFixed(2))
+            } else {
+                mergedCustomExpenses.push({ name: exp.name, amount: exp.amount })
+            }
+        })
+
         return {
           labour: Number((acc.labour + (it.labour || 0)).toFixed(2)),
           transportation: Number((acc.transportation + (it.transportation || 0)).toFixed(2)),
           van_vara: Number((acc.van_vara + (it.van_vara || 0)).toFixed(2)),
           moshjid: Number((acc.moshjid + (it.moshjid || 0)).toFixed(2)),
           trading_post: Number((acc.trading_post + (it.trading_post || 0)).toFixed(2)),
-          other_expenses: Number((acc.other_expenses + (it.other_expenses || 0)).toFixed(2))
+          other_expenses: Number((acc.other_expenses + (it.other_expenses || 0)).toFixed(2)),
+          custom_expenses: mergedCustomExpenses
         }
       },
-      { labour: 0, transportation: 0, van_vara: 0, moshjid: 0, trading_post: 0, other_expenses: 0 }
+      { labour: 0, transportation: 0, van_vara: 0, moshjid: 0, trading_post: 0, other_expenses: 0, custom_expenses: [] }
     )
 
     //  build final payload exactly in the requested shape
@@ -745,7 +780,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
       total_expenses: totalExpenses
     }
 
-    // console.log('Purchase payload:', payload)
+    console.log('Purchase payload:', payload)
 
     try {
       //  submit via server action createPurchase
@@ -1023,6 +1058,55 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                     <option value='each'>Each</option>
                   </select>
                 </div>
+              </div>
+
+               {/* Custom Expenses */}
+              <div className='mt-2'>
+                <div className='flex items-center justify-between mb-2'>
+                  <h3 className='text-sm font-medium'>Other Expenses</h3>
+                  <button
+                    type='button'
+                    onClick={handleAddCustomExpense}
+                     className='flex items-center gap-1 text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-100'
+                  >
+                    <FaPlus size={10} /> Add Expense
+                  </button>
+                </div>
+                
+                {customExpenses.map((expense, index) => (
+                  <div key={expense.id} className='flex gap-2 mb-2 items-center'>
+                    <input
+                      type='text'
+                      placeholder='Expense Name'
+                      value={expense.name}
+                      onChange={e => handleCustomExpenseChange(expense.id, 'name', e.target.value)}
+                      className='flex-1 px-3 py-2 border border-gray-300 rounded text-sm w-1/3'
+                    />
+                    <input
+                        type='number'
+                        placeholder='Amount'
+                        value={expense.amount}
+                        onChange={e => handleCustomExpenseChange(expense.id, 'amount', e.target.value)}
+                         className='w-1/4 px-3 py-2 border border-gray-300 rounded text-sm'
+                    />
+                     <select
+                        value={expense.type}
+                        onChange={e => handleCustomExpenseChange(expense.id, 'type', e.target.value)}
+                         className='w-1/4 px-3 py-2 border border-gray-300 focus:outline-none rounded text-sm'
+                      >
+                        <option value='divided'>Divided</option>
+                        <option value='each'>Each</option>
+                      </select>
+                      
+                      <button
+                        type='button'
+                        onClick={() => handleRemoveCustomExpense(expense.id)}
+                        className='text-red-500 hover:text-red-700 p-2'
+                      >
+                          <FaTrash size={14} />
+                      </button>
+                  </div>
+                ))}
               </div>
 
               <button

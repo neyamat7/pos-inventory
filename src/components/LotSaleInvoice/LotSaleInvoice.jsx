@@ -3,7 +3,7 @@
 const LotSaleInvoice = ({ lotSaleData }) => {
   if (!lotSaleData) return null
 
-  // console.log('lotSaleData', lotSaleData)
+  console.log('lotSaleData', lotSaleData)
 
   // Determine which columns to show based on data
   const hasDiscount = lotSaleData.sales?.some(sale => (sale.discount_Kg || 0) > 0) || false
@@ -22,7 +22,8 @@ const LotSaleInvoice = ({ lotSaleData }) => {
 
   // Filter expenses to show only non-zero values
   const expenses = lotSaleData.lot_expenses
-  const expenseItems = expenses ? [
+  
+  const fixedExpenses = expenses ? [
     { label: 'পরিবহন', value: expenses.transportation, key: 'transportation' },
     { label: 'লেবার', value: expenses.labour, key: 'labour' },
     { label: 'অন্যান্য', value: expenses.other_expenses, key: 'other_expenses' },
@@ -30,7 +31,15 @@ const LotSaleInvoice = ({ lotSaleData }) => {
     { label: 'গদিঘর', value: expenses.trading_post, key: 'trading_post' },
     { label: 'মসজিদ', value: expenses.moshjid, key: 'moshjid' },
     { label: 'অতিরিক্ত ডিসকাউন্ট', value: expenses.extra_discount, key: 'extra_discount' }
-  ].filter(item => (item.value || 0) > 0) : []
+  ] : []
+
+  const customExpenses = expenses?.custom_expenses?.map((item, index) => ({
+    label: item.name,
+    value: item.amount,
+    key: `custom_${index}`
+  })) || []
+
+  const expenseItems = [...fixedExpenses, ...customExpenses].filter(item => (item.value || 0) > 0)
 
   // Calculate column count for empty state
   const columnCount = 2 + (hasKg ? 1 : 0) + (hasBox ? 1 : 0) + (hasPiece ? 1 : 0) + (hasDiscount ? 1 : 0) + (hasCrate ? 1 : 0)

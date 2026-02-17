@@ -1,44 +1,39 @@
 'use client'
 
 // React Imports
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 // MUI Imports
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import TablePagination from '@mui/material/TablePagination'
 import MenuItem from '@mui/material/MenuItem'
+import TablePagination from '@mui/material/TablePagination'
 
 // Third-party Imports
-import classnames from 'classnames'
-import Swal from 'sweetalert2'
-import { rankItem } from '@tanstack/match-sorter-utils'
 import {
   flexRender,
   getCoreRowModel,
-  useReactTable,
-  getFilteredRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFacetedMinMaxValues,
-  getSortedRowModel
+  getSortedRowModel,
+  useReactTable
 } from '@tanstack/react-table'
+import classnames from 'classnames'
+import Swal from 'sweetalert2'
 
 // Component Imports
 import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material'
 
-import CustomTextField from '@core/components/mui/TextField'
-import TablePaginationComponent from '@components/TablePaginationComponent'
 import OptionMenu from '@/@core/components/option-menu'
+import TablePaginationComponent from '@components/TablePaginationComponent'
+import CustomTextField from '@core/components/mui/TextField'
 
 // import LotInvoicePrintHandler from './LotInvoicePrintHandler'
 
 // Util Imports
-import tableStyles from '@core/styles/table.module.css'
 import { adjustStock, getLotSaleSummary, updateLotStatus } from '@/actions/lotActions'
-import { showSuccess, showError } from '@/utils/toastUtils'
 import LotInvoicePrintHandler from '@/components/LotSaleInvoice/LotInvoicePrintHandler'
 import TableSkeleton from '@/components/TableSkeleton'
+import { showError, showSuccess } from '@/utils/toastUtils'
+import tableStyles from '@core/styles/table.module.css'
 
 const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...props }) => {
   const [value, setValue] = useState(initialValue)
@@ -598,6 +593,12 @@ const AllLotListTable = ({
                         </p>
                       </div>
                     )}
+                    {lotSaleData.lot_expenses.custom_expenses?.map((exp, index) => (
+                      <div key={index} className='p-3 bg-blue-50 rounded-lg border border-blue-200'>
+                        <p className='text-xs font-medium text-blue-600 mb-1'>{exp.name}</p>
+                        <p className='text-lg font-semibold text-blue-700'>৳{exp.amount}</p>
+                      </div>
+                    ))}
                     {lotSaleData.lot_expenses.extra_expense > 0 && (
                       <div className='p-3 bg-red-50 rounded-lg border border-red-200'>
                         <p className='text-xs font-medium text-red-600 mb-1'>Extra Expense</p>
