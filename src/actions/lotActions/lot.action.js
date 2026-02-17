@@ -171,3 +171,24 @@ export async function updateLotExtraExpense(lotId, data) {
     }
   }
 }
+
+export async function deleteLot(lotId) {
+  try {
+    const response = await api.delete(`/inventoryLots/${lotId}`)
+    
+    revalidatePath('/apps/stockList/lot')
+
+    return {
+      success: true,
+      data: response.data,
+      message: 'Lot deleted successfully'
+    }
+  } catch (error) {
+    console.error('Delete lot error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to delete lot'
+    }
+  }
+}

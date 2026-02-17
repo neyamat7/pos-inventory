@@ -82,3 +82,22 @@ export async function updateProduct(productId, productData) {
     }
   }
 }
+
+export async function deleteProduct(productId) {
+  try {
+    const response = await api.delete(`/products/delete/${productId}`)
+
+    return {
+      success: true,
+      data: response,
+      message: 'Product deleted successfully'
+    }
+  } catch (error) {
+    console.error('Delete product error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to delete product'
+    }
+  }
+}

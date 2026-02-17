@@ -683,14 +683,26 @@ const LotDetailsModal = ({ open, onClose, lot, lotSaleData, loadingSaleData, onP
                     ${lot?.expenses?.labour?.toLocaleString() || 0}
                   </Typography>
                 </Grid>
-                <Grid size={{ xs: 6 }}>
-                  <Typography variant='body2' color='text.secondary'>
-                    Other Expenses
-                  </Typography>
-                  <Typography variant='body1' fontWeight='600'>
-                    ${lot?.expenses?.other_expenses?.toLocaleString() || 0}
-                  </Typography>
-                </Grid>
+                {lot?.expenses?.other_expenses > 0 && (
+                  <Grid size={{ xs: 6 }}>
+                    <Typography variant='body2' color='text.secondary'>
+                      Other Expenses
+                    </Typography>
+                    <Typography variant='body1' fontWeight='600'>
+                      ${lot?.expenses?.other_expenses?.toLocaleString() || 0}
+                    </Typography>
+                  </Grid>
+                )}
+                {lot?.expenses?.custom_expenses?.map((exp, index) => (
+                  <Grid size={{ xs: 6 }} key={index}>
+                    <Typography variant='body2' color='text.secondary'>
+                      {exp.name}
+                    </Typography>
+                    <Typography variant='body1' fontWeight='600'>
+                      ${exp.amount?.toLocaleString() || 0}
+                    </Typography>
+                  </Grid>
+                ))}
                 <Grid size={{ xs: 6 }}>
                   <Typography variant='body2' color='text.secondary'>
                     Total Expenses

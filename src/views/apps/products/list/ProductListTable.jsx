@@ -5,11 +5,11 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 
 // MUI Imports
+import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardHeader from '@mui/material/CardHeader'
-import Button from '@mui/material/Button'
-import Chip from '@mui/material/Chip'
 import Checkbox from '@mui/material/Checkbox'
+import Chip from '@mui/material/Chip'
 import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
 import MenuItem from '@mui/material/MenuItem'
@@ -17,29 +17,30 @@ import TablePagination from '@mui/material/TablePagination'
 import Typography from '@mui/material/Typography'
 
 // Third-party Imports
-import classnames from 'classnames'
 import { rankItem } from '@tanstack/match-sorter-utils'
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
-  useReactTable,
-  getFilteredRowModel,
+  getFacetedMinMaxValues,
   getFacetedRowModel,
   getFacetedUniqueValues,
-  getFacetedMinMaxValues,
-  getSortedRowModel
+  getFilteredRowModel,
+  getSortedRowModel,
+  useReactTable
 } from '@tanstack/react-table'
+import classnames from 'classnames'
 
-import TableFilters from './TableFilters'
-import CustomTextField from '@core/components/mui/TextField'
-import TablePaginationComponent from '@components/TablePaginationComponent'
-import ProductViewModal from './ProductViewModal'
 import TableSkeleton from '@/components/TableSkeleton'
+import TablePaginationComponent from '@components/TablePaginationComponent'
+import CustomTextField from '@core/components/mui/TextField'
+import ProductViewModal from './ProductViewModal'
 
 // Style Imports
-import tableStyles from '@core/styles/table.module.css'
+import { deleteProduct } from '@/actions/productActions'
 import { getImageUrl } from '@/utils/getImageUrl'
+import tableStyles from '@core/styles/table.module.css'
+import Swal from 'sweetalert2'
 
 const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value)
@@ -82,6 +83,30 @@ const ProductListTable = ({ productData, paginationData, loading, onPageChange, 
       setFilteredData(productData)
     }
   }, [productData])
+
+  const handleDeleteProduct = async (id) => { 
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    })
+
+    if (result.isConfirmed) {
+      const response = await deleteProduct(id)
+
+      if (response.success) {
+        setData(prevData => prevData.filter(item => item._id !== id))
+        setFilteredData(prevData => prevData.filter(item => item._id !== id))
+        Swal.fire('Deleted!', response.message, 'success')
+      } else {
+        Swal.fire('Error!', response.error, 'error')
+      }
+    }
+  }
 
   const columns = useMemo(
     () => [
@@ -187,6 +212,9 @@ const ProductListTable = ({ productData, paginationData, loading, onPageChange, 
                 <i className='tabler-edit text-textSecondary' />
               </IconButton>
             </Link>
+            <IconButton aria-label='Delete' color='error' onClick={() => handleDeleteProduct(row.original._id)}>
+              <i className='tabler-trash' />
+            </IconButton>
           </div>
         ),
         enableSorting: false

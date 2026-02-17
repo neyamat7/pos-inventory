@@ -29,7 +29,7 @@ import CustomTextField from '@core/components/mui/TextField'
 // import LotInvoicePrintHandler from './LotInvoicePrintHandler'
 
 // Util Imports
-import { adjustStock, getLotSaleSummary, updateLotStatus } from '@/actions/lotActions'
+import { adjustStock, deleteLot, getLotSaleSummary, updateLotStatus } from '@/actions/lotActions'
 import LotInvoicePrintHandler from '@/components/LotSaleInvoice/LotInvoicePrintHandler'
 import TableSkeleton from '@/components/TableSkeleton'
 import { showError, showSuccess } from '@/utils/toastUtils'
@@ -131,6 +131,33 @@ const AllLotListTable = ({
     } catch (error) {
       setData(prevData => prevData.map(item => (item._id === lotId ? { ...item, status: originalStatus } : item)))
       Swal.fire('Error!', 'Failed to update lot status', 'error')
+    }
+  }
+
+  const handleDeleteLot = async lotId => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this! This will attempt to restore supplier crate balances.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    })
+
+    if (result.isConfirmed) {
+      try {
+        const response = await deleteLot(lotId)
+        
+        if (response.success) {
+          setData(prevData => prevData.filter(item => item._id !== lotId))
+          Swal.fire('Deleted!', 'Lot has been deleted.', 'success')
+        } else {
+          Swal.fire('Error!', response.error || 'Failed to delete lot.', 'error')
+        }
+      } catch (error) {
+         Swal.fire('Error!', 'Something went wrong.', 'error')
+      }
     }
   }
 
@@ -317,7 +344,6 @@ const AllLotListTable = ({
                   className: 'flex items-center gap-2'
                 }
               },
-
               {
                 text: 'Adjust Stock',
                 icon: 'tabler-edit',
@@ -327,6 +353,15 @@ const AllLotListTable = ({
                     setAdjustStockOpen(true)
                   },
                   className: 'flex items-center gap-2'
+                }
+              },
+
+              {
+                text: 'Delete',
+                icon: 'tabler-trash',
+                menuItemProps: {
+                  onClick: () => handleDeleteLot(row.original._id),
+                  className: 'flex items-center gap-2 text-red-500 hover:bg-red-50'
                 }
               }
             ]}
