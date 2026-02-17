@@ -2,6 +2,7 @@
 
 // React Imports
 import { useEffect, useMemo, useState } from 'react'
+import ListPrintHandler from '@/components/prints/ListPrintHandler'
 
 // Next Imports
 import Link from 'next/link'
@@ -110,6 +111,10 @@ const SupplierListTable = ({
   searchValue = '',
   onSearchChange
 }) => {
+
+ 
+
+
   const getCrateSummary = crateInfo => {
     if (!crateInfo) return '—'
 
@@ -134,11 +139,15 @@ const SupplierListTable = ({
     return summary.length > 0 ? summary.join(' | ') : 'No crates'
   }
 
+
+
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
   const [data, setData] = useState(supplierData)
   const [globalFilter, setGlobalFilter] = useState('')
+  const [printData, setPrintData] = useState([])
+  const [triggerPrint, setTriggerPrint] = useState(false)
 
   // For modals
   const [openBalanceModal, setOpenBalanceModal] = useState(false)
@@ -492,6 +501,21 @@ const SupplierListTable = ({
             </CustomTextField>
 
             <Button
+              variant='tonal'
+              color='secondary'
+              className='max-sm:is-full'
+              startIcon={<i className='tabler-printer' />}
+              disabled={Object.keys(rowSelection).length === 0 || isLoading}
+              onClick={() => {
+                const selectedRows = table.getSelectedRowModel().rows.map(row => row.original)
+                setPrintData(selectedRows)
+                setTriggerPrint(true)
+              }}
+            >
+              Print
+            </Button>
+
+            <Button
               variant='contained'
               color='primary'
               className='max-sm:is-full'
@@ -578,6 +602,13 @@ const SupplierListTable = ({
           }}
         />
       </Card>
+      <ListPrintHandler
+        data={printData}
+        type='supplier'
+        triggerPrint={triggerPrint}
+        onPrintComplete={() => setTriggerPrint(false)}
+      />
+
       <AddSupplierDrawer
         open={customerUserOpen}
         handleClose={() => setCustomerUserOpen(!customerUserOpen)}

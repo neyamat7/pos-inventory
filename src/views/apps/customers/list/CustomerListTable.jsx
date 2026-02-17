@@ -1,6 +1,7 @@
 'use client'
 
 // React Imports
+import ListPrintHandler from '@/components/prints/ListPrintHandler'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 // MUI Imports
@@ -99,11 +100,14 @@ const CustomerListTable = ({
   refreshData,
   searchValue = ''
 }) => {
+
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
   const [data, setData] = useState([])
   const [globalFilter, setGlobalFilter] = useState('')
+  const [printData, setPrintData] = useState([])
+  const [triggerPrint, setTriggerPrint] = useState(false)
   
   // Ref to maintain input focus
   const searchInputRef = useRef(null)
@@ -501,6 +505,21 @@ const CustomerListTable = ({
             </CustomTextField>
 
             <Button
+              variant='tonal'
+              color='secondary'
+              className='max-sm:is-full'
+              startIcon={<i className='tabler-printer' />}
+              disabled={Object.keys(rowSelection).length === 0 || isLoading}
+              onClick={() => {
+                const selectedRows = table.getSelectedRowModel().rows.map(row => row.original)
+                setPrintData(selectedRows)
+                setTriggerPrint(true)
+              }}
+            >
+              Print
+            </Button>
+
+            <Button
               variant='contained'
               color='primary'
               className='max-sm:is-full'
@@ -597,6 +616,12 @@ const CustomerListTable = ({
         refreshData={refreshData}
       />
 
+      <ListPrintHandler
+        data={printData}
+        type='customer'
+        triggerPrint={triggerPrint}
+        onPrintComplete={() => setTriggerPrint(false)}
+      />
     
 
       {/* Add Balance Modal */}
