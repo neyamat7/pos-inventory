@@ -113,7 +113,7 @@ const UserListTable = ({ userData, paginationData, loading, onPageChange, onPage
           return (
             <div className='flex items-center gap-4'>
               <img
-                src={getImageUrl(row.original.image)}
+                src={getImageUrl(row.original.image) || '/images/avatars/default-avatar.jpg'}
                 alt={row.original.name}
                 className='w-10 h-10 rounded-full object-cover'
 

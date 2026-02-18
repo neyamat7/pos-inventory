@@ -1,17 +1,17 @@
 'use client'
 
-import Dialog from '@mui/material/Dialog'
-import DialogTitle from '@mui/material/DialogTitle'
-import DialogContent from '@mui/material/DialogContent'
-import DialogActions from '@mui/material/DialogActions'
-import Button from '@mui/material/Button'
-import Typography from '@mui/material/Typography'
-import Divider from '@mui/material/Divider'
-import Chip from '@mui/material/Chip'
 import Box from '@mui/material/Box'
-import Grid from '@mui/material/Grid2'
+import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
+import Chip from '@mui/material/Chip'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogTitle from '@mui/material/DialogTitle'
+import Divider from '@mui/material/Divider'
+import Grid from '@mui/material/Grid2'
+import Typography from '@mui/material/Typography'
 
 import { getImageUrl } from '@/utils/getImageUrl'
 
@@ -31,11 +31,11 @@ const ProductViewModal = ({ product, onClose }) => {
             <Card className='rounded-xl shadow-lg overflow-hidden'>
               <Box className='flex justify-center p-6 bg-gray-50'>
                 <img
-                  src={getImageUrl(product.productImage)}
+                  src={getImageUrl(product.productImage) || '/images/product-fallback.jpg'}
                   alt={product.productName}
                   className='rounded-lg w-48 h-48 object-cover shadow-md'
                   onError={e => {
-                    e.target.src = '/images/placeholder-product.png'
+                    e.target.src = '/images/product-fallback.jpg'
                   }}
                 />
               </Box>

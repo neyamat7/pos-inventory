@@ -133,7 +133,7 @@ const ProductListTable = ({ productData, paginationData, loading, onPageChange, 
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
             <img
-              src={getImageUrl(row.original.productImage)}
+              src={getImageUrl(row.original.productImage) || '/images/product-fallback.jpg'}
               width={38}
               height={38}
               className='rounded bg-actionHover object-cover'
