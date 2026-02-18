@@ -61,7 +61,7 @@ const LotSaleInvoice = ({ lotSaleData }) => {
       <div style={{ marginBottom: '8px' }}>
         <div style={{ fontSize: '11px', marginBottom: '2px' }}>লট বিক্রয় বিবরণ</div>
         <div style={{ fontSize: '9px', marginBottom: '1px' }}>Lot: {lotSaleData.lot_name || 'N/A'}</div>
-        <div style={{ fontSize: '9px', marginBottom: '1px' }}>সাপ্লাইয়ার: {lotSaleData.supplier_name || 'N/A'}</div>
+        <div style={{ fontSize: '9px', marginBottom: '1px' }}>সাপ্লায়ার: {lotSaleData.supplier_name || 'N/A'}</div>
         <div style={{ fontSize: '9px' }}>তারিখ: {new Date().toLocaleDateString('bn-BD')}</div>
       </div>
 

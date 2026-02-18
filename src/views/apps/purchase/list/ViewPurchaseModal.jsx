@@ -1,17 +1,16 @@
-import Dialog from '@mui/material/Dialog'
-import DialogTitle from '@mui/material/DialogTitle'
-import DialogContent from '@mui/material/DialogContent'
-import DialogActions from '@mui/material/DialogActions'
-import Button from '@mui/material/Button'
-import Typography from '@mui/material/Typography'
-import Grid from '@mui/material/Grid2'
-import Divider from '@mui/material/Divider'
 import Box from '@mui/material/Box'
-import Paper from '@mui/material/Paper'
-import Chip from '@mui/material/Chip'
-import { styled } from '@mui/material/styles'
+import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
+import Chip from '@mui/material/Chip'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogTitle from '@mui/material/DialogTitle'
+import Divider from '@mui/material/Divider'
+import Grid from '@mui/material/Grid2'
+import { styled } from '@mui/material/styles'
+import Typography from '@mui/material/Typography'
 
 const Label = styled(Typography)(({ theme }) => ({
   fontWeight: 600,
@@ -50,10 +49,18 @@ const ViewPurchaseModal = ({ open, handleClose, data }) => {
     })
   }
 
-  const calculateTotalExpenses = expenses => {
-    if (!expenses) return 0
+  const calculateTotalExpenses = (expenses, customExpenses = []) => {
+    let total = 0
+    
+    if (expenses) {
+      total += Object.values(expenses).reduce((sum, val) => sum + (Number(val) || 0), 0)
+    }
 
-    return Object.values(expenses).reduce((sum, val) => sum + (Number(val) || 0), 0)
+    if (customExpenses && customExpenses.length > 0) {
+      total += customExpenses.reduce((sum, item) => sum + (Number(item.cost) || 0), 0)
+    }
+
+    return total
   }
 
   const getSupplierName = () => {
@@ -108,24 +115,66 @@ const ViewPurchaseModal = ({ open, handleClose, data }) => {
           </Card>
 
           {/* Expenses Summary */}
-          {data.total_expenses && (
+          {(data.total_expenses || data.items?.some(item => item.lots?.some(lot => lot.expenses?.custom_expenses?.length > 0))) && (
             <>
               <SectionTitle component='div'>Expenses Summary</SectionTitle>
               <Card sx={{ mb: 3 }}>
                 <CardContent>
                   <Grid container spacing={2}>
-                    {Object.entries(data.total_expenses).map(([key, value]) => (
+                    {/* Standard Expenses */}
+                    {data.total_expenses && Object.entries(data.total_expenses).map(([key, value]) => {
+                       if (key === 'custom_expenses' || key === '_id') return null
+                       return (
                       <Grid key={key} size={{ xs: 6, sm: 4, md: 2 }}>
                         <Label>{key.replace(/_/g, ' ')}</Label>
                         <Value component='div'>৳{Number(value).toLocaleString()}</Value>
                       </Grid>
+                    )})}
+
+                    {/* Custom Expenses (aggregated from lots if not at root) */}
+                    {/* Check if root custom_expenses exists, otherwise map lots */}
+                    {data.custom_expenses?.map((expense, index) => (
+                      <Grid key={`custom-root-${index}`} size={{ xs: 6, sm: 4, md: 2 }}>
+                        <Label>{expense.name}</Label>
+                        <Value component='div'>৳{Number(expense.amount).toLocaleString()}</Value>
+                      </Grid>
                     ))}
+                    
+                    {/* Fallback: If no root custom_expenses, show from lots */}
+                    {!data.custom_expenses && data.items?.map(item => 
+                      item.lots?.map(lot => 
+                        lot.expenses?.custom_expenses?.map((expense, idx) => (
+                           <Grid key={`custom-lot-${lot._id}-${idx}`} size={{ xs: 6, sm: 4, md: 2 }}>
+                            <Label>{expense.name} (Lot)</Label>
+                            <Value component='div'>৳{Number(expense.amount).toLocaleString()}</Value>
+                          </Grid>
+                        ))
+                      )
+                    )}
+
                     <Grid size={{ xs: 12 }}>
                       <Divider sx={{ my: 1 }} />
                       <Box display='flex' justifyContent='space-between'>
                         <Label>Total Expenses</Label>
                         <Typography variant='h6' fontWeight={700} component='div'>
-                          ৳{calculateTotalExpenses(data.total_expenses).toLocaleString()}
+                          ৳{(() => {
+                            let total = calculateTotalExpenses(data.total_expenses);
+                            // Add custom expenses from root
+                            if (data.custom_expenses) {
+                              total += data.custom_expenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+                            } 
+                            // Or aggregate from lots if not at root
+                            else if (data.items) {
+                               data.items.forEach(item => {
+                                 item.lots?.forEach(lot => {
+                                   if (lot.expenses?.custom_expenses) {
+                                     total += lot.expenses.custom_expenses.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0);
+                                   }
+                                 })
+                               })
+                            }
+                            return total.toLocaleString();
+                          })()}
                         </Typography>
                       </Box>
                     </Grid>
@@ -182,11 +231,26 @@ const ViewPurchaseModal = ({ open, handleClose, data }) => {
                           Lot Expenses:
                         </Typography>
                         <Grid container spacing={1}>
-                          {Object.entries(lot.expenses).map(([expenseKey, expenseValue]) => (
-                            <Grid key={expenseKey} size={{ xs: 6, sm: 4, md: 2 }}>
-                              <Label variant='caption'>{expenseKey.replace(/_/g, ' ')}</Label>
+                          {/* Standard Expenses */}
+                          {Object.entries(lot.expenses).map(([expenseKey, expenseValue]) => {
+                            if (expenseKey === 'custom_expenses' || expenseKey === '_id') return null
+                            
+                            return (
+                              <Grid key={expenseKey} size={{ xs: 6, sm: 4, md: 2 }}>
+                                <Label variant='caption'>{expenseKey.replace(/_/g, ' ')}</Label>
+                                <Typography variant='body2' component='div'>
+                                  ৳{Number(expenseValue).toLocaleString()}
+                                </Typography>
+                              </Grid>
+                            )
+                          })}
+
+                          {/* Custom Expenses */}
+                          {lot.expenses.custom_expenses?.map((customExpense, idx) => (
+                            <Grid key={`custom-${idx}`} size={{ xs: 6, sm: 4, md: 2 }}>
+                              <Label variant='caption'>{customExpense.name}</Label>
                               <Typography variant='body2' component='div'>
-                                ৳{Number(expenseValue).toLocaleString()}
+                                ৳{Number(customExpense.amount).toLocaleString()}
                               </Typography>
                             </Grid>
                           ))}
