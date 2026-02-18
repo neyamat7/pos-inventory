@@ -7,7 +7,6 @@ import Dialog from '@mui/material/Dialog'
 import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogTitle from '@mui/material/DialogTitle'
-import Divider from '@mui/material/Divider'
 import Grid from '@mui/material/Grid2'
 import { styled } from '@mui/material/styles'
 import Typography from '@mui/material/Typography'
@@ -113,76 +112,6 @@ const ViewPurchaseModal = ({ open, handleClose, data }) => {
               </Grid>
             </CardContent>
           </Card>
-
-          {/* Expenses Summary */}
-          {(data.total_expenses || data.items?.some(item => item.lots?.some(lot => lot.expenses?.custom_expenses?.length > 0))) && (
-            <>
-              <SectionTitle component='div'>Expenses Summary</SectionTitle>
-              <Card sx={{ mb: 3 }}>
-                <CardContent>
-                  <Grid container spacing={2}>
-                    {/* Standard Expenses */}
-                    {data.total_expenses && Object.entries(data.total_expenses).map(([key, value]) => {
-                       if (key === 'custom_expenses' || key === '_id') return null
-                       return (
-                      <Grid key={key} size={{ xs: 6, sm: 4, md: 2 }}>
-                        <Label>{key.replace(/_/g, ' ')}</Label>
-                        <Value component='div'>৳{Number(value).toLocaleString()}</Value>
-                      </Grid>
-                    )})}
-
-                    {/* Custom Expenses (aggregated from lots if not at root) */}
-                    {/* Check if root custom_expenses exists, otherwise map lots */}
-                    {data.custom_expenses?.map((expense, index) => (
-                      <Grid key={`custom-root-${index}`} size={{ xs: 6, sm: 4, md: 2 }}>
-                        <Label>{expense.name}</Label>
-                        <Value component='div'>৳{Number(expense.amount).toLocaleString()}</Value>
-                      </Grid>
-                    ))}
-                    
-                    {/* Fallback: If no root custom_expenses, show from lots */}
-                    {!data.custom_expenses && data.items?.map(item => 
-                      item.lots?.map(lot => 
-                        lot.expenses?.custom_expenses?.map((expense, idx) => (
-                           <Grid key={`custom-lot-${lot._id}-${idx}`} size={{ xs: 6, sm: 4, md: 2 }}>
-                            <Label>{expense.name} (Lot)</Label>
-                            <Value component='div'>৳{Number(expense.amount).toLocaleString()}</Value>
-                          </Grid>
-                        ))
-                      )
-                    )}
-
-                    <Grid size={{ xs: 12 }}>
-                      <Divider sx={{ my: 1 }} />
-                      <Box display='flex' justifyContent='space-between'>
-                        <Label>Total Expenses</Label>
-                        <Typography variant='h6' fontWeight={700} component='div'>
-                          ৳{(() => {
-                            let total = calculateTotalExpenses(data.total_expenses);
-                            // Add custom expenses from root
-                            if (data.custom_expenses) {
-                              total += data.custom_expenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-                            } 
-                            // Or aggregate from lots if not at root
-                            else if (data.items) {
-                               data.items.forEach(item => {
-                                 item.lots?.forEach(lot => {
-                                   if (lot.expenses?.custom_expenses) {
-                                     total += lot.expenses.custom_expenses.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0);
-                                   }
-                                 })
-                               })
-                            }
-                            return total.toLocaleString();
-                          })()}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
-            </>
-          )}
 
           {/* Items and Lots */}
           <SectionTitle component='div'>Items & Lots</SectionTitle>
