@@ -73,7 +73,7 @@ const CrateTransactionInvoice = ({ transactionData }) => {
       {/* Party Info */}
       <div style={{ marginBottom: '6px' }}>
         <div style={{ fontSize: '9px', marginBottom: '1px' }}>
-          {isCustomer ? 'ক্রেতা' : 'সাপ্লাইয়ার'}: {name}
+          {isCustomer ? 'ক্রেতা' : 'সাপ্লায়ার'}: {name}
         </div>
         <div style={{ fontSize: '8px', marginBottom: '1px' }}>ফোন: {phone}</div>
         <div style={{ fontSize: '8px', marginBottom: '2px' }}>ঠিকানা: {location}</div>
@@ -185,7 +185,7 @@ const CrateTransactionInvoice = ({ transactionData }) => {
           }}
         >
           <div style={{ marginBottom: '4px', fontSize: '9px', textAlign: 'center', fontWeight: 'bold' }}>
-            {isCustomer ? 'ক্রেতার বাকি ক্যারেট' : 'সাপ্লাইয়ারকে দিতে হবে'}
+            {isCustomer ? 'ক্রেতার বাকি ক্যারেট' : 'সাপ্লায়ারকে দিতে হবে'}
           </div>
           
           {dueType1 > 0 && (
