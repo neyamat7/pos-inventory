@@ -34,18 +34,34 @@ import TablePaginationComponent from '@components/TablePaginationComponent'
 import tableStyles from '@core/styles/table.module.css'
 
 import OptionMenu from '@/@core/components/option-menu'
-import { getLotSaleSummary, getUnpaidStockOutLotsBySupplier, updateLotExtraExpense } from '@/actions/lotActions'
+import {
+  deleteLotReceipt,
+  getLotSaleSummary,
+  getUnpaidStockOutLotsBySupplier,
+  updateLotExtraExpense,
+  uploadLotReceipt
+} from '@/actions/lotActions'
 import LotInvoicePrintHandler from '@/components/LotSaleInvoice/LotInvoicePrintHandler'
 import { showError, showSuccess } from '@/utils/toastUtils'
+import Swal from 'sweetalert2'
 import PaymentModal from './PaymentModal'
 
 const columnHelper = createColumnHelper()
 
-const ProductTable = ({ data, summary, pagination, total, onPaginationChange, loading, supplierData, onPaymentSuccess }) => {
-
+const ProductTable = ({
+  data,
+  summary,
+  pagination,
+  total,
+  onPaginationChange,
+  loading,
+  supplierData,
+  onPaymentSuccess
+}) => {
   // console.log('data in supplier lot tab', data)
 
   const router = useRouter()
+  const [localData, setLocalData] = useState(data || [])
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
   const [unpaidLotsData, setUnpaidLotsData] = useState([])
 
@@ -60,6 +76,13 @@ const ProductTable = ({ data, summary, pagination, total, onPaginationChange, lo
 
   const [printTrigger, setPrintTrigger] = useState(false)
   const [printLotData, setPrintLotData] = useState(null)
+
+  const [receiptOpen, setReceiptOpen] = useState(false)
+  const [uploadLoading, setUploadLoading] = useState(false)
+
+  useEffect(() => {
+    setLocalData(data || [])
+  }, [data])
 
   // console.log('data in supplier lot tab', data)
 
@@ -237,6 +260,17 @@ const ProductTable = ({ data, summary, pagination, total, onPaginationChange, lo
                   },
                   className: 'flex items-center'
                 }
+              },
+              {
+                text: 'Manage Receipts',
+                icon: 'tabler-photo',
+                menuItemProps: {
+                  onClick: () => {
+                    setSelectedLot(row.original)
+                    setReceiptOpen(true)
+                  },
+                  className: 'flex items-center'
+                }
               }
             ]}
           />
@@ -246,7 +280,7 @@ const ProductTable = ({ data, summary, pagination, total, onPaginationChange, lo
   ]
 
   const table = useReactTable({
-    data: data || [],
+    data: localData || [],
     columns: stockColumns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -271,9 +305,92 @@ const ProductTable = ({ data, summary, pagination, total, onPaginationChange, lo
     setSelectedLotDetails(null)
   }
 
+  const handleReceiptFileUpload = async e => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    setUploadLoading(true)
+    const formData = new FormData()
+    formData.append('image', file)
+
+    try {
+      const result = await uploadLotReceipt(selectedLot._id, formData)
+      if (result.success) {
+        setLocalData(prev =>
+          prev.map(lot =>
+            lot._id === selectedLot._id ? { ...lot, receiptImages: [...(lot.receiptImages || []), result.data] } : lot
+          )
+        )
+        setSelectedLot(prev => ({ ...prev, receiptImages: [...(prev.receiptImages || []), result.data] }))
+        showSuccess('Receipt uploaded successfully')
+      } else {
+        showError(result.error || 'Upload failed')
+      }
+    } catch (error) {
+      console.error('Upload Error:', error)
+      showError(error.message || 'Something went wrong during upload')
+    } finally {
+      setUploadLoading(false)
+    }
+  }
+
+  const handleReceiptDelete = async imageId => {
+    const confirm = await Swal.fire({
+      title: 'Delete Receipt?',
+      text: 'This image will be permanently removed.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+      customClass: {
+        container: 'my-swal-container'
+      },
+      didOpen: () => {
+        const container = document.querySelector('.my-swal-container')
+        if (container) container.style.zIndex = '9999'
+      }
+    })
+
+    if (confirm.isConfirmed) {
+      try {
+        const result = await deleteLotReceipt(selectedLot._id, imageId)
+        if (result.success) {
+          setLocalData(prev =>
+            prev.map(lot => {
+              if (lot._id === selectedLot._id) {
+                return {
+                  ...lot,
+                  receiptImages: lot.receiptImages.filter(img => {
+                    const id = typeof img === 'object' ? img._id || img.id : img
+                    return id !== imageId
+                  })
+                }
+              }
+              return lot
+            })
+          )
+          setSelectedLot(prev => ({
+            ...prev,
+            receiptImages: prev.receiptImages.filter(img => {
+              const id = typeof img === 'object' ? img._id || img.id : img
+              return id !== imageId
+            })
+          }))
+          showSuccess('Receipt deleted')
+        } else {
+          showError(result.error)
+        }
+      } catch (error) {
+        showError('Failed to delete')
+      }
+    }
+  }
+
   return (
     <>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
+      <Box
+        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}
+      >
         {/* Summary Stats - Only show when summary data is available */}
         {summary && (
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', flex: 1 }}>
@@ -288,7 +405,7 @@ const ProductTable = ({ data, summary, pagination, total, onPaginationChange, lo
                 </Typography>
               </Paper>
             )}
-            
+
             {/* Only show Total Boxes Sold if value > 0 */}
             {summary.totalBoxesSold > 0 && (
               <Paper elevation={2} sx={{ px: 2, py: 1, borderRadius: 2, bgcolor: '#f0fdf4' }}>
@@ -300,7 +417,7 @@ const ProductTable = ({ data, summary, pagination, total, onPaginationChange, lo
                 </Typography>
               </Paper>
             )}
-            
+
             {/* Only show Total Pieces Sold if value > 0 */}
             {summary.totalPiecesSold > 0 && (
               <Paper elevation={2} sx={{ px: 2, py: 1, borderRadius: 2, bgcolor: '#fef3c7' }}>
@@ -312,7 +429,7 @@ const ProductTable = ({ data, summary, pagination, total, onPaginationChange, lo
                 </Typography>
               </Paper>
             )}
-            
+
             {/* Always show Total Sold Amount */}
             <Paper elevation={2} sx={{ px: 2, py: 1, borderRadius: 2, bgcolor: '#fce7f3' }}>
               <Typography variant='caption' color='text.secondary' display='block'>
@@ -322,7 +439,7 @@ const ProductTable = ({ data, summary, pagination, total, onPaginationChange, lo
                 ৳ {summary.totalSoldAmount?.toLocaleString() || 0}
               </Typography>
             </Paper>
-            
+
             {/* Always show Supplier Due */}
             <Paper elevation={2} sx={{ px: 2, py: 1, borderRadius: 2, bgcolor: '#fee2e2' }}>
               <Typography variant='caption' color='text.secondary' display='block'>
@@ -334,7 +451,7 @@ const ProductTable = ({ data, summary, pagination, total, onPaginationChange, lo
             </Paper>
           </Box>
         )}
-        
+
         <div></div>
 
         <Button
@@ -422,7 +539,150 @@ const ProductTable = ({ data, summary, pagination, total, onPaginationChange, lo
         onPrintComplete={handlePrintComplete}
         onPrintError={handlePrintError}
       />
+      <ReceiptModal
+        open={receiptOpen}
+        onClose={() => setReceiptOpen(false)}
+        selectedLot={selectedLot}
+        uploadLoading={uploadLoading}
+        onUpload={handleReceiptFileUpload}
+        onDelete={handleReceiptDelete}
+      />
     </>
+  )
+}
+
+const ReceiptModal = ({ open, onClose, selectedLot, uploadLoading, onUpload, onDelete }) => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth='md'
+      fullWidth
+      PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 20px 50px rgba(0,0,0,0.15)' } }}
+    >
+      <DialogTitle
+        sx={{
+          background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+          color: 'white',
+          p: 3
+        }}
+      >
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-3'>
+            <div className='p-2 bg-white/20 rounded-xl backdrop-blur-md'>
+              <i className='tabler-photo-check text-2xl' />
+            </div>
+            <div>
+              <h3 className='text-xl font-bold mb-0'>Supplier Receipts</h3>
+              <p className='text-sm opacity-80 mb-0'>{selectedLot?.lot_name}</p>
+            </div>
+          </div>
+          <IconButton onClick={onClose} sx={{ color: 'white' }}>
+            <i className='tabler-x' />
+          </IconButton>
+        </div>
+      </DialogTitle>
+
+      <DialogContent sx={{ p: 4, bgcolor: '#fdfdff' }}>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+          {/* Upload Zone */}
+          <div className='flex flex-col gap-4'>
+            <h4 className='font-bold text-gray-700 flex items-center gap-2'>
+              <i className='tabler-cloud-upload text-indigo-500' />
+              Upload New Receipt
+            </h4>
+            <div
+              onClick={() => document.getElementById('receipt-upload-input').click()}
+              className='relative group flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-2xl p-8 hover:border-indigo-500 hover:bg-indigo-50/30 transition-all cursor-pointer bg-white h-full min-h-[200px]'
+            >
+              {uploadLoading ? (
+                <div className='flex flex-col items-center'>
+                  <CircularProgress size={40} sx={{ color: '#6366f1', mb: 2 }} />
+                  <p className='text-indigo-600 font-medium'>Uploading proof...</p>
+                </div>
+              ) : (
+                <>
+                  <div className='w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform'>
+                    <i className='tabler-camera-plus text-3xl text-indigo-600' />
+                  </div>
+                  <p className='text-gray-600 font-medium text-center'>Click or tap to snap or pick a photo</p>
+                  <p className='text-gray-400 text-xs mt-1'>Supports JPG, PNG, WebP (Max 5MB)</p>
+                </>
+              )}
+              <input
+                id='receipt-upload-input'
+                type='file'
+                hidden
+                accept='image/*'
+                onChange={onUpload}
+                disabled={uploadLoading}
+              />
+            </div>
+          </div>
+
+          {/* Gallery Zone */}
+          <div className='flex flex-col gap-4'>
+            <h4 className='font-bold text-gray-700 flex items-center gap-2'>
+              <i className='tabler-files text-purple-500' />
+              Attached Receipts ({selectedLot?.receiptImages?.length || 0})
+            </h4>
+            <div className='grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto p-1'>
+              {selectedLot?.receiptImages?.length > 0 ? (
+                selectedLot.receiptImages.map((img, idx) => (
+                  <div
+                    key={img._id || img.id || idx}
+                    className='relative group aspect-square rounded-xl overflow-hidden border border-gray-200 shadow-sm'
+                  >
+                    <img
+                      src={`${baseUrl}/uploads/${img.filename}`}
+                      alt='Receipt'
+                      className='w-full h-full object-cover group-hover:scale-110 transition-transform duration-500'
+                    />
+                    <div className='absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2'>
+                      <IconButton
+                        size='small'
+                        sx={{
+                          bgcolor: 'white',
+                          '&:hover': { bgcolor: '#fef2f2' },
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                        }}
+                        onClick={e => {
+                          e.stopPropagation()
+                          window.open(`${baseUrl}/uploads/${img.filename}`, '_blank')
+                        }}
+                      >
+                        <i className='tabler-eye text-indigo-600' />
+                      </IconButton>
+                      <IconButton
+                        size='small'
+                        sx={{
+                          bgcolor: '#fee2e2',
+                          '&:hover': { bgcolor: '#fca5a5' },
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                        }}
+                        onClick={e => {
+                          e.stopPropagation()
+                          onDelete(img._id || img.id || img)
+                        }}
+                      >
+                        <i className='tabler-trash text-red-600' />
+                      </IconButton>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className='col-span-2 py-12 flex flex-col items-center justify-center bg-gray-50 rounded-2xl border border-gray-100'>
+                  <i className='tabler-photo-off text-4xl text-gray-300 mb-2' />
+                  <p className='text-gray-400 text-sm'>No receipts attached yet</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 
