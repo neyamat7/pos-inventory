@@ -175,7 +175,7 @@ export async function updateLotExtraExpense(lotId, data) {
 export async function deleteLot(lotId) {
   try {
     const response = await api.delete(`/inventoryLots/${lotId}`)
-    
+
     revalidatePath('/apps/stockList/lot')
 
     return {
@@ -189,6 +189,47 @@ export async function deleteLot(lotId) {
     return {
       success: false,
       error: error.message || 'Failed to delete lot'
+    }
+  }
+}
+
+export async function uploadLotReceipt(lotId, formData) {
+  try {
+    const response = await api.post(`/inventoryLots/${lotId}/receipt`, formData)
+
+    revalidatePath('/apps/stockList/lot')
+
+    return {
+      success: true,
+      data: response.data,
+      message: 'Receipt uploaded successfully'
+    }
+  } catch (error) {
+    console.error('Upload lot receipt error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to upload receipt'
+    }
+  }
+}
+
+export async function deleteLotReceipt(lotId, imageId) {
+  try {
+    await api.delete(`/inventoryLots/${lotId}/receipt/${imageId}`)
+
+    revalidatePath('/apps/stockList/lot')
+
+    return {
+      success: true,
+      message: 'Receipt deleted successfully'
+    }
+  } catch (error) {
+    console.error('Delete lot receipt error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to delete receipt'
     }
   }
 }

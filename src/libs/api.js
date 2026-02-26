@@ -12,8 +12,12 @@ async function api(endpoint, options = {}) {
 
   // console.log('token in api', session)
 
-  const defaultHeaders = {
-    'Content-Type': 'application/json'
+  const isFormData = data instanceof FormData
+
+  const defaultHeaders = {}
+
+  if (!isFormData) {
+    defaultHeaders['Content-Type'] = 'application/json'
   }
 
   if (token) {
@@ -26,7 +30,7 @@ async function api(endpoint, options = {}) {
   }
 
   if (data) {
-    fetchConfig.body = JSON.stringify(data)
+    fetchConfig.body = isFormData ? data : JSON.stringify(data)
   }
 
   try {
