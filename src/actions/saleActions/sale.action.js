@@ -48,3 +48,21 @@ export async function getAllSales({ page = 1, limit = 10, search = '' } = {}) {
     }
   }
 }
+
+export async function deleteSale(saleId) {
+  try {
+    const response = await api.delete(`/sale/${saleId}`)
+
+    return {
+      success: true,
+      message: response.message || 'Sale deleted successfully'
+    }
+  } catch (error) {
+    console.error('Delete sale error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to delete sale'
+    }
+  }
+}

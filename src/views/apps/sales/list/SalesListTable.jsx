@@ -3,17 +3,16 @@ import { useRef, useState } from 'react'
 import { useReactToPrint } from 'react-to-print'
 
 // MUI Imports
+import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import MenuItem from '@mui/material/MenuItem'
-import CircularProgress from '@mui/material/CircularProgress'
-import Dialog from '@mui/material/Dialog'
-import DialogTitle from '@mui/material/DialogTitle'
-import DialogContent from '@mui/material/DialogContent'
-import IconButton from '@mui/material/IconButton'
 import Chip from '@mui/material/Chip'
+import Dialog from '@mui/material/Dialog'
+import DialogContent from '@mui/material/DialogContent'
+import DialogTitle from '@mui/material/DialogTitle'
 import Divider from '@mui/material/Divider'
-import Box from '@mui/material/Box'
+import IconButton from '@mui/material/IconButton'
+import MenuItem from '@mui/material/MenuItem'
 import Typography from '@mui/material/Typography'
 
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
@@ -21,14 +20,15 @@ import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-tabl
 // Component Imports
 import Swal from 'sweetalert2'
 
-import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
+import CustomTextField from '@core/components/mui/TextField'
 
 // Style Imports
+import { deleteSale } from '@/actions/saleActions'
+import TableSkeleton from '@/components/TableSkeleton'
+import { showError, showSuccess } from '@/utils/toastUtils'
 import tableStyles from '@core/styles/table.module.css'
 import SalesListInvoice from './SalesListInvoice'
-import { showError, showSuccess } from '@/utils/toastUtils'
-import TableSkeleton from '@/components/TableSkeleton'
 
 const SalesListTable = ({
   salesData,
@@ -37,12 +37,12 @@ const SalesListTable = ({
   onPageChange,
   onPageSizeChange,
   onSearch,
-  searchTerm
+  searchTerm,
+  onRefresh
 }) => {
   const [rowSelection, setRowSelection] = useState({})
   const [openModal, setOpenModal] = useState(false)
   const [selectedSale, setSelectedSale] = useState(null)
-
 
   // console.log('selectedSale', JSON.stringify(selectedSale))
 
@@ -114,6 +114,37 @@ const SalesListTable = ({
         handlePrint()
       }
     }, 100)
+  }
+
+  const handleDeleteSale = async saleId => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this! All related records (Customer due, Lot stock, Income) will be reverted.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    })
+
+    if (result.isConfirmed) {
+      try {
+        const response = await deleteSale(saleId)
+
+        if (response.success) {
+          showSuccess(response.message)
+
+          if (onRefresh) {
+            onRefresh()
+          }
+        } else {
+          showError(response.error)
+        }
+      } catch (error) {
+        console.error('Delete error:', error)
+        showError('An error occurred while deleting the sale')
+      }
+    }
   }
 
   const columns = [
@@ -211,6 +242,10 @@ const SalesListTable = ({
 
           <IconButton onClick={() => handlePrintInvoice(row.original)} color='success' title='Print Invoice'>
             <i className='tabler-printer text-textPrimary' />
+          </IconButton>
+
+          <IconButton onClick={() => handleDeleteSale(row.original._id)} color='error' title='Delete Sale'>
+            <i className='tabler-trash text-error' />
           </IconButton>
         </div>
       ),
