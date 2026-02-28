@@ -38,6 +38,7 @@ import Swal from 'sweetalert2'
 import TablePaginationComponent from '@components/TablePaginationComponent'
 import CustomAvatar from '@core/components/mui/Avatar'
 import CustomTextField from '@core/components/mui/TextField'
+import GiveDiscountModal from '../GiveDiscountModal'
 import AddCustomerDrawer from './AddCustomerDrawer'
 
 import TableSkeleton from '@/components/TableSkeleton'
@@ -100,7 +101,6 @@ const CustomerListTable = ({
   refreshData,
   searchValue = ''
 }) => {
-
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
@@ -108,13 +108,14 @@ const CustomerListTable = ({
   const [globalFilter, setGlobalFilter] = useState('')
   const [printData, setPrintData] = useState([])
   const [triggerPrint, setTriggerPrint] = useState(false)
-  
+
   // Ref to maintain input focus
   const searchInputRef = useRef(null)
 
   // For modals
   const [openBalanceModal, setOpenBalanceModal] = useState(false)
   const [openCrateModal, setOpenCrateModal] = useState(false)
+  const [openDiscountModal, setOpenDiscountModal] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState(null)
   const [crateForm, setCrateForm] = useState({ type_1: 0, type_1_price: 0, type_2: 0, type_2_price: 0 })
   const [isUpdatingCrate, setIsUpdatingCrate] = useState(false)
@@ -130,9 +131,7 @@ const CustomerListTable = ({
   })
 
   // Use customerData directly - no need to sync to local state
-  const tableData = Array.isArray(customerData) 
-    ? customerData 
-    : customerData?.customers || []
+  const tableData = Array.isArray(customerData) ? customerData : customerData?.customers || []
 
   // Maintain focus on search input after re-renders
   useEffect(() => {
@@ -259,12 +258,11 @@ const CustomerListTable = ({
         id: 'action',
         header: 'ACTION',
         cell: ({ row }) => (
-          <div className='flex items-center'>
+          <div className='flex items-center gap-1'>
             <OptionMenu
               iconButtonProps={{ size: 'medium' }}
               iconClassName='text-textSecondary'
               options={[
-
                 {
                   text: 'Add Balance',
                   icon: 'tabler-coin',
@@ -282,6 +280,18 @@ const CustomerListTable = ({
                       setOpenBalanceModal(true)
                     },
                     className: 'flex items-center'
+                  }
+                },
+                {
+                  text: 'Give Discount',
+                  icon: 'tabler-discount',
+                  menuItemProps: {
+                    onClick: () => {
+                      setSelectedCustomer(row.original)
+                      setOpenDiscountModal(true)
+                    },
+                    className: 'flex items-center text-info',
+                    disabled: (row.original.account_info?.due || 0) <= 0
                   }
                 },
                 {
@@ -329,7 +339,7 @@ const CustomerListTable = ({
                     },
                     className: 'flex items-center text-error'
                   }
-                },
+                }
                 // {
                 //   text: 'Update Crate',
                 //   icon: 'tabler-box',
@@ -622,7 +632,6 @@ const CustomerListTable = ({
         triggerPrint={triggerPrint}
         onPrintComplete={() => setTriggerPrint(false)}
       />
-    
 
       {/* Add Balance Modal */}
       {openBalanceModal &&
@@ -946,6 +955,16 @@ const CustomerListTable = ({
           </div>
         </div>
       )}
+
+      {/* Give Discount Modal */}
+      <GiveDiscountModal
+        open={openDiscountModal}
+        handleClose={() => setOpenDiscountModal(false)}
+        customerId={selectedCustomer?._id}
+        customerName={selectedCustomer?.basic_info?.name}
+        currentDue={selectedCustomer?.account_info?.due || 0}
+        onSave={() => refreshData()}
+      />
     </>
   )
 }

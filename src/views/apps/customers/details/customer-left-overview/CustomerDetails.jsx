@@ -4,15 +4,15 @@
 import { useState } from 'react'
 
 // MUI Imports
+import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Chip from '@mui/material/Chip'
 import Divider from '@mui/material/Divider'
 import Typography from '@mui/material/Typography'
-import Button from '@mui/material/Button'
 
 // Lucide Icons
-import { Wallet, AlertTriangle, Package, ChevronDown, User, Mail, Phone, MapPin, CreditCard } from 'lucide-react'
+import { AlertTriangle, ChevronDown, CreditCard, Mail, MapPin, Package, Phone, Wallet } from 'lucide-react'
 
 // Components
 import CustomAvatar from '@core/components/mui/Avatar'
@@ -25,7 +25,6 @@ const CustomerDetails = ({ customerData }) => {
   const [isCrateHovered, setIsCrateHovered] = useState(false)
   const [crateLocked, setCrateLocked] = useState(false)
   const [open, setOpen] = useState(false)
-  
 
   // console.log('in details', customerData)
 

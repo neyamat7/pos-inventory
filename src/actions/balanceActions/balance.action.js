@@ -29,3 +29,21 @@ export async function getBalanceHistory(id, page = 1, limit = 10, fromDate = '',
     }
   }
 }
+
+export async function applyCustomerDiscount(data) {
+  try {
+    const response = await api.post('/balance/apply-customer-discount', data)
+
+    return {
+      success: true,
+      data: response
+    }
+  } catch (error) {
+    console.error('Apply customer discount error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to apply customer discount'
+    }
+  }
+}

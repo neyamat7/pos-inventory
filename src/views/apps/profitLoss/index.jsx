@@ -84,7 +84,7 @@ export default function ProfitLoss({ suppliers = [] }) {
     limit: 10
   })
 
-  const [activeView, setActiveView] = useState(0) // 0 for Lots, 1 for Discounts
+  const [activeView, setActiveView] = useState(0)
 
   const fetchData = async () => {
     setLoading(true)
