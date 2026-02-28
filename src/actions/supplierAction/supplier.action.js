@@ -164,7 +164,6 @@ export async function getPurchaseBySupplier(supplierId, page = 1, limit = 10, se
 }
 
 export async function addPayment(paymentData) {
-  
   try {
     const response = await api.post('/payment/add', paymentData)
 
@@ -178,6 +177,24 @@ export async function addPayment(paymentData) {
     return {
       success: false,
       error: error.message || 'Failed to add payment'
+    }
+  }
+}
+
+export async function clearSupplierSettlement(settlementData) {
+  try {
+    const response = await api.post('/payment/settlement', settlementData)
+
+    return {
+      success: true,
+      data: response.data
+    }
+  } catch (error) {
+    console.error('Clear settlement error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to clear settlement'
     }
   }
 }
@@ -208,7 +225,6 @@ export async function getSupplierPayments({ supplierId, page = 1, limit = 10, fr
     }
   }
 }
-
 
 export async function getSupplierDueList({ page = 1, limit = 10 } = {}) {
   try {
@@ -245,10 +261,10 @@ export async function getSupplierDueList({ page = 1, limit = 10 } = {}) {
 export async function archiveSupplier(supplierId) {
   try {
     const response = await api.delete(`/suppliers/delete/${supplierId}`)
-    
+
     // Revalidate the supplier list page
     revalidatePath('/apps/suppliers/list')
-    
+
     return {
       success: true,
       data: response,
@@ -256,7 +272,7 @@ export async function archiveSupplier(supplierId) {
     }
   } catch (error) {
     console.error('Archive supplier error:', error)
-    
+
     return {
       success: false,
       error: error.message || 'Failed to archive supplier'

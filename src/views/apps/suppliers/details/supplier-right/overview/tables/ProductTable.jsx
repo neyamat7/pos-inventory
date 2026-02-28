@@ -45,6 +45,7 @@ import LotInvoicePrintHandler from '@/components/LotSaleInvoice/LotInvoicePrintH
 import { showError, showSuccess } from '@/utils/toastUtils'
 import Swal from 'sweetalert2'
 import PaymentModal from './PaymentModal'
+import SettlementModal from './SettlementModal'
 
 const columnHelper = createColumnHelper()
 
@@ -67,6 +68,7 @@ const ProductTable = ({
 
   const [expenseModalOpen, setExpenseModalOpen] = useState(false)
   const [selectedLot, setSelectedLot] = useState(null)
+  const [settlementModalOpen, setSettlementModalOpen] = useState(false)
 
   const [detailsModalOpen, setDetailsModalOpen] = useState(false)
   const [selectedLotDetails, setSelectedLotDetails] = useState(null)
@@ -391,9 +393,29 @@ const ProductTable = ({
       <Box
         sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}
       >
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant='contained'
+            color='success'
+            onClick={() => setSettlementModalOpen(true)}
+            sx={{ textTransform: 'none', fontWeight: 600 }}
+            disabled={supplierData?.account_info?.due <= 0}
+          >
+            Clear All Payment
+          </Button>
+          <Button
+            variant='contained'
+            color='primary'
+            onClick={() => setPaymentModalOpen(true)}
+            sx={{ textTransform: 'none', fontWeight: 600 }}
+          >
+            Clear Payment
+          </Button>
+        </Box>
+
         {/* Summary Stats - Only show when summary data is available */}
         {summary && (
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', flex: 1 }}>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end' }}>
             {/* Only show Total Crates Sold if value > 0 */}
             {summary.totalCratesSold > 0 && (
               <Paper elevation={2} sx={{ px: 2, py: 1, borderRadius: 2, bgcolor: '#f0f9ff' }}>
@@ -451,17 +473,6 @@ const ProductTable = ({
             </Paper>
           </Box>
         )}
-
-        <div></div>
-
-        <Button
-          variant='contained'
-          color='primary'
-          onClick={() => setPaymentModalOpen(true)}
-          sx={{ textTransform: 'none', fontWeight: 600 }}
-        >
-          Clear Payment
-        </Button>
       </Box>
 
       <table className={`${tableStyles.table} border border-gray-200 border-collapse`}>
@@ -515,6 +526,13 @@ const ProductTable = ({
         lotsData={unpaidLotsData}
         supplierId={supplierData?._id}
         onPaymentSuccess={handlePaymentSuccess}
+      />
+
+      <SettlementModal
+        open={settlementModalOpen}
+        onClose={() => setSettlementModalOpen(false)}
+        supplierData={supplierData}
+        onSettlementSuccess={handlePaymentSuccess}
       />
 
       <AddExpenseModal
