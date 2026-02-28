@@ -29,6 +29,7 @@ import {
   deleteLot,
   deleteLotReceipt,
   getLotSaleSummary,
+  updateLotCost,
   updateLotStatus,
   uploadLotReceipt
 } from '@/actions/lotActions'
@@ -63,6 +64,7 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
   const [selectedLot, setSelectedLot] = useState(null)
   const [viewOpen, setViewOpen] = useState(false)
   const [adjustStockOpen, setAdjustStockOpen] = useState(false)
+  const [editCostOpen, setEditCostOpen] = useState(false)
   const [receiptOpen, setReceiptOpen] = useState(false)
   const [adjustLoading, setAdjustLoading] = useState(false)
   const [uploadLoading, setUploadLoading] = useState(false)
@@ -360,6 +362,17 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
                     setReceiptOpen(true)
                   },
                   className: 'flex items-center gap-2'
+                }
+              },
+              {
+                text: 'Edit Cost Price',
+                icon: 'tabler-pencil',
+                menuItemProps: {
+                  onClick: () => {
+                    setSelectedLot(row.original)
+                    setEditCostOpen(true)
+                  },
+                  className: 'flex items-center gap-2 text-indigo-600'
                 }
               },
               {
@@ -1084,6 +1097,96 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
             showError('Failed to print invoice')
           }}
         />
+      )}
+
+      {/* Edit Cost Modal */}
+      {editCostOpen && selectedLot && (
+        <Dialog open={editCostOpen} onClose={() => setEditCostOpen(false)} maxWidth='xs' fullWidth>
+          <DialogTitle className='flex items-center justify-between'>
+            <div className='flex items-center gap-2'>
+              <span className='text-xl font-bold text-indigo-600'>৳</span>
+              <span className='font-bold'>Edit Cost Price</span>
+            </div>
+            <IconButton size='small' onClick={() => setEditCostOpen(false)}>
+              <i className='tabler-x' />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+            <form
+              id='edit-cost-form'
+              onSubmit={async e => {
+                e.preventDefault()
+                const newCost = e.target.elements.newCost.value
+
+                if (!newCost || isNaN(newCost)) {
+                  showError('Please enter a valid amount')
+
+                  return
+                }
+
+                try {
+                  const res = await updateLotCost(selectedLot._id, Number(newCost))
+                  console.log('[EditCost] Response:', res)
+
+                  if (res && res.success) {
+                    setData(prev =>
+                      prev.map(l =>
+                        l._id === selectedLot._id ? { ...l, costs: { ...l.costs, unitCost: Number(newCost) } } : l
+                      )
+                    )
+                    showSuccess('Cost updated and history corrected successfully!')
+                    setEditCostOpen(false)
+                  } else {
+                    showError(res?.error || res?.message || 'Failed to update cost')
+                  }
+                } catch (err) {
+                  console.error('[EditCost] Caught error:', err)
+                  showError(err?.message || 'An error occurred during update')
+                }
+              }}
+              className='flex flex-col gap-4 mt-2'
+            >
+              <div className='bg-indigo-50 p-3 rounded-lg border border-indigo-100'>
+                <p className='text-sm text-indigo-800 font-medium mb-1'>{selectedLot.lot_name}</p>
+                <div className='flex justify-between text-xs'>
+                  <span className='text-gray-600'>Current Cost:</span>
+                  <span className='font-bold text-gray-800'>৳{selectedLot.costs?.unitCost || 0}</span>
+                </div>
+              </div>
+
+              <CustomTextField
+                fullWidth
+                label='New Unit Cost (৳)'
+                name='newCost'
+                type='number'
+                inputProps={{ step: '0.01', min: '0' }}
+                defaultValue={selectedLot.costs?.unitCost || ''}
+                autoFocus
+              />
+
+              <div className='bg-orange-50 p-3 rounded-lg border border-orange-200 mt-2 flex gap-2'>
+                <i className='tabler-alert-triangle text-orange-600 text-lg mt-0.5' />
+                <p className='text-xs text-orange-800 mb-0'>
+                  <strong>Warning:</strong> Changing this price will automatically retroactively recalculate and rewrite
+                  the profit for <strong>all past sales</strong> related to this lot!
+                </p>
+              </div>
+            </form>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setEditCostOpen(false)} color='secondary'>
+              Cancel
+            </Button>
+            <Button
+              type='submit'
+              form='edit-cost-form'
+              variant='contained'
+              sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+            >
+              Update Cost
+            </Button>
+          </DialogActions>
+        </Dialog>
       )}
     </Card>
   )

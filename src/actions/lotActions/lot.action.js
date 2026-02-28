@@ -153,6 +153,27 @@ export async function getLotSaleSummary(lotId) {
   }
 }
 
+export async function updateLotCost(lotId, unitCost) {
+  try {
+    const response = await api.patch(`/inventoryLots/${lotId}/cost`, { unitCost })
+
+    try {
+      revalidatePath('/apps/stockList/lot')
+    } catch (_) {
+      // revalidatePath can throw in some Next.js builds — safe to ignore
+    }
+
+    return response
+  } catch (error) {
+    console.error('Update lot cost error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to update lot cost'
+    }
+  }
+}
+
 export async function updateLotExtraExpense(lotId, data) {
   try {
     const response = await api.patch(`/inventoryLots/${lotId}/extra-expense`, data)

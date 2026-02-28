@@ -1,5 +1,7 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
+
 import api from '@/libs/api'
 
 export async function getBalanceHistory(id, page = 1, limit = 10, fromDate = '', toDate = '') {
@@ -33,6 +35,8 @@ export async function getBalanceHistory(id, page = 1, limit = 10, fromDate = '',
 export async function applyCustomerDiscount(data) {
   try {
     const response = await api.post('/balance/apply-customer-discount', data)
+
+    revalidatePath('/apps/customers/list')
 
     return {
       success: true,
