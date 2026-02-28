@@ -2,9 +2,9 @@
 import Grid from '@mui/material/Grid2'
 
 // Component Imports
-import PurchaseReport from './PurchaseReport'
-import { getLotsBySupplier, getPurchaseBySupplier, getSupplierPayments } from '@/actions/supplierAction'
 import { getBalanceHistory } from '@/actions/balanceActions'
+import { getLotsBySupplier, getPurchaseBySupplier, getSupplierPayments } from '@/actions/supplierAction'
+import PurchaseReport from './PurchaseReport'
 
 const Overview = async ({ supplierId, supplierData }) => {
   const lotsResult = await getLotsBySupplier(supplierId, 1, 10, '', '', '')

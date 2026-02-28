@@ -1,32 +1,34 @@
 'use client'
 
 // React Imports
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 // MUI Imports
-import Dialog from '@mui/material/Dialog'
-import DialogTitle from '@mui/material/DialogTitle'
-import DialogContent from '@mui/material/DialogContent'
-import DialogActions from '@mui/material/DialogActions'
-import Button from '@mui/material/Button'
-import Typography from '@mui/material/Typography'
-import Grid from '@mui/material/Grid2'
 import Alert from '@mui/material/Alert'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import Box from '@mui/material/Box'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogTitle from '@mui/material/DialogTitle'
+import Grid from '@mui/material/Grid2'
+import Typography from '@mui/material/Typography'
 
 // Third-party Imports
-import { useForm, Controller } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 
 // Component Imports
-import CustomTextField from '@core/components/mui/TextField'
 import { updateSupplier } from '@/actions/supplierAction'
 import { showSuccess } from '@/utils/toastUtils'
+import CustomTextField from '@core/components/mui/TextField'
 
 // import { updateSupplier } from '@/actions/supplierActions'
 
-const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
+const EditSupplierInfo = ({ open, handleClose, supplierData }) => {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -115,8 +117,8 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
       const result = await updateSupplier(supplierData._id, supplierPayload)
 
       if (result.success) {
-        onSave(result.data)
         showSuccess('Supplier updated successfully')
+        router.refresh()
         handleClose()
       } else {
         setError(result.error)
@@ -481,8 +483,6 @@ const EditSupplierInfo = ({ open, handleClose, supplierData, onSave }) => {
                       />
                     </Grid>
                   </Grid>
-
-
                 </CardContent>
               </Card>
             </Grid>
