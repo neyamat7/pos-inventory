@@ -59,19 +59,19 @@ const SupplierSummaryReport = ({ summary, supplierName, dateRange }) => {
           সার্বিক বিবরণ
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', gap: '5px' }}>
             <span>মোট ক্যারেট:</span>
             <span style={{ fontWeight: 'bold' }}>{formatQty(totalCratesSold || 0)}</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', gap: '5px' }}>
             <span>মোট বক্স:</span>
             <span style={{ fontWeight: 'bold' }}>{formatQty(totalBoxesSold || 0)}</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', gap: '5px' }}>
             <span>মোট পিস:</span>
             <span style={{ fontWeight: 'bold' }}>{formatQty(totalPiecesSold || 0)}</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', gap: '5px' }}>
             <span>মোট কেজি:</span>
             <span style={{ fontWeight: 'bold' }}>{formatQty(totalKgSold || 0)}</span>
           </div>
