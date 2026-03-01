@@ -116,9 +116,9 @@ const SupplierSummaryReport = ({ summary, supplierName, dateRange }) => {
                 <th style={{ border: '0.5px solid #000', padding: '4px', textAlign: 'center', fontSize: '10px' }}>
                   পরিমাণ
                 </th>
-                <th style={{ border: '0.5px solid #000', padding: '4px', textAlign: 'right', fontSize: '10px' }}>
+                {/* <th style={{ border: '0.5px solid #000', padding: '4px', textAlign: 'right', fontSize: '10px' }}>
                   মূল্য (৳)
-                </th>
+                </th> */}
               </tr>
             </thead>
             <tbody>
@@ -138,9 +138,9 @@ const SupplierSummaryReport = ({ summary, supplierName, dateRange }) => {
                     <td style={{ border: '0.5px solid #000', padding: '4px', textAlign: 'center', fontSize: '9px' }}>
                       {qtyParts.join(', ') || '০'}
                     </td>
-                    <td style={{ border: '0.5px solid #000', padding: '4px', textAlign: 'right' }}>
+                    {/* <td style={{ border: '0.5px solid #000', padding: '4px', textAlign: 'right' }}>
                       {formatPrice(item.amount)}
-                    </td>
+                    </td> */}
                   </tr>
                 )
               })}
