@@ -419,7 +419,7 @@ const ProductTable = ({
             onClick={() => setPaymentModalOpen(true)}
             sx={{ textTransform: 'none', fontWeight: 600 }}
           >
-            Clear Payment
+            Clear Lot Payment
           </Button>
         </Box>
 

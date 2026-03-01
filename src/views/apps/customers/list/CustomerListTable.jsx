@@ -133,16 +133,6 @@ const CustomerListTable = ({
   // Use customerData directly - no need to sync to local state
   const tableData = Array.isArray(customerData) ? customerData : customerData?.customers || []
 
-  // Maintain focus on search input after re-renders
-  useEffect(() => {
-    if (searchInputRef.current && document.activeElement !== searchInputRef.current) {
-      const wasSearchInputFocused = document.activeElement?.placeholder === 'Search name, phone, email'
-      if (wasSearchInputFocused) {
-        searchInputRef.current.focus()
-      }
-    }
-  }, [tableData])
-
   const getCrateSummary = crateInfo => {
     if (!crateInfo) return '—'
 
@@ -490,7 +480,6 @@ const CustomerListTable = ({
             onChange={e => onSearchChange(e.target.value)}
             placeholder='Search name, phone, email'
             className='max-sm:is-full'
-            disabled={isLoading}
           />
           <div className='flex max-sm:flex-col items-start sm:items-center gap-4 max-sm:is-full'>
             <CustomTextField
