@@ -84,7 +84,7 @@ const ProductListTable = ({ productData, paginationData, loading, onPageChange, 
     }
   }, [productData])
 
-  const handleDeleteProduct = async (id) => { 
+  const handleDeleteProduct = async id => {
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",
@@ -141,7 +141,7 @@ const ProductListTable = ({ productData, paginationData, loading, onPageChange, 
             />
             <div className='flex flex-col'>
               <Typography className='font-medium' color='text.primary'>
-                {row.original.productName}
+                {row.original.productNameBn || row.original.productName}
               </Typography>
               <Typography variant='body2' color='text.secondary'>
                 {row.original.description?.substring(0, 30)}...

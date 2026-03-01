@@ -179,7 +179,7 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
     {
       accessorKey: 'productsId.productName',
       header: 'Product',
-      cell: ({ row }) => row.original.productsId?.productName || '—'
+      cell: ({ row }) => row.original.productsId?.productNameBn || row.original.productsId?.productName || '—'
     },
     {
       accessorKey: 'supplierId.basic_info.name',

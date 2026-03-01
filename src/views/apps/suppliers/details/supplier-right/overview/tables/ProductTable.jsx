@@ -42,6 +42,7 @@ import {
   uploadLotReceipt
 } from '@/actions/lotActions'
 import LotInvoicePrintHandler from '@/components/LotSaleInvoice/LotInvoicePrintHandler'
+import SupplierSummaryPrintHandler from '@/components/SupplierSummaryReport/SupplierSummaryPrintHandler'
 import { showError, showSuccess } from '@/utils/toastUtils'
 import Swal from 'sweetalert2'
 import PaymentModal from './PaymentModal'
@@ -57,7 +58,8 @@ const ProductTable = ({
   onPaginationChange,
   loading,
   supplierData,
-  onPaymentSuccess
+  onPaymentSuccess,
+  dateRange
 }) => {
   // console.log('data in supplier lot tab', data)
 
@@ -81,6 +83,9 @@ const ProductTable = ({
 
   const [receiptOpen, setReceiptOpen] = useState(false)
   const [uploadLoading, setUploadLoading] = useState(false)
+
+  // Summary Print State
+  const [summaryPrintTrigger, setSummaryPrintTrigger] = useState(false)
 
   useEffect(() => {
     setLocalData(data || [])
@@ -166,12 +171,17 @@ const ProductTable = ({
     setPrintLotData(null)
   }
 
+  const handlePrintSummary = () => {
+    if (!summary) return
+    setSummaryPrintTrigger(prev => !prev)
+  }
+
   const stockColumns = [
     columnHelper.accessor('lot_name', {
       header: 'Lot Name',
       cell: info => info.getValue() || 'N/A'
     }),
-    columnHelper.accessor(row => row.productsId?.[0]?.productName, {
+    columnHelper.accessor(row => row.productsId?.[0]?.productNameBn || row.productsId?.[0]?.productName, {
       id: 'productName',
       header: 'Product Name',
       cell: info => info.getValue() || 'N/A'
@@ -415,7 +425,26 @@ const ProductTable = ({
 
         {/* Summary Stats - Only show when summary data is available */}
         {summary && (
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 2,
+              flexWrap: 'wrap',
+              flex: 1,
+              justifyContent: 'flex-end',
+              alignItems: 'center'
+            }}
+          >
+            <Button
+              variant='tonal'
+              color='secondary'
+              startIcon={<i className='tabler-printer' />}
+              onClick={handlePrintSummary}
+              size='small'
+              sx={{ height: 'fit-content' }}
+            >
+              Print Report
+            </Button>
             {/* Only show Total Crates Sold if value > 0 */}
             {summary.totalCratesSold > 0 && (
               <Paper elevation={2} sx={{ px: 2, py: 1, borderRadius: 2, bgcolor: '#f0f9ff' }}>
@@ -564,6 +593,14 @@ const ProductTable = ({
         uploadLoading={uploadLoading}
         onUpload={handleReceiptFileUpload}
         onDelete={handleReceiptDelete}
+      />
+
+      <SupplierSummaryPrintHandler
+        summary={summary}
+        supplierName={supplierData?.basic_info?.name}
+        dateRange={dateRange}
+        triggerPrint={summaryPrintTrigger}
+        onPrintComplete={() => showSuccess('Summary print completed')}
       />
     </>
   )
@@ -849,7 +886,7 @@ const LotDetailsModal = ({ open, onClose, lot, lotSaleData, loadingSaleData, onP
                 Product Name
               </Typography>
               <Typography variant='body1' fontWeight='600'>
-                {lot?.productsId?.[0]?.productName || 'N/A'}
+                {lot?.productsId?.[0]?.productNameBn || lot?.productsId?.[0]?.productName || 'N/A'}
               </Typography>
             </Grid>
             <Grid size={{ xs: 6, sm: 4 }}>

@@ -1,7 +1,5 @@
 'use client'
 
-import React from 'react'
- 
 import { getImageUrl } from '@/utils/getImageUrl'
 
 const ShowProductList = ({ filteredProducts = [], handleCartProductClick }) => {
@@ -19,7 +17,7 @@ const ShowProductList = ({ filteredProducts = [], handleCartProductClick }) => {
               alt={product.productName}
               className='w-full h-28 object-contain mb-2'
             />
-            <h3 className='font-medium text-sm mb-1'>{product.productName}</h3>
+            <h3 className='font-medium text-sm mb-1'>{product.productNameBn || product.productName}</h3>
             <p className='text-lg font-bold'>৳{product.basePrice}</p>
             <p className='text-xs text-gray-500'>{product.categoryId?.categoryName}</p>
           </div>

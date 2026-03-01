@@ -55,12 +55,11 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   // Add Customer Drawer State
   const [addCustomerOpen, setAddCustomerOpen] = useState(false)
 
-  const refreshCustomers = async () => {
+  const refreshCustomers = async (searchTerm = '') => {
     setLoadingCustomers(true)
     try {
-      // Fetch all customers (using a large limit to get all)
-      const res = await getCustomers(1, 1000)
-      
+      const res = await getCustomers(1, 100, searchTerm)
+
       if (res.success && res.data?.customers) {
         setCustomerOptions(res.data.customers) // Update the options list
       }
@@ -71,6 +70,20 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       setLoadingCustomers(false)
     }
   }
+
+  // Debounced search for customers
+  useEffect(() => {
+    // If input is empty, and we have initial customers, we could reset or just leave it.
+    // Usually, we want to show pinned or most frequent when empty.
+
+    const delayDebounceFn = setTimeout(() => {
+      if (customerSearchInput !== undefined) {
+        refreshCustomers(customerSearchInput)
+      }
+    }, 500) // 500ms debounce delay
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [customerSearchInput])
 
   const [lotModal, setLotModal] = useState({
     open: false,
@@ -105,7 +118,9 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   const filteredProducts = useMemo(() => {
     return productsData.filter(product => {
       // Search term filter
-      const matchesSearch = product.productName.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesSearch =
+        product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (product.productNameBn && product.productNameBn.toLowerCase().includes(searchTerm.toLowerCase()))
 
       // Category filter - compare with categoryId._id
       const matchesCategory = !selectedCategory || product.categoryId?._id === selectedCategory
@@ -292,7 +307,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
           return (
             <Link href={`/apps/products/edit/p001`} className='hover:text-blue-600 hover:underline'>
-              {product.product_name}
+              {product.productNameBn || product.product_name}
             </Link>
           )
         }
@@ -317,7 +332,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                     open: true,
                     cartItemId: cartItemId,
                     productId: product.product_id,
-                    productName: product.product_name || '',
+                    productName: product.productNameBn || product.product_name || '',
                     selectedLot: null
                   })
                 }
@@ -335,7 +350,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                   open: true,
                   cartItemId: cartItemId,
                   productId: product.product_id,
-                  productName: product.product_name || '',
+                  productName: product.productNameBn || product.product_name || '',
                   selectedLot: {
                     ...product.lot_selected,
                     sell_qty: product.lot_selected.sell_qty || 0
@@ -367,9 +382,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
                 setCartProducts(prev =>
                   prev.map(item =>
-                    item.cart_item_id === product.cart_item_id
-                      ? { ...item, selling_price: val === '' ? 0 : val }
-                      : item
+                    item.cart_item_id === product.cart_item_id ? { ...item, selling_price: val === '' ? 0 : val } : item
                   )
                 )
               }}
@@ -425,9 +438,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
               onChange={e => {
                 const val = e.target.value
                 setCartProducts(prev =>
-                  prev.map(item =>
-                    item.cart_item_id === product.cart_item_id ? { ...item, box_quantity: val } : item
-                  )
+                  prev.map(item => (item.cart_item_id === product.cart_item_id ? { ...item, box_quantity: val } : item))
                 )
               }}
               placeholder='0'
@@ -625,7 +636,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       }
     ]
 
-    // --- Merge conditionally ---
     // --- Piece Quantity Column ---
     const pieceQuantityColumn = {
       accessorKey: 'piece_quantity',
@@ -661,31 +671,30 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
     // --- Dynamic Column Visibility ---
     // Use flags passed from outside useMemo
-    
+
     // Filter base columns based on product types
     const filteredBaseColumns = baseColumns.filter(col => {
       if (col.accessorKey === 'kg') return showKg
       if (col.accessorKey === 'box_quantity') return showBoxQuantity
       if (col.accessorKey === 'discount_kg') return showDiscountKg
       if (col.accessorKey === 'discount_amount') return showDiscountAmount
-      
+
       return true
     })
 
     let finalColumns = [...filteredBaseColumns]
-    
 
     // Insert Piece Quantity if needed
     if (showPieceQuantity) {
-       // Find index to insert after 'selling_price' or 'kg'
-       const insertIndex = finalColumns.findIndex(c => c.accessorKey === 'selling_price') + 1
-       finalColumns.splice(insertIndex, 0, pieceQuantityColumn)
+      // Find index to insert after 'selling_price' or 'kg'
+      const insertIndex = finalColumns.findIndex(c => c.accessorKey === 'selling_price') + 1
+      finalColumns.splice(insertIndex, 0, pieceQuantityColumn)
     }
 
     // Insert Crate Columns if needed
     if (showCrated) {
-        const insertIndex = finalColumns.findIndex(c => c.accessorKey === 'selling_price') + 1
-        finalColumns.splice(insertIndex, 0, ...crateColumns)
+      const insertIndex = finalColumns.findIndex(c => c.accessorKey === 'selling_price') + 1
+      finalColumns.splice(insertIndex, 0, ...crateColumns)
     }
 
     return finalColumns
@@ -715,7 +724,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
     // ========== VALIDATE CRATE AND BOX AVAILABILITY ==========
     for (const item of cartProducts) {
-
       // console.log('item', item)
 
       // Check if this is a crate-based product
@@ -912,7 +920,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
     // ==========  Build items array ==========
     const items = Object.entries(grouped).map(([pid, items]) => {
-
       // Get customer commission rate (should be same for all lots of this product)
       const customerCommissionRate = items[0].commission_rate || 0
 
@@ -1016,7 +1023,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       } else {
         toast.error(result.error || 'Failed to create sale')
       }
-
     } catch (error) {
       console.error('Sale submission error:', error)
       toast.error('An error occurred while creating the sale')
@@ -1155,6 +1161,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                 fullWidth
                 size='small'
                 options={customerOptions}
+                filterOptions={x => x} // Disable client-side filtering because we do it server-side
                 loading={loadingCustomers}
                 getOptionLabel={option => option.basic_info?.name || ''}
                 value={selectedCustomer}
@@ -1182,9 +1189,9 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                 )}
                 renderOption={(props, option) => {
                   const { key, ...otherProps } = props
-                  
+
                   // Handle caching Pin click
-                  const handlePinClick = async (e) => {
+                  const handlePinClick = async e => {
                     e.stopPropagation() // Prevent selection
                     try {
                       const res = await toggleCustomerPin(option._id)
@@ -1201,26 +1208,29 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                   }
 
                   return (
-                    <li 
-                      key={option._id} 
+                    <li
+                      key={option._id}
                       {...otherProps}
                       className={`${otherProps.className || ''} group ${option.isPinned ? 'bg-orange-50 hover:bg-orange-100' : ''}`}
                     >
                       <div className='flex items-center justify-between w-full'>
                         <div className='flex flex-col'>
-                          <span className={`flex items-center gap-2 ${option.isPinned ? 'font-medium text-orange-700' : ''}`}>
-                            {option.isPinned && <FaThumbtack className="text-xs" />}
+                          <span
+                            className={`flex items-center gap-2 ${option.isPinned ? 'font-medium text-orange-700' : ''}`}
+                          >
+                            {option.isPinned && <FaThumbtack className='text-xs' />}
                             {option.basic_info?.name}
                           </span>
+                          <span className='text-xs text-gray-500 ml-5'>{option.contact_info?.phone}</span>
                         </div>
-                        
-                        <div 
+
+                        <div
                           onClick={handlePinClick}
                           className={`
                             p-1.5 rounded-full cursor-pointer transition-opacity
                             ${option.isPinned ? 'opacity-100 text-orange-600 bg-orange-100' : 'opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 hover:bg-gray-100'}
                           `}
-                          title={option.isPinned ? "Unpin customer" : "Pin customer to top"}
+                          title={option.isPinned ? 'Unpin customer' : 'Pin customer to top'}
                         >
                           <FaThumbtack size={12} className={option.isPinned ? 'rotate-45' : ''} />
                         </div>
@@ -1230,7 +1240,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                 }}
                 isOptionEqualToValue={(option, value) => option._id === value._id}
               />
-              <IconButton 
+              <IconButton
                 onClick={() => setAddCustomerOpen(true)}
                 className='bg-indigo-100 text-indigo-600 rounded hover:bg-indigo-200'
                 size='medium'
@@ -1564,11 +1574,16 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                       Supplier: {lotModal.selectedLot.supplierId?.basic_info?.name || 'N/A'}
                     </p>
                     <p className='text-sm text-gray-600'>
-                      Already Sold: 
-                      {lotModal.selectedLot.sales?.totalBoxSold > 0 && ` ${lotModal.selectedLot.sales.totalBoxSold} boxes`}
-                      {lotModal.selectedLot.sales?.totalPieceSold > 0 && ` ${lotModal.selectedLot.sales.totalPieceSold} pieces`}
+                      Already Sold:
+                      {lotModal.selectedLot.sales?.totalBoxSold > 0 &&
+                        ` ${lotModal.selectedLot.sales.totalBoxSold} boxes`}
+                      {lotModal.selectedLot.sales?.totalPieceSold > 0 &&
+                        ` ${lotModal.selectedLot.sales.totalPieceSold} pieces`}
                       {lotModal.selectedLot.sales?.totalKgSold > 0 && ` ${lotModal.selectedLot.sales.totalKgSold} kg`}
-                      {!lotModal.selectedLot.sales?.totalBoxSold && !lotModal.selectedLot.sales?.totalPieceSold && !lotModal.selectedLot.sales?.totalKgSold && ' None'}
+                      {!lotModal.selectedLot.sales?.totalBoxSold &&
+                        !lotModal.selectedLot.sales?.totalPieceSold &&
+                        !lotModal.selectedLot.sales?.totalKgSold &&
+                        ' None'}
                     </p>
                     <p className='text-sm text-gray-600'>Unit Cost: ৳{lotModal.selectedLot.costs?.unitCost || 0}</p>
                     <p className='text-sm text-gray-600'>

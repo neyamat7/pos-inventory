@@ -1,13 +1,12 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import Link from 'next/link'
 
 import { useForm } from 'react-hook-form'
 
 import { FaEdit, FaPlus, FaTimes, FaTrash } from 'react-icons/fa'
-
 
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
@@ -108,33 +107,31 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
   const [supplierSearchInput, setSupplierSearchInput] = useState('')
   const [loadingSuppliers, setLoadingSuppliers] = useState(false)
   const [addSupplierOpen, setAddSupplierOpen] = useState(false)
-  
+
   // Custom Expenses State
   const [customExpenses, setCustomExpenses] = useState([])
-  
+
   const handleAddCustomExpense = () => {
     setCustomExpenses([...customExpenses, { id: Date.now(), name: '', amount: 0, type: 'divided' }])
   }
 
-  const handleRemoveCustomExpense = (id) => {
+  const handleRemoveCustomExpense = id => {
     setCustomExpenses(customExpenses.filter(exp => exp.id !== id))
   }
 
   const handleCustomExpenseChange = (id, field, value) => {
-    setCustomExpenses(customExpenses.map(exp => 
-      exp.id === id ? { ...exp, [field]: value } : exp
-    ))
+    setCustomExpenses(customExpenses.map(exp => (exp.id === id ? { ...exp, [field]: value } : exp)))
   }
 
-  const refreshSuppliers = async () => {
+  const refreshSuppliers = async (search = '') => {
     setLoadingSuppliers(true)
     try {
-      const res = await getSuppliers(1, 1000)
+      const res = await getSuppliers(1, 100, search)
       if (res.success && res.data?.data?.suppliers) {
-         // Verify data structure matches API response
-         setSupplierOptions(res.data.data.suppliers)
+        // Verify data structure matches API response
+        setSupplierOptions(res.data.data.suppliers)
       } else if (res.success && res.data?.suppliers) {
-         setSupplierOptions(res.data.suppliers)
+        setSupplierOptions(res.data.suppliers)
       }
     } catch (error) {
       console.error('Failed to refresh customers:', error)
@@ -143,6 +140,17 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
       setLoadingSuppliers(false)
     }
   }
+
+  // Debounced search for suppliers
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (supplierSearchInput !== undefined) {
+        refreshSuppliers(supplierSearchInput)
+      }
+    }, 500) // 500ms debounce delay
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [supplierSearchInput])
 
   const [commissionModal, setCommissionModal] = useState({
     open: false,
@@ -207,6 +215,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
           ...product,
           product_id: product._id,
           product_name: product.productName,
+          product_name_bn: product.productNameBn,
           supplier_id: selectedSupplier._id,
           supplier_sl: selectedSupplier.basic_info?.sl || '',
           supplier_name: selectedSupplier.basic_info?.name || '',
@@ -250,6 +259,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
         ...product,
         product_id: product._id,
         product_name: product.productName,
+        product_name_bn: product.productNameBn,
         supplier_id: selectedSupplier._id,
         supplier_sl: selectedSupplier.basic_info?.sl || '',
         supplier_name: selectedSupplier.basic_info?.name || '',
@@ -286,8 +296,6 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
     handleDistributionExpense(data, cartProducts, setCartProducts, supplierOptions, customExpenses)
     setHasExpenseChanges(false)
   }
-
-
 
   /*
   useEffect(() => {
@@ -329,188 +337,100 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
   const showDiscount = cartProducts.some(p => p.is_discountable)
   const showCommission = cartProducts.some(p => p.allowCommission)
 
-  const columns = useMemo(
-    () => {
-      const baseColumns = [
-        {
-          accessorKey: 'supplier_sl',
-          header: 'SL'
-        },
-        {
-          accessorKey: 'supplier_name',
-          header: 'Supplier'
-        },
-        {
-          accessorKey: 'product_name',
-          header: 'Product',
-          cell: ({ row }) => {
-            const product = row.original
-
-            return (
-              <Link href={`/apps/products/edit/${product.product_id}`} className='hover:text-blue-600 hover:underline'>
-                {product.product_name}
-              </Link>
-            )
-          }
-        }
-      ]
-
-      if (showPieceQuantity) {
-        baseColumns.push({
-          accessorKey: 'piece_quantity',
-          header: 'Piece Quantity',
-          cell: ({ row }) => {
-            const product = row.original
-
-            if (!product.sell_by_piece) {
-              return null
-            }
-
-            return (
-              <input
-                type='number'
-                min='0'
-                value={product.piece_quantity === 0 ? '' : (product.piece_quantity ?? '')}
-                placeholder='0'
-                onChange={e => {
-                  const value = parseInt(e.target.value) || 0
-
-                  handlePieceQuantity(setCartProducts, product.product_id, product.supplier_id, value)
-                  handleExpenseChange()
-                }}
-                className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
-              />
-            )
-          }
-        })
-      }
-
-      if (showBoxQuantity) {
-        baseColumns.push({
-          accessorKey: 'box_quantity',
-          header: 'Box Quantity',
-          cell: ({ row }) => {
-            const product = row.original
-
-            if (!product.isBoxed) {
-              return null
-            }
-
-            return (
-              <input
-                type='number'
-                min='0'
-                value={product.box_quantity === 0 ? '' : (product.box_quantity ?? '')}
-                placeholder='0'
-                onChange={e => {
-                  const value = parseInt(e.target.value) || 0
-
-                  handleBoxQuantity(setCartProducts, product.product_id, product.supplier_id, value)
-                  handleExpenseChange()
-                }}
-                className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
-              />
-            )
-          }
-        })
-      }
-
-      if (showCrated) {
-        baseColumns.push(
-          {
-            accessorKey: 'crate_type_one',
-            header: 'Crate Type 1',
-            cell: ({ row }) => {
-              const product = row.original
-
-              if (!product.isCrated) {
-                return null
-              }
-
-              return (
-                <input
-                  type='number'
-                  min='0'
-                  value={product.crate_type_one === 0 ? '' : (product.crate_type_one ?? '')}
-                  placeholder='0'
-                  onChange={e => {
-                    const value = parseInt(e.target.value) || 0
-
-                    handleCrateCount(setCartProducts, product.product_id, product.supplier_id, 'one', value)
-                    handleExpenseChange()
-                  }}
-                  className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
-                />
-              )
-            }
-          },
-          {
-            accessorKey: 'crate_type_two',
-            header: 'Crate Type 2',
-            cell: ({ row }) => {
-              const product = row.original
-
-              if (!product.isCrated) {
-                return null
-              }
-
-              return (
-                <input
-                  type='number'
-                  min='0'
-                  value={product.crate_type_two === 0 ? '' : (product.crate_type_two ?? '')}
-                  placeholder='0'
-                  onChange={e => {
-                    const value = parseInt(e.target.value) || 0
-
-                    handleCrateCount(setCartProducts, product.product_id, product.supplier_id, 'two', value)
-                    handleExpenseChange()
-                  }}
-                  className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
-                />
-              )
-            }
-          }
-        )
-      }
-
-      baseColumns.push({
-        accessorKey: 'cost',
-        header: 'Cost(unit)',
+  const columns = useMemo(() => {
+    const baseColumns = [
+      {
+        accessorKey: 'supplier_sl',
+        header: 'SL'
+      },
+      {
+        accessorKey: 'supplier_name',
+        header: 'Supplier'
+      },
+      {
+        accessorKey: 'product_name',
+        header: 'Product',
         cell: ({ row }) => {
           const product = row.original
+
+          return (
+            <Link href={`/apps/products/edit/${product.product_id}`} className='hover:text-blue-600 hover:underline'>
+              {product.product_name_bn || product.product_name}
+            </Link>
+          )
+        }
+      }
+    ]
+
+    if (showPieceQuantity) {
+      baseColumns.push({
+        accessorKey: 'piece_quantity',
+        header: 'Piece Quantity',
+        cell: ({ row }) => {
+          const product = row.original
+
+          if (!product.sell_by_piece) {
+            return null
+          }
 
           return (
             <input
               type='number'
-              onWheel={e => e.currentTarget.blur()}
-              value={product.cost === 0 ? '' : (product.cost ?? '')}
-              onChange={e => {
-                const rawValue = e.target.value
-
-                setCartProducts(prev =>
-                  prev.map(item =>
-                    item.product_id === product.product_id && item.supplier_id === product.supplier_id
-                      ? { ...item, cost: rawValue === '' ? 0 : parseFloat(rawValue) }
-                      : item
-                  )
-                )
-              }}
+              min='0'
+              value={product.piece_quantity === 0 ? '' : (product.piece_quantity ?? '')}
               placeholder='0'
-              className='w-24 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
+              onChange={e => {
+                const value = parseInt(e.target.value) || 0
+
+                handlePieceQuantity(setCartProducts, product.product_id, product.supplier_id, value)
+                handleExpenseChange()
+              }}
+              className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
             />
           )
         }
       })
+    }
 
-      if (showDiscount) {
-        baseColumns.push({
-          accessorKey: 'discount_amount',
-          header: 'Discount',
+    if (showBoxQuantity) {
+      baseColumns.push({
+        accessorKey: 'box_quantity',
+        header: 'Box Quantity',
+        cell: ({ row }) => {
+          const product = row.original
+
+          if (!product.isBoxed) {
+            return null
+          }
+
+          return (
+            <input
+              type='number'
+              min='0'
+              value={product.box_quantity === 0 ? '' : (product.box_quantity ?? '')}
+              placeholder='0'
+              onChange={e => {
+                const value = parseInt(e.target.value) || 0
+
+                handleBoxQuantity(setCartProducts, product.product_id, product.supplier_id, value)
+                handleExpenseChange()
+              }}
+              className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
+            />
+          )
+        }
+      })
+    }
+
+    if (showCrated) {
+      baseColumns.push(
+        {
+          accessorKey: 'crate_type_one',
+          header: 'Crate Type 1',
           cell: ({ row }) => {
             const product = row.original
 
-            if (!product.is_discountable) {
+            if (!product.isCrated) {
               return null
             }
 
@@ -518,97 +438,182 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
               <input
                 type='number'
                 min='0'
-                value={product.discount_amount === 0 ? '' : (product.discount_amount ?? '')}
+                value={product.crate_type_one === 0 ? '' : (product.crate_type_one ?? '')}
                 placeholder='0'
                 onChange={e => {
-                  const value = parseFloat(e.target.value) || 0
+                  const value = parseInt(e.target.value) || 0
 
-                  handleDiscountChange(setCartProducts, product.product_id, product.supplier_id, value)
+                  handleCrateCount(setCartProducts, product.product_id, product.supplier_id, 'one', value)
                   handleExpenseChange()
                 }}
                 className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
               />
             )
           }
-        })
-      }
-
-      baseColumns.push(
-        {
-          accessorKey: 'transportation',
-          header: 'Transportation'
         },
         {
-          accessorKey: 'moshjid',
-          header: 'Moshjid'
-        },
-        {
-          accessorKey: 'van_vara',
-          header: 'Van Vara'
-        },
-        {
-          accessorKey: 'trading_post',
-          header: 'Trading Post'
-        },
-        {
-          accessorKey: 'labour',
-          header: 'Labour'
-        }
-      )
-
-      if (showCommission) {
-        baseColumns.push({
-          accessorKey: 'commission_rate',
-          header: 'Commission',
+          accessorKey: 'crate_type_two',
+          header: 'Crate Type 2',
           cell: ({ row }) => {
             const product = row.original
 
-            if (!product.allowCommission) {
+            if (!product.isCrated) {
               return null
             }
 
-            const pct = Number(product?.commission_rate) || 0
-
             return (
-              <div className='flex items-center gap-2'>
-                <span>{pct > 0 ? `${pct}%` : 'N/A'}</span>
-                {pct > 0 && (
-                  <button
-                    type='button'
-                    onClick={() => openCommissionEditor(product)}
-                    className='text-blue-600 hover:text-blue-800'
-                    title='Edit commiss ion'
-                  >
-                    <FaEdit />
-                  </button>
-                )}
-              </div>
+              <input
+                type='number'
+                min='0'
+                value={product.crate_type_two === 0 ? '' : (product.crate_type_two ?? '')}
+                placeholder='0'
+                onChange={e => {
+                  const value = parseInt(e.target.value) || 0
+
+                  handleCrateCount(setCartProducts, product.product_id, product.supplier_id, 'two', value)
+                  handleExpenseChange()
+                }}
+                className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
+              />
             )
           }
-        })
-      }
+        }
+      )
+    }
 
+    baseColumns.push({
+      accessorKey: 'cost',
+      header: 'Cost(unit)',
+      cell: ({ row }) => {
+        const product = row.original
+
+        return (
+          <input
+            type='number'
+            onWheel={e => e.currentTarget.blur()}
+            value={product.cost === 0 ? '' : (product.cost ?? '')}
+            onChange={e => {
+              const rawValue = e.target.value
+
+              setCartProducts(prev =>
+                prev.map(item =>
+                  item.product_id === product.product_id && item.supplier_id === product.supplier_id
+                    ? { ...item, cost: rawValue === '' ? 0 : parseFloat(rawValue) }
+                    : item
+                )
+              )
+            }}
+            placeholder='0'
+            className='w-24 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
+          />
+        )
+      }
+    })
+
+    if (showDiscount) {
       baseColumns.push({
-        id: 'actions',
-        header: 'Action',
+        accessorKey: 'discount_amount',
+        header: 'Discount',
         cell: ({ row }) => {
           const product = row.original
 
+          if (!product.is_discountable) {
+            return null
+          }
+
           return (
-            <button
-              onClick={() => handleRemoveCartItem(product.product_id, product.supplier_id)}
-              className='text-red-500 bg-transparent border-none outline-none w-full h-full'
-            >
-              <FaTimes />
-            </button>
+            <input
+              type='number'
+              min='0'
+              value={product.discount_amount === 0 ? '' : (product.discount_amount ?? '')}
+              placeholder='0'
+              onChange={e => {
+                const value = parseFloat(e.target.value) || 0
+
+                handleDiscountChange(setCartProducts, product.product_id, product.supplier_id, value)
+                handleExpenseChange()
+              }}
+              className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
+            />
           )
         }
       })
+    }
 
-      return baseColumns
-    },
-    [showPieceQuantity, showBoxQuantity, showCrated, showDiscount, showCommission]
-  )
+    baseColumns.push(
+      {
+        accessorKey: 'transportation',
+        header: 'Transportation'
+      },
+      {
+        accessorKey: 'moshjid',
+        header: 'Moshjid'
+      },
+      {
+        accessorKey: 'van_vara',
+        header: 'Van Vara'
+      },
+      {
+        accessorKey: 'trading_post',
+        header: 'Trading Post'
+      },
+      {
+        accessorKey: 'labour',
+        header: 'Labour'
+      }
+    )
+
+    if (showCommission) {
+      baseColumns.push({
+        accessorKey: 'commission_rate',
+        header: 'Commission',
+        cell: ({ row }) => {
+          const product = row.original
+
+          if (!product.allowCommission) {
+            return null
+          }
+
+          const pct = Number(product?.commission_rate) || 0
+
+          return (
+            <div className='flex items-center gap-2'>
+              <span>{pct > 0 ? `${pct}%` : 'N/A'}</span>
+              {pct > 0 && (
+                <button
+                  type='button'
+                  onClick={() => openCommissionEditor(product)}
+                  className='text-blue-600 hover:text-blue-800'
+                  title='Edit commiss ion'
+                >
+                  <FaEdit />
+                </button>
+              )}
+            </div>
+          )
+        }
+      })
+    }
+
+    baseColumns.push({
+      id: 'actions',
+      header: 'Action',
+      cell: ({ row }) => {
+        const product = row.original
+
+        return (
+          <button
+            onClick={() => handleRemoveCartItem(product.product_id, product.supplier_id)}
+            className='text-red-500 bg-transparent border-none outline-none w-full h-full'
+          >
+            <FaTimes />
+          </button>
+        )
+      }
+    })
+
+    return baseColumns
+  }, [showPieceQuantity, showBoxQuantity, showCrated, showDiscount, showCommission])
 
   const tableData = useMemo(() => cartProducts, [cartProducts])
 
@@ -625,33 +630,36 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
       if (item.isCrated) {
         const crateType1 = Number(item.crate_type_one) || 0
         const crateType2 = Number(item.crate_type_two) || 0
-        
+
         if (crateType1 <= 0 && crateType2 <= 0) {
-          showError(`Product "${item.product_name}" must have at least one crate (Type 1 or Type 2) with a value greater than 0`, 'error')
+          showError(
+            `Product "${item.product_name}" must have at least one crate (Type 1 or Type 2) with a value greater than 0`,
+            'error'
+          )
           return
         }
       }
-      
+
       // Check for boxed products
       if (item.isBoxed) {
         const boxQuantity = Number(item.box_quantity) || 0
-        
+
         if (boxQuantity <= 0) {
           showError(`Product "${item.product_name}" must have box quantity greater than 0`, 'error')
           return
         }
       }
-      
+
       // Check for piece products
       if (item.sell_by_piece) {
         const pieceQuantity = Number(item.piece_quantity) || 0
-        
+
         if (pieceQuantity <= 0) {
           showAlert(`Product "${item.product_name}" must have piece quantity greater than 0`, 'error')
           return
         }
       }
-      
+
       // Check unit cost is not zero or negative
       const cost = Number(item.cost) || 0
       if (cost <= 0) {
@@ -704,7 +712,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
         acc[supplierKey] = {
           supplier: supplierKey,
           lots: []
-        }  
+        }
       }
 
       // Build the lot object
@@ -745,17 +753,17 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
         // Aggregate custom expenses differently since it's an array
         const itCustomExpenses = it.custom_expenses || []
         const currentCustomExpenses = acc.custom_expenses || []
-        
+
         // Merge custom expenses by name
         const mergedCustomExpenses = [...currentCustomExpenses]
-        
+
         itCustomExpenses.forEach(exp => {
-            const existingExp = mergedCustomExpenses.find(e => e.name === exp.name)
-            if (existingExp) {
-                existingExp.amount = Number((existingExp.amount + exp.amount).toFixed(2))
-            } else {
-                mergedCustomExpenses.push({ name: exp.name, amount: exp.amount })
-            }
+          const existingExp = mergedCustomExpenses.find(e => e.name === exp.name)
+          if (existingExp) {
+            existingExp.amount = Number((existingExp.amount + exp.amount).toFixed(2))
+          } else {
+            mergedCustomExpenses.push({ name: exp.name, amount: exp.amount })
+          }
         })
 
         return {
@@ -846,6 +854,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                 fullWidth
                 size='small'
                 options={supplierOptions}
+                filterOptions={x => x} // Server-side search
                 loading={loadingSuppliers}
                 getOptionLabel={option => option.basic_info?.name || ''}
                 value={selectedSupplier}
@@ -857,9 +866,9 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                   setSupplierSearchInput(newInputValue)
                 }}
                 renderInput={params => (
-                  <TextField 
-                    {...params} 
-                    placeholder='Select Supplier' 
+                  <TextField
+                    {...params}
+                    placeholder='Select Supplier'
                     InputProps={{
                       ...params.InputProps,
                       endAdornment: (
@@ -877,31 +886,32 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                     <li key={option._id} {...otherProps}>
                       <div className='flex flex-col'>
                         <span>{option.basic_info?.name}</span>
+                        <span className='text-xs text-gray-500'>{option.contact_info?.phone}</span>
                       </div>
                     </li>
                   )
                 }}
                 isOptionEqualToValue={(option, value) => option._id === value._id}
               />
-               <IconButton
+              <IconButton
                 color='primary'
                 onClick={() => setAddSupplierOpen(true)}
-               className='bg-indigo-100 text-indigo-600 rounded hover:bg-indigo-200'
+                className='bg-indigo-100 text-indigo-600 rounded hover:bg-indigo-200'
                 size='medium'
               >
                 <FaPlus />
               </IconButton>
-              
-               <AddSupplierDrawer
-                  open={addSupplierOpen}
-                  handleClose={() => setAddSupplierOpen(false)}
-                  setData={setSupplierOptions}
-                  supplierData={supplierOptions}
-                  refreshData={refreshSuppliers}
+
+              <AddSupplierDrawer
+                open={addSupplierOpen}
+                handleClose={() => setAddSupplierOpen(false)}
+                setData={setSupplierOptions}
+                supplierData={supplierOptions}
+                refreshData={refreshSuppliers}
               />
             </div>
 
-              {/* {selectedSupplier.basic_info?.avatar && (
+            {/* {selectedSupplier.basic_info?.avatar && (
                 <img
                   src={selectedSupplier.basic_info.avatar}
                   alt={selectedSupplier.basic_info.name}
@@ -1060,19 +1070,19 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                 </div>
               </div>
 
-               {/* Custom Expenses */}
+              {/* Custom Expenses */}
               <div className='mt-2'>
                 <div className='flex items-center justify-between mb-2'>
                   <h3 className='text-sm font-medium'>Other Expenses</h3>
                   <button
                     type='button'
                     onClick={handleAddCustomExpense}
-                     className='flex items-center gap-1 text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-100'
+                    className='flex items-center gap-1 text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-100'
                   >
                     <FaPlus size={10} /> Add Expense
                   </button>
                 </div>
-                
+
                 {customExpenses.map((expense, index) => (
                   <div key={expense.id} className='flex gap-2 mb-2 items-center'>
                     <input
@@ -1083,28 +1093,28 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                       className='flex-1 px-3 py-2 border border-gray-300 rounded text-sm w-1/3'
                     />
                     <input
-                        type='number'
-                        placeholder='Amount'
-                        value={expense.amount}
-                        onChange={e => handleCustomExpenseChange(expense.id, 'amount', e.target.value)}
-                         className='w-1/4 px-3 py-2 border border-gray-300 rounded text-sm'
+                      type='number'
+                      placeholder='Amount'
+                      value={expense.amount}
+                      onChange={e => handleCustomExpenseChange(expense.id, 'amount', e.target.value)}
+                      className='w-1/4 px-3 py-2 border border-gray-300 rounded text-sm'
                     />
-                     <select
-                        value={expense.type}
-                        onChange={e => handleCustomExpenseChange(expense.id, 'type', e.target.value)}
-                         className='w-1/4 px-3 py-2 border border-gray-300 focus:outline-none rounded text-sm'
-                      >
-                        <option value='divided'>Divided</option>
-                        <option value='each'>Each</option>
-                      </select>
-                      
-                      <button
-                        type='button'
-                        onClick={() => handleRemoveCustomExpense(expense.id)}
-                        className='text-red-500 hover:text-red-700 p-2'
-                      >
-                          <FaTrash size={14} />
-                      </button>
+                    <select
+                      value={expense.type}
+                      onChange={e => handleCustomExpenseChange(expense.id, 'type', e.target.value)}
+                      className='w-1/4 px-3 py-2 border border-gray-300 focus:outline-none rounded text-sm'
+                    >
+                      <option value='divided'>Divided</option>
+                      <option value='each'>Each</option>
+                    </select>
+
+                    <button
+                      type='button'
+                      onClick={() => handleRemoveCustomExpense(expense.id)}
+                      className='text-red-500 hover:text-red-700 p-2'
+                    >
+                      <FaTrash size={14} />
+                    </button>
                   </div>
                 ))}
               </div>

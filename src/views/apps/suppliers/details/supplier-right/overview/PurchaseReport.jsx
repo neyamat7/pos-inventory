@@ -205,6 +205,7 @@ const PurchaseReport = ({
             loading={loading}
             supplierData={supplierData}
             onPaymentSuccess={() => fetchLots(pagination.page, pagination.limit, searchValue, fromDate, toDate)}
+            dateRange={{ from: fromDate, to: toDate }}
           />
         )
 

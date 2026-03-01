@@ -49,7 +49,7 @@ const ProductViewModal = ({ product, onClose }) => {
                 {/* Product Name and Description */}
                 <div>
                   <Typography variant='h5' className='font-bold text-gray-900 mb-2'>
-                    {product.productName}
+                    {product.productNameBn || product.productName}
                   </Typography>
                   <Typography variant='body2' color='text.secondary' className='leading-relaxed'>
                     {product.description || 'No description available'}

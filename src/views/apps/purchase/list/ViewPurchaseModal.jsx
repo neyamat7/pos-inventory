@@ -50,7 +50,7 @@ const ViewPurchaseModal = ({ open, handleClose, data }) => {
 
   const calculateTotalExpenses = (expenses, customExpenses = []) => {
     let total = 0
-    
+
     if (expenses) {
       total += Object.values(expenses).reduce((sum, val) => sum + (Number(val) || 0), 0)
     }
@@ -133,7 +133,7 @@ const ViewPurchaseModal = ({ open, handleClose, data }) => {
                       </Grid>
                       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                         <Label>Product</Label>
-                        <Value component='div'>{lot.productId?.productName}</Value>
+                        <Value component='div'>{lot.productId?.productNameBn || lot.productId?.productName}</Value>
                       </Grid>
                       <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                         <Label>Unit Cost</Label>
@@ -163,7 +163,7 @@ const ViewPurchaseModal = ({ open, handleClose, data }) => {
                           {/* Standard Expenses */}
                           {Object.entries(lot.expenses).map(([expenseKey, expenseValue]) => {
                             if (expenseKey === 'custom_expenses' || expenseKey === '_id') return null
-                            
+
                             return (
                               <Grid key={expenseKey} size={{ xs: 6, sm: 4, md: 2 }}>
                                 <Label variant='caption'>{expenseKey.replace(/_/g, ' ')}</Label>
