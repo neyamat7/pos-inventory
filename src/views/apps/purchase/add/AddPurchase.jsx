@@ -788,7 +788,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
       total_expenses: totalExpenses
     }
 
-    console.log('Purchase payload:', payload)
+    console.log('Purchase payload:', JSON.stringify(payload))
 
     try {
       //  submit via server action createPurchase

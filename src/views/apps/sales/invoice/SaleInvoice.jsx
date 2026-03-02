@@ -299,7 +299,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
         )}
 
         {/* 3. Total Due */}
-        <div
+        {/* <div
           style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -310,7 +310,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
         >
           <span>সর্বমোট বকেয়া:</span>
           <span>{convertToBanglaNumber(totalDue)}</span>
-        </div>
+        </div> */}
 
         {/* 4. Previous Balance (Hide if < 1) */}
         {previousBalance >= 1 && (
@@ -337,12 +337,17 @@ const SaleInvoice = ({ saleData, customerData }) => {
         </div>
 
         {/* Paid Amount */}
-        {paymentDetails.received_amount > 0 && (
+        {/* {paymentDetails.received_amount > 0 && (
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
             <span>প্রদত্ত টাকা:</span>
             <span>{convertToBanglaNumber(paymentDetails.received_amount || 0)}</span>
           </div>
-        )}
+        )} */}
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
+          <span>প্রদত্ত টাকা:</span>
+          <span>{convertToBanglaNumber(paymentDetails.received_amount || 0)}</span>
+        </div>
 
         {/* Remaining Due */}
         <div
