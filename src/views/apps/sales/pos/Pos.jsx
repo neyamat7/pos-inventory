@@ -1214,14 +1214,14 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                       className={`${otherProps.className || ''} group ${option.isPinned ? 'bg-orange-50 hover:bg-orange-100' : ''}`}
                     >
                       <div className='flex items-center justify-between w-full'>
-                        <div className='flex flex-col'>
+                        <div className='flex flex-col items-start'>
                           <span
                             className={`flex items-center gap-2 ${option.isPinned ? 'font-medium text-orange-700' : ''}`}
                           >
                             {option.isPinned && <FaThumbtack className='text-xs' />}
                             {option.basic_info?.name}
                           </span>
-                          <span className='text-xs text-gray-500 ml-5'>{option.contact_info?.phone}</span>
+                          <span className='text-xs text-gray-500'>{option.contact_info?.phone}</span>
                         </div>
 
                         <div
@@ -1610,8 +1610,13 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                       }}
                       className='w-24 px-2 py-1 border border-gray-300 rounded-md text-center focus:ring-2 focus:ring-indigo-500 outline-none'
                     />
-                    <span className='text-sm'>
-                      {cartProducts.find(p => p.cart_item_id === lotModal.cartItemId)?.isBoxed ? 'boxes' : 'kg'}
+                    <span className='text-sm text-gray-600'>
+                      {(() => {
+                        const item = cartProducts.find(p => p.cart_item_id === lotModal.cartItemId)
+                        if (item?.isBoxed) return 'box'
+                        if (item?.isPieced || item?.sell_by_piece) return 'pcs'
+                        return 'kg'
+                      })()}
                     </span>
                   </div>
                 </div>
