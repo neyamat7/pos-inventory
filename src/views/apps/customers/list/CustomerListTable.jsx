@@ -360,7 +360,7 @@ const CustomerListTable = ({
   )
 
   const handleBalanceSubmit = async () => {
-    if (!balanceForm.amount || !balanceForm.transaction_Id || !balanceForm.payment_method) {
+    if (!balanceForm.amount || !balanceForm.payment_method) {
       showInfo('Please fill in all required fields')
 
       return
@@ -424,6 +424,7 @@ const CustomerListTable = ({
 
         showSuccess('Balance added successfully')
         setOpenBalanceModal(false)
+        refreshData() // Trigger a re-fetch of the list data
         setBalanceForm({
           date: new Date().toISOString().split('T')[0],
           amount: '',
@@ -667,8 +668,7 @@ const CustomerListTable = ({
 
               <CustomTextField
                 fullWidth
-                label='Transaction ID'
-                required
+                label='Transaction ID (Optional)'
                 value={balanceForm.transaction_Id}
                 onChange={e => setBalanceForm(prev => ({ ...prev, transaction_Id: e.target.value }))}
                 className='mb-4'

@@ -1,8 +1,8 @@
 'use client'
 
 // React Imports
-import { useEffect, useMemo, useState } from 'react'
 import ListPrintHandler from '@/components/prints/ListPrintHandler'
+import { useEffect, useMemo, useState } from 'react'
 
 // Next Imports
 import Link from 'next/link'
@@ -111,10 +111,6 @@ const SupplierListTable = ({
   searchValue = '',
   onSearchChange
 }) => {
-
- 
-
-
   const getCrateSummary = crateInfo => {
     if (!crateInfo) return '—'
 
@@ -138,8 +134,6 @@ const SupplierListTable = ({
 
     return summary.length > 0 ? summary.join(' | ') : 'No crates'
   }
-
-
 
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
@@ -382,7 +376,7 @@ const SupplierListTable = ({
 
   const handleBalanceSubmit = async () => {
     // Validation
-    if (!balanceForm.amount || !balanceForm.transaction_Id || !balanceForm.payment_method) {
+    if (!balanceForm.amount || !balanceForm.payment_method) {
       showInfo('Please fill in all required fields')
 
       return
@@ -458,6 +452,7 @@ const SupplierListTable = ({
 
         // Close modal and reset form
         setOpenBalanceModal(false)
+        refreshData() // Trigger a re-fetch of the list data
         setBalanceForm({
           date: new Date().toISOString().split('T')[0],
           amount: '',
@@ -685,8 +680,7 @@ const SupplierListTable = ({
               {/* Transaction ID */}
               <CustomTextField
                 fullWidth
-                label='Transaction ID'
-                required
+                label='Transaction ID (Optional)'
                 value={balanceForm.transaction_Id}
                 onChange={e => setBalanceForm(prev => ({ ...prev, transaction_Id: e.target.value }))}
                 InputProps={{
