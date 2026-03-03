@@ -21,6 +21,7 @@ import CustomTextField from '@core/components/mui/TextField'
 import { getAllCategories } from '@/actions/categoryActions'
 import { uploadImage } from '@/actions/imageActions'
 import '@/libs/styles/tiptapEditor.css'
+import { getImageUrl } from '@/utils/getImageUrl'
 import { showError } from '@/utils/toastUtils'
 
 const ProductInformation = ({ mode = 'create', loading = false }) => {
@@ -60,6 +61,19 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
     fetchCategories()
   }, [])
 
+  // Sync image preview with form value
+  useEffect(() => {
+    if (productImage) {
+      // If it's a browser blob URL (newly uploaded), don't overwrite it
+      // Otherwise, sync it with the form value (existing image URL)
+      if (!imagePreview || !imagePreview.startsWith('blob:')) {
+        setImagePreview(productImage)
+      }
+    } else {
+      setImagePreview('')
+    }
+  }, [productImage])
+
   // IMAGE UPLOAD HANDLER
   const handleImageUpload = async event => {
     const file = event.target.files[0]
@@ -81,30 +95,28 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
       const uploadResult = await uploadImage(formData)
 
       if (uploadResult.success) {
-        // Extract image URL from response - adjust based on your API response structure
+        // Extract image URL from response
         const imagePath = uploadResult.data?.filepath || uploadResult.data.imageUrl
 
         // Set the image URL in the form field
         setValue('productImage', imagePath)
       } else {
         console.error('Image upload failed:', uploadResult.error)
-
-        // Clear the preview on failure
-        setImagePreview('')
-
-        // You can add a toast notification here
+        setImagePreview(productImage || '')
         showError(`Image upload failed: ${uploadResult.error}`)
       }
     } catch (error) {
       console.error('Image upload error:', error)
-
-      // Clear the preview on error
-      setImagePreview('')
-
+      setImagePreview(productImage || '')
       showError('Error uploading image. Please try again.')
     } finally {
       setImageUploading(false)
     }
+  }
+
+  const handleRemoveImage = () => {
+    setValue('productImage', '')
+    setImagePreview('')
   }
 
   return (
@@ -343,47 +355,54 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
           </Grid>
 
           {/* PRODUCT IMAGE UPLOAD SECTION */}
-          {!isEdit && (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <div className='flex flex-col gap-2'>
-                <div className='flex items-center gap-4'>
-                  <label className='text-sm font-medium text-textPrimary whitespace-nowrap'>Product Image</label>
-                  <input
-                    type='file'
-                    accept='image/*'
-                    onChange={handleImageUpload}
-                    disabled={loading || imageUploading}
-                    className='block w-full text-sm text-textSecondary
-                      file:mr-4 file:py-2 file:px-4
-                      file:rounded-md file:border-0
-                      file:text-sm file:font-medium
-                      file:bg-primary file:text-white
-                      hover:file:bg-primaryDark disabled:opacity-50'
-                  />
-                </div>
-                {imageUploading && (
-                  <Typography variant='caption' color='text.secondary'>
-                    Uploading image...
-                  </Typography>
-                )}
-                {imagePreview && (
-                  <div className='mt-2'>
-                    <Typography variant='caption' color='text.secondary' className='mb-1 block'>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <div className='flex flex-col gap-2'>
+              <div className='flex items-center gap-4'>
+                <label className='text-sm font-medium text-textPrimary whitespace-nowrap'>Product Image</label>
+                <input
+                  type='file'
+                  accept='image/*'
+                  onChange={handleImageUpload}
+                  disabled={loading || imageUploading}
+                  className='block w-full text-sm text-textSecondary
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-md file:border-0
+                    file:text-sm file:font-medium
+                    file:bg-primary file:text-white
+                    hover:file:bg-primaryDark disabled:opacity-50'
+                />
+              </div>
+              {imageUploading && (
+                <Typography variant='caption' color='text.secondary'>
+                  Uploading image...
+                </Typography>
+              )}
+              {imagePreview && (
+                <div className='mt-2'>
+                  <div className='flex items-center gap-2 mb-1'>
+                    <Typography variant='caption' color='text.secondary'>
                       Preview:
                     </Typography>
-                    <img
-                      src={imagePreview}
-                      alt='Product preview'
-                      className='rounded-lg max-w-48 max-h-48 object-cover shadow-md border'
-                      onError={e => {
-                        e.target.style.display = 'none'
-                      }}
-                    />
+                    <Button size='small' color='error' onClick={handleRemoveImage} sx={{ p: 0, minWidth: 'auto' }}>
+                      Remove
+                    </Button>
                   </div>
-                )}
-              </div>
-            </Grid>
-          )}
+                  <img
+                    src={
+                      imagePreview.startsWith('http') || imagePreview.startsWith('blob:')
+                        ? imagePreview
+                        : getImageUrl(imagePreview)
+                    }
+                    alt='Product preview'
+                    className='rounded-lg max-w-48 max-h-48 object-cover shadow-md border'
+                    onError={e => {
+                      e.target.style.display = 'none'
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          </Grid>
 
           {/* Description */}
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
