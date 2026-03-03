@@ -107,10 +107,10 @@ export default function EditProduct({ id, productData: initialProductData }) {
     return {
       productName: product.productName || '',
       productNameBn: product.productNameBn || '',
-      basePrice: product.basePrice || 0,
+      basePrice: product.basePrice || '',
       description: product.description || '',
       categoryId: product.categoryId?._id || product.categoryId || '',
-      commissionRate: product.commissionRate || 0,
+      commissionRate: product.commissionRate || '',
       allowCommission: product.allowCommission || false,
       isCrated: product.isCrated || false,
       isBoxed: product.isBoxed || false,

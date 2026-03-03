@@ -7,11 +7,11 @@ import { FormProvider, useForm } from 'react-hook-form'
 const BASE_DEFAULTS = {
   productName: '',
   productNameBn: '',
-  basePrice: 0,
+  basePrice: '',
   productImage: '',
   description: '',
   categoryId: '',
-  commissionRate: 0,
+  commissionRate: '',
   allowCommission: false,
   isCrated: false,
   isBoxed: false,

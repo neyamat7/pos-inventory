@@ -97,10 +97,10 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
       }
     } catch (error) {
       console.error('Image upload error:', error)
-      
+
       // Clear the preview on error
       setImagePreview('')
-      
+
       showError('Error uploading image. Please try again.')
     } finally {
       setImageUploading(false)
@@ -164,7 +164,7 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
                 <CustomTextField
                   fullWidth
                   label='Base Price'
-                  placeholder='150'
+                  placeholder='0'
                   type='number'
                   inputProps={{ step: '0.01', min: 0 }}
                   {...field}
@@ -213,7 +213,7 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
                 <CustomTextField
                   fullWidth
                   label='Commission Rate (%)'
-                  placeholder='10'
+                  placeholder='0'
                   type='number'
                   inputProps={{ step: '0.01', min: 0, max: 100 }}
                   {...field}
@@ -347,9 +347,7 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <div className='flex flex-col gap-2'>
                 <div className='flex items-center gap-4'>
-                  <label className='text-sm font-medium text-textPrimary whitespace-nowrap'>
-                    Product Image
-                  </label>
+                  <label className='text-sm font-medium text-textPrimary whitespace-nowrap'>Product Image</label>
                   <input
                     type='file'
                     accept='image/*'
@@ -391,7 +389,7 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <div className='flex flex-col gap-4'>
               <Controller
-                name='description' 
+                name='description'
                 control={control}
                 render={({ field, fieldState }) => (
                   <CustomTextField
