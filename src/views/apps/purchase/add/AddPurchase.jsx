@@ -112,7 +112,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
   const [customExpenses, setCustomExpenses] = useState([])
 
   const handleAddCustomExpense = () => {
-    setCustomExpenses([...customExpenses, { id: Date.now(), name: '', amount: 0, type: 'divided' }])
+    setCustomExpenses([...customExpenses, { id: Date.now(), name: '', amount: '', type: 'divided' }])
   }
 
   const handleRemoveCustomExpense = id => {
@@ -377,6 +377,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
             <input
               type='number'
               min='0'
+              onWheel={e => e.currentTarget.blur()}
               value={product.piece_quantity === 0 ? '' : (product.piece_quantity ?? '')}
               placeholder='0'
               onChange={e => {
@@ -407,6 +408,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
             <input
               type='number'
               min='0'
+              onWheel={e => e.currentTarget.blur()}
               value={product.box_quantity === 0 ? '' : (product.box_quantity ?? '')}
               placeholder='0'
               onChange={e => {
@@ -438,6 +440,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
               <input
                 type='number'
                 min='0'
+                onWheel={e => e.currentTarget.blur()}
                 value={product.crate_type_one === 0 ? '' : (product.crate_type_one ?? '')}
                 placeholder='0'
                 onChange={e => {
@@ -465,6 +468,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
               <input
                 type='number'
                 min='0'
+                onWheel={e => e.currentTarget.blur()}
                 value={product.crate_type_two === 0 ? '' : (product.crate_type_two ?? '')}
                 placeholder='0'
                 onChange={e => {
@@ -525,6 +529,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
             <input
               type='number'
               min='0'
+              onWheel={e => e.currentTarget.blur()}
               value={product.discount_amount === 0 ? '' : (product.discount_amount ?? '')}
               placeholder='0'
               onChange={e => {
@@ -966,7 +971,9 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                   <label className='w-32 text-sm'>Transportation</label>
                   <input
                     type='number'
-                    defaultValue='0'
+                    defaultValue=''
+                    placeholder='0'
+                    onWheel={e => e.currentTarget.blur()}
                     {...register('transportationAmount')}
                     className='flex-1 px-3 py-2 border border-gray-300 rounded'
                   />
@@ -988,7 +995,9 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                   <label className='w-32 text-sm'>Moshjid</label>
                   <input
                     type='number'
-                    defaultValue='0'
+                    defaultValue=''
+                    placeholder='0'
+                    onWheel={e => e.currentTarget.blur()}
                     {...register('moshjidAmount')}
                     className='flex-1 px-3 py-2 border border-gray-300 rounded'
                   />
@@ -1010,7 +1019,9 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                   <label className='w-32 text-sm'>Van Vara</label>
                   <input
                     type='number'
-                    defaultValue='0'
+                    defaultValue=''
+                    placeholder='0'
+                    onWheel={e => e.currentTarget.blur()}
                     {...register('vanVaraAmount')}
                     className='flex-1 px-3 py-2 border border-gray-300 rounded'
                   />
@@ -1032,7 +1043,9 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                   <label className='w-32 text-sm'>Trading Post</label>
                   <input
                     type='number'
-                    defaultValue='0'
+                    defaultValue=''
+                    placeholder='0'
+                    onWheel={e => e.currentTarget.blur()}
                     {...register('tradingPostAmount')}
                     className='flex-1 px-3 py-2 border border-gray-300 rounded'
                   />
@@ -1054,7 +1067,9 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                   <label className='w-32 text-sm'>Labour</label>
                   <input
                     type='number'
-                    defaultValue='0'
+                    defaultValue=''
+                    placeholder='0'
+                    onWheel={e => e.currentTarget.blur()}
                     {...register('labourAmount')}
                     className='flex-1 px-3 py-2 border border-gray-300 rounded'
                   />
@@ -1094,8 +1109,9 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                     />
                     <input
                       type='number'
-                      placeholder='Amount'
-                      value={expense.amount}
+                      placeholder='0'
+                      value={expense.amount === 0 ? '' : expense.amount}
+                      onWheel={e => e.currentTarget.blur()}
                       onChange={e => handleCustomExpenseChange(expense.id, 'amount', e.target.value)}
                       className='w-1/4 px-3 py-2 border border-gray-300 rounded text-sm'
                     />
