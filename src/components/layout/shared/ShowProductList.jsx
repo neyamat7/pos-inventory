@@ -65,7 +65,7 @@ const ShowProductList = ({ filteredProducts = [], handleCartProductClick }) => {
                 alt={product.productName}
                 className='w-full h-28 object-contain mb-2'
               />
-              <h3 className='font-medium text-sm mb-1 line-clamp-2 min-h-[2.5rem]'>
+              <h3 className='font-medium text-sm line-clamp-2 min-h-[2.5rem]'>
                 {product.productNameBn || product.productName}
               </h3>
 

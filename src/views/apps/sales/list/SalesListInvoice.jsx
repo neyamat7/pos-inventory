@@ -1,7 +1,7 @@
 'use client'
 
 const SalesListInvoice = ({ saleData }) => {
-  // console.log('saleData in list invoice', JSON.stringify(saleData))
+  console.log('saleData in list invoice', JSON.stringify(saleData))
 
   // Group lots by product and calculate product totals
   const productSummary =
@@ -13,7 +13,7 @@ const SalesListInvoice = ({ saleData }) => {
       const totalCrate1 = item.selected_lots.reduce((sum, lot) => sum + (lot.crate_type1 || 0), 0)
       const totalCrate2 = item.selected_lots.reduce((sum, lot) => sum + (lot.crate_type2 || 0), 0)
       const productTotal = item.selected_lots.reduce(
-        (sum, lot) => sum + ((lot.selling_price || 0) + (lot.customer_commission_amount || 0)), 
+        (sum, lot) => sum + ((lot.selling_price || 0) + (lot.customer_commission_amount || 0)),
         0
       )
 
@@ -71,8 +71,12 @@ const SalesListInvoice = ({ saleData }) => {
 
       {/* Customer Info */}
       <div style={{ marginBottom: '6px' }}>
-        <div style={{ fontSize: '9px', marginBottom: '1px' }}>ক্রেতা: {saleData?.customerId?.basic_info?.name || 'N/A'}</div>
-        <div style={{ fontSize: '8px', marginBottom: '2px' }}>ঠিকানা: {saleData?.customerId?.contact_info?.location || 'N/A'}</div>
+        <div style={{ fontSize: '9px', marginBottom: '1px' }}>
+          ক্রেতা: {saleData?.customerId?.basic_info?.name || 'N/A'}
+        </div>
+        <div style={{ fontSize: '8px', marginBottom: '2px' }}>
+          ঠিকানা: {saleData?.customerId?.contact_info?.location || 'N/A'}
+        </div>
       </div>
 
       {/* Products Table */}
@@ -113,10 +117,10 @@ const SalesListInvoice = ({ saleData }) => {
                 {product.product_name}
               </td>
               <td style={{ border: '0.5px solid #000', padding: '2px', fontSize: '8px', textAlign: 'center' }}>
-                {product.isBoxed 
-                  ? `${product.totalBox} box` 
-                  : product.isPieced 
-                    ? `${product.totalPiece} pcs` 
+                {product.isBoxed
+                  ? `${product.totalBox} box`
+                  : product.isPieced
+                    ? `${product.totalPiece} pcs`
                     : `${product.totalKg} kg`}
               </td>
               <td style={{ border: '0.5px solid #000', padding: '2px', fontSize: '8px', textAlign: 'center' }}>

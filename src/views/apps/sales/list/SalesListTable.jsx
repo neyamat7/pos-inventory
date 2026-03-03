@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
-import { useReactToPrint } from 'react-to-print'
+import InvoicePrintHandler from '../invoice/InvoicePrintHandler'
 
 // MUI Imports
 import Box from '@mui/material/Box'
@@ -28,7 +28,7 @@ import { deleteSale } from '@/actions/saleActions'
 import TableSkeleton from '@/components/TableSkeleton'
 import { showError, showSuccess } from '@/utils/toastUtils'
 import tableStyles from '@core/styles/table.module.css'
-import SalesListInvoice from './SalesListInvoice'
+import { normalizeSaleForInvoice } from '@/utils/normalizeSaleForInvoice'
 
 const SalesListTable = ({
   salesData,
@@ -46,8 +46,8 @@ const SalesListTable = ({
 
   // console.log('selectedSale', JSON.stringify(selectedSale))
 
-  const [printSale, setPrintSale] = useState(null)
-  const componentRef = useRef(null)
+  const [printData, setPrintData] = useState(null)
+  const [triggerPrint, setTriggerPrint] = useState(false)
 
   const handleSearch = value => {
     if (onSearch) {
@@ -65,55 +65,24 @@ const SalesListTable = ({
     setSelectedSale(null)
   }
 
-  const handlePrint = useReactToPrint({
-    contentRef: componentRef,
-    documentTitle: `Invoice_${printSale?._id || 'Sale'}_${new Date().toISOString().split('T')[0]}`,
-    onBeforePrint: () => {
-      // console.log('Preparing invoice for printing...')
-
-      return Promise.resolve()
-    },
-    onAfterPrint: () => {
-      // console.log('Print completed')
-      showSuccess('Invoice printed successfully!')
-      setPrintSale(null)
-    },
-    onPrintError: (errorLocation, error) => {
-      console.error('Print error:', errorLocation, error)
-      showError('Failed to print invoice')
-      setPrintSale(null)
-    },
-    pageStyle: `
-      @page {
-        size: 12cm 25cm;
-        margin-top: 8cm;
-        margin-bottom: 3cm;
-        margin-left: 0.5cm;
-        margin-right: 0.5cm;
-      }
-      @media print {
-        body {
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
-        }
-        .no-print {
-          display: none !important;
-        }
-      }
-    `
-  })
-
   // Handle print button click
   const handlePrintInvoice = sale => {
-    // console.log('Print invoice for sale:', sale._id)
-    setPrintSale(sale)
+    const normalized = normalizeSaleForInvoice(sale)
 
-    // Trigger print after state update
-    setTimeout(() => {
-      if (componentRef.current) {
-        handlePrint()
-      }
-    }, 100)
+    setPrintData(normalized)
+    setTriggerPrint(true)
+  }
+
+  const handlePrintComplete = () => {
+    setTriggerPrint(false)
+    setPrintData(null)
+    showSuccess('Invoice printed successfully!')
+  }
+
+  const handlePrintError = error => {
+    console.error('Print error:', error)
+    showError('Failed to print invoice')
+    setTriggerPrint(false)
   }
 
   const handleDeleteSale = async saleId => {
@@ -682,12 +651,14 @@ const SalesListTable = ({
         </DialogContent>
       </Dialog>
 
-      {printSale && (
-        <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
-          <div ref={componentRef}>
-            <SalesListInvoice saleData={printSale} />
-          </div>
-        </div>
+      {printData && (
+        <InvoicePrintHandler
+          saleData={printData}
+          customerData={printData.rawCustomerId} // Pass normalized raw customer info
+          triggerPrint={triggerPrint}
+          onPrintComplete={handlePrintComplete}
+          onPrintError={handlePrintError}
+        />
       )}
     </>
   )
