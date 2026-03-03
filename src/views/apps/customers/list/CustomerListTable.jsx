@@ -424,7 +424,7 @@ const CustomerListTable = ({
 
         showSuccess('Balance added successfully')
         setOpenBalanceModal(false)
-        refreshData() // Trigger a re-fetch of the list data
+        refreshData()
         setBalanceForm({
           date: new Date().toISOString().split('T')[0],
           amount: '',
