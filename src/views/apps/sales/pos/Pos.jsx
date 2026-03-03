@@ -1585,6 +1585,19 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                         !lotModal.selectedLot.sales?.totalKgSold &&
                         ' None'}
                     </p>
+                    <p className='text-sm font-medium text-green-700'>
+                      Stock Remaining:
+                      {lotModal.selectedLot.remaining_boxes > 0 && ` ${lotModal.selectedLot.remaining_boxes} boxes`}
+                      {lotModal.selectedLot.remaining_pieces > 0 && ` ${lotModal.selectedLot.remaining_pieces} pieces`}
+                      {(lotModal.selectedLot.carat?.remaining_crate_Type_1 > 0 ||
+                        lotModal.selectedLot.carat?.remaining_crate_Type_2 > 0) &&
+                        ` ${lotModal.selectedLot.carat?.remaining_crate_Type_1 || 0}/${lotModal.selectedLot.carat?.remaining_crate_Type_2 || 0} crates`}
+                      {!lotModal.selectedLot.remaining_boxes &&
+                        !lotModal.selectedLot.remaining_pieces &&
+                        !lotModal.selectedLot.carat?.remaining_crate_Type_1 &&
+                        !lotModal.selectedLot.carat?.remaining_crate_Type_2 &&
+                        ' Out of Stock'}
+                    </p>
                     <p className='text-sm text-gray-600'>Unit Cost: ৳{lotModal.selectedLot.costs?.unitCost || 0}</p>
                     <p className='text-sm text-gray-600'>
                       Status: <span className='capitalize'>{lotModal.selectedLot.status}</span>
