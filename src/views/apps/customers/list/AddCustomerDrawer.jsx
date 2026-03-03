@@ -98,7 +98,7 @@ const AddCustomerDrawer = props => {
 
         // Contact Information
         contact_info: {
-          email: data.email.trim().toLowerCase(),
+          email: data.email?.trim().toLowerCase() || '',
           phone: data.phone.trim(),
           location: data.location?.trim() || ''
         },
@@ -126,7 +126,7 @@ const AddCustomerDrawer = props => {
         if (refreshData) {
           refreshData()
         }
-        
+
         reset()
         handleClose()
 
@@ -175,7 +175,6 @@ const AddCustomerDrawer = props => {
             <Typography color='text.primary' className='font-medium'>
               Basic Information
             </Typography>
-
 
             <Controller
               name='name'
@@ -230,16 +229,8 @@ const AddCustomerDrawer = props => {
             <Controller
               name='email'
               control={control}
-              rules={{ required: true }}
               render={({ field }) => (
-                <CustomTextField
-                  {...field}
-                  type='email'
-                  label='Email'
-                  placeholder='sbaser0@boston.com'
-                  fullWidth
-                  {...(errors.email && { error: true, helperText: 'Required' })}
-                />
+                <CustomTextField {...field} type='email' label='Email' placeholder='sbaser0@boston.com' fullWidth />
               )}
             />
 
@@ -286,8 +277,6 @@ const AddCustomerDrawer = props => {
                 )}
               />
             </div>
-
-
 
             {/* Crate Information Section */}
             <Typography color='text.primary' className='font-medium'>

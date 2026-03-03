@@ -309,13 +309,13 @@ const SupplierListTable = ({
                         showCancelButton: true,
                         confirmButtonColor: '#d33',
                         cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Yes, Archive',
+                        confirmButtonText: 'Yes, Delete',
                         cancelButtonText: 'Cancel'
                       })
 
                       if (result.isConfirmed) {
                         Swal.fire({
-                          title: 'Archiving...',
+                          title: 'Deleting...',
                           allowOutsideClick: false,
                           didOpen: () => Swal.showLoading()
                         })
@@ -324,7 +324,7 @@ const SupplierListTable = ({
 
                         if (response.success) {
                           Swal.fire({
-                            title: 'Archived!',
+                            title: 'Deleted!',
                             text: response.message,
                             icon: 'success',
                             timer: 2000
