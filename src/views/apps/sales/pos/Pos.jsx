@@ -224,7 +224,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     formState: { errors: paymentErrors }
   } = useForm({
     defaultValues: {
-      receiveAmount: 0,
+      receiveAmount: '',
       dueAmount: totalDueAmount,
       paymentType: 'cash',
       received_amount_from_balance: 0,
@@ -1114,7 +1114,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
   useEffect(() => {
     // setPaymentValue('received_amount_from_balance', 0)
-    setPaymentValue('receiveAmount', 0)
+    setPaymentValue('receiveAmount', '')
     setPaymentValue('dueAmount', 0)
     setPaymentValue('paymentType', 'cash')
   }, [selectedCustomer?._id, setPaymentValue])
@@ -1347,6 +1347,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                     <label className='w-32 text-sm'>Receive Amount</label>
                     <input
                       type='number'
+                      onWheel={e => e.currentTarget.blur()}
                       {...registerPayment('receiveAmount')}
                       className={`flex-1 px-3 py-2 border border-gray-300 rounded ${
                         paymentType === 'balance' ? 'bg-gray-100' : ''
@@ -1612,6 +1613,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                       min='0'
                       step='0.01'
                       placeholder='0'
+                      onWheel={e => e.currentTarget.blur()}
                       value={lotModal.selectedLot.sell_qty === 0 ? '' : lotModal.selectedLot.sell_qty}
                       onChange={e => {
                         const val = e.target.value
