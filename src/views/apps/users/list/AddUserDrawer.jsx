@@ -3,18 +3,20 @@ import { useState } from 'react'
 
 // MUI Imports
 import Button from '@mui/material/Button'
+import Divider from '@mui/material/Divider'
 import Drawer from '@mui/material/Drawer'
 import IconButton from '@mui/material/IconButton'
 import MenuItem from '@mui/material/MenuItem'
 import Typography from '@mui/material/Typography'
-import Divider from '@mui/material/Divider'
 
 // Third-party Imports
-import { useForm, Controller } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 
 // Component Imports
 import CustomTextField from '@core/components/mui/TextField'
+
 import { uploadImage } from '@/actions/imageActions'
+
 import { showError, showSuccess } from '@/utils/toastUtils'
 
 const AddUserDrawer = props => {
@@ -25,6 +27,7 @@ const AddUserDrawer = props => {
   const [loading, setLoading] = useState(false)
   const [imageFile, setImageFile] = useState(null)
   const [imagePreview, setImagePreview] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   // Hooks
   const {
@@ -113,7 +116,7 @@ const AddUserDrawer = props => {
         handleClose()
         resetAll()
         showSuccess('User created successfully!')
-        
+
         // Trigger refresh to fetch updated data from server
         if (onRefresh) {
           onRefresh()
@@ -217,9 +220,21 @@ const AddUserDrawer = props => {
               <CustomTextField
                 {...field}
                 fullWidth
-                type='password'
+                type={showPassword ? 'text' : 'password'}
                 label='Password'
                 placeholder='Enter password'
+                InputProps={{
+                  endAdornment: (
+                    <IconButton
+                      size='small'
+                      onClick={() => setShowPassword(prev => !prev)}
+                      edge='end'
+                      aria-label='toggle password visibility'
+                    >
+                      <i className={showPassword ? 'tabler-eye-off' : 'tabler-eye'} />
+                    </IconButton>
+                  )
+                }}
                 {...(errors.password && { error: true, helperText: 'This field is required.' })}
               />
             )}

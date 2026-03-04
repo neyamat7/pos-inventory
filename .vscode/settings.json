@@ -12,7 +12,8 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
+    // ESLint disabled due to Next.js 15 + eslint-config-next parser incompatibility
+    // "source.fixAll.eslint": "explicit",
     "source.organizeImports": "never",
     "source.fixAll.stylelint": "explicit"
   },
@@ -22,32 +23,19 @@
   "git.enableSmartCommit": true,
   // Extension: Prettier
   "prettier.requireConfig": true,
-  // Extension: ESLint
-  "eslint.validate": [
-    "javascript",
-    "typescript",
-    "javascriptreact",
-    "typescriptreact"
-  ],
-  "eslint.format.enable": true,
+  // Extension: ESLint - fully disabled in IDE.
+  // Use 'npm run lint' in the terminal for real linting.
+  "eslint.enable": false,
+  "eslint.validate": [],
   // Stylelint
   "css.validate": false,
   "less.validate": false,
   "scss.validate": false,
   "stylelint.enable": true,
-  "stylelint.validate": [
-    "css",
-    "scss",
-    "typescript",
-    "typescriptreact"
-  ],
+  "stylelint.validate": ["css", "scss", "typescript", "typescriptreact"],
   "markdown.extension.toc.updateOnSave": false,
   "files.insertFinalNewline": true,
   "editor.linkedEditing": true,
   "typescript.tsdk": "node_modules/typescript/lib",
-  "cSpell.words": [
-    "customizer",
-    "iconify",
-    "tanstack"
-  ]
+  "cSpell.words": ["customizer", "iconify", "tanstack"]
 }
