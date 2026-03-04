@@ -79,24 +79,24 @@ const ShowProductList = ({ filteredProducts = [], handleCartProductClick }) => {
               {/* Lot Availability Info */}
               <div className='mt-2 pt-2 border-t border-gray-100 flex flex-col gap-1'>
                 <div className='flex items-center justify-between'>
-                  <span className='text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-1.5 rounded'>
+                  <span className='text-[13px] font-semibold text-indigo-600 bg-indigo-50 px-1.5 rounded'>
                     {availability?.lotCount || 0} Lots
                   </span>
 
                   <div className='flex flex-wrap justify-end gap-x-2 gap-y-0.5 max-w-[70%]'>
                     {product.isBoxed && availability?.totalBoxes > 0 && (
-                      <span className='text-[9px] text-gray-600 font-medium'>B: {availability.totalBoxes}</span>
+                      <span className='text-[13px] text-gray-600 font-medium'>B: {availability.totalBoxes}</span>
                     )}
                     {product.sell_by_piece && availability?.totalPieces > 0 && (
-                      <span className='text-[9px] text-gray-600 font-medium'>P: {availability.totalPieces}</span>
+                      <span className='text-[13px] text-gray-600 font-medium'>P: {availability.totalPieces}</span>
                     )}
                     {product.isCrated && (availability?.totalCrate1 > 0 || availability?.totalCrate2 > 0) && (
                       <div className='flex gap-1'>
                         {availability.totalCrate1 > 0 && (
-                          <span className='text-[9px] text-orange-600 font-medium'>C1: {availability.totalCrate1}</span>
+                          <span className='text-[13px] text-orange-600 font-medium'>C1: {availability.totalCrate1}</span>
                         )}
                         {availability.totalCrate2 > 0 && (
-                          <span className='text-[9px] text-teal-600 font-medium'>C2: {availability.totalCrate2}</span>
+                          <span className='text-[13px] text-teal-600 font-medium'>C2: {availability.totalCrate2}</span>
                         )}
                       </div>
                     )}
