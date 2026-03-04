@@ -4,7 +4,7 @@ import api from '@/libs/api'
 
 export async function getAllProducts({ page = 1, limit = 10, search = '' } = {}) {
   try {
-    const data = await api.get(`/products/all?page=${page}&limit=${limit}&search=${search}`)
+    const data = await api.get(`/products/all?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`)
 
     return {
       total: data.total || 0,

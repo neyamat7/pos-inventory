@@ -36,7 +36,9 @@ export async function createCustomer(customerData) {
 
 export async function getCustomers(page, limit, search = '') {
   try {
-    const response = await api.get(`/customer/all?page=${page}&limit=${limit}&search=${search}`, { cache: 'no-store' })
+    const response = await api.get(`/customer/all?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`, {
+      cache: 'no-store'
+    })
 
     return {
       success: true,
@@ -208,10 +210,10 @@ export async function addCustomerBalance(balanceData) {
 export async function archiveCustomer(customerId) {
   try {
     const response = await api.delete(`/customer/delete/${customerId}`)
-    
+
     // Revalidate the customer list page
     revalidatePath('/apps/customers/list')
-    
+
     return {
       success: true,
       data: response,
@@ -219,7 +221,7 @@ export async function archiveCustomer(customerId) {
     }
   } catch (error) {
     console.error('Archive customer error:', error)
-    
+
     return {
       success: false,
       error: error.message || 'Failed to archive customer'
@@ -231,10 +233,10 @@ export async function archiveCustomer(customerId) {
 export async function toggleCustomerPin(customerId) {
   try {
     const response = await api.patch(`/customer/pin/${customerId}`)
-    
+
     // Revalidate the POS page or customer list if needed
     revalidatePath('/apps/sales/pos')
-    
+
     return {
       success: true,
       data: response,
@@ -242,7 +244,7 @@ export async function toggleCustomerPin(customerId) {
     }
   } catch (error) {
     console.error('Toggle customer pin error:', error)
-    
+
     return {
       success: false,
       error: error.message || 'Failed to update customer pin status'

@@ -1,9 +1,10 @@
 export const filteredProductsData = (productsData, searchTerm = '', selectedCategory = []) => {
   return (productsData || []).filter(product => {
     const name = product.productName?.toLowerCase() || ''
+    const nameBn = product.productNameBn?.toLowerCase() || ''
     const category = product.categoryId?.categoryName?.toLowerCase() || ''
 
-    const matchesSearch = name.includes(searchTerm.toLowerCase())
+    const matchesSearch = name.includes(searchTerm.toLowerCase()) || nameBn.includes(searchTerm.toLowerCase())
 
     const matchesCategory =
       selectedCategory.length === 0 || selectedCategory.some(categoryName => categoryName.toLowerCase() === category)
