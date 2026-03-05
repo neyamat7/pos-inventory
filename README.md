@@ -1,32 +1,124 @@
-## Getting Started
+# 🛍️ Point of Sale (POS) Client App
 
-First, run the development server:
+An advanced, modern, and highly scalable **Inventory Management** application. Built using the latest web technologies, it provides a seamless and responsive user experience to manage products, customers, orders, and sales analytics.
+
+---
+
+## 🔑 Admin Credentials
+
+To access the administrative dashboard, please use the following credentials:
+
+- **Email:** `admin@gmail.com`
+- **Password:** `12345678`
+
+---
+
+## 🚀 Features
+
+- **Auth & Authorization:** Secure Authentication using NextAuth.js.
+- **Inventory Management:** Browse, Add, Update, and Delete products seamlessly.
+- **Customer Management:** Comprehensive customer registry with robust search (including multi-language support).
+- **Dashboard & Analytics:** Real-time metrics powered by ApexCharts & Recharts.
+- **Responsive Layout:** Mobile-friendly layouts, built with Tailwind CSS & MUI (Material UI).
+
+---
+
+## 🛠️ Technology Stack
+
+Designed for high performance and maintainability, our stack includes:
+
+### **Frameworks & Core**
+
+- **[Next.js 15](https://nextjs.org/)** - React Framework (App Router & Turbopack enabled)
+- **[React 18](https://react.dev/)** - UI Library
+
+### **Styling & UI Components**
+
+- **[Material UI (MUI) v6](https://mui.com/)** - Core Component Library
+- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS Framework
+- **[Emotion](https://emotion.sh/)** - CSS-in-JS library
+
+### **State Management & Data Fetching**
+
+- **[Redux Toolkit](https://redux-toolkit.js.org/)** - Global state management
+- **[React Hook Form](https://react-hook-form.com/)** - Form handling
+- **[NextAuth.js](https://next-auth.js.org/)** - Secure authentication
+
+### **Charts & Extensions**
+
+- **[ApexCharts](https://apexcharts.com/)** & **[Recharts](https://recharts.org/)** - For Data Visualization 📊
+- **[FullCalendar](https://fullcalendar.io/)** - For comprehensive scheduling components 📅
+- **[Tiptap](https://tiptap.dev/)** - Rich-Text Editor 📝
+- **[Mapbox GL](https://www.mapbox.com/)** - For advanced mapping
+
+---
+
+## ⚙️ Project Setup
+
+Follow these instructions to set up the project on your local machine.
+
+### Prerequisites
+
+Ensure you have **Node.js** (v20+) and your preferred package manager installed, such as `npm`, `yarn`, or `pnpm`.
+
+### Installation
+
+1. **Install Dependencies**
+   It's recommended to use `pnpm` as defined in the project:
+
+   ```bash
+   pnpm install
+   ```
+
+2. **Environment Variables**
+   Create a `.env.local` file in the root directory based on `.env.example` to provide necessary environment variables for NextAuth, APIs, and Database connection strings.
+
+3. **Run the Development Server**
+   Start the application locally using Turbopack for ultrafast compilation:
+
+   ```bash
+   pnpm dev
+   ```
+
+4. **Access the App**
+   Open [http://localhost:3000](http://localhost:3000) with your browser to explore the dashboard.
+
+---
+
+## 📦 Building for Production
+
+Compile the project and optimize it for deployment:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+pnpm build
+pnpm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🎨 Linting & Formatting
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+To ensure code quality and consistency across the project:
 
-## Learn More
+- **Linting:**
+  ```bash
+  pnpm lint
+  ```
+- **Automatically Fix Lint Issues:**
+  ```bash
+  pnpm lint:fix
+  ```
+- **Format Code (Prettier):**
+  ```bash
+  pnpm format
+  ```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🤝 Contribution Guidelines
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+We welcome contributions! Please open an issue to discuss your intended changes, or simply submit a Pull Request following our code format and linting structures.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+**Built with ❤️ and Next.js.**
