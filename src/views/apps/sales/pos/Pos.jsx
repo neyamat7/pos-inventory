@@ -158,8 +158,10 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         cratePrice: 0,
         kg: 0,
         box_quantity: 0,
+        bag_quantity: 0,
         piece_quantity: 0,
         sell_by_piece: product.sell_by_piece || false,
+        isBagged: product.isBagged || false,
         discount_kg: 0,
         total_discount_kg: 0,
         discount_amount: 0,
@@ -292,8 +294,9 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   const showPieceQuantity = cartProducts.some(p => p.sell_by_piece)
   const showBoxQuantity = cartProducts.some(p => p.isBoxed)
   const showCrated = cartProducts.some(p => p.isCrated)
-  const showKg = cartProducts.some(p => !p.isBoxed && !p.sell_by_piece)
-  const showDiscountKg = cartProducts.some(p => !p.isBoxed && !p.sell_by_piece)
+  const showKg = cartProducts.some(p => (!p.isBoxed && !p.sell_by_piece) || p.isBagged)
+  const showDiscountKg = cartProducts.some(p => (!p.isBoxed && !p.sell_by_piece) || p.isBagged)
+  const showBagQuantity = cartProducts.some(p => p.isBagged)
   const showDiscountAmount = cartProducts.some(p => p.isBoxed || p.sell_by_piece || p.is_discountable)
 
   const columns = useMemo(() => {
@@ -439,6 +442,34 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                 const val = e.target.value
                 setCartProducts(prev =>
                   prev.map(item => (item.cart_item_id === product.cart_item_id ? { ...item, box_quantity: val } : item))
+                )
+              }}
+              placeholder='0'
+              className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center whitespace-nowrap'
+            />
+          )
+        }
+      },
+
+      {
+        accessorKey: 'bag_quantity',
+        header: 'Bag Quantity',
+        cell: ({ row }) => {
+          const product = row.original
+
+          if (!product.isBagged) return null
+
+          return (
+            <input
+              type='number'
+              name='bag_quantity'
+              min='0'
+              onWheel={e => e.currentTarget.blur()}
+              value={product.bag_quantity === 0 ? '' : (product.bag_quantity ?? '')}
+              onChange={e => {
+                const val = e.target.value
+                setCartProducts(prev =>
+                  prev.map(item => (item.cart_item_id === product.cart_item_id ? { ...item, bag_quantity: val } : item))
                 )
               }}
               placeholder='0'
@@ -676,6 +707,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     const filteredBaseColumns = baseColumns.filter(col => {
       if (col.accessorKey === 'kg') return showKg
       if (col.accessorKey === 'box_quantity') return showBoxQuantity
+      if (col.accessorKey === 'bag_quantity') return showBagQuantity
       if (col.accessorKey === 'discount_kg') return showDiscountKg
       if (col.accessorKey === 'discount_amount') return showDiscountAmount
 
@@ -823,6 +855,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     const toLot = item => {
       const kg = item.kg || 0
       const boxQty = item.box_quantity || 0
+      const bagQty = item.bag_quantity || 0
       const pieceQty = item.piece_quantity || 0
       const discountKg = item.total_discount_kg || 0
       const discountAmount = item.discount_amount || 0
@@ -831,6 +864,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       const isBoxed = item.isBoxed || false
       const isPieced = item.isPieced || item.sell_by_piece || false
       const isCrated = item.isCrated || false
+      const isBagged = item.isBagged || false
 
       let totalPrice = 0
       let discountedPrice = 0
@@ -844,6 +878,11 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       } else if (isPieced) {
         // For piece-based products
         totalPrice = Number((pieceQty * sellingPrice).toFixed(2))
+        discountedPrice = Number((totalPrice - discountAmount).toFixed(2))
+        finalDiscountAmount = discountAmount
+      } else if (isBagged) {
+        // For bag-based products
+        totalPrice = Number((bagQty * sellingPrice).toFixed(2))
         discountedPrice = Number((totalPrice - discountAmount).toFixed(2))
         finalDiscountAmount = discountAmount
       } else {
@@ -873,6 +912,9 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         } else if (isPieced) {
           // For piece-based products: discountedPrice - (piece_qty * unit_cost)
           lotProfit = Number((discountedPrice - pieceQty * unitCost).toFixed(2))
+        } else if (isBagged) {
+          // For bag-based products: discountedPrice - (bag_qty * unit_cost)
+          lotProfit = Number((discountedPrice - bagQty * unitCost).toFixed(2))
         } else {
           // For kg-based products: (kg - discountKg) * (sellingPrice - unitCost)
           lotProfit = Number(((kg - discountKg) * (sellingPrice - unitCost)).toFixed(2))
@@ -888,8 +930,10 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         isBoxed: isBoxed,
         isPieced: isPieced,
         isCrated: isCrated,
+        isBagged: isBagged,
+        bag_quantity: isBagged ? bagQty : 0,
         piece_quantity: isPieced ? pieceQty : 0,
-        discount_Kg: isBoxed || isPieced ? 0 : discountKg,
+        discount_Kg: isBoxed || isPieced || isBagged ? 0 : discountKg,
         discount_amount: finalDiscountAmount,
         unit_price: sellingPrice,
         selling_price: discountedPrice,
@@ -1043,6 +1087,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
     const lot = lotModal.selectedLot
     const sellQty = parseFloat(lot.sell_qty) || 0
+    const sellBagQty = parseFloat(lot.sell_bag_qty) || 0
     const currentSold = parseFloat(lot.sales?.totalKgSold || 0)
 
     // Validate: must enter a quantity
@@ -1058,11 +1103,13 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         if (item.cart_item_id === lotModal.cartItemId) {
           const isBoxed = item.isBoxed || lot.isBoxed || false
           const isPieced = item.sell_by_piece || lot.isPieced || false
+          const isBagged = item.isBagged || lot.isBagged || false
 
           return {
             ...item,
             isBoxed,
             isPieced,
+            isBagged,
             lot_selected: {
               lot_id: lot._id,
               lot_name: lot.lot_name,
@@ -1082,12 +1129,15 @@ export default function POSSystem({ productsData = [], customersData = [], categ
               remaining_crate_Type_1: lot.carat?.remaining_crate_Type_1,
               remaining_crate_Type_2: lot.carat?.remaining_crate_Type_2,
               remaining_boxes: lot.remaining_boxes,
+              remaining_bags: lot.remaining_bags,
+              remaining_kg: lot.remaining_kg,
               remaining_pieces: lot.remaining_pieces
             },
 
             kg: isBoxed || isPieced ? 0 : sellQty,
             box_quantity: isBoxed ? sellQty : 0,
             piece_quantity: isPieced ? sellQty : 0,
+            bag_quantity: isBagged ? sellBagQty : 0,
             cost_price: lot.costs?.unitCost || 0,
             selling_price: item.selling_price || lot.costs?.unitCost || 0
           }
@@ -1589,6 +1639,8 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                     <p className='text-sm font-medium text-green-700'>
                       Stock Remaining:
                       {lotModal.selectedLot.remaining_boxes > 0 && ` ${lotModal.selectedLot.remaining_boxes} boxes`}
+                      {lotModal.selectedLot.remaining_bags > 0 && ` ${lotModal.selectedLot.remaining_bags} bags`}
+                      {lotModal.selectedLot.remaining_kg > 0 && ` ${lotModal.selectedLot.remaining_kg} kg`}
                       {lotModal.selectedLot.remaining_pieces > 0 && ` ${lotModal.selectedLot.remaining_pieces} pieces`}
                       {(lotModal.selectedLot.carat?.remaining_crate_Type_1 > 0 ||
                         lotModal.selectedLot.carat?.remaining_crate_Type_2 > 0) &&
@@ -1606,33 +1658,65 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                   </div>
 
                   {/* Quantity input */}
-                  <div className='flex items-center gap-2'>
-                    <label className='text-sm text-gray-600'>Qty:</label>
-                    <input
-                      type='number'
-                      min='0'
-                      step='0.01'
-                      placeholder='0'
-                      onWheel={e => e.currentTarget.blur()}
-                      value={lotModal.selectedLot.sell_qty === 0 ? '' : lotModal.selectedLot.sell_qty}
-                      onChange={e => {
-                        const val = e.target.value
+                  <div className='flex items-center gap-4'>
+                    <div className='flex items-center gap-2'>
+                      <label className='text-sm text-gray-600 font-medium'>
+                        {(() => {
+                          const item = cartProducts.find(p => p.cart_item_id === lotModal.cartItemId)
+                          if (item?.isBoxed) return 'Boxes'
+                          if (item?.isPieced || item?.sell_by_piece) return 'Pieces'
+                          return 'Kg'
+                        })()}
+                        :
+                      </label>
+                      <input
+                        type='number'
+                        min='0'
+                        step='0.01'
+                        placeholder='0'
+                        onWheel={e => e.currentTarget.blur()}
+                        value={lotModal.selectedLot.sell_qty === 0 ? '' : lotModal.selectedLot.sell_qty}
+                        onChange={e => {
+                          const val = e.target.value
 
-                        setLotModal(prev => ({
-                          ...prev,
-                          selectedLot: { ...prev.selectedLot, sell_qty: val }
-                        }))
-                      }}
-                      className='w-24 px-2 py-1 border border-gray-300 rounded-md text-center focus:ring-2 focus:ring-indigo-500 outline-none'
-                    />
-                    <span className='text-sm text-gray-600'>
-                      {(() => {
-                        const item = cartProducts.find(p => p.cart_item_id === lotModal.cartItemId)
-                        if (item?.isBoxed) return 'box'
-                        if (item?.isPieced || item?.sell_by_piece) return 'pcs'
-                        return 'kg'
-                      })()}
-                    </span>
+                          setLotModal(prev => ({
+                            ...prev,
+                            selectedLot: { ...prev.selectedLot, sell_qty: val }
+                          }))
+                        }}
+                        className='w-24 px-2 py-1 border border-gray-300 rounded-md text-center focus:ring-2 focus:ring-indigo-500 outline-none'
+                      />
+                    </div>
+
+                    {/* New Manual Bag Input */}
+                    {(() => {
+                      const item = cartProducts.find(p => p.cart_item_id === lotModal.cartItemId)
+                      if (item?.isBagged) {
+                        return (
+                          <div className='flex items-center gap-2 border-l pl-4 border-gray-200'>
+                            <label className='text-sm text-gray-600 font-medium'>Bags:</label>
+                            <input
+                              type='number'
+                              min='0'
+                              placeholder='0'
+                              onWheel={e => e.currentTarget.blur()}
+                              value={
+                                lotModal.selectedLot.sell_bag_qty === 0 ? '' : (lotModal.selectedLot.sell_bag_qty ?? '')
+                              }
+                              onChange={e => {
+                                const val = e.target.value
+                                setLotModal(prev => ({
+                                  ...prev,
+                                  selectedLot: { ...prev.selectedLot, sell_bag_qty: val }
+                                }))
+                              }}
+                              className='w-20 px-2 py-1 border border-gray-300 rounded-md text-center focus:ring-2 focus:ring-indigo-500 outline-none'
+                            />
+                          </div>
+                        )
+                      }
+                      return null
+                    })()}
                   </div>
                 </div>
               </div>

@@ -72,6 +72,36 @@ const handlePieceQuantity = (setCartProducts, productId, personId, value) => {
   )
 }
 
+const handleBagQuantity = (setCartProducts, productId, personId, value) => {
+  setCartProducts(prevCart =>
+    prevCart.map(item => {
+      if (item.product_id === productId && (item.supplier_id === personId || item.customer_id === personId)) {
+        return {
+          ...item,
+          bag_quantity: value < 0 ? 0 : value
+        }
+      }
+
+      return item
+    })
+  )
+}
+
+const handleTotalKg = (setCartProducts, productId, personId, value) => {
+  setCartProducts(prevCart =>
+    prevCart.map(item => {
+      if (item.product_id === productId && (item.supplier_id === personId || item.customer_id === personId)) {
+        return {
+          ...item,
+          total_kg: value < 0 ? 0 : value
+        }
+      }
+
+      return item
+    })
+  )
+}
+
 const handleDiscountChange = (setCartProducts, productId, personId, value) => {
   setCartProducts(prevCart =>
     prevCart.map(item => {
@@ -278,9 +308,12 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
         box_quantity: 0,
         isBoxed: product.isBoxed || false,
         isCrated: product.isCrated || false,
+        isBagged: product.isBagged || false,
         allowCommission: product.allowCommission || false,
         sell_by_piece: product.sell_by_piece || false,
         piece_quantity: 0,
+        bag_quantity: 0,
+        total_kg: 0,
         is_discountable: product.is_discountable || false,
         discount_amount: 0
       }
@@ -333,6 +366,8 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
   // Calculate which columns should be visible based on cart content
   const showPieceQuantity = cartProducts.some(p => p.sell_by_piece)
   const showBoxQuantity = cartProducts.some(p => p.isBoxed)
+  const showBagQuantity = cartProducts.some(p => p.isBagged)
+  const showTotalKg = cartProducts.some(p => p.isBagged)
   const showCrated = cartProducts.some(p => p.isCrated)
   const showDiscount = cartProducts.some(p => p.is_discountable)
   const showCommission = cartProducts.some(p => p.allowCommission)
@@ -415,6 +450,68 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                 const value = parseInt(e.target.value) || 0
 
                 handleBoxQuantity(setCartProducts, product.product_id, product.supplier_id, value)
+                handleExpenseChange()
+              }}
+              className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
+            />
+          )
+        }
+      })
+    }
+
+    if (showBagQuantity) {
+      baseColumns.push({
+        accessorKey: 'bag_quantity',
+        header: 'Bag Quantity',
+        cell: ({ row }) => {
+          const product = row.original
+
+          if (!product.isBagged) {
+            return null
+          }
+
+          return (
+            <input
+              type='number'
+              min='0'
+              onWheel={e => e.currentTarget.blur()}
+              value={product.bag_quantity === 0 ? '' : (product.bag_quantity ?? '')}
+              placeholder='0'
+              onChange={e => {
+                const value = parseInt(e.target.value) || 0
+
+                handleBagQuantity(setCartProducts, product.product_id, product.supplier_id, value)
+                handleExpenseChange()
+              }}
+              className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
+            />
+          )
+        }
+      })
+    }
+
+    if (showTotalKg) {
+      baseColumns.push({
+        accessorKey: 'total_kg',
+        header: 'Total Kg',
+        cell: ({ row }) => {
+          const product = row.original
+
+          if (!product.isBagged) {
+            return null
+          }
+
+          return (
+            <input
+              type='number'
+              min='0'
+              onWheel={e => e.currentTarget.blur()}
+              value={product.total_kg === 0 ? '' : (product.total_kg ?? '')}
+              placeholder='0'
+              onChange={e => {
+                const value = parseFloat(e.target.value) || 0
+
+                handleTotalKg(setCartProducts, product.product_id, product.supplier_id, value)
                 handleExpenseChange()
               }}
               className='w-20 px-2 py-1 border border-gray-300 rounded text-sm outline-none text-center'
@@ -665,6 +762,22 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
         }
       }
 
+      // Check for bagged products
+      if (item.isBagged) {
+        const bagQuantity = Number(item.bag_quantity) || 0
+        const totalKg = Number(item.total_kg) || 0
+
+        if (bagQuantity <= 0) {
+          showError(`Product "${item.product_name}" must have bag quantity greater than 0`, 'error')
+          return
+        }
+
+        if (totalKg <= 0) {
+          showError(`Product "${item.product_name}" must have total kg greater than 0`, 'error')
+          return
+        }
+      }
+
       // Check unit cost is not zero or negative
       const cost = Number(item.cost) || 0
       if (cost <= 0) {
@@ -700,6 +813,8 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
         totalUnits = item.piece_quantity || 0
       } else if (item.isBoxed) {
         totalUnits = item.box_quantity || 0
+      } else if (item.isBagged) {
+        totalUnits = item.bag_quantity || 0
       } else {
         totalUnits = (item.crate_type_one || 0) + (item.crate_type_two || 0)
       }
@@ -729,12 +844,15 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
         isCrated: item.isCrated || false,
         isBoxed: item.isBoxed || false,
         isPieced: item.sell_by_piece || false,
+        isBagged: item.isBagged || false,
         carat: {
           carat_Type_1: item.crate_type_one || 0,
           carat_Type_2: item.crate_type_two || 0
         },
         box_quantity: item.box_quantity || 0,
         piece_quantity: item.piece_quantity || 0,
+        bag_quantity: item.bag_quantity || 0,
+        total_kg: item.total_kg || 0,
         expenses: {
           labour: item.labour || 0,
           transportation: item.transportation || 0,

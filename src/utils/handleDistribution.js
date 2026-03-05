@@ -1,5 +1,3 @@
- 
-
 const calculateExpenseValue = (amount, type, totalUnits, itemUnits) => {
   if (type === 'divided') {
     // Divide proportionally based on unit count (crates or boxes)
@@ -12,7 +10,13 @@ const calculateExpenseValue = (amount, type, totalUnits, itemUnits) => {
   return Number(amount.toFixed(2))
 }
 
-export const handleDistributionExpense = (data = {}, cartProducts, setCartProducts, suppliersData = [], customExpenses = []) => {
+export const handleDistributionExpense = (
+  data = {},
+  cartProducts,
+  setCartProducts,
+  suppliersData = [],
+  customExpenses = []
+) => {
   const isDataEmpty = (!data || Object.keys(data).length === 0) && customExpenses.length === 0
 
   const totalUnits = cartProducts.reduce((sum, item) => {
@@ -20,6 +24,8 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
       return sum + (item.box_quantity || 0)
     } else if (item.sell_by_piece) {
       return sum + (item.piece_quantity || 0)
+    } else if (item.isBagged) {
+      return sum + (item.bag_quantity || 0)
     } else {
       const typeOne = item.crate_type_one || 0
       const typeTwo = item.crate_type_two || 0
@@ -47,26 +53,26 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
 
     return 0
   }
-  
+
   // Helper to calculate custom expenses array for an item
-  const getCustomExpensesForItem = (itemUnits) => {
-      if (customExpenses.length === 0) return []
-      
-      return customExpenses.map(exp => {
-          const amount = Number(exp.amount || 0)
-          let val = 0
-          
-          if (exp.type === 'divided') {
-               val = calculateExpenseValue(amount, 'divided', totalUnits, itemUnits)
-          } else {
-               val = calculateExpenseValue(amount, 'each', totalUnits, itemUnits)
-          }
-          
-          return {
-              name: exp.name,
-              amount: val
-          }
-      })
+  const getCustomExpensesForItem = itemUnits => {
+    if (customExpenses.length === 0) return []
+
+    return customExpenses.map(exp => {
+      const amount = Number(exp.amount || 0)
+      let val = 0
+
+      if (exp.type === 'divided') {
+        val = calculateExpenseValue(amount, 'divided', totalUnits, itemUnits)
+      } else {
+        val = calculateExpenseValue(amount, 'each', totalUnits, itemUnits)
+      }
+
+      return {
+        name: exp.name,
+        amount: val
+      }
+    })
   }
 
   setCartProducts(prevCart => {
@@ -80,6 +86,8 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
         itemUnits = item.box_quantity || 0
       } else if (item.sell_by_piece) {
         itemUnits = item.piece_quantity || 0
+      } else if (item.isBagged) {
+        itemUnits = item.bag_quantity || 0
       } else {
         itemUnits = (item.crate_type_one || 0) + (item.crate_type_two || 0)
       }
@@ -97,28 +105,23 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
 
       const vanVaraValue = getExpenseValue('van_vara', 'vanVaraAmount', 'vanVaraType', item, itemUnits)
 
-      const tradingPostValue = getExpenseValue(
-        'trading_post',
-        'tradingPostAmount',
-        'tradingPostType',
-        item,
-        itemUnits
-      )
+      const tradingPostValue = getExpenseValue('trading_post', 'tradingPostAmount', 'tradingPostType', item, itemUnits)
 
       const labourValue = getExpenseValue('labour', 'labourAmount', 'labourType', item, itemUnits)
-      
+
       // Calculate Custom Expenses
       const itemCustomExpenses = getCustomExpensesForItem(itemUnits)
       const totalCustomExpenseValue = itemCustomExpenses.reduce((sum, exp) => sum + exp.amount, 0)
 
-      const expenses = transportationValue + moshjidValue + vanVaraValue + tradingPostValue + labourValue + totalCustomExpenseValue
+      const expenses =
+        transportationValue + moshjidValue + vanVaraValue + tradingPostValue + labourValue + totalCustomExpenseValue
 
       // --- get supplier info ---
       const supplier = suppliersData?.find(s => s._id === item.supplier_id)
 
       let cratePrice = 0
 
-      if (!item.isBoxed && !item.sell_by_piece) {
+      if (!item.isBoxed && !item.sell_by_piece && !item.isBagged) {
         const crateInfo = supplier?.crate_info || {}
         const typeOnePrice = crateInfo.crate1Price || 0
         const typeTwoPrice = crateInfo.crate2Price || 0
@@ -128,15 +131,14 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
 
         cratePrice = Number((typeOneQty * typeOnePrice + typeTwoQty * typeTwoPrice).toFixed(2))
       }
-      
+
       const newExpenses = Number(expenses.toFixed(2))
-    
-      
+
       // Helper to compare arrays
       const areCustomExpensesEqual = (arr1, arr2) => {
-          if (!arr1 && !arr2) return true;
-          if (!arr1 || !arr2 || arr1.length !== arr2.length) return false;
-          return arr1.every((val, index) => val.name === arr2[index].name && val.amount === arr2[index].amount);
+        if (!arr1 && !arr2) return true
+        if (!arr1 || !arr2 || arr1.length !== arr2.length) return false
+        return arr1.every((val, index) => val.name === arr2[index].name && val.amount === arr2[index].amount)
       }
 
       // Check if any value actually changed
@@ -162,7 +164,7 @@ export const handleDistributionExpense = (data = {}, cartProducts, setCartProduc
           cratePrice,
           // Store the detailed array
           custom_expenses: itemCustomExpenses,
-          other_expenses: item.other_expenses || 0 
+          other_expenses: item.other_expenses || 0
         }
       }
 

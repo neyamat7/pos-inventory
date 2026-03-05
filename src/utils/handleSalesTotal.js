@@ -17,7 +17,7 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
       const kg = Number(item.kg) || 0
       const costPrice = Number(item.cost_price) || 0
       const sellingPrice = Number(item.selling_price) || 0
-      
+
       let discountKg = Number(item.discount_kg) || 0
 
       // For crated products, discount_kg is per crate
@@ -25,6 +25,13 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
         const totalCrates = (Number(item.crate_type_one) || 0) + (Number(item.crate_type_two) || 0)
 
         discountKg = discountKg * totalCrates
+      }
+
+      // For bagged products, discount_kg is per bag
+      if (item.isBagged) {
+        const totalBags = Number(item.bag_quantity) || 0
+
+        discountKg = discountKg * totalBags
       }
 
       // --- Calculate discounted amount ---
@@ -57,7 +64,7 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
 
         productBase = Math.max(0, pieceQty * sellingPrice - discountedAmount)
       } else {
-        // For kg-based products
+        // For kg-based products (including bagged)
         productBase = Math.max(0, (kg - discountKg) * sellingPrice)
       }
 
@@ -93,7 +100,6 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
 
       // Final total = productAfterCommission + cratePrice
       const total = Math.max(0, Number((productAfterCommission + cratePrice).toFixed(2)))
- 
 
       let profit
 
@@ -113,7 +119,7 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
 
           profit = Math.max(0, pieceQty * sellingPrice - discountedAmount - pieceQty * costPrice)
         } else {
-          // For kg-based products
+          // For kg-based products (including bagged)
           profit = Math.max(0, (kg - discountKg) * sellingPrice - (kg - discountKg) * costPrice)
         }
       }
