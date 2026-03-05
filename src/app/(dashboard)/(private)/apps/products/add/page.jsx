@@ -39,6 +39,7 @@ const AddProductPage = () => {
         allowCommission: values.allowCommission,
         isCrated: values.isCrated,
         isBoxed: values.isBoxed,
+        isBagged: values.isBagged || false,
         is_discountable: values.is_discountable,
         sell_by_piece: values.sell_by_piece
       }

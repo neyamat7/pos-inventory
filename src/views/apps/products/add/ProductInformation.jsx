@@ -33,6 +33,11 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
   const productImage = useWatch({ control, name: 'productImage' })
   const allowCommission = useWatch({ control, name: 'allowCommission' })
 
+  const isCratedState = useWatch({ control, name: 'isCrated' })
+  const isBoxedState = useWatch({ control, name: 'isBoxed' })
+  const isBaggedState = useWatch({ control, name: 'isBagged' })
+  const sellByPieceState = useWatch({ control, name: 'sell_by_piece' })
+
   const [imagePreview, setImagePreview] = useState('')
   const [categories, setCategories] = useState([])
   const [categoriesLoading, setCategoriesLoading] = useState(false)
@@ -279,7 +284,7 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
                   {...field}
                   value={field.value ? 'yes' : 'no'}
                   onChange={e => field.onChange(e.target.value === 'yes')}
-                  disabled={loading}
+                  disabled={loading || isBoxedState || isBaggedState || sellByPieceState}
                 >
                   <MenuItem value='yes'>Yes</MenuItem>
                   <MenuItem value='no'>No</MenuItem>
@@ -301,7 +306,29 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
                   {...field}
                   value={field.value ? 'yes' : 'no'}
                   onChange={e => field.onChange(e.target.value === 'yes')}
-                  disabled={loading}
+                  disabled={loading || isCratedState || isBaggedState || sellByPieceState}
+                >
+                  <MenuItem value='yes'>Yes</MenuItem>
+                  <MenuItem value='no'>No</MenuItem>
+                </CustomTextField>
+              )}
+            />
+          </Grid>
+
+          {/* Is Bagged */}
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <Controller
+              name='isBagged'
+              control={control}
+              render={({ field }) => (
+                <CustomTextField
+                  select
+                  fullWidth
+                  label='Is Bagged?'
+                  {...field}
+                  value={field.value ? 'yes' : 'no'}
+                  onChange={e => field.onChange(e.target.value === 'yes')}
+                  disabled={loading || isCratedState || isBoxedState || sellByPieceState}
                 >
                   <MenuItem value='yes'>Yes</MenuItem>
                   <MenuItem value='no'>No</MenuItem>
@@ -345,7 +372,7 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
                   {...field}
                   value={field.value ? 'yes' : 'no'}
                   onChange={e => field.onChange(e.target.value === 'yes')}
-                  disabled={loading}
+                  disabled={loading || isCratedState || isBoxedState || isBaggedState}
                 >
                   <MenuItem value='yes'>Yes</MenuItem>
                   <MenuItem value='no'>No</MenuItem>
@@ -424,7 +451,13 @@ const ProductInformation = ({ mode = 'create', loading = false }) => {
                   />
                 )}
               />
-              <Button variant='contained' type='submit' className='self-end' disabled={loading}>
+            </div>
+          </Grid>
+
+          {/* Submit Button */}
+          <Grid size={{ xs: 12 }}>
+            <div className='flex justify-center items-center mt-6'>
+              <Button variant='contained' type='submit' size='large' className='min-w-[250px]' disabled={loading}>
                 {loading ? 'Creating...' : isEdit ? 'Save Changes' : 'Create Product'}
               </Button>
             </div>

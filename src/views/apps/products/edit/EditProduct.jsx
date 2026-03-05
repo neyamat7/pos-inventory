@@ -65,6 +65,7 @@ export default function EditProduct({ id, productData: initialProductData }) {
         allowCommission: values.allowCommission,
         isCrated: values.isCrated,
         isBoxed: values.isBoxed,
+        isBagged: values.isBagged || false,
         is_discountable: values.is_discountable,
         sell_by_piece: values.sell_by_piece
       }
@@ -116,6 +117,7 @@ export default function EditProduct({ id, productData: initialProductData }) {
       allowCommission: product.allowCommission || false,
       isCrated: product.isCrated || false,
       isBoxed: product.isBoxed || false,
+      isBagged: product.isBagged || false,
       is_discountable: product.is_discountable || false,
       sell_by_piece: product.sell_by_piece || false
     }

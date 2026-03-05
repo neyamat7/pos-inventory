@@ -115,10 +115,4 @@ To ensure code quality and consistency across the project:
 
 ---
 
-## 🤝 Contribution Guidelines
-
-We welcome contributions! Please open an issue to discuss your intended changes, or simply submit a Pull Request following our code format and linting structures.
-
----
-
 **Built with ❤️ and Next.js.**
