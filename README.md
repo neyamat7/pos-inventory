@@ -1,4 +1,4 @@
-# 🛍️ Point of Sale (POS) Client App
+# 🛍️ Inventory Management
 
 An advanced, modern, and highly scalable **Inventory Management** application. Built using the latest web technologies, it provides a seamless and responsive user experience to manage products, customers, orders, and sales analytics.
 
