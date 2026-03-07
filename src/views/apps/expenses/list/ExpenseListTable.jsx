@@ -130,7 +130,7 @@ const ExpenseListTable = ({
       {
         accessorKey: 'amount',
         header: 'Amount',
-        cell: ({ row }) => <Typography>${parseFloat(row.original.amount || 0).toFixed(2)}</Typography>
+        cell: ({ row }) => <Typography>৳ {parseFloat(row.original.amount || 0).toFixed(2)}</Typography>
       },
       {
         accessorKey: 'expense_category',

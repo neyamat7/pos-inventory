@@ -510,7 +510,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         cell: ({ row }) => {
           const product = row.original
 
-          if (product.isBoxed || product.sell_by_piece) return null
+          if (product.isBoxed || product.sell_by_piece || product.isBagged) return null
 
           return (
             <input
@@ -541,7 +541,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         cell: ({ row }) => {
           const product = row.original
 
-          if (!product.isBoxed && !product.sell_by_piece && !product.is_discountable) return null
+          if (!product.isBoxed && !product.sell_by_piece && !product.isBagged && !product.is_discountable) return null
 
           return (
             <input
@@ -881,8 +881,8 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         discountedPrice = Number((totalPrice - discountAmount).toFixed(2))
         finalDiscountAmount = discountAmount
       } else if (isBagged) {
-        // For bag-based products
-        totalPrice = Number((bagQty * sellingPrice).toFixed(2))
+        // For bag-based products (Price is per KG)
+        totalPrice = Number((kg * sellingPrice).toFixed(2))
         discountedPrice = Number((totalPrice - discountAmount).toFixed(2))
         finalDiscountAmount = discountAmount
       } else {
@@ -913,8 +913,8 @@ export default function POSSystem({ productsData = [], customersData = [], categ
           // For piece-based products: discountedPrice - (piece_qty * unit_cost)
           lotProfit = Number((discountedPrice - pieceQty * unitCost).toFixed(2))
         } else if (isBagged) {
-          // For bag-based products: discountedPrice - (bag_qty * unit_cost)
-          lotProfit = Number((discountedPrice - bagQty * unitCost).toFixed(2))
+          // For bag-based products: discountedPrice - (kg * unit_cost)
+          lotProfit = Number((discountedPrice - kg * unitCost).toFixed(2))
         } else {
           // For kg-based products: (kg - discountKg) * (sellingPrice - unitCost)
           lotProfit = Number(((kg - discountKg) * (sellingPrice - unitCost)).toFixed(2))

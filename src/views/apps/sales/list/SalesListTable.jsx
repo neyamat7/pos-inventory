@@ -654,7 +654,7 @@ const SalesListTable = ({
       {printData && (
         <InvoicePrintHandler
           saleData={printData}
-          customerData={printData.rawCustomerId} // Pass normalized raw customer info
+          customerData={printData.rawCustomerId}
           triggerPrint={triggerPrint}
           onPrintComplete={handlePrintComplete}
           onPrintError={handlePrintError}

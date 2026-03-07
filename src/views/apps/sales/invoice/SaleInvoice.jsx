@@ -5,7 +5,7 @@ import { convertToBanglaNumber } from '@/utils/convert-to-bangla'
 const SaleInvoice = ({ saleData, customerData }) => {
   console.log('customerData in invoice pdf generation page', JSON.stringify(customerData))
 
-  console.log('saleData in invoice pdf generation page', JSON.stringify(saleData))
+  // console.log('saleData in invoice pdf generation page', JSON.stringify(saleData))
 
   // Group lots by product and calculate product totals
   const productSummary =
@@ -58,10 +58,12 @@ const SaleInvoice = ({ saleData, customerData }) => {
   const hasAnyCommission = productSummary.some(p => p.customer_commission_rate > 0)
 
   // Calculation for Payment Summary
-  const previousDue = customerData?.account_info?.due || 0
+  // Prioritize historical data saved in the sale, fallback to live customer data if not available
+  const previousDue = paymentDetails.previous_due ?? (customerData?.account_info?.due || 0)
+  const previousBalance = paymentDetails.previous_balance ?? (customerData?.account_info?.balance || 0)
   const currentBill = paymentDetails.payable_amount || 0
   const totalDue = previousDue + currentBill
-  const previousBalance = customerData?.account_info?.balance || 0
+
   // Net payable logic: Total Due - Previous Balance
   const netPayable = Math.max(0, totalDue - previousBalance)
 

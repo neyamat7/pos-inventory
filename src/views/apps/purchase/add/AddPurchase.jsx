@@ -853,6 +853,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
         piece_quantity: item.piece_quantity || 0,
         bag_quantity: item.bag_quantity || 0,
         total_kg: item.total_kg || 0,
+        discount_amount: item.discount_amount || 0,
         expenses: {
           labour: item.labour || 0,
           transportation: item.transportation || 0,
@@ -1276,10 +1277,54 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
                     <p className='text-base opacity-80'>Total Suppliers</p>
                     <h2 className='text-2xl font-bold'>{[...new Set(cartProducts.map(p => p.supplier_id))].length}</h2>
                   </div>
-                  <div>
-                    {/* <p className='text-base opacity-80'>Total Amount</p>
-                    <h2 className='text-2xl font-bold'>৳ {totalDueAmount}</h2> */}
-                  </div>
+                  {/* Crate Count Summary */}
+                  {showCrated && (
+                    <div>
+                      <p className='text-base opacity-80'>Total Crates</p>
+                      <h2 className='text-2xl font-bold'>
+                        {cartProducts.reduce((sum, p) => sum + (p.crate_type_one || 0) + (p.crate_type_two || 0), 0)}
+                      </h2>
+                    </div>
+                  )}
+
+                  {/* Fixed Items Amount Summary */}
+                  {(showBoxQuantity || showBagQuantity || showPieceQuantity) && (
+                    <>
+                      <div>
+                        <p className='text-base opacity-80'>Total Amount</p>
+                        <h2 className='text-2xl font-bold'>
+                          ৳{' '}
+                          {cartProducts
+                            .reduce((sum, item) => {
+                              if (item.isCrated) return sum
+                              let subtotal = 0
+                              if (item.isBagged) subtotal = (item.total_kg || 0) * (item.cost || 0)
+                              else if (item.isBoxed) subtotal = (item.box_quantity || 0) * (item.cost || 0)
+                              else if (item.sell_by_piece) subtotal = (item.piece_quantity || 0) * (item.cost || 0)
+                              return sum + (subtotal - (item.discount_amount || 0))
+                            }, 0)
+                            .toLocaleString()}
+                        </h2>
+                      </div>
+
+                      <div>
+                        <p className='text-base opacity-80'>Grand Total (+Exp)</p>
+                        <h2 className='text-2xl font-bold'>
+                          ৳{' '}
+                          {(
+                            cartProducts.reduce((sum, item) => {
+                              if (item.isCrated) return sum
+                              let subtotal = 0
+                              if (item.isBagged) subtotal = (item.total_kg || 0) * (item.cost || 0)
+                              else if (item.isBoxed) subtotal = (item.box_quantity || 0) * (item.cost || 0)
+                              else if (item.sell_by_piece) subtotal = (item.piece_quantity || 0) * (item.cost || 0)
+                              return sum + (subtotal - (item.discount_amount || 0))
+                            }, 0) + cartProducts.reduce((sum, item) => sum + (item.expenses || 0), 0)
+                          ).toLocaleString()}
+                        </h2>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className='flex justify-center sm:justify-end w-full sm:w-auto'>

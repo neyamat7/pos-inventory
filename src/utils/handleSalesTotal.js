@@ -39,14 +39,12 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
 
       let discountedAmount = 0
 
-      if (item.isBoxed) {
-        // For boxed products
+      if (item.isBoxed || item.sell_by_piece || item.isBagged) {
+        // For boxed, piece, and bagged products - use flat money discount
         discountedAmount = Number(item.discount_amount) || 0
-      } else if (item.sell_by_piece) {
-        // For piece-based products
-        discountedAmount = Number(item.discount_amount) || 0
+        discountKg = 0 // Ensure no weight discount is applied
       } else {
-        // For kg-based products
+        // For crated and regular kg-based products - use weight reduction
         discountedAmount = Number((discountKg * costPrice).toFixed(2))
       }
 
@@ -63,8 +61,11 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
         const pieceQty = Number(item.piece_quantity) || 0
 
         productBase = Math.max(0, pieceQty * sellingPrice - discountedAmount)
+      } else if (item.isBagged) {
+        // For bagged products (Price is per KG, discount is flat amount)
+        productBase = Math.max(0, kg * sellingPrice - discountedAmount)
       } else {
-        // For kg-based products (including bagged)
+        // For crated and regular kg-based products (Discount is weight-based)
         productBase = Math.max(0, (kg - discountKg) * sellingPrice)
       }
 
@@ -118,9 +119,12 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
           const pieceQty = Number(item.piece_quantity) || 0
 
           profit = Math.max(0, pieceQty * sellingPrice - discountedAmount - pieceQty * costPrice)
+        } else if (item.isBagged) {
+          // For bagged products
+          profit = Math.max(0, kg * sellingPrice - discountedAmount - kg * costPrice)
         } else {
-          // For kg-based products (including bagged)
-          profit = Math.max(0, (kg - discountKg) * sellingPrice - (kg - discountKg) * costPrice)
+          // For crated and regular kg-based products
+          profit = Math.max(0, (kg - discountKg) * (sellingPrice - costPrice))
         }
       }
 

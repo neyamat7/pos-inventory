@@ -67,6 +67,8 @@ export const normalizeSaleForInvoice = (saleData, customerData = null) => {
     payable_amount: Number(saleData.payment_details?.payable_amount) || 0,
     received_amount: Number(saleData.payment_details?.received_amount) || 0,
     due_amount: Number(saleData.payment_details?.due_amount) || 0,
+    previous_due: Number(saleData.payment_details?.previous_due) || 0,
+    previous_balance: Number(saleData.payment_details?.previous_balance) || 0,
     payment_type: saleData.payment_details?.payment_type || 'cash',
     vat: Number(saleData.payment_details?.vat) || 0,
     note: saleData.payment_details?.note || ''
