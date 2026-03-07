@@ -84,27 +84,45 @@ const ProductViewModal = ({ product, onClose }) => {
                 {/* Status Information */}
                 <Grid container spacing={3}>
                   <Grid size={{ xs: 6 }}>
-                    <Typography variant='subtitle2' color='text.secondary' className='font-medium'>
-                      Crated Product
+                    <Typography variant='subtitle2' color='text.secondary' className='font-medium mb-1'>
+                      Product Type
                     </Typography>
                     <Chip
-                      label={product.isCrated ? 'Yes' : 'No'}
-                      color={product.isCrated ? 'success' : 'default'}
-                      variant='filled'
-                      size='small'
+                      label={
+                        product.isCrated
+                          ? 'Crate'
+                          : product.isBoxed
+                            ? 'Box'
+                            : product.isBagged
+                              ? 'Bag'
+                              : product.sell_by_piece
+                                ? 'Piece'
+                                : 'General'
+                      }
+                      color='primary'
+                      variant='tonal'
+                      size='medium'
+                      className='font-bold'
                     />
                   </Grid>
 
                   <Grid size={{ xs: 6 }}>
-                    <Typography variant='subtitle2' color='text.secondary' className='font-medium'>
-                      Commission Allowed
+                    <Typography variant='subtitle2' color='text.secondary' className='font-medium mb-1'>
+                      Status
                     </Typography>
-                    <Chip
-                      label={product.allowCommission ? 'Yes' : 'No'}
-                      color={product.allowCommission ? 'success' : 'default'}
-                      variant='filled'
-                      size='small'
-                    />
+                    <Box className='flex gap-2 flex-wrap'>
+                      {product.allowCommission && (
+                        <Chip label='Commission' color='success' variant='outlined' size='small' />
+                      )}
+                      {product.is_discountable && (
+                        <Chip label='Discountable' color='info' variant='outlined' size='small' />
+                      )}
+                      {!product.allowCommission && !product.is_discountable && (
+                        <Typography variant='body2' color='text.secondary'>
+                          Regular
+                        </Typography>
+                      )}
+                    </Box>
                   </Grid>
                 </Grid>
 

@@ -189,6 +189,28 @@ const ProductListTable = ({ productData, paginationData, loading, onPageChange, 
           />
         )
       }),
+      columnHelper.accessor('isBagged', {
+        header: 'Bagged',
+        cell: ({ row }) => (
+          <Chip
+            label={row.original.isBagged ? 'Yes' : 'No'}
+            color={row.original.isBagged ? 'success' : 'default'}
+            variant='tonal'
+            size='small'
+          />
+        )
+      }),
+      columnHelper.accessor('sell_by_piece', {
+        header: 'Piece',
+        cell: ({ row }) => (
+          <Chip
+            label={row.original.sell_by_piece ? 'Yes' : 'No'}
+            color={row.original.sell_by_piece ? 'success' : 'default'}
+            variant='tonal'
+            size='small'
+          />
+        )
+      }),
       columnHelper.accessor('allowCommission', {
         header: 'Commission Allowed',
         cell: ({ row }) => (

@@ -715,7 +715,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
     })
 
     return baseColumns
-  }, [showPieceQuantity, showBoxQuantity, showCrated, showDiscount, showCommission])
+  }, [showPieceQuantity, showBoxQuantity, showBagQuantity, showTotalKg, showCrated, showDiscount, showCommission])
 
   const tableData = useMemo(() => cartProducts, [cartProducts])
 
