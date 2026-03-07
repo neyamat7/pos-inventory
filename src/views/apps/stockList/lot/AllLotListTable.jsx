@@ -253,6 +253,24 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
       }
     },
     {
+      accessorKey: 'bag_quantity',
+      header: 'Total Bags',
+      cell: ({ row }) => {
+        const bagQty = row.original.bag_quantity || 0
+
+        return bagQty > 0 ? bagQty : '—'
+      }
+    },
+    {
+      accessorKey: 'remaining_bags',
+      header: 'Remaining Bags',
+      cell: ({ row }) => {
+        const remainingBags = row.original.remaining_bags || 0
+
+        return remainingBags > 0 ? remainingBags : '—'
+      }
+    },
+    {
       accessorKey: 'costs.unitCost',
       header: 'Unit Cost',
       cell: ({ getValue }) => {

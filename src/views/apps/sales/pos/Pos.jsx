@@ -1647,6 +1647,8 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                         ` ${lotModal.selectedLot.carat?.remaining_crate_Type_1 || 0}/${lotModal.selectedLot.carat?.remaining_crate_Type_2 || 0} crates`}
                       {!lotModal.selectedLot.remaining_boxes &&
                         !lotModal.selectedLot.remaining_pieces &&
+                        !lotModal.selectedLot.remaining_kg &&
+                        !lotModal.selectedLot.remaining_bags &&
                         !lotModal.selectedLot.carat?.remaining_crate_Type_1 &&
                         !lotModal.selectedLot.carat?.remaining_crate_Type_2 &&
                         ' Out of Stock'}

@@ -35,7 +35,8 @@ const ShowProductList = ({ filteredProducts = [], handleCartProductClick }) => {
           totalBoxes: 0,
           totalPieces: 0,
           totalCrate1: 0,
-          totalCrate2: 0
+          totalCrate2: 0,
+          totalKg: 0
         }
       }
 
@@ -44,6 +45,7 @@ const ShowProductList = ({ filteredProducts = [], handleCartProductClick }) => {
       map[productId].totalPieces += lot.remaining_pieces || 0
       map[productId].totalCrate1 += lot.carat?.remaining_crate_Type_1 || 0
       map[productId].totalCrate2 += lot.carat?.remaining_crate_Type_2 || 0
+      map[productId].totalKg = Number((map[productId].totalKg + (lot.remaining_kg || 0)).toFixed(2))
     })
 
     return map
@@ -93,12 +95,17 @@ const ShowProductList = ({ filteredProducts = [], handleCartProductClick }) => {
                     {product.isCrated && (availability?.totalCrate1 > 0 || availability?.totalCrate2 > 0) && (
                       <div className='flex gap-1'>
                         {availability.totalCrate1 > 0 && (
-                          <span className='text-[13px] text-orange-600 font-medium'>C1: {availability.totalCrate1}</span>
+                          <span className='text-[13px] text-orange-600 font-medium'>
+                            C1: {availability.totalCrate1}
+                          </span>
                         )}
                         {availability.totalCrate2 > 0 && (
                           <span className='text-[13px] text-teal-600 font-medium'>C2: {availability.totalCrate2}</span>
                         )}
                       </div>
+                    )}
+                    {product.isBagged && availability?.totalKg > 0 && (
+                      <span className='text-[13px] text-blue-600 font-medium'>Kg: {availability.totalKg}</span>
                     )}
                   </div>
                 </div>
