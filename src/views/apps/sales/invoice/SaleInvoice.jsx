@@ -179,8 +179,8 @@ const SaleInvoice = ({ saleData, customerData }) => {
                     <strong>কমিশন টাকা:</strong> ৳{convertToBanglaNumber(product.commissionAmount.toFixed(0))}
                   </div>
                   <div>
-                    <strong>ক্যারেট:</strong> {convertToBanglaNumber(product.totalCrate1)} /{' '}
-                    {convertToBanglaNumber(product.totalCrate2)}
+                    <strong>ক্যারেট:</strong> {convertToBanglaNumber(product.totalCrate1 + product.totalCrate2)} (
+                    {convertToBanglaNumber(product.totalCrate1)}/{convertToBanglaNumber(product.totalCrate2)})
                   </div>
                   <div>
                     <strong>ক্যারট মূল্য:</strong> ৳{convertToBanglaNumber(crateValue.toFixed(0))}
@@ -233,10 +233,10 @@ const SaleInvoice = ({ saleData, customerData }) => {
                     </td>
                     <td style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>
                       {product.isBoxed
-                        ? `${convertToBanglaNumber(product.totalBox)} ব.`
+                        ? `${convertToBanglaNumber(product.totalBox)} বক্স`
                         : product.isPieced
-                          ? `${convertToBanglaNumber(product.totalPiece)} পি.`
-                          : `${convertToBanglaNumber(product.totalKg)} কে.`}
+                          ? `${convertToBanglaNumber(product.totalPiece)} পিস`
+                          : `${convertToBanglaNumber(product.totalKg)} কেজি`}
                     </td>
                     <td style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>
                       {convertToBanglaNumber(product.unit_price)}
@@ -258,8 +258,8 @@ const SaleInvoice = ({ saleData, customerData }) => {
         </div>
       )}
 
-      {/* Payment Summary - HIDDEN for Crate sales */}
-      {cratedSummary.length === 0 && (
+      {/* Payment Summary - ALWAYS SHOW if there are ANY OTHER (non-crated) products OR if it's a 100% normal sale */}
+      {(cratedSummary.length === 0 || otherSummary.length > 0) && (
         <div style={{ border: '0.5px solid #000', padding: '4px', fontSize: '13px' }}>
           <div
             style={{ marginBottom: '4px', textAlign: 'center', fontWeight: 'bold', borderBottom: '0.5px solid #ccc' }}
@@ -272,7 +272,63 @@ const SaleInvoice = ({ saleData, customerData }) => {
             <span>{convertToBanglaNumber(previousDue)}</span>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
+          {/* New detailed breakdown of current bill if mixed items exist */}
+          {cratedSummary.length > 0 && otherSummary.length > 0 && (
+            <>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginBottom: '1px',
+                  fontSize: '12px',
+                  color: '#444',
+                  paddingLeft: '8px'
+                }}
+              >
+                <span>ক্যারেট পণ্যের বিল:</span>
+                <span>
+                  {convertToBanglaNumber(
+                    cratedSummary
+                      .reduce(
+                        (sum, p) =>
+                          sum +
+                          p.finalProductBase +
+                          p.commissionAmount +
+                          (p.totalCrate1 * crate1Rate + p.totalCrate2 * crate2Rate),
+                        0
+                      )
+                      .toFixed(0)
+                  )}
+                </span>
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginBottom: '1px',
+                  fontSize: '12px',
+                  color: '#444',
+                  paddingLeft: '8px'
+                }}
+              >
+                <span>অন্যান্য পণ্যের বিল:</span>
+                <span>
+                  {convertToBanglaNumber(
+                    otherSummary.reduce((sum, p) => sum + p.finalProductBase + p.commissionAmount, 0).toFixed(0)
+                  )}
+                </span>
+              </div>
+            </>
+          )}
+
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              marginBottom: '1px',
+              fontWeight: cratedSummary.length > 0 && otherSummary.length > 0 ? 'bold' : 'normal'
+            }}
+          >
             <span>বর্তমান বিল:</span>
             <span>{convertToBanglaNumber(currentBill)}</span>
           </div>
