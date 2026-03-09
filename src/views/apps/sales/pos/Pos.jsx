@@ -24,6 +24,7 @@ import { handleCrateCount } from '@/utils/handleCrateCount'
 import { handleSalesTotal } from '@/utils/handleSalesTotal'
 import { showError, showSuccess } from '@/utils/toastUtils'
 
+import { getGlobalCratePrices } from '@/actions/crateActions'
 import { getCustomers, toggleCustomerPin } from '@/actions/customerActions'
 import { Autocomplete, IconButton, TextField } from '@mui/material'
 import AddCustomerDrawer from '../../customers/list/AddCustomerDrawer'
@@ -44,6 +45,25 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   const [loadingCustomers, setLoadingCustomers] = useState(false)
   const showTooltip = useGlobalTooltip()
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const [globalCratePrices, setGlobalCratePrices] = useState({
+    type1: 0,
+    type2: 0
+  })
+
+  // Fetch global crate prices on mount
+  useEffect(() => {
+    const fetchGlobalPrices = async () => {
+      const res = await getGlobalCratePrices()
+      if (res.success && res.data) {
+        setGlobalCratePrices({
+          type1: res.data.global_crate_type_1_price || 0,
+          type2: res.data.global_crate_type_2_price || 0
+        })
+      }
+    }
+    fetchGlobalPrices()
+  }, [])
 
   const [commissionModal, setCommissionModal] = useState({
     open: false,
@@ -108,12 +128,12 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (cartProducts.length > 0 && selectedCustomer?._id) {
-        handleSalesTotal(setCartProducts, selectedCustomer)
+        handleSalesTotal(setCartProducts, selectedCustomer, globalCratePrices)
       }
     }, 100)
 
     return () => clearTimeout(timeout)
-  }, [cartInputKey, selectedCustomer?._id])
+  }, [cartInputKey, selectedCustomer?._id, globalCratePrices])
 
   const filteredProducts = useMemo(() => {
     return productsData.filter(product => {
@@ -206,9 +226,13 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     const totalCrateType1Sold = cartProducts.reduce((sum, item) => sum + (Number(item.crate_type_one) || 0), 0)
     const totalCrateType2Sold = cartProducts.reduce((sum, item) => sum + (Number(item.crate_type_two) || 0), 0)
 
+    // Fallback logic for crate prices
+    const type1Price = selectedCustomer.crate_info?.type_1_price || globalCratePrices.type1 || 0
+    const type2Price = selectedCustomer.crate_info?.type_2_price || globalCratePrices.type2 || 0
+
     // Calculate total crate prices
-    const totalType1Price = Number((totalCrateType1Sold * (selectedCustomer.crate_info?.type_1_price || 0)).toFixed(2))
-    const totalType2Price = Number((totalCrateType2Sold * (selectedCustomer.crate_info?.type_2_price || 0)).toFixed(2))
+    const totalType1Price = Number((totalCrateType1Sold * type1Price).toFixed(2))
+    const totalType2Price = Number((totalCrateType2Sold * type2Price).toFixed(2))
 
     return {
       totalCrateType1Price: totalType1Price,
@@ -216,7 +240,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       totalCrateType1: totalCrateType1Sold,
       totalCrateType2: totalCrateType2Sold
     }
-  }, [cartProducts, selectedCustomer])
+  }, [cartProducts, selectedCustomer, globalCratePrices])
 
   const {
     register: registerPayment,

@@ -1,37 +1,43 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 // MUI Imports
 
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import MenuItem from '@mui/material/MenuItem'
-import CircularProgress from '@mui/material/CircularProgress'
-import IconButton from '@mui/material/IconButton'
-import Button from '@mui/material/Button'
-import Dialog from '@mui/material/Dialog'
-import DialogTitle from '@mui/material/DialogTitle'
-import DialogContent from '@mui/material/DialogContent'
-import DialogActions from '@mui/material/DialogActions'
-import Box from '@mui/material/Box'
-import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
+import CircularProgress from '@mui/material/CircularProgress'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogTitle from '@mui/material/DialogTitle'
+import IconButton from '@mui/material/IconButton'
+import MenuItem from '@mui/material/MenuItem'
+import Typography from '@mui/material/Typography'
 
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
-import { customerColumns } from './customerColumns'
 import CrateTransactionPrintHandler from './CrateTransactionPrintHandler'
+import { customerColumns } from './customerColumns'
 
 // Component Imports
-import CustomTextField from '@core/components/mui/TextField'
 import TablePaginationComponent from '@components/TablePaginationComponent'
+import CustomTextField from '@core/components/mui/TextField'
 
 // Style Imports
-import tableStyles from '@core/styles/table.module.css'
-import { addCrates, addCratesForSupplier, updateCrates } from '@/actions/crateActions'
-import { showError, showSuccess } from '@/utils/toastUtils'
+import {
+  addCrates,
+  addCratesForSupplier,
+  getGlobalCratePrices,
+  updateCrates,
+  updateGlobalCratePrices
+} from '@/actions/crateActions'
 import TableSkeleton from '@/components/TableSkeleton'
+import { showError, showSuccess } from '@/utils/toastUtils'
+import tableStyles from '@core/styles/table.module.css'
 
 const CrateManagementTable = ({
   supplierData,
@@ -63,12 +69,14 @@ const CrateManagementTable = ({
   const [rowSelection, setRowSelection] = useState({})
   const [showAddCrateModal, setShowAddCrateModal] = useState(false)
   const [showAddTotalModal, setShowAddTotalModal] = useState(false)
+  const [showGlobalSettingsModal, setShowGlobalSettingsModal] = useState(false)
   const [selectedSupplier, setSelectedSupplier] = useState(null)
 
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [addTotalCrateLoading, setAddTotalCrateLoading] = useState(false)
   const [addSupplierCrateLoading, setAddSupplierCrateLoading] = useState(false)
   const [updateLoading, setUpdateLoading] = useState(false)
+  const [globalSettingsLoading, setGlobalSettingsLoading] = useState(false)
 
   const [updateForm, setUpdateForm] = useState({
     type1Quantity: '',
@@ -78,10 +86,36 @@ const CrateManagementTable = ({
     notes: ''
   })
 
+  const [globalCratePrices, setGlobalCratePrices] = useState({
+    type1: 0,
+    type2: 0
+  })
+
+  const [globalSettingsForm, setGlobalSettingsForm] = useState({
+    type1: '',
+    type2: ''
+  })
+
+  useEffect(() => {
+    const fetchGlobalPrices = async () => {
+      const res = await getGlobalCratePrices()
+      if (res.success && res.data) {
+        setGlobalCratePrices({
+          type1: res.data.global_crate_type_1_price || 0,
+          type2: res.data.global_crate_type_2_price || 0
+        })
+        setGlobalSettingsForm({
+          type1: res.data.global_crate_type_1_price || 0,
+          type2: res.data.global_crate_type_2_price || 0
+        })
+      }
+    }
+    fetchGlobalPrices()
+  }, [])
+
   // Print state
   const [printTrigger, setPrintTrigger] = useState(false)
   const [transactionToPrint, setTransactionToPrint] = useState(null)
-
 
   // Modal form state
   const [modalForm, setModalForm] = useState({
@@ -157,7 +191,7 @@ const CrateManagementTable = ({
       if (result.success) {
         // console.log('Crates sent to supplier successfully')
         showSuccess('Crates sent to supplier successfully!')
-        
+
         // Trigger instant refresh of all data
         if (onRefresh) {
           onRefresh()
@@ -211,7 +245,7 @@ const CrateManagementTable = ({
       if (result.success) {
         // console.log('Total crates added successfully:', result.data)
         showSuccess('Total crates added successfully!')
-        
+
         // Trigger instant refresh of all data
         if (onRefresh) {
           onRefresh()
@@ -248,7 +282,7 @@ const CrateManagementTable = ({
       if (selectedSupplier?.isSupplier) {
         query.supplierId = selectedSupplier._id
       }
-      
+
       if (selectedSupplier?.isTransaction) {
         query.inventoryCratesId = selectedSupplier.transactionId
       }
@@ -266,7 +300,7 @@ const CrateManagementTable = ({
       if (result.success) {
         // console.log('Update successful:', result.data)
         showSuccess(result.message || 'Update successful!')
-        
+
         // Trigger instant refresh of all data
         if (onRefresh) {
           onRefresh()
@@ -436,7 +470,9 @@ const CrateManagementTable = ({
       {
         accessorKey: 'note',
         header: 'Notes',
-        cell: info => <div className='text-sm text-gray-600 max-w-xs whitespace-normal break-words'>{info.getValue() || '-'}</div>
+        cell: info => (
+          <div className='text-sm text-gray-600 max-w-xs whitespace-normal break-words'>{info.getValue() || '-'}</div>
+        )
       },
 
       {
@@ -447,7 +483,7 @@ const CrateManagementTable = ({
           const transaction = info.row.original
           const supplier = transaction.supplierId
           const customer = transaction.customerId
-          
+
           // Show print button if transaction has customer or supplier
           const canPrint = !!(customer || supplier)
 
@@ -460,7 +496,7 @@ const CrateManagementTable = ({
                     setSelectedSupplier({
                       transactionId: transaction._id,
                       isTransaction: true,
-                      _id: supplier ? (supplier._id || supplier) : null,
+                      _id: supplier ? supplier._id || supplier : null,
                       isSupplier: !!supplier,
                       supplierData: supplier
                     })
@@ -492,7 +528,7 @@ const CrateManagementTable = ({
                   Update
                 </Button>
               )}
-              
+
               {canPrint && (
                 <Button
                   variant='contained'
@@ -587,19 +623,66 @@ const CrateManagementTable = ({
     onPageChange(newPage)
   }
 
+  const handleUpdateGlobalSettings = async () => {
+    setGlobalSettingsLoading(true)
+    try {
+      const res = await updateGlobalCratePrices({
+        global_crate_type_1_price: Number(globalSettingsForm.type1),
+        global_crate_type_2_price: Number(globalSettingsForm.type2)
+      })
+
+      if (res.success && res.data) {
+        setGlobalCratePrices({
+          type1: res.data.global_crate_type_1_price,
+          type2: res.data.global_crate_type_2_price
+        })
+        showSuccess('Global crate prices updated successfully!')
+        setShowGlobalSettingsModal(false)
+      } else {
+        showError(res.error || 'Failed to update global crate prices')
+      }
+    } catch (error) {
+      console.error(error)
+      showError('Failed to update global crate prices')
+    } finally {
+      setGlobalSettingsLoading(false)
+    }
+  }
+
   return (
     <>
       {/* Add Crate Button & Filters */}
-      <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 3, alignItems: 'flex-end' }}>
-        <Button
-          variant='contained'
-          color='primary'
-          startIcon={<i className='tabler-plus' />}
-          onClick={() => setShowAddTotalModal(true)}
-          sx={{ height: '40px' }}
-        >
-          Add Crates to Collection
-        </Button>
+      <Box
+        sx={{
+          mb: 3,
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 3,
+          alignItems: 'flex-end',
+          justifyContent: 'space-between'
+        }}
+      >
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant='contained'
+            color='primary'
+            startIcon={<i className='tabler-plus' />}
+            onClick={() => setShowAddTotalModal(true)}
+            sx={{ height: '40px' }}
+          >
+            Add Crates to Collection
+          </Button>
+
+          <Button
+            variant='outlined'
+            color='secondary'
+            startIcon={<i className='tabler-settings' />}
+            onClick={() => setShowGlobalSettingsModal(true)}
+            sx={{ height: '40px' }}
+          >
+            Global Crate Prices
+          </Button>
+        </Box>
 
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           <CustomTextField
@@ -675,7 +758,7 @@ const CrateManagementTable = ({
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr' },
+          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr 1fr' },
           gap: 3,
           mb: 3
         }}
@@ -692,12 +775,13 @@ const CrateManagementTable = ({
               Total Bought Type 1
             </Typography>
             <Typography variant='h4' sx={{ fontWeight: 700, color: 'success.main' }}>
-              {(filterYear || filterMonth) 
-                ? totalCrates?.period_new_stock?.type_1_total || 0 
+              {filterYear || filterMonth
+                ? totalCrates?.period_new_stock?.type_1_total || 0
                 : totalCrates?.lifetime_totals?.type_1_total || 0}
             </Typography>
             <Typography variant='body2' sx={{ fontWeight: 600, mt: 1 }}>
-              Cost: ৳{(filterYear || filterMonth)
+              Cost: ৳
+              {filterYear || filterMonth
                 ? totalCrates?.period_new_stock?.type_1_total_cost || 0
                 : totalCrates?.lifetime_totals?.type_1_total_cost || 0}
             </Typography>
@@ -719,12 +803,13 @@ const CrateManagementTable = ({
               Total Bought Type 2
             </Typography>
             <Typography variant='h4' sx={{ fontWeight: 700, color: 'success.main' }}>
-              {(filterYear || filterMonth)
+              {filterYear || filterMonth
                 ? totalCrates?.period_new_stock?.type_2_total || 0
                 : totalCrates?.lifetime_totals?.type_2_total || 0}
             </Typography>
             <Typography variant='body2' sx={{ fontWeight: 600, mt: 1 }}>
-              Cost: ৳{(filterYear || filterMonth)
+              Cost: ৳
+              {filterYear || filterMonth
                 ? totalCrates?.period_new_stock?.type_2_total_cost || 0
                 : totalCrates?.lifetime_totals?.type_2_total_cost || 0}
             </Typography>
@@ -771,6 +856,41 @@ const CrateManagementTable = ({
             <Typography variant='caption' color='text.secondary'>
               Available in stock (Lifetime)
             </Typography>
+          </CardContent>
+        </Card>
+
+        {/* Global Prices */}
+        <Card>
+          <CardContent>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <Box sx={{ p: 1.5, bgcolor: '', borderRadius: 2 }}>
+                <i className='tabler-currency-taka' style={{ fontSize: '2rem', color: '#ff9800' }} />
+              </Box>
+              <IconButton size='small' onClick={() => setShowGlobalSettingsModal(true)}>
+                <i className='tabler-edit' style={{ fontSize: '1rem' }} />
+              </IconButton>
+            </Box>
+            <Typography variant='body2' color='text.secondary' sx={{ mb: 0.5 }}>
+              Global Prices (Sales)
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant='caption' sx={{ fontWeight: 600 }}>
+                  Type 1:
+                </Typography>
+                <Typography variant='body2' sx={{ fontWeight: 700, color: 'primary.main' }}>
+                  ৳{globalCratePrices.type1}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant='caption' sx={{ fontWeight: 600 }}>
+                  Type 2:
+                </Typography>
+                <Typography variant='body2' sx={{ fontWeight: 700, color: 'secondary.main' }}>
+                  ৳{globalCratePrices.type2}
+                </Typography>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
       </Box>
@@ -1221,30 +1341,47 @@ const CrateManagementTable = ({
                   ))}
                 </CustomTextField>
                 {modalForm.customerId && (
-                  <Box sx={{ mt: 1, p: 1.5, bgcolor: 'primary.lighter', borderRadius: 1, border: '1px dashed', borderColor: 'primary.main' }}>
+                  <Box
+                    sx={{
+                      mt: 1,
+                      p: 1.5,
+                      bgcolor: 'primary.lighter',
+                      borderRadius: 1,
+                      border: '1px dashed',
+                      borderColor: 'primary.main'
+                    }}
+                  >
                     {(() => {
-                      const selectedCustomer = customerData?.find(c => c._id === modalForm.customerId);
-                      if (!selectedCustomer) return null;
+                      const selectedCustomer = customerData?.find(c => c._id === modalForm.customerId)
+                      if (!selectedCustomer) return null
                       return (
                         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-around' }}>
                           <Box sx={{ textAlign: 'center' }}>
-                            <Typography variant='caption' sx={{ fontWeight: 600, color: 'primary.main', display: 'block' }}>
+                            <Typography
+                              variant='caption'
+                              sx={{ fontWeight: 600, color: 'primary.main', display: 'block' }}
+                            >
                               Type 1 Due
                             </Typography>
                             <Typography variant='body2' sx={{ fontWeight: 700 }}>
-                              {selectedCustomer.crate_info?.type_1 || 0} (৳{selectedCustomer.crate_info?.type_1_price || 0})
+                              {selectedCustomer.crate_info?.type_1 || 0} (৳
+                              {selectedCustomer.crate_info?.type_1_price || 0})
                             </Typography>
                           </Box>
                           <Box sx={{ textAlign: 'center' }}>
-                            <Typography variant='caption' sx={{ fontWeight: 600, color: 'secondary.main', display: 'block' }}>
+                            <Typography
+                              variant='caption'
+                              sx={{ fontWeight: 600, color: 'secondary.main', display: 'block' }}
+                            >
                               Type 2 Due
                             </Typography>
                             <Typography variant='body2' sx={{ fontWeight: 700 }}>
-                              {selectedCustomer.crate_info?.type_2 || 0} (৳{selectedCustomer.crate_info?.type_2_price || 0})
+                              {selectedCustomer.crate_info?.type_2 || 0} (৳
+                              {selectedCustomer.crate_info?.type_2_price || 0})
                             </Typography>
                           </Box>
                         </Box>
-                      );
+                      )
                     })()}
                   </Box>
                 )}
@@ -1351,8 +1488,9 @@ const CrateManagementTable = ({
                       Total Cost:
                     </Typography>
                     <Typography variant='body2' sx={{ fontWeight: 700, color: 'error.main' }}>
-                      ৳{((parseInt(modalForm.type1Quantity) || 0) * (parseInt(modalForm.type1Price) || 0)) +
-                        ((parseInt(modalForm.type2Quantity) || 0) * (parseInt(modalForm.type2Price) || 0))}
+                      ৳
+                      {(parseInt(modalForm.type1Quantity) || 0) * (parseInt(modalForm.type1Price) || 0) +
+                        (parseInt(modalForm.type2Quantity) || 0) * (parseInt(modalForm.type2Price) || 0)}
                     </Typography>
                   </Box>
                   <Box
@@ -1569,6 +1707,86 @@ const CrateManagementTable = ({
         </DialogActions>
       </Dialog>
 
+      {/* Global Settings Modal */}
+      <Dialog
+        open={showGlobalSettingsModal}
+        onClose={() => setShowGlobalSettingsModal(false)}
+        maxWidth='sm'
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.08)'
+          }
+        }}
+      >
+        <DialogTitle sx={{ pb: 2, borderBottom: '1px solid', borderColor: 'divider', mb: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box>
+              <Typography variant='h5' sx={{ fontWeight: 700 }}>
+                Set Global Crate Prices
+              </Typography>
+              <Typography variant='body2' color='text.secondary'>
+                These prices will be applied for customer sales when a customer does not have their own specific crate
+                prices.
+              </Typography>
+            </Box>
+            <IconButton onClick={() => setShowGlobalSettingsModal(false)}>
+              <i className='tabler-x' />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+              <Box>
+                <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
+                  Type 1 Price (৳)
+                </Typography>
+                <CustomTextField
+                  fullWidth
+                  type='number'
+                  value={globalSettingsForm.type1}
+                  onChange={e => setGlobalSettingsForm({ ...globalSettingsForm, type1: e.target.value })}
+                  onWheel={e => e.target.blur()}
+                  placeholder='Enter Global Type 1 Price'
+                />
+              </Box>
+
+              <Box>
+                <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
+                  Type 2 Price (৳)
+                </Typography>
+                <CustomTextField
+                  fullWidth
+                  type='number'
+                  value={globalSettingsForm.type2}
+                  onChange={e => setGlobalSettingsForm({ ...globalSettingsForm, type2: e.target.value })}
+                  onWheel={e => e.target.blur()}
+                  placeholder='Enter Global Type 2 Price'
+                />
+              </Box>
+            </Box>
+          </Box>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 3, mt: 2 }}>
+          <Button variant='outlined' color='secondary' onClick={() => setShowGlobalSettingsModal(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant='contained'
+            color='primary'
+            onClick={handleUpdateGlobalSettings}
+            disabled={globalSettingsLoading}
+            startIcon={globalSettingsLoading ? <CircularProgress size={16} /> : null}
+          >
+            {globalSettingsLoading ? 'Saving...' : 'Save Global Prices'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Print Handler */}
       <CrateTransactionPrintHandler
         transactionData={transactionToPrint}
@@ -1577,7 +1795,7 @@ const CrateManagementTable = ({
           console.log('Print completed successfully')
           setPrintTrigger(false)
         }}
-        onPrintError={(error) => {
+        onPrintError={error => {
           console.error('Print failed:', error)
           setPrintTrigger(false)
           showError('Failed to print invoice')

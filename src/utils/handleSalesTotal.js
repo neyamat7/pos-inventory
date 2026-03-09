@@ -1,9 +1,10 @@
 // Updated handleSalesTotal for single customer, using cost_price & selling_price
-export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
+export const handleSalesTotal = (setCartProducts, selectedCustomer, globalCratePrices = { type1: 0, type2: 0 }) => {
   setCartProducts(prevCart =>
     prevCart.map(item => {
-      const typeOnePrice = selectedCustomer?.crate_info?.type_1_price || 0
-      const typeTwoPrice = selectedCustomer?.crate_info?.type_2_price || 0
+      // Use customer price if available and not zero, otherwise fallback to global price
+      const typeOnePrice = selectedCustomer?.crate_info?.type_1_price || globalCratePrices.type1 || 0
+      const typeTwoPrice = selectedCustomer?.crate_info?.type_2_price || globalCratePrices.type2 || 0
 
       const typeOneQty = item.crate_type_one || 0
       const typeTwoQty = item.crate_type_two || 0
@@ -132,6 +133,8 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer) => {
         ...item,
         // kg, // Don't overwrite kg as it might be a string input
         cratePrice,
+        crate_type_one_price: typeOnePrice,
+        crate_type_two_price: typeTwoPrice,
         commission: commissionAmount,
         lot_commission: lotCommissionAmount,
         subtotal,

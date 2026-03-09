@@ -13,8 +13,16 @@ export async function addCrates(crateData) {
       }
     }
 
-    const { date, crate_type_1_qty, crate_type_2_qty, crate_type_1_price, crate_type_2_price, note, stockType, customerId } =
-      crateData
+    const {
+      date,
+      crate_type_1_qty,
+      crate_type_2_qty,
+      crate_type_1_price,
+      crate_type_2_price,
+      note,
+      stockType,
+      customerId
+    } = crateData
 
     // console.log('stock type', stockType)
 
@@ -192,6 +200,56 @@ export async function getCrateTotals(year, month) {
     return {
       success: false,
       error: error.message || 'Failed to fetch crate totals'
+    }
+  }
+}
+
+export async function getGlobalCratePrices() {
+  try {
+    const response = await api.get('/settings/crate-prices')
+
+    return {
+      success: true,
+      data: response.data,
+      message: 'Global crate prices fetched successfully'
+    }
+  } catch (error) {
+    console.error('Get global crate prices error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch global crate prices'
+    }
+  }
+}
+
+export async function updateGlobalCratePrices(prices) {
+  try {
+    if (!prices || typeof prices !== 'object') {
+      return {
+        success: false,
+        error: 'Price data is required'
+      }
+    }
+
+    const { global_crate_type_1_price, global_crate_type_2_price } = prices
+
+    const response = await api.put('/settings/crate-prices/update', {
+      global_crate_type_1_price,
+      global_crate_type_2_price
+    })
+
+    return {
+      success: true,
+      data: response.data,
+      message: 'Global crate prices updated successfully'
+    }
+  } catch (error) {
+    console.error('Update global crate prices error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to update global crate prices'
     }
   }
 }
