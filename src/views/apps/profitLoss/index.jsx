@@ -195,7 +195,7 @@ export default function ProfitLoss({ suppliers = [] }) {
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header & Filters */}
+      {/* Header */}
       <Box display='flex' justifyContent='space-between' alignItems='center' mb={4} flexWrap='wrap' gap={2}>
         <Box>
           <Typography variant='h4' fontWeight={700} gutterBottom>
