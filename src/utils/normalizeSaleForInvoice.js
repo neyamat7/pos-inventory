@@ -36,16 +36,18 @@ export const normalizeSaleForInvoice = (saleData, customerData = null) => {
             kg: Number(lot.kg) || 0,
             box_quantity: Number(lot.box_quantity) || 0,
             piece_quantity: Number(lot.piece_quantity) || 0,
-            isBoxed: Boolean(lot.isBoxed),
-            isPieced: Boolean(lot.isPieced),
-            isCrated: Boolean(lot.isCrated),
+            isBoxed: Boolean(lot.isBoxed || (isProductPopulated && item.productId?.isBoxed)),
+            isPieced: Boolean(lot.isPieced || (isProductPopulated && item.productId?.sell_by_piece)),
+            isCrated: Boolean(lot.isCrated || (isProductPopulated && item.productId?.isCrated)),
+            isBagged: Boolean(lot.isBagged || (isProductPopulated && item.productId?.isBagged)),
             unit_price: Number(lot.unit_price) || 0,
             selling_price: Number(lot.selling_price) || 0,
             total_price: Number(lot.total_price) || 0,
-            discount_Kg: Number(lot.discount_Kg) || 0,
+            discount_Kg: Number(lot.discount_Kg || lot.discount_kg) || 0,
+            discount_kg: Number(lot.discount_kg || lot.discount_Kg) || 0,
             discount_amount: Number(lot.discount_amount) || 0,
-            crate_type1: Number(lot.crate_type1) || 0,
-            crate_type2: Number(lot.crate_type2) || 0,
+            crate_type1: Number(lot.crate_type1 || lot.crate_type_one) || 0,
+            crate_type2: Number(lot.crate_type2 || lot.crate_type_two) || 0,
             lot_commission_rate: Number(lot.lot_commission_rate) || 0,
             lot_commission_amount: Number(lot.lot_commission_amount) || 0,
             customer_commission_rate: Number(lot.customer_commission_rate) || 0,
@@ -55,7 +57,9 @@ export const normalizeSaleForInvoice = (saleData, customerData = null) => {
         }) || []
 
       return {
+        productId: item.productId,
         product_name,
+        product_name_bn: isProductPopulated ? item.productId?.productNameBn : (item.product_name_bn || ''),
         selected_lots: normalizedLots
       }
     }) || []
@@ -66,6 +70,7 @@ export const normalizeSaleForInvoice = (saleData, customerData = null) => {
     total_crate_type2_price: Number(saleData.payment_details?.total_crate_type2_price) || 0,
     payable_amount: Number(saleData.payment_details?.payable_amount) || 0,
     received_amount: Number(saleData.payment_details?.received_amount) || 0,
+    received_amount_from_balance: Number(saleData.payment_details?.received_amount_from_balance) || 0,
     due_amount: Number(saleData.payment_details?.due_amount) || 0,
     previous_due: Number(saleData.payment_details?.previous_due) || 0,
     previous_balance: Number(saleData.payment_details?.previous_balance) || 0,

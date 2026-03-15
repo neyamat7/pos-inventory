@@ -7,7 +7,10 @@ const SaleInvoice = ({ saleData, customerData }) => {
   const allProductSummary =
     saleData?.items?.map(item => {
       const totalKg = item.selected_lots.reduce((sum, lot) => sum + (lot.kg || 0), 0)
-      const totalDiscountKg = item.selected_lots.reduce((sum, lot) => sum + (lot.discount_Kg || 0), 0)
+      const totalDiscountKg = item.selected_lots.reduce(
+        (sum, lot) => sum + (Number(lot.discount_Kg) || Number(lot.discount_kg) || 0),
+        0
+      )
       const netKg = totalKg - totalDiscountKg
 
       const totalBox = item.selected_lots.reduce((sum, lot) => sum + (lot.box_quantity || 0), 0)
@@ -123,7 +126,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
         <div style={{ fontSize: '13px', marginBottom: '2px' }}>ঠিকানা: {saleData?.customer_location || 'N/A'}</div>
       </div>
 
-      {/* 1. CRATED PRODUCTS LIST (New List Style) */}
+      {/* 1. CRATED PRODUCTS LIST (Design from Screenshot) */}
       {cratedSummary.length > 0 && (
         <div style={{ marginBottom: '10px' }}>
           <div style={{ fontWeight: 'bold', marginBottom: '6px', fontSize: '13px', borderBottom: '1px solid #000' }}>
@@ -139,7 +142,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
                 style={{
                   border: '0.5px solid #000',
                   padding: '6px',
-                  marginBottom: '8px',
+                  marginBottom: '10px',
                   borderRadius: '4px',
                   backgroundColor: '#fff'
                 }}
@@ -147,16 +150,17 @@ const SaleInvoice = ({ saleData, customerData }) => {
                 <div
                   style={{
                     fontWeight: 'bold',
-                    fontSize: '14px',
-                    borderBottom: '0.5px dotted #000',
-                    paddingBottom: '2px',
-                    marginBottom: '4px'
+                    fontSize: '16px',
+                    marginBottom: '2px'
                   }}
                 >
                   {product.product_name}
                 </div>
+                <div style={{ fontSize: '11px', color: '#555', marginBottom: '4px', borderBottom: '0.5px dotted #000', paddingBottom: '2px' }}>
+                   {product.product_name_bn}
+                </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', fontSize: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '8px 12px', fontSize: '12px' }}>
                   <div>
                     <strong>মোট ওজন:</strong> {convertToBanglaNumber(product.totalKg)} কেজি
                   </div>
@@ -167,7 +171,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
                     <strong>নিট ওজন:</strong> {convertToBanglaNumber(product.netKg)} কেজি
                   </div>
                   <div>
-                    <strong>দর:</strong> ৳{convertToBanglaNumber(product.unit_price)}
+                    <strong>দর:</strong> {convertToBanglaNumber(product.unit_price)}
                   </div>
                   <div>
                     <strong>কমিশন:</strong>{' '}
@@ -176,28 +180,28 @@ const SaleInvoice = ({ saleData, customerData }) => {
                       : '-'}
                   </div>
                   <div>
-                    <strong>কমিশন টাকা:</strong> ৳{convertToBanglaNumber(product.commissionAmount.toFixed(0))}
+                    <strong>কমিশন টাকা:</strong> {convertToBanglaNumber(product.commissionAmount.toFixed(0))}
                   </div>
                   <div>
                     <strong>ক্যারেট:</strong> {convertToBanglaNumber(product.totalCrate1 + product.totalCrate2)} (
                     {convertToBanglaNumber(product.totalCrate1)}/{convertToBanglaNumber(product.totalCrate2)})
                   </div>
                   <div>
-                    <strong>ক্যারট মূল্য:</strong> ৳{convertToBanglaNumber(crateValue.toFixed(0))}
+                    <strong>ক্যারেট মূল্য:</strong> {convertToBanglaNumber(crateValue.toFixed(0))}
                   </div>
                 </div>
 
                 <div
                   style={{
-                    marginTop: '6px',
-                    paddingTop: '4px',
+                    marginTop: '8px',
+                    paddingTop: '6px',
                     borderTop: '1px solid #000',
                     textAlign: 'right',
                     fontWeight: 'bold',
-                    fontSize: '14px'
+                    fontSize: '16px'
                   }}
                 >
-                  মোট: ৳{convertToBanglaNumber(lineTotal.toFixed(0))}
+                  মোট: {convertToBanglaNumber(lineTotal.toFixed(0))}
                 </div>
               </div>
             )
@@ -205,7 +209,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
         </div>
       )}
 
-      {/* 2. OTHER PRODUCTS TABLE (Standard) */}
+      {/* 2. OTHER PRODUCTS TABLE */}
       {otherSummary.length > 0 && (
         <div style={{ marginBottom: '10px' }}>
           <div style={{ fontWeight: 'bold', marginBottom: '4px', fontSize: '11px', borderBottom: '0.5px solid #ccc' }}>
@@ -216,15 +220,26 @@ const SaleInvoice = ({ saleData, customerData }) => {
               <tr style={{ backgroundColor: '#f0f0f0' }}>
                 <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>পণ্য</th>
                 <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>পরিমাণ</th>
+                <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>ক্যারেট</th>
                 <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>দর</th>
                 <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>কমিশন</th>
-                <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>ডিসকাউন্ট</th>
+                <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>ডিসকাউন্ট (কেজি/৳)</th>
                 <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>মোট</th>
               </tr>
             </thead>
             <tbody>
               {otherSummary.map((product, idx) => {
-                const lineTotal = product.finalProductBase + product.commissionAmount
+                const crateValue = product.totalCrate1 * crate1Rate + product.totalCrate2 * crate2Rate
+                const lineTotal = product.finalProductBase + product.commissionAmount + crateValue
+
+                const displayDiscount =
+                  product.isBoxed || product.isPieced || product.isBagged
+                    ? product.totalDiscountAmount > 0
+                      ? `৳${convertToBanglaNumber(product.totalDiscountAmount)}`
+                      : '-'
+                    : product.totalDiscountKg > 0
+                      ? `${convertToBanglaNumber(product.totalDiscountKg)} কেজি`
+                      : '-'
 
                 return (
                   <tr key={idx}>
@@ -239,13 +254,18 @@ const SaleInvoice = ({ saleData, customerData }) => {
                           : `${convertToBanglaNumber(product.totalKg)} কেজি`}
                     </td>
                     <td style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>
+                      {product.totalCrate1 + product.totalCrate2 > 0
+                        ? `${convertToBanglaNumber(product.totalCrate1 + product.totalCrate2)}`
+                        : '-'}
+                    </td>
+                    <td style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>
                       {convertToBanglaNumber(product.unit_price)}
                     </td>
                     <td style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>
                       {product.commissionAmount > 0 ? convertToBanglaNumber(product.commissionAmount.toFixed(0)) : '-'}
                     </td>
                     <td style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>
-                      {product.totalDiscountAmount > 0 ? convertToBanglaNumber(product.totalDiscountAmount) : '-'}
+                      {displayDiscount}
                     </td>
                     <td style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center', fontWeight: 'bold' }}>
                       {convertToBanglaNumber(lineTotal.toFixed(0))}
@@ -258,138 +278,83 @@ const SaleInvoice = ({ saleData, customerData }) => {
         </div>
       )}
 
-      {/* Payment Summary - ALWAYS SHOW if there are ANY OTHER (non-crated) products OR if it's a 100% normal sale */}
-      {(cratedSummary.length === 0 || otherSummary.length > 0) && (
-        <div style={{ border: '0.5px solid #000', padding: '4px', fontSize: '13px' }}>
-          <div
-            style={{ marginBottom: '4px', textAlign: 'center', fontWeight: 'bold', borderBottom: '0.5px solid #ccc' }}
-          >
-            পরিশোধ বিবরণ
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
-            <span>পূর্বের বকেয়া:</span>
-            <span>{convertToBanglaNumber(previousDue)}</span>
-          </div>
-
-          {/* New detailed breakdown of current bill if mixed items exist */}
-          {cratedSummary.length > 0 && otherSummary.length > 0 && (
-            <>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginBottom: '1px',
-                  fontSize: '12px',
-                  color: '#444',
-                  paddingLeft: '8px'
-                }}
-              >
-                <span>ক্যারেট পণ্যের বিল:</span>
-                <span>
-                  {convertToBanglaNumber(
-                    cratedSummary
-                      .reduce(
-                        (sum, p) =>
-                          sum +
-                          p.finalProductBase +
-                          p.commissionAmount +
-                          (p.totalCrate1 * crate1Rate + p.totalCrate2 * crate2Rate),
-                        0
-                      )
-                      .toFixed(0)
-                  )}
-                </span>
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginBottom: '1px',
-                  fontSize: '12px',
-                  color: '#444',
-                  paddingLeft: '8px'
-                }}
-              >
-                <span>অন্যান্য পণ্যের বিল:</span>
-                <span>
-                  {convertToBanglaNumber(
-                    otherSummary.reduce((sum, p) => sum + p.finalProductBase + p.commissionAmount, 0).toFixed(0)
-                  )}
-                </span>
-              </div>
-            </>
-          )}
-
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: '1px',
-              fontWeight: cratedSummary.length > 0 && otherSummary.length > 0 ? 'bold' : 'normal'
-            }}
-          >
-            <span>বর্তমান বিল:</span>
-            <span>{convertToBanglaNumber(currentBill)}</span>
-          </div>
-
-          {paymentDetails.vat > 0 && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '8px', color: '#666' }}>
-              <span>(ভ্যাট)</span>
-              <span>{convertToBanglaNumber(paymentDetails.vat)}</span>
-            </div>
-          )}
-
-          {previousBalance >= 1 && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'blue' }}>
-              <span>পূর্বের জমা:</span>
-              <span>{convertToBanglaNumber(previousBalance)}</span>
-            </div>
-          )}
-
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginTop: '3px',
-              borderTop: '0.5px solid #000',
-              fontWeight: 'bold',
-              fontSize: '14px'
-            }}
-          >
-            <span>সর্বমোট পরিশোধযোগ্য:</span>
-            <span>{convertToBanglaNumber(netPayable.toFixed(0))}</span>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
-            <span>প্রদত্ত টাকা:</span>
-            <span>{convertToBanglaNumber(paymentDetails.received_amount || 0)}</span>
-          </div>
-
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginTop: '2px',
-              borderTop: '0.5px dotted #000',
-              paddingTop: '2px',
-              fontWeight: 'bold',
-              color: 'red'
-            }}
-          >
-            <span>বাকি:</span>
-            <span>
-              {convertToBanglaNumber(Math.max(0, netPayable - (paymentDetails.received_amount || 0)).toFixed(0))}
-            </span>
-          </div>
-
-          {paymentDetails.note && (
-            <div style={{ marginTop: '4px', fontSize: '9px', borderTop: '0.5px dotted #ccc', fontStyle: 'italic' }}>
-              নোট: {paymentDetails.note}
-            </div>
-          )}
+      {/* Payment Summary */}
+      <div style={{ border: '0.5px solid #000', padding: '4px', fontSize: '13px' }}>
+        <div style={{ marginBottom: '4px', textAlign: 'center', fontWeight: 'bold', borderBottom: '0.5px solid #ccc' }}>
+          পরিশোধ বিবরণ
         </div>
-      )}
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
+          <span>পূর্বের বকেয়া:</span>
+          <span>{convertToBanglaNumber(previousDue)}</span>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1px' }}>
+          <span>বর্তমান বিল:</span>
+          <span>{convertToBanglaNumber(currentBill)}</span>
+        </div>
+
+        {paymentDetails.vat > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '8px', color: '#666' }}>
+            <span>(ভ্যাট)</span>
+            <span>{convertToBanglaNumber(paymentDetails.vat)}</span>
+          </div>
+        )}
+
+        {previousBalance >= 1 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', color: 'blue' }}>
+            <span>পূর্বের জমা:</span>
+            <span>{convertToBanglaNumber(previousBalance)}</span>
+          </div>
+        )}
+
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginTop: '3px',
+            borderTop: '0.5px solid #000',
+            fontWeight: 'bold',
+            fontSize: '14px'
+          }}
+        >
+          <span>সর্বমোট পরিশোধযোগ্য:</span>
+          <span>{convertToBanglaNumber(netPayable.toFixed(0))}</span>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
+          <span>নগদ/ব্যাংক প্রাপ্তি (Received):</span>
+          <span>{convertToBanglaNumber(paymentDetails.received_amount || 0)}</span>
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginTop: '2px',
+            borderTop: '0.5px dotted #000',
+            paddingTop: '2px',
+            fontWeight: 'bold',
+            color: 'red'
+          }}
+        >
+          <span>বাকি:</span>
+          <span>
+            {convertToBanglaNumber(
+              Math.max(
+                0,
+                netPayable - (paymentDetails.received_amount || 0) - (paymentDetails.received_amount_from_balance || 0)
+              ).toFixed(0)
+            )}
+          </span>
+        </div>
+
+        {paymentDetails.note && (
+          <div style={{ marginTop: '4px', fontSize: '9px', borderTop: '0.5px dotted #ccc', fontStyle: 'italic' }}>
+            নোট: {paymentDetails.note}
+          </div>
+        )}
+      </div>
 
       {/* Footer */}
       <div

@@ -321,7 +321,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   const showKg = cartProducts.some(p => (!p.isBoxed && !p.sell_by_piece) || p.isBagged)
   const showDiscountKg = cartProducts.some(p => (!p.isBoxed && !p.sell_by_piece) || p.isBagged)
   const showBagQuantity = cartProducts.some(p => p.isBagged)
-  const showDiscountAmount = cartProducts.some(p => p.isBoxed || p.sell_by_piece || p.is_discountable)
+  const showDiscountAmount = cartProducts.some(p => (p.isBoxed || p.sell_by_piece || p.isBagged || p.is_discountable) && !p.isCrated)
 
   const columns = useMemo(() => {
     // --- Base Columns (always shown) ---
@@ -565,7 +565,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         cell: ({ row }) => {
           const product = row.original
 
-          if (!product.isBoxed && !product.sell_by_piece && !product.isBagged && !product.is_discountable) return null
+          if (product.isCrated || (!product.isBoxed && !product.sell_by_piece && !product.isBagged && !product.is_discountable)) return null
 
           return (
             <input
