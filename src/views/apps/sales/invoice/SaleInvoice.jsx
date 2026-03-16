@@ -3,7 +3,7 @@
 import { convertToBanglaNumber } from '@/utils/convert-to-bangla'
 
 const SaleInvoice = ({ saleData, customerData }) => {
-  console.log('saleData in pos invoice', saleData)
+  // console.log('saleData in pos invoice', saleData)
 
   // Group lots by product and calculate product totals
   const allProductSummary =
@@ -54,6 +54,8 @@ const SaleInvoice = ({ saleData, customerData }) => {
           item.productId?.productName ||
           item.product_name ||
           'N/A',
+        product_name_bn:
+          item.productId?.productNameBn || item.product_name_bn || item.productId?.productName || item.product_name || '',
         isCrated,
         isBoxed,
         isPieced,
@@ -69,7 +71,8 @@ const SaleInvoice = ({ saleData, customerData }) => {
         totalDiscountAmount,
         totalCrate1,
         totalCrate2,
-        finalProductBase // This is total before crates and commission addition
+        finalProductBase, // This is total before crates and commission addition
+        lots: item.selected_lots || []
       }
     }) || []
 
@@ -170,6 +173,16 @@ const SaleInvoice = ({ saleData, customerData }) => {
                   {product.product_name_bn}
                 </div>
 
+                {/* Lot Breakdown */}
+                <div style={{ marginBottom: '6px', fontSize: '11px', backgroundColor: '#f9f9f9', padding: '4px', borderRadius: '2px' }}>
+                  {product.lots.map((lot, lIdx) => (
+                    <div key={lIdx} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '0.2px solid #ddd', padding: '1px 0' }}>
+                      <span><strong>লট:</strong> {lot.lot_name}</span>
+                      <span><strong>ওজন:</strong> {convertToBanglaNumber(lot.kg)} কেজি</span>
+                    </div>
+                  ))}
+                </div>
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '8px 12px', fontSize: '12px' }}>
                   <div>
                     <strong>মোট ওজন:</strong> {convertToBanglaNumber(product.totalKg)} কেজি
@@ -233,23 +246,18 @@ const SaleInvoice = ({ saleData, customerData }) => {
                 <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>ক্যারেট</th>
                 <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>দর</th>
                 <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>কমিশন</th>
-                <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>ডিসকাউন্ট (কেজি/৳)</th>
+                <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>ডিসকাউন্ট (৳)</th>
                 <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'center' }}>মোট</th>
               </tr>
             </thead>
+
             <tbody>
               {otherSummary.map((product, idx) => {
                 const crateValue = product.totalCrate1 * crate1Rate + product.totalCrate2 * crate2Rate
                 const lineTotal = product.finalProductBase + product.commissionAmount + crateValue
 
                 const displayDiscount =
-                  product.isBoxed || product.isPieced || product.isBagged
-                    ? product.totalDiscountAmount > 0
-                      ? `৳${convertToBanglaNumber(product.totalDiscountAmount)}`
-                      : '-'
-                    : product.totalDiscountKg > 0
-                      ? `${convertToBanglaNumber(product.totalDiscountKg)} কেজি`
-                      : '-'
+                  product.totalDiscountAmount > 0 ? `৳${convertToBanglaNumber(product.totalDiscountAmount)}` : '-'
 
                 return (
                   <tr key={idx}>
