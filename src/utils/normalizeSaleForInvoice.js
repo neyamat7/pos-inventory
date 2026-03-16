@@ -1,5 +1,6 @@
 export const normalizeSaleForInvoice = (saleData, customerData = null) => {
   if (!saleData) return null
+  // console.log('normalizeSaleForInvoice - raw items:', saleData.items)
 
   // ---------- CUSTOMER ----------
   const isCustomerPopulated = typeof saleData.customerId === 'object' && saleData.customerId !== null
@@ -59,7 +60,7 @@ export const normalizeSaleForInvoice = (saleData, customerData = null) => {
       return {
         productId: item.productId,
         product_name,
-        product_name_bn: isProductPopulated ? item.productId?.productNameBn : (item.product_name_bn || ''),
+        product_name_bn: isProductPopulated ? item.productId?.productNameBn : item.product_name_bn || '',
         selected_lots: normalizedLots
       }
     }) || []

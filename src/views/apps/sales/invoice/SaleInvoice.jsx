@@ -3,6 +3,8 @@
 import { convertToBanglaNumber } from '@/utils/convert-to-bangla'
 
 const SaleInvoice = ({ saleData, customerData }) => {
+  console.log('saleData in pos invoice', saleData)
+
   // Group lots by product and calculate product totals
   const allProductSummary =
     saleData?.items?.map(item => {
@@ -126,7 +128,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
         <div style={{ fontSize: '13px', marginBottom: '2px' }}>ঠিকানা: {saleData?.customer_location || 'N/A'}</div>
       </div>
 
-      {/* 1. CRATED PRODUCTS LIST (Design from Screenshot) */}
+      {/* CRATED PRODUCTS LIST */}
       {cratedSummary.length > 0 && (
         <div style={{ marginBottom: '10px' }}>
           <div style={{ fontWeight: 'bold', marginBottom: '6px', fontSize: '13px', borderBottom: '1px solid #000' }}>
@@ -156,8 +158,16 @@ const SaleInvoice = ({ saleData, customerData }) => {
                 >
                   {product.product_name}
                 </div>
-                <div style={{ fontSize: '11px', color: '#555', marginBottom: '4px', borderBottom: '0.5px dotted #000', paddingBottom: '2px' }}>
-                   {product.product_name_bn}
+                <div
+                  style={{
+                    fontSize: '11px',
+                    color: '#555',
+                    marginBottom: '4px',
+                    borderBottom: '0.5px dotted #000',
+                    paddingBottom: '2px'
+                  }}
+                >
+                  {product.product_name_bn}
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '8px 12px', fontSize: '12px' }}>
@@ -209,7 +219,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
         </div>
       )}
 
-      {/* 2. OTHER PRODUCTS TABLE */}
+      {/* OTHER PRODUCTS TABLE */}
       {otherSummary.length > 0 && (
         <div style={{ marginBottom: '10px' }}>
           <div style={{ fontWeight: 'bold', marginBottom: '4px', fontSize: '11px', borderBottom: '0.5px solid #ccc' }}>
