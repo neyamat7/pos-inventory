@@ -369,7 +369,7 @@ const ProductListTable = ({ productData, paginationData, loading, onPageChange, 
         />
       </Card>
 
-      {/* View Modal */}
+      {/* details View Modal */}
       {selectedProduct && <ProductViewModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />}
     </>
   )
