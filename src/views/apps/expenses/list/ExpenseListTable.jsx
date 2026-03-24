@@ -69,7 +69,6 @@ const ExpenseListTable = ({
   const { data: session } = useSession()
   const isAdmin = session?.user?.role === 'admin'
 
-  // console.log('expense data', expenseData)
 
   useEffect(() => {
     if (expenseData) {
