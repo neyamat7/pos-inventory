@@ -453,7 +453,7 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
         }}
       >
         {/* ============================================ */}
-        {/* MODAL HEADER - Simplified, Sales Focus      */}
+        {/* MODAL HEADER Sales Focus      */}
         {/* ============================================ */}
         <DialogTitle
           sx={{
