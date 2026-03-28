@@ -99,7 +99,7 @@ export default function ProfitLoss({ suppliers = [] }) {
       if (result.success) {
         setData(result.data)
 
-        // console.log('result', result.data)
+     
       }
     } catch (error) {
       console.error('Error fetching analytics:', error)
