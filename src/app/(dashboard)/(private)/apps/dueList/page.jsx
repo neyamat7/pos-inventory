@@ -7,7 +7,7 @@ import { getSupplierDueList } from '@/actions/supplierAction'
 import { getCustomerDueList } from '@/actions/customerActions'
 
 const DueListPage = () => {
-  // Single states for currently active data type
+  // states for currently active data type
   const [selectedType, setSelectedType] = useState('suppliers') // 'suppliers' or 'customers'
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
