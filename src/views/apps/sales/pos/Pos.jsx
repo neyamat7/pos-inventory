@@ -23,6 +23,7 @@ import { calculateTotalDue } from '@/utils/calculateTotalDue'
 import { handleCrateCount } from '@/utils/handleCrateCount'
 import { handleSalesTotal } from '@/utils/handleSalesTotal'
 import { showError, showSuccess } from '@/utils/toastUtils'
+import { normalizeSaleForInvoice } from '@/utils/normalizeSaleForInvoice'
 
 import { getGlobalCratePrices } from '@/actions/crateActions'
 import { getCustomers, toggleCustomerPin } from '@/actions/customerActions'
@@ -949,6 +950,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
       return {
         lotId: item.lot_selected.lot_id,
+        lot_name: item.lot_selected.lot_name,
         kg: kg,
         box_quantity: isBoxed ? boxQty : 0,
         isBoxed: isBoxed,
@@ -1082,10 +1084,11 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       if (result.success) {
         toast.success('Product sold successfully!')
 
-        // console.log('Sale response:', result.data)
+        // Normalize the payload for the invoice
+        const normalized = normalizeSaleForInvoice(payload)
 
         setLastSaleData({
-          ...payload,
+          ...normalized,
           printTrigger: Date.now()
         })
       } else {
