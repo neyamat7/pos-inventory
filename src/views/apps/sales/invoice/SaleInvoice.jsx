@@ -45,6 +45,8 @@ const SaleInvoice = ({ saleData, customerData }) => {
 
   const otherSummary = allProductSummary.filter(p => !p.isCrated)
   const hasOtherProducts = otherSummary.length > 0
+  const otherProductsTotal = otherSummary.reduce((sum, p) => sum + p.finalProductBase, 0)
+
   const paymentDetails = saleData?.payment_details || {}
 
   const overallCrate1Count = allProductSummary.reduce((sum, p) => sum + p.totalCrate1, 0)
@@ -58,12 +60,12 @@ const SaleInvoice = ({ saleData, customerData }) => {
   const totalDue = previousDue + currentBill
   const netPayable = Math.max(0, totalDue - previousBalance)
 
-  // MATH ROW (PERFECT EQUALITY ALIGNMENT)
+  // MATH ROW (PERFECT EQUALITY ALIGNMENT - COMPACTED)
   const RightAlignedMathRow = ({ left, middle = '=', right, bold = false }) => (
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: '170px 25px 120px',
+        gridTemplateColumns: '140px 20px 95px',
         gap: '0px',
         fontWeight: bold ? 'bold' : 'normal',
         textAlign: 'left'
@@ -71,7 +73,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
     >
       <div style={{ textAlign: 'right', paddingRight: '5px' }}>{left}</div>
       <div style={{ textAlign: 'center' }}>{middle}</div>
-      <div style={{ textAlign: 'left', paddingLeft: '5px' }}>{right}</div>
+      <div style={{ textAlign: 'right', paddingRight: '5px' }}>{right}</div>
     </div>
   )
 
@@ -101,8 +103,8 @@ const SaleInvoice = ({ saleData, customerData }) => {
         </div>
       </div>
 
-      {/* 2. Crated Lot Detail Design */}
-      <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+      {/* 2. Crated Lot Detail Design - MOVED TO THE RIGHT */}
+      <div style={{ marginBottom: '20px', textAlign: 'right', paddingRight: '10px' }}>
         {saleData?.items?.map((item, iIdx) => (
           <div key={iIdx}>
             {(item.selected_lots || [])
@@ -117,28 +119,41 @@ const SaleInvoice = ({ saleData, customerData }) => {
                 const crate2Total = Number(lot.crate_type2) * crate2Rate
                 const lotFinalTotal = pricePlusComm + crate1Total + crate2Total
 
-                const displayLotHeader =
-                  lot.lot_name ||
-                  lot.lotId?.lot_name ||
-                  item.product_name ||
+                const productNameBn =
+                  item.product_name_bn ||
                   item.productId?.productNameBn ||
-                  'লট বিবরণ'
+                  item.product_name ||
+                  item.productId?.productName ||
+                  ''
+
+                const lotName = lot.lot_name || lot.lotId?.lot_name || ''
 
                 return (
                   <div key={lIdx} style={{ display: 'inline-block', textAlign: 'left', marginBottom: '45px' }}>
-                    {/* Lot Header: Centered on the block */}
-                    <div style={{ textAlign: 'center', fontWeight: '800', marginBottom: '8px', fontSize: '17px' }}>
-                      {displayLotHeader}
+                    {/* Header: Product Name above Lot Name */}
+                    <div style={{ textAlign: 'center', marginBottom: '12px' }}>
+                      <div style={{ fontWeight: '800', fontSize: '19px' }}>{productNameBn}</div>
+                      {lotName && (
+                        <div style={{ fontWeight: 'normal', fontSize: '14px', marginTop: '2px' }}>{lotName}</div>
+                      )}
                     </div>
 
-                    {/* FIRST LINE: Shifted A Little Bit Left */}
-                    <div style={{ textAlign: 'center', marginRight: '40px', marginBottom: '4px' }}>
+                    {/* FIRST LINE: Compact alignment */}
+                    <div style={{ textAlign: 'center', paddingRight: '40px', marginBottom: '4px' }}>
                       A {convertToBanglaNumber(lot.crate_type1)} = {convertToBanglaNumber(lot.kg)} -{' '}
                       {convertToBanglaNumber(discountKg)}
                     </div>
 
-                    {/* Border 1: Left aligned vertically */}
-                    <div style={{ borderBottom: '1px solid #000', width: '220px', marginBottom: '4px' }}></div>
+                    {/* Border 1: Narrowed for compact look */}
+                    <div
+                      style={{
+                        borderBottom: '1px solid #000',
+                        width: '110px',
+                        marginLeft: 'auto',
+                        marginRight: 'auto',
+                        marginBottom: '4px'
+                      }}
+                    ></div>
 
                     {/* MATH LINES */}
                     <RightAlignedMathRow
@@ -150,11 +165,17 @@ const SaleInvoice = ({ saleData, customerData }) => {
                       right={convertToBanglaNumber(subtotal.toFixed(0))}
                     />
 
-                    <RightAlignedMathRow left='ক' right={convertToBanglaNumber(commission.toFixed(0))} />
+                    <RightAlignedMathRow left='C' right={convertToBanglaNumber(commission.toFixed(0))} />
 
-                    {/* Border 2: Left aligned */}
+                    {/* Border 2: Narrowed */}
                     <div
-                      style={{ borderBottom: '1px solid #000', width: '260px', marginTop: '4px', marginBottom: '4px' }}
+                      style={{
+                        borderBottom: '1px solid #000',
+                        width: '210px',
+                        marginLeft: 'auto',
+                        marginTop: '4px',
+                        marginBottom: '4px'
+                      }}
                     ></div>
 
                     {/* Subtotal with Comm */}
@@ -187,11 +208,12 @@ const SaleInvoice = ({ saleData, customerData }) => {
                       />
                     )}
 
-                    {/* Border 3: Left aligned */}
+                    {/* Border 3: Narrowed */}
                     <div
                       style={{
                         borderBottom: '1.5px solid #000',
-                        width: '280px',
+                        width: '230px',
+                        marginLeft: 'auto',
                         marginTop: '4px',
                         marginBottom: '4px'
                       }}
@@ -200,9 +222,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
                     {/* Lot Final Total */}
                     <RightAlignedMathRow
                       left=''
-                      right={
-                        <div style={{ fontSize: '18px' }}>= {convertToBanglaNumber(lotFinalTotal.toFixed(0))}</div>
-                      }
+                      right={<div style={{ fontSize: '18px' }}>{convertToBanglaNumber(lotFinalTotal.toFixed(0))}</div>}
                       bold
                     />
                   </div>
@@ -214,7 +234,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
 
       {/* 3. OTHER PRODUCTS */}
       {hasOtherProducts && (
-        <div style={{ marginBottom: '20px', borderTop: '1px solid #ccc', paddingTop: '10px' }}>
+        <div style={{ marginBottom: '10px', borderTop: '1px solid #ccc', paddingTop: '10px' }}>
           {otherSummary.map((product, idx) => (
             <div
               key={idx}
@@ -228,39 +248,31 @@ const SaleInvoice = ({ saleData, customerData }) => {
               </span>
             </div>
           ))}
+
+          {/* Subtotal of other products, perfectly aligned on the right with the results */}
+          <div
+            style={{
+              borderTop: '1px solid #000',
+              padding: '6px 10px 0 10px',
+              marginTop: '10px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '15px', fontWeight: 'bold' }}>
+              <div style={{ fontSize: '15px' }}>মোট বিক্রয়:</div>
+              <div style={{ fontSize: '20px', textAlign: 'right', minWidth: '80px' }}>
+                {convertToBanglaNumber(otherProductsTotal.toFixed(0))}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
       {/* 4. FINANCIAL SUMMARY */}
-      <div style={{ textAlign: 'center' }}>
-        {hasOtherProducts ? (
-          <div
-            style={{
-              borderTop: '2.5px solid #000',
-              width: 'fit-content',
-              minWidth: '220px',
-              margin: '15px auto',
-              paddingTop: '8px',
-              display: 'flex',
-              alignItems: 'baseline',
-              justifyContent: 'center',
-              gap: '12px',
-              fontWeight: 'bold'
-            }}
-          >
-            <div style={{ fontSize: '15px' }}>মোট বিক্রয়:</div>
-
-            <div
-              style={{
-                fontSize: '20px',
-                borderBottom: 'double #000',
-                lineHeight: '1'
-              }}
-            >
-              {convertToBanglaNumber(currentBill.toFixed(0))}
-            </div>
-          </div>
-        ) : (
+      <div style={{ textAlign: 'center', marginTop: '30px' }}>
+        {!hasOtherProducts && (
           <div
             style={{ borderBottom: '1.5px solid #000', width: 'fit-content', minWidth: '240px', margin: '20px auto' }}
           ></div>
@@ -301,7 +313,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
         {paymentDetails.received_amount > 0 && (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3px' }}>
-              <span>আজকের জমা (Received):</span>
+              <span>জমা:</span>
               <span>{convertToBanglaNumber(paymentDetails.received_amount.toFixed(0))}</span>
             </div>
 
@@ -310,7 +322,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 fontWeight: 'bold',
-                borderTop: '3px double #000',
+                borderTop: '1px solid #000',
                 marginTop: '8px',
                 color: '#d32f2f',
                 paddingTop: '4px',
@@ -333,8 +345,8 @@ const SaleInvoice = ({ saleData, customerData }) => {
         )}
       </div>
 
-      {/* Footer */}
-      {/* <div style={{ marginTop: '50px', textAlign: 'center', fontSize: '10px', color: '#888' }}>
+      {/* Footer
+      <div style={{ marginTop: '50px', textAlign: 'center', fontSize: '10px', color: '#888' }}>
         প্রিন্টের সময়: {convertToBanglaNumber(new Date().toLocaleTimeString('bn-BD'))}
       </div> */}
     </div>
