@@ -86,25 +86,25 @@ const SaleInvoice = ({ saleData, customerData }) => {
         lineHeight: '1.4',
         color: '#000',
         backgroundColor: '#fff',
-        padding: '10px'
+        padding: '5px'
       }}
     >
       {/* 1. Header (Date and Customer) */}
-      <div style={{ textAlign: 'center', marginBottom: '25px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '3px' }}>
         <div>
           তারিখ:{' '}
           {convertToBanglaNumber(
             (saleData?.sale_date || new Date().toISOString()).split('T')[0].split('-').reverse().join('/')
           )}
         </div>
-        <div style={{ marginTop: '5px' }}>
+        <div style={{ marginTop: '1px' }}>
           ক্রেতা: {saleData?.customer_name || 'N/A'}{' '}
           {saleData?.customer_location ? `(${saleData.customer_location})` : ''}
         </div>
       </div>
 
       {/* 2. Crated Lot Detail Design - MOVED TO THE RIGHT */}
-      <div style={{ marginBottom: '20px', textAlign: 'right', paddingRight: '10px' }}>
+      <div style={{ marginBottom: '5px', textAlign: 'right', paddingRight: '10px' }}>
         {saleData?.items?.map((item, iIdx) => (
           <div key={iIdx}>
             {(item.selected_lots || [])
@@ -129,17 +129,17 @@ const SaleInvoice = ({ saleData, customerData }) => {
                 const lotName = lot.lot_name || lot.lotId?.lot_name || ''
 
                 return (
-                  <div key={lIdx} style={{ display: 'inline-block', textAlign: 'left', marginBottom: '45px' }}>
+                  <div key={lIdx} style={{ display: 'inline-block', textAlign: 'left', marginBottom: '5px' }}>
                     {/* Header: Product Name above Lot Name */}
-                    <div style={{ textAlign: 'center', marginBottom: '12px' }}>
+                    {/* <div style={{ textAlign: 'center', marginBottom: '12px' }}>
                       <div style={{ fontWeight: '800', fontSize: '19px' }}>{productNameBn}</div>
                       {lotName && (
                         <div style={{ fontWeight: 'normal', fontSize: '14px', marginTop: '2px' }}>{lotName}</div>
                       )}
-                    </div>
+                    </div> */}
 
                     {/* FIRST LINE: Compact alignment */}
-                    <div style={{ textAlign: 'center', paddingRight: '40px', marginBottom: '4px' }}>
+                    <div style={{ textAlign: 'center', paddingRight: '40px', marginBottom: '2px' }}>
                       A {convertToBanglaNumber(lot.crate_type1)} = {convertToBanglaNumber(lot.kg)} -{' '}
                       {convertToBanglaNumber(discountKg)}
                     </div>
@@ -151,7 +151,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
                         width: '110px',
                         marginLeft: 'auto',
                         marginRight: 'auto',
-                        marginBottom: '4px'
+                        marginBottom: '2px'
                       }}
                     ></div>
 
@@ -165,7 +165,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
                       right={convertToBanglaNumber(subtotal.toFixed(0))}
                     />
 
-                    <RightAlignedMathRow left='C' right={convertToBanglaNumber(commission.toFixed(0))} />
+                    <RightAlignedMathRow left='কমিশন' right={convertToBanglaNumber(commission.toFixed(0))} />
 
                     {/* Border 2: Narrowed */}
                     <div
@@ -173,8 +173,8 @@ const SaleInvoice = ({ saleData, customerData }) => {
                         borderBottom: '1px solid #000',
                         width: '210px',
                         marginLeft: 'auto',
-                        marginTop: '4px',
-                        marginBottom: '4px'
+                        marginTop: '2px',
+                        marginBottom: '2px'
                       }}
                     ></div>
 
@@ -214,8 +214,8 @@ const SaleInvoice = ({ saleData, customerData }) => {
                         borderBottom: '1.5px solid #000',
                         width: '230px',
                         marginLeft: 'auto',
-                        marginTop: '4px',
-                        marginBottom: '4px'
+                        marginTop: '2px',
+                        marginBottom: '2px'
                       }}
                     ></div>
 
@@ -234,11 +234,11 @@ const SaleInvoice = ({ saleData, customerData }) => {
 
       {/* 3. OTHER PRODUCTS */}
       {hasOtherProducts && (
-        <div style={{ marginBottom: '10px', borderTop: '1px solid #ccc', paddingTop: '10px' }}>
+        <div style={{ marginBottom: '3px', borderTop: '1px solid #ccc', paddingTop: '3px' }}>
           {otherSummary.map((product, idx) => (
             <div
               key={idx}
-              style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', padding: '0 10px' }}
+              style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px', padding: '0 10px' }}
             >
               <span>{product.product_name}</span>
               <span>
@@ -254,7 +254,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
             style={{
               borderTop: '1px solid #000',
               padding: '6px 10px 0 10px',
-              marginTop: '10px',
+              marginTop: '3px',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'flex-end'
@@ -271,10 +271,10 @@ const SaleInvoice = ({ saleData, customerData }) => {
       )}
 
       {/* 4. FINANCIAL SUMMARY */}
-      <div style={{ textAlign: 'center', marginTop: '30px' }}>
+      <div style={{ textAlign: 'center', marginTop: '5px' }}>
         {!hasOtherProducts && (
           <div
-            style={{ borderBottom: '1.5px solid #000', width: 'fit-content', minWidth: '240px', margin: '20px auto' }}
+            style={{ borderBottom: '1px solid #000', width: 'fit-content', minWidth: '240px', margin: '5px auto' }}
           ></div>
         )}
       </div>
@@ -323,9 +323,9 @@ const SaleInvoice = ({ saleData, customerData }) => {
                 justifyContent: 'space-between',
                 fontWeight: 'bold',
                 borderTop: '1px solid #000',
-                marginTop: '8px',
+                marginTop: '5px',
                 color: '#d32f2f',
-                paddingTop: '4px',
+                paddingTop: '2px',
                 fontSize: '16px'
               }}
             >

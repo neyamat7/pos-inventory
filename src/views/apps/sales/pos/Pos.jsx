@@ -183,7 +183,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         piece_quantity: 0,
         sell_by_piece: product.sell_by_piece || false,
         isBagged: product.isBagged || false,
-        discount_kg: 0,
+        discount_kg: 2,
         total_discount_kg: 0,
         discount_amount: 0,
         subtotal: 0,
