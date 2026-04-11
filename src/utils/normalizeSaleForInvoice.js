@@ -53,7 +53,8 @@ export const normalizeSaleForInvoice = (saleData, customerData = null) => {
             lot_commission_amount: Number(lot.lot_commission_amount) || 0,
             customer_commission_rate: Number(lot.customer_commission_rate) || 0,
             customer_commission_amount: Number(lot.customer_commission_amount) || 0,
-            lot_profit: Number(lot.lot_profit) || 0
+            lot_profit: Number(lot.lot_profit) || 0,
+            kg_measurements: lot.kg_measurements || []
           }
         }) || []
 

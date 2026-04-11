@@ -138,6 +138,27 @@ const SaleInvoice = ({ saleData, customerData }) => {
                       )}
                     </div> */}
 
+                    {/* VERTICAL MEASUREMENTS (exactly as requested) */}
+                    {lot.kg_measurements?.length > 0 && (
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          paddingRight: '65px',
+                          marginBottom: '8px'
+                        }}
+                      >
+                        <div style={{ textAlign: 'right', minWidth: '40px' }}>
+                          {lot.kg_measurements.map((m, idx) => (
+                            <div key={idx} style={{ fontSize: '14px', lineHeight: '1.2' }}>
+                              {convertToBanglaNumber(m)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {/* FIRST LINE: Compact alignment */}
                     <div style={{ textAlign: 'center', paddingRight: '40px', marginBottom: '2px' }}>
                       A {convertToBanglaNumber(lot.crate_type1)} = {convertToBanglaNumber(lot.kg)} -{' '}
@@ -248,36 +269,32 @@ const SaleInvoice = ({ saleData, customerData }) => {
               </span>
             </div>
           ))}
+        </div>
+      )}
 
-          {/* Subtotal of other products, perfectly aligned on the right with the results */}
-          <div
-            style={{
-              borderTop: '1px solid #000',
-              padding: '6px 10px 0 10px',
-              marginTop: '3px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-end'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '15px', fontWeight: 'bold' }}>
-              <div style={{ fontSize: '15px' }}>মোট বিক্রয়:</div>
-              <div style={{ fontSize: '20px', textAlign: 'right', minWidth: '80px' }}>
-                {convertToBanglaNumber(otherProductsTotal.toFixed(0))}
-              </div>
+      {/* Global Total Sale (Show only if there are other products) */}
+      {hasOtherProducts && (
+        <div
+          style={{
+            borderTop: '1.5px solid #000',
+            padding: '6px 10px 0 10px',
+            marginTop: '5px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '13px', fontWeight: 'bold' }}>
+            <div style={{ fontSize: '15px' }}>মোট বিক্রয়:</div>
+            <div style={{ fontSize: '20px', textAlign: 'right', minWidth: '80px' }}>
+              {convertToBanglaNumber(currentBill.toFixed(0))}
             </div>
           </div>
         </div>
       )}
 
       {/* 4. FINANCIAL SUMMARY */}
-      <div style={{ textAlign: 'center', marginTop: '5px' }}>
-        {!hasOtherProducts && (
-          <div
-            style={{ borderBottom: '1px solid #000', width: 'fit-content', minWidth: '240px', margin: '5px auto' }}
-          ></div>
-        )}
-      </div>
+      <div style={{ textAlign: 'center', marginTop: '5px' }}></div>
 
       {/* Financial Details */}
       <div style={{ width: '90%', margin: '0 auto', fontSize: '14px' }}>

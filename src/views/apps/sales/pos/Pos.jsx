@@ -111,7 +111,9 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     cartItemId: null,
     productId: null,
     productName: '',
-    selectedLot: null
+    selectedLot: null,
+    kg_measurements: [],
+    currentMeasurement: ''
   })
 
   const [lastSaleData, setLastSaleData] = useState(null)
@@ -361,7 +363,9 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                     cartItemId: cartItemId,
                     productId: product.product_id,
                     productName: product.productNameBn || product.product_name || '',
-                    selectedLot: null
+                    selectedLot: null,
+                    kg_measurements: product.kg_measurements || [],
+                    currentMeasurement: ''
                   })
                 }
                 className='text-indigo-600 hover:text-indigo-800 font-medium underline cursor-pointer'
@@ -381,8 +385,21 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                   productName: product.productNameBn || product.product_name || '',
                   selectedLot: {
                     ...product.lot_selected,
-                    sell_qty: product.lot_selected.sell_qty || 0
-                  }
+                    sell_qty: product.lot_selected.sell_qty || 0,
+                    sales: {
+                      totalKgSold: product.lot_selected.totalKgSold || 0,
+                      totalBoxSold: product.lot_selected.totalBoxSold || 0,
+                      totalPieceSold: product.lot_selected.totalPieceSold || 0,
+                      totalCrateType1Sold: product.lot_selected.totalCrateType1Sold || 0,
+                      totalCrateType2Sold: product.lot_selected.totalCrateType2Sold || 0
+                    },
+                    carat: {
+                      remaining_crate_Type_1: product.lot_selected.remaining_crate_Type_1,
+                      remaining_crate_Type_2: product.lot_selected.remaining_crate_Type_2
+                    }
+                  },
+                  kg_measurements: product.kg_measurements || [],
+                  currentMeasurement: ''
                 })
               }
               className='text-gray-800 font-semibold cursor-pointer hover:text-indigo-600 transition-colors'
@@ -976,7 +993,10 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         customer_commission_amount: customerCommissionAmount,
 
         // ========== LOT PROFIT ==========
-        lot_profit: lotProfit
+        lot_profit: lotProfit,
+
+        // ========== MEASUREMENTS ==========
+        kg_measurements: item.kg_measurements || []
       }
     }
 
@@ -1138,16 +1158,20 @@ export default function POSSystem({ productsData = [], customersData = [], categ
             isPieced,
             isBagged,
             lot_selected: {
-              lot_id: lot._id,
+              lot_id: lot._id || lot.lot_id,
               lot_name: lot.lot_name,
-              supplier_id: lot.supplierId?._id,
-              supplier_name: lot.supplierId?.basic_info?.name,
-              product_id: lot.productsId?._id,
-              product_name: lot.productsId?.productName,
-              unit_cost: lot.costs?.unitCost || 0,
-              commission_rate: lot.costs?.commissionRate || 0,
-              has_commission: lot.hasCommission,
-              totalKgSold: currentSold + sellQty,
+              supplier_id: lot.supplierId?._id || lot.supplier_id,
+              supplier_name: lot.supplierId?.basic_info?.name || lot.supplier_name,
+              product_id: lot.productsId?._id || lot.product_id,
+              product_name: (lot.productsId?.productName) || lot.product_name,
+              unit_cost: lot.costs?.unitCost || lot.unit_cost || 0,
+              commission_rate: lot.costs?.commissionRate || lot.commission_rate || 0,
+              has_commission: lot.hasCommission ?? lot.has_commission,
+              totalKgSold: (lot.sales?.totalKgSold || 0) + sellQty,
+              totalBoxSold: (lot.sales?.totalBoxSold || 0) + (isBoxed ? sellQty : 0),
+              totalPieceSold: (lot.sales?.totalPieceSold || 0) + (isPieced ? sellQty : 0),
+              totalCrateType1Sold: lot.sales?.totalCrateType1Sold || 0,
+              totalCrateType2Sold: lot.sales?.totalCrateType2Sold || 0,
               sell_qty: sellQty,
               purchase_date: lot.purchase_date,
               status: lot.status,
@@ -1162,6 +1186,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
             },
 
             kg: isBoxed || isPieced ? 0 : sellQty,
+            kg_measurements: item.isCrated ? (lotModal.kg_measurements || []) : [],
             box_quantity: isBoxed ? sellQty : 0,
             piece_quantity: isPieced ? sellQty : 0,
             bag_quantity: isBagged ? sellBagQty : 0,
@@ -1185,7 +1210,9 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       cartItemId: null,
       productId: null,
       productName: '',
-      selectedLot: null
+      selectedLot: null,
+      kg_measurements: [],
+      currentMeasurement: ''
     })
   }
 
@@ -1653,32 +1680,36 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                     </p>
                     <p className='text-sm text-gray-600'>
                       Already Sold:
-                      {lotModal.selectedLot.sales?.totalBoxSold > 0 &&
-                        ` ${lotModal.selectedLot.sales.totalBoxSold} boxes`}
-                      {lotModal.selectedLot.sales?.totalPieceSold > 0 &&
-                        ` ${lotModal.selectedLot.sales.totalPieceSold} pieces`}
-                      {lotModal.selectedLot.sales?.totalKgSold > 0 && ` ${lotModal.selectedLot.sales.totalKgSold} kg`}
-                      {!lotModal.selectedLot.sales?.totalBoxSold &&
-                        !lotModal.selectedLot.sales?.totalPieceSold &&
-                        !lotModal.selectedLot.sales?.totalKgSold &&
-                        ' None'}
+                      {(() => {
+                        const item = cartProducts.find(p => p.cart_item_id === lotModal.cartItemId)
+                        const sold = lotModal.selectedLot.sales || {}
+
+                        if (item?.isBoxed) return ` ${sold.totalBoxSold || 0} boxes`
+                        if (item?.sell_by_piece) return ` ${sold.totalPieceSold || 0} pieces`
+                        if (item?.isCrated) return ` ${sold.totalCrateType1Sold || 0}/${sold.totalCrateType2Sold || 0} crates (${sold.totalKgSold || 0} kg)`
+                        return ` ${sold.totalKgSold || 0} kg`
+                      })()}
                     </p>
                     <p className='text-sm font-medium text-green-700'>
                       Stock Remaining:
-                      {lotModal.selectedLot.remaining_boxes > 0 && ` ${lotModal.selectedLot.remaining_boxes} boxes`}
-                      {lotModal.selectedLot.remaining_bags > 0 && ` ${lotModal.selectedLot.remaining_bags} bags`}
-                      {lotModal.selectedLot.remaining_kg > 0 && ` ${lotModal.selectedLot.remaining_kg} kg`}
-                      {lotModal.selectedLot.remaining_pieces > 0 && ` ${lotModal.selectedLot.remaining_pieces} pieces`}
-                      {(lotModal.selectedLot.carat?.remaining_crate_Type_1 > 0 ||
-                        lotModal.selectedLot.carat?.remaining_crate_Type_2 > 0) &&
-                        ` ${lotModal.selectedLot.carat?.remaining_crate_Type_1 || 0}/${lotModal.selectedLot.carat?.remaining_crate_Type_2 || 0} crates`}
-                      {!lotModal.selectedLot.remaining_boxes &&
-                        !lotModal.selectedLot.remaining_pieces &&
-                        !lotModal.selectedLot.remaining_kg &&
-                        !lotModal.selectedLot.remaining_bags &&
-                        !lotModal.selectedLot.carat?.remaining_crate_Type_1 &&
-                        !lotModal.selectedLot.carat?.remaining_crate_Type_2 &&
-                        ' Out of Stock'}
+                      {(() => {
+                        const item = cartProducts.find(p => p.cart_item_id === lotModal.cartItemId)
+                        const lot = lotModal.selectedLot
+                        const res = []
+
+                        if (item?.isBoxed) res.push(` ${lot.remaining_boxes ?? 0} boxes`)
+                        else if (item?.sell_by_piece) res.push(` ${lot.remaining_pieces ?? 0} pieces`)
+                        else if (item?.isBagged) res.push(` ${lot.remaining_bags ?? 0} bags`)
+                        else if (item?.isCrated) {
+                          res.push(` ${lot.carat?.remaining_crate_Type_1 || 0}/${lot.carat?.remaining_crate_Type_2 || 0} crates`)
+                        } else res.push(` ${lot.remaining_kg ?? 0} kg`)
+
+                        if (!item?.isCrated && (lot.carat?.remaining_crate_Type_1 > 0 || lot.carat?.remaining_crate_Type_2 > 0)) {
+                          res.push(` | ${lot.carat?.remaining_crate_Type_1 || 0}/${lot.carat?.remaining_crate_Type_2 || 0} crates`)
+                        }
+
+                        return res.join('')
+                      })()}
                     </p>
                     <p className='text-sm text-gray-600'>Unit Cost: ৳{lotModal.selectedLot.costs?.unitCost || 0}</p>
                     <p className='text-sm text-gray-600'>
@@ -1688,34 +1719,129 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
                   {/* Quantity input */}
                   <div className='flex items-center gap-4'>
-                    <div className='flex items-center gap-2'>
-                      <label className='text-sm text-gray-600 font-medium'>
-                        {(() => {
-                          const item = cartProducts.find(p => p.cart_item_id === lotModal.cartItemId)
-                          if (item?.isBoxed) return 'Boxes'
-                          if (item?.isPieced || item?.sell_by_piece) return 'Pieces'
-                          return 'Kg'
-                        })()}
-                        :
-                      </label>
-                      <input
-                        type='number'
-                        min='0'
-                        step='0.01'
-                        placeholder='0'
-                        onWheel={e => e.currentTarget.blur()}
-                        value={lotModal.selectedLot.sell_qty === 0 ? '' : lotModal.selectedLot.sell_qty}
-                        onChange={e => {
-                          const val = e.target.value
+                    {(() => {
+                      const item = cartProducts.find(p => p.cart_item_id === lotModal.cartItemId)
+                      const isCratedItem = item?.isCrated
 
-                          setLotModal(prev => ({
-                            ...prev,
-                            selectedLot: { ...prev.selectedLot, sell_qty: val }
-                          }))
-                        }}
-                        className='w-24 px-2 py-1 border border-gray-300 rounded-md text-center focus:ring-2 focus:ring-indigo-500 outline-none'
-                      />
-                    </div>
+                      if (isCratedItem) {
+                        // MULTI-MEASUREMENT UI for crated products
+                        const measurements = lotModal.kg_measurements || []
+                        const totalKg = measurements.reduce((sum, m) => sum + m, 0)
+
+                        return (
+                          <div className='w-full'>
+                            <label className='text-sm text-gray-600 font-medium mb-2 block'>ওজন পরিমাপ (Kg):</label>
+
+                            {/* Input + Add button */}
+                            <div className='flex items-center gap-2 mb-3'>
+                              <input
+                                type='number'
+                                min='0'
+                                step='0.01'
+                                placeholder='কেজি লিখুন'
+                                onWheel={e => e.currentTarget.blur()}
+                                value={lotModal.currentMeasurement}
+                                onChange={e => setLotModal(prev => ({ ...prev, currentMeasurement: e.target.value }))}
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault()
+                                    const val = parseFloat(lotModal.currentMeasurement)
+                                    if (val > 0) {
+                                      const updated = [...(lotModal.kg_measurements || []), val]
+                                      setLotModal(prev => ({
+                                        ...prev,
+                                        kg_measurements: updated,
+                                        currentMeasurement: '',
+                                        selectedLot: { ...prev.selectedLot, sell_qty: updated.reduce((s, m) => s + m, 0) }
+                                      }))
+                                    }
+                                  }
+                                }}
+                                className='flex-1 px-3 py-2 border border-gray-300 rounded-md text-center focus:ring-2 focus:ring-indigo-500 outline-none'
+                              />
+                              <button
+                                type='button'
+                                onClick={() => {
+                                  const val = parseFloat(lotModal.currentMeasurement)
+                                  if (val > 0) {
+                                    const updated = [...(lotModal.kg_measurements || []), val]
+                                    setLotModal(prev => ({
+                                      ...prev,
+                                      kg_measurements: updated,
+                                      currentMeasurement: '',
+                                      selectedLot: { ...prev.selectedLot, sell_qty: updated.reduce((s, m) => s + m, 0) }
+                                    }))
+                                  }
+                                }}
+                                className='px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-bold text-lg cursor-pointer'
+                              >
+                                +
+                              </button>
+                            </div>
+
+                            {/* List of measurements */}
+                            {measurements.length > 0 && (
+                              <div className='flex flex-wrap gap-2 mb-3'>
+                                {measurements.map((m, idx) => (
+                                  <span
+                                    key={idx}
+                                    className='inline-flex items-center gap-1 bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium'
+                                  >
+                                    {m} kg
+                                    <button
+                                      type='button'
+                                      onClick={() => {
+                                        const updated = measurements.filter((_, i) => i !== idx)
+                                        setLotModal(prev => ({
+                                          ...prev,
+                                          kg_measurements: updated,
+                                          selectedLot: { ...prev.selectedLot, sell_qty: updated.reduce((s, v) => s + v, 0) }
+                                        }))
+                                      }}
+                                      className='text-indigo-500 hover:text-red-500 font-bold cursor-pointer'
+                                    >
+                                      ✕
+                                    </button>
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Auto total */}
+                            {measurements.length > 0 && (
+                              <div className='text-sm font-semibold text-green-700 bg-green-50 px-3 py-2 rounded-md'>
+                                মোট: {totalKg} কেজি ({measurements.length} পাল্লা)
+                              </div>
+                            )}
+                          </div>
+                        )
+                      }
+
+                      // DEFAULT: Single input for non-crated products
+                      return (
+                        <div className='flex items-center gap-2'>
+                          <label className='text-sm text-gray-600 font-medium'>
+                            {item?.isBoxed ? 'Boxes' : item?.isPieced || item?.sell_by_piece ? 'Pieces' : 'Kg'}:
+                          </label>
+                          <input
+                            type='number'
+                            min='0'
+                            step='0.01'
+                            placeholder='0'
+                            onWheel={e => e.currentTarget.blur()}
+                            value={lotModal.selectedLot.sell_qty === 0 ? '' : lotModal.selectedLot.sell_qty}
+                            onChange={e => {
+                              const val = e.target.value
+                              setLotModal(prev => ({
+                                ...prev,
+                                selectedLot: { ...prev.selectedLot, sell_qty: val }
+                              }))
+                            }}
+                            className='w-24 px-2 py-1 border border-gray-300 rounded-md text-center focus:ring-2 focus:ring-indigo-500 outline-none'
+                          />
+                        </div>
+                      )
+                    })()}
 
                     {/* New Manual Bag Input */}
                     {(() => {
@@ -1760,7 +1886,9 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                     cartItemId: null,
                     productId: null,
                     productName: '',
-                    selectedLot: null
+                    selectedLot: null,
+                    kg_measurements: [],
+                    currentMeasurement: ''
                   })
                 }
                 className='px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md font-medium'
