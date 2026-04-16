@@ -104,7 +104,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
       </div>
 
       {/* 2. Crated Lot Detail Design - MOVED TO THE RIGHT */}
-      <div style={{ marginBottom: '5px', textAlign: 'right', paddingRight: '10px' }}>
+      <div style={{ marginBottom: '2px', textAlign: 'right', paddingRight: '10px' }}>
         {saleData?.items?.map((item, iIdx) => (
           <div key={iIdx}>
             {(item.selected_lots || [])
@@ -161,7 +161,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
 
                     {/* FIRST LINE: Compact alignment */}
                     <div style={{ textAlign: 'center', paddingRight: '40px', marginBottom: '2px' }}>
-                      {(lot.crate_type1 > 0 && lot.crate_type2 > 0) ? 'AB' : (lot.crate_type2 > 0 ? 'B' : 'A')}{' '}
+                      {lot.crate_type1 > 0 && lot.crate_type2 > 0 ? 'AB' : lot.crate_type2 > 0 ? 'B' : 'A'}{' '}
                       {convertToBanglaNumber(Number(lot.crate_type1 || 0) + Number(lot.crate_type2 || 0))} ={' '}
                       {convertToBanglaNumber(lot.kg)} - {convertToBanglaNumber(discountKg)}
                     </div>
@@ -256,7 +256,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
 
       {/* 3. OTHER PRODUCTS */}
       {hasOtherProducts && (
-        <div style={{ marginBottom: '3px', borderTop: '1px solid #ccc', paddingTop: '3px' }}>
+        <div style={{ marginBottom: '3px', borderTop: '1px solid #ccc', paddingTop: '0px' }}>
           {otherSummary.map((product, idx) => (
             <div
               key={idx}
@@ -274,7 +274,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
       )}
 
       {/* Global Total Sale (Show only if there are other products) */}
-      {hasOtherProducts && (
+      {/* {hasOtherProducts && (
         <div
           style={{
             borderTop: '1.5px solid #000',
@@ -292,7 +292,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* 4. FINANCIAL SUMMARY */}
       <div style={{ textAlign: 'center', marginTop: '5px' }}></div>
