@@ -161,8 +161,9 @@ const SaleInvoice = ({ saleData, customerData }) => {
 
                     {/* FIRST LINE: Compact alignment */}
                     <div style={{ textAlign: 'center', paddingRight: '40px', marginBottom: '2px' }}>
-                      A {convertToBanglaNumber(lot.crate_type1)} = {convertToBanglaNumber(lot.kg)} -{' '}
-                      {convertToBanglaNumber(discountKg)}
+                      {(lot.crate_type1 > 0 && lot.crate_type2 > 0) ? 'AB' : (lot.crate_type2 > 0 ? 'B' : 'A')}{' '}
+                      {convertToBanglaNumber(Number(lot.crate_type1 || 0) + Number(lot.crate_type2 || 0))} ={' '}
+                      {convertToBanglaNumber(lot.kg)} - {convertToBanglaNumber(discountKg)}
                     </div>
 
                     {/* Border 1: Narrowed for compact look */}
