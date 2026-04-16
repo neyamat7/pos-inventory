@@ -1152,101 +1152,139 @@ const LotDetailsModal = ({ open, onClose, lot, lotSaleData, loadingSaleData, onP
             </Box>
           ) : lotSaleData?.sales && lotSaleData.sales.length > 0 ? (
             <>
-              {/* Sales Table */}
-              <Box sx={{ overflowX: 'auto', mb: 2 }}>
-                <Box sx={{ minWidth: 800 }}>
-                  {/* Table Header */}
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      py: 1.5,
-                      px: 2,
-                      borderBottom: '1px solid #e0e0e0',
-                      backgroundColor: '#f5f5f5',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    <Box sx={{ width: 150, minWidth: 150, px: 1 }}>Kg</Box>
-                    <Box sx={{ width: 150, minWidth: 150, px: 1 }}>Unit Price</Box>
-                    <Box sx={{ width: 150, minWidth: 150, px: 1 }}>Total Price</Box>
-                    <Box sx={{ width: 150, minWidth: 150, px: 1 }}>Discount (Kg)</Box>
-                    <Box sx={{ width: 200, minWidth: 200, px: 1 }}>Total Crate</Box>
-                  </Box>
+              {(() => {
+                const product = lot?.productsId?.[0]
+                const isCrated = product?.isCrated
+                const isBoxed = product?.isBoxed
+                const isPieced = product?.sell_by_piece
+                const isBagged = product?.isBagged
 
-                  {/* Table Rows */}
-                  {lotSaleData.sales.map((sale, index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        display: 'flex',
-                        py: 1.5,
-                        px: 2,
-                        borderBottom: '1px solid #e0e0e0',
-                        '&:hover': { backgroundColor: '#f9f9f9' }
-                      }}
-                    >
-                      <Box sx={{ width: 150, minWidth: 150, px: 1 }}>{sale.kg || 0}</Box>
-                      <Box sx={{ width: 150, minWidth: 150, px: 1 }}>${sale.unit_price?.toLocaleString() || 0}</Box>
-                      <Box sx={{ width: 150, minWidth: 150, px: 1 }}>${sale.total_price?.toLocaleString() || 0}</Box>
-                      <Box sx={{ width: 150, minWidth: 150, px: 1 }}>{sale.discount_Kg || 0}</Box>
-                      <Box sx={{ width: 200, minWidth: 200, px: 1 }}>{sale.total_crate?.toLocaleString() || 0}</Box>
+                // Determine primary unit label
+                let mainQtyLabel = 'Kg'
+                if (isBoxed) mainQtyLabel = 'Box'
+                else if (isPieced) mainQtyLabel = 'Piece'
+                else if (isBagged) mainQtyLabel = 'Bag'
+
+                // Helper to get main quantity value
+                const getMainQtyValue = sale => {
+                  if (isBoxed) return sale.box_quantity || 0
+                  if (isPieced) return sale.piece_quantity || 0
+                  if (isBagged) return sale.bag_quantity || 0
+
+                  return sale.kg || 0
+                }
+
+                // Check if crate or discount columns are relevant
+                const hasCrate = isCrated || lotSaleData.sales.some(s => (s.total_crate || 0) > 0)
+                const hasDiscount = lotSaleData.sales.some(s => (s.discount_Kg || 0) > 0)
+
+                // Summary calculations
+                const totalMainQty = lotSaleData.sales.reduce((sum, s) => sum + getMainQtyValue(s), 0)
+                const totalSalesVal = lotSaleData.sales.reduce((sum, s) => sum + (s.total_price || 0), 0)
+                const avgPriceVal = totalMainQty > 0 ? (totalSalesVal / totalMainQty).toFixed(2) : 0
+                const totalCratesVal = lotSaleData.sales.reduce((sum, s) => sum + (s.total_crate || 0), 0)
+
+                return (
+                  <>
+                    {/* Sales Table */}
+                    <Box sx={{ overflowX: 'auto', mb: 2 }}>
+                      <Box sx={{ minWidth: 800 }}>
+                        {/* Table Header */}
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            py: 1.5,
+                            px: 2,
+                            borderBottom: '1px solid #e0e0e0',
+                            backgroundColor: '#f5f5f5',
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          <Box sx={{ width: 150, minWidth: 150, px: 1 }}>{mainQtyLabel}</Box>
+                          <Box sx={{ width: 150, minWidth: 150, px: 1 }}>Unit Price</Box>
+                          <Box sx={{ width: 150, minWidth: 150, px: 1 }}>Total Price</Box>
+                          {hasDiscount && <Box sx={{ width: 150, minWidth: 150, px: 1 }}>Discount ({mainQtyLabel})</Box>}
+                          {hasCrate && <Box sx={{ width: 200, minWidth: 200, px: 1 }}>Total Crate</Box>}
+                        </Box>
+
+                        {/* Table Rows */}
+                        {lotSaleData.sales.map((sale, index) => (
+                          <Box
+                            key={index}
+                            sx={{
+                              display: 'flex',
+                              py: 1.5,
+                              px: 2,
+                              borderBottom: '1px solid #e0e0e0',
+                              '&:hover': { backgroundColor: '#f9f9f9' }
+                            }}
+                          >
+                            <Box sx={{ width: 150, minWidth: 150, px: 1 }}>{getMainQtyValue(sale)}</Box>
+                            <Box sx={{ width: 150, minWidth: 150, px: 1 }}>${sale.unit_price?.toLocaleString() || 0}</Box>
+                            <Box sx={{ width: 150, minWidth: 150, px: 1 }}>
+                              ${sale.total_price?.toLocaleString() || 0}
+                            </Box>
+                            {hasDiscount && (
+                              <Box sx={{ width: 150, minWidth: 150, px: 1 }}>{sale.discount_Kg || 0}</Box>
+                            )}
+                            {hasCrate && (
+                              <Box sx={{ width: 200, minWidth: 200, px: 1 }}>
+                                {sale.total_crate?.toLocaleString() || 0}
+                              </Box>
+                            )}
+                          </Box>
+                        ))}
+                      </Box>
                     </Box>
-                  ))}
-                </Box>
-              </Box>
 
-              {/* Sales Summary */}
-              {lotSaleData.sales.length > 0 && (
-                <Grid container spacing={2} sx={{ mt: 2 }}>
-                  <Grid size={{ xs: 6, sm: 3 }}>
-                    <Paper sx={{ p: 2, bgcolor: '#e8f5e9', borderRadius: 1 }}>
-                      <Typography variant='body2' color='text.secondary'>
-                        Total Sales
-                      </Typography>
-                      <Typography variant='h6' fontWeight='bold' color='success.main'>
-                        ${lotSaleData.sales.reduce((sum, sale) => sum + (sale.total_price || 0), 0).toLocaleString()}
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 3 }}>
-                    <Paper sx={{ p: 2, bgcolor: '#fff3e0', borderRadius: 1 }}>
-                      <Typography variant='body2' color='text.secondary'>
-                        Total Kg
-                      </Typography>
-                      <Typography variant='h6' fontWeight='bold' color='warning.main'>
-                        {lotSaleData.sales.reduce((sum, sale) => sum + (sale.kg || 0), 0).toLocaleString()}
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 3 }}>
-                    <Paper sx={{ p: 2, bgcolor: '#f3e5f5', borderRadius: 1 }}>
-                      <Typography variant='body2' color='text.secondary'>
-                        Avg Price/Kg
-                      </Typography>
-                      <Typography variant='h6' fontWeight='bold' color='secondary.main'>
-                        $
-                        {(
-                          lotSaleData.sales.reduce((sum, sale) => sum + (sale.total_price || 0), 0) /
-                          Math.max(
-                            1,
-                            lotSaleData.sales.reduce((sum, sale) => sum + (sale.kg || 0), 0)
-                          )
-                        ).toFixed(2)}
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 3 }}>
-                    <Paper sx={{ p: 2, bgcolor: '#e3f2fd', borderRadius: 1 }}>
-                      <Typography variant='body2' color='text.secondary'>
-                        Total Crates
-                      </Typography>
-                      <Typography variant='h6' fontWeight='bold' color='info.main'>
-                        {lotSaleData.sales.reduce((sum, sale) => sum + (sale.total_crate || 0), 0).toLocaleString()}
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                </Grid>
-              )}
+                    {/* Sales Summary Cards */}
+                    <Grid container spacing={2} sx={{ mt: 2 }}>
+                      <Grid size={{ xs: 6, sm: 3 }}>
+                        <Paper sx={{ p: 2, bgcolor: '#e8f5e9', borderRadius: 1 }}>
+                          <Typography variant='body2' color='text.secondary'>
+                            Total Sales
+                          </Typography>
+                          <Typography variant='h6' fontWeight='bold' color='success.main'>
+                            ${totalSalesVal.toLocaleString()}
+                          </Typography>
+                        </Paper>
+                      </Grid>
+                      <Grid size={{ xs: 6, sm: 3 }}>
+                        <Paper sx={{ p: 2, bgcolor: '#fff3e0', borderRadius: 1 }}>
+                          <Typography variant='body2' color='text.secondary'>
+                            Total {mainQtyLabel}
+                          </Typography>
+                          <Typography variant='h6' fontWeight='bold' color='warning.main'>
+                            {totalMainQty.toLocaleString()}
+                          </Typography>
+                        </Paper>
+                      </Grid>
+                      <Grid size={{ xs: 6, sm: 3 }}>
+                        <Paper sx={{ p: 2, bgcolor: '#f3e5f5', borderRadius: 1 }}>
+                          <Typography variant='body2' color='text.secondary'>
+                            Avg Price/{mainQtyLabel}
+                          </Typography>
+                          <Typography variant='h6' fontWeight='bold' color='secondary.main'>
+                            ${avgPriceVal}
+                          </Typography>
+                        </Paper>
+                      </Grid>
+                      {hasCrate && (
+                        <Grid size={{ xs: 6, sm: 3 }}>
+                          <Paper sx={{ p: 2, bgcolor: '#e3f2fd', borderRadius: 1 }}>
+                            <Typography variant='body2' color='text.secondary'>
+                              Total Crates
+                            </Typography>
+                            <Typography variant='h6' fontWeight='bold' color='info.main'>
+                              {totalCratesVal.toLocaleString()}
+                            </Typography>
+                          </Paper>
+                        </Grid>
+                      )}
+                    </Grid>
+                  </>
+                )
+              })()}
             </>
           ) : (
             <Typography sx={{ py: 4, textAlign: 'center', color: 'text.secondary' }}>

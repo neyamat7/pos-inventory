@@ -10,6 +10,7 @@ const LotSaleInvoice = ({ lotSaleData }) => {
   const hasCrate = lotSaleData.sales?.some(sale => (sale.total_crate || 0) > 0 || (sale.crate_type1 || 0) > 0 || (sale.crate_type2 || 0) > 0) || false
   const hasBox = lotSaleData.sales?.some(sale => sale.isBoxed && (sale.box_quantity || 0) > 0) || false
   const hasPiece = lotSaleData.sales?.some(sale => sale.isPieced && (sale.piece_quantity || 0) > 0) || false
+  const hasBag = lotSaleData.sales?.some(sale => sale.isBagged && (sale.bag_quantity || 0) > 0) || false
   const hasKg = lotSaleData.sales?.some(sale => (sale.kg || 0) > 0) || false
 
   // Calculate totals
@@ -18,7 +19,11 @@ const LotSaleInvoice = ({ lotSaleData }) => {
   const totalCrate = lotSaleData.sales?.reduce((sum, sale) => sum + (sale.total_crate || 0), 0) || 0
   const totalBox = lotSaleData.sales?.reduce((sum, sale) => sum + (sale.box_quantity || 0), 0) || 0
   const totalPiece = lotSaleData.sales?.reduce((sum, sale) => sum + (sale.piece_quantity || 0), 0) || 0
-  const avgPrice = totalKg > 0 ? (totalPrice / totalKg).toFixed(2) : 0
+  const totalBag = lotSaleData.sales?.reduce((sum, sale) => sum + (sale.bag_quantity || 0), 0) || 0
+
+  // Calculate avgPrice based on available quantity type
+  const mainQty = totalKg || totalBox || totalPiece || totalBag || 0
+  const avgPrice = mainQty > 0 ? (totalPrice / mainQty).toFixed(2) : 0
 
   // Filter expenses to show only non-zero values
   const expenses = lotSaleData.lot_expenses
@@ -42,7 +47,8 @@ const LotSaleInvoice = ({ lotSaleData }) => {
   const expenseItems = [...fixedExpenses, ...customExpenses].filter(item => (item.value || 0) > 0)
 
   // Calculate column count for empty state
-  const columnCount = 2 + (hasKg ? 1 : 0) + (hasBox ? 1 : 0) + (hasPiece ? 1 : 0) + (hasDiscount ? 1 : 0) + (hasCrate ? 1 : 0)
+  // Calculate column count for empty state
+  const columnCount = 2 + (hasKg ? 1 : 0) + (hasBox ? 1 : 0) + (hasPiece ? 1 : 0) + (hasBag ? 1 : 0) + (hasDiscount ? 1 : 0) + (hasCrate ? 1 : 0)
 
   return (
     <div
@@ -81,6 +87,7 @@ const LotSaleInvoice = ({ lotSaleData }) => {
                 {hasKg && <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'left', fontSize: '9px' }}>কেজি</th>}
                 {hasBox && <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'left', fontSize: '9px' }}>বক্স</th>}
                 {hasPiece && <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'left', fontSize: '9px' }}>পিস</th>}
+                {hasBag && <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'left', fontSize: '9px' }}>ব্যাগ</th>}
                 <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'left', fontSize: '9px' }}>দর</th>
                 <th style={{ border: '0.5px solid #000', padding: '2px', textAlign: 'left', fontSize: '9px' }}>
                   মোট মূল্য
@@ -100,6 +107,7 @@ const LotSaleInvoice = ({ lotSaleData }) => {
                     {hasKg && <td style={{ border: '0.5px solid #000', padding: '2px', fontSize: '9px' }}>{sale.kg || 0}</td>}
                     {hasBox && <td style={{ border: '0.5px solid #000', padding: '2px', fontSize: '9px' }}>{sale.box_quantity || 0}</td>}
                     {hasPiece && <td style={{ border: '0.5px solid #000', padding: '2px', fontSize: '9px' }}>{sale.piece_quantity || 0}</td>}
+                    {hasBag && <td style={{ border: '0.5px solid #000', padding: '2px', fontSize: '9px' }}>{sale.bag_quantity || 0}</td>}
                     <td style={{ border: '0.5px solid #000', padding: '2px', fontSize: '9px' }}>
                       {sale.unit_price || 0}
                     </td>
@@ -161,6 +169,12 @@ const LotSaleInvoice = ({ lotSaleData }) => {
                 <span>{totalPiece}</span>
               </div>
             )}
+            {hasBag && totalBag > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                <span>মোট ব্যাগ:</span>
+                <span>{totalBag}</span>
+              </div>
+            )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
               <span>মোট মূল্য:</span>
@@ -174,7 +188,7 @@ const LotSaleInvoice = ({ lotSaleData }) => {
               </div>
             )}
 
-            {totalKg > 0 && (
+            {(totalKg > 0 || totalBox > 0 || totalPiece > 0 || totalBag > 0) && (
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
                 <span>গড় দর:</span>
                 <span>{avgPrice}</span>
