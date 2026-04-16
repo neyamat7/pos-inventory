@@ -1081,15 +1081,13 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       total_profit: total_profit + total_lots_commission,
       items: items,
       payment_details: {
-        // total_crate_type1: Number(totalCrateType1) || 0,
-        // total_crate_type2: Number(totalCrateType2) || 0,
         total_crate_type1_price: Number(totalCrateType1Price) || 0,
         total_crate_type2_price: Number(totalCrateType2Price) || 0,
         payable_amount: Number(payableAmount) || 0,
         received_amount: Number(data.receiveAmount) || 0,
-
-        // received_amount_from_balance: Number(data.received_amount_from_balance) || 0,
         due_amount: Number(data.dueAmount) || 0,
+        previous_due: Number(selectedCustomer.account_info?.due) || 0,
+        previous_balance: Number(selectedCustomer.account_info?.balance) || 0,
         payment_type: data.paymentType || 'cash',
         vat: Number(vatAmount) || 0,
         note: data.note || ''
