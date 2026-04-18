@@ -1153,36 +1153,49 @@ const LotDetailsModal = ({ open, onClose, lot, lotSaleData, loadingSaleData, onP
           ) : lotSaleData?.sales && lotSaleData.sales.length > 0 ? (
             <>
               {(() => {
-                const product = lot?.productsId?.[0]
-                const isCrated = product?.isCrated
-                const isBoxed = product?.isBoxed
-                const isPieced = product?.sell_by_piece
-                const isBagged = product?.isBagged
+                const sales = lotSaleData?.sales || []
+
+                // Determine primary unit type based on actual data
+                const isBoxLot = sales.some(sale => (sale.box_quantity || 0) > 0)
+                const isPieceLot = !isBoxLot && sales.some(sale => (sale.piece_quantity || 0) > 0)
+                const isBagLot = !isBoxLot && !isPieceLot && sales.some(sale => (sale.bag_quantity || 0) > 0)
+                const isCrateLot = !isBoxLot && !isPieceLot && !isBagLot && sales.some(sale => (sale.total_crate || 0) > 0)
+                const isKgLot = !isBoxLot && !isPieceLot && !isBagLot && !isCrateLot
+
+                // Determine which columns and summary items to show
+                const hasBox = isBoxLot
+                const hasPiece = isPieceLot
+                const hasBag = isBagLot
+                // Show Kg for Crate lots, Bag lots, or simple Kg lots
+                const hasKg = isKgLot || isCrateLot || isBagLot
+
+                // Force hasCrate to false if it's Box, Piece or Bag lot
+                const hasCrate = isCrateLot
 
                 // Determine primary unit label
                 let mainQtyLabel = 'Kg'
-                if (isBoxed) mainQtyLabel = 'Box'
-                else if (isPieced) mainQtyLabel = 'Piece'
-                else if (isBagged) mainQtyLabel = 'Bag'
+                if (hasBox) mainQtyLabel = 'Box'
+                else if (hasPiece) mainQtyLabel = 'Piece'
+                else if (hasBag) mainQtyLabel = 'Bag'
+                else mainQtyLabel = 'Kg' // For Crate and Kg lots
 
                 // Helper to get main quantity value
                 const getMainQtyValue = sale => {
-                  if (isBoxed) return sale.box_quantity || 0
-                  if (isPieced) return sale.piece_quantity || 0
-                  if (isBagged) return sale.bag_quantity || 0
+                  if (hasBox) return sale.box_quantity || 0
+                  if (hasPiece) return sale.piece_quantity || 0
+                  if (hasBag) return sale.bag_quantity || 0
 
                   return sale.kg || 0
                 }
 
-                // Check if crate or discount columns are relevant
-                const hasCrate = isCrated || lotSaleData.sales.some(s => (s.total_crate || 0) > 0)
-                const hasDiscount = lotSaleData.sales.some(s => (s.discount_Kg || 0) > 0)
+                // Check if discount column is relevant
+                const hasDiscount = sales.some(s => (s.discount_Kg || 0) > 0)
 
                 // Summary calculations
-                const totalMainQty = lotSaleData.sales.reduce((sum, s) => sum + getMainQtyValue(s), 0)
-                const totalSalesVal = lotSaleData.sales.reduce((sum, s) => sum + (s.total_price || 0), 0)
+                const totalMainQty = sales.reduce((sum, s) => sum + getMainQtyValue(s), 0)
+                const totalSalesVal = sales.reduce((sum, s) => sum + (s.total_price || 0), 0)
                 const avgPriceVal = totalMainQty > 0 ? (totalSalesVal / totalMainQty).toFixed(2) : 0
-                const totalCratesVal = lotSaleData.sales.reduce((sum, s) => sum + (s.total_crate || 0), 0)
+                const totalCratesVal = sales.reduce((sum, s) => sum + (s.total_crate || 0), 0)
 
                 return (
                   <>
@@ -1203,7 +1216,9 @@ const LotDetailsModal = ({ open, onClose, lot, lotSaleData, loadingSaleData, onP
                           <Box sx={{ width: 150, minWidth: 150, px: 1 }}>{mainQtyLabel}</Box>
                           <Box sx={{ width: 150, minWidth: 150, px: 1 }}>Unit Price</Box>
                           <Box sx={{ width: 150, minWidth: 150, px: 1 }}>Total Price</Box>
-                          {hasDiscount && <Box sx={{ width: 150, minWidth: 150, px: 1 }}>Discount ({mainQtyLabel})</Box>}
+                          {hasDiscount && (
+                            <Box sx={{ width: 150, minWidth: 150, px: 1 }}>Discount ({mainQtyLabel})</Box>
+                          )}
                           {hasCrate && <Box sx={{ width: 200, minWidth: 200, px: 1 }}>Total Crate</Box>}
                         </Box>
 
@@ -1220,7 +1235,9 @@ const LotDetailsModal = ({ open, onClose, lot, lotSaleData, loadingSaleData, onP
                             }}
                           >
                             <Box sx={{ width: 150, minWidth: 150, px: 1 }}>{getMainQtyValue(sale)}</Box>
-                            <Box sx={{ width: 150, minWidth: 150, px: 1 }}>${sale.unit_price?.toLocaleString() || 0}</Box>
+                            <Box sx={{ width: 150, minWidth: 150, px: 1 }}>
+                              ${sale.unit_price?.toLocaleString() || 0}
+                            </Box>
                             <Box sx={{ width: 150, minWidth: 150, px: 1 }}>
                               ${sale.total_price?.toLocaleString() || 0}
                             </Box>

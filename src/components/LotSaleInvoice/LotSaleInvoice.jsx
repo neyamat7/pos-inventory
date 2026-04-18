@@ -5,24 +5,37 @@ const LotSaleInvoice = ({ lotSaleData }) => {
 
   console.log('lotSaleData', lotSaleData)
 
-  // Determine which columns to show based on data
-  const hasDiscount = lotSaleData.sales?.some(sale => (sale.discount_Kg || 0) > 0) || false
-  const hasCrate = lotSaleData.sales?.some(sale => (sale.total_crate || 0) > 0 || (sale.crate_type1 || 0) > 0 || (sale.crate_type2 || 0) > 0) || false
-  const hasBox = lotSaleData.sales?.some(sale => sale.isBoxed && (sale.box_quantity || 0) > 0) || false
-  const hasPiece = lotSaleData.sales?.some(sale => sale.isPieced && (sale.piece_quantity || 0) > 0) || false
-  const hasBag = lotSaleData.sales?.some(sale => sale.isBagged && (sale.bag_quantity || 0) > 0) || false
-  const hasKg = lotSaleData.sales?.some(sale => (sale.kg || 0) > 0) || false
+  const sales = lotSaleData.sales || []
+  
+  // Determine primary unit type based on actual data
+  const isBoxLot = sales.some(sale => (sale.box_quantity || 0) > 0)
+  const isPieceLot = !isBoxLot && sales.some(sale => (sale.piece_quantity || 0) > 0)
+  const isBagLot = !isBoxLot && !isPieceLot && sales.some(sale => (sale.bag_quantity || 0) > 0)
+  const isCrateLot = !isBoxLot && !isPieceLot && !isBagLot && sales.some(sale => (sale.total_crate || 0) > 0 || (sale.total_crate || 0) > 0 || (sale.crate_type1 || 0) > 0 || (sale.crate_type2 || 0) > 0)
+  const isKgLot = !isBoxLot && !isPieceLot && !isBagLot && !isCrateLot
+
+  // Determine which columns and summary items to show
+  const hasDiscount = sales.some(sale => (sale.discount_Kg || 0) > 0)
+  const hasBox = isBoxLot
+  const hasPiece = isPieceLot
+  const hasBag = isBagLot
+  const hasKg = isKgLot || isCrateLot || isBagLot // Show Kg only for Crate, Bag, or pure Kg lots
+  const hasCrate = isCrateLot // Show crate only for Crate lots
 
   // Calculate totals
-  const totalKg = lotSaleData.sales?.reduce((sum, sale) => sum + (sale.kg || 0), 0) || 0
-  const totalPrice = lotSaleData.sales?.reduce((sum, sale) => sum + (sale.total_price || 0), 0) || 0
-  const totalCrate = lotSaleData.sales?.reduce((sum, sale) => sum + (sale.total_crate || 0), 0) || 0
-  const totalBox = lotSaleData.sales?.reduce((sum, sale) => sum + (sale.box_quantity || 0), 0) || 0
-  const totalPiece = lotSaleData.sales?.reduce((sum, sale) => sum + (sale.piece_quantity || 0), 0) || 0
-  const totalBag = lotSaleData.sales?.reduce((sum, sale) => sum + (sale.bag_quantity || 0), 0) || 0
+  const totalKg = sales.reduce((sum, sale) => sum + (sale.kg || 0), 0)
+  const totalPrice = sales.reduce((sum, sale) => sum + (sale.total_price || 0), 0)
+  const totalCrate = sales.reduce((sum, sale) => sum + (sale.total_crate || 0), 0)
+  const totalBox = sales.reduce((sum, sale) => sum + (sale.box_quantity || 0), 0)
+  const totalPiece = sales.reduce((sum, sale) => sum + (sale.piece_quantity || 0), 0)
+  const totalBag = sales.reduce((sum, sale) => sum + (sale.bag_quantity || 0), 0)
 
-  // Calculate avgPrice based on available quantity type
-  const mainQty = totalKg || totalBox || totalPiece || totalBag || 0
+  // Calculate avgPrice based on the primary unit
+  let mainQty = totalKg
+  if (isBoxLot) mainQty = totalBox
+  else if (isPieceLot) mainQty = totalPiece
+  else if (isBagLot) mainQty = totalBag
+  
   const avgPrice = mainQty > 0 ? (totalPrice / mainQty).toFixed(2) : 0
 
   // Filter expenses to show only non-zero values
@@ -46,7 +59,7 @@ const LotSaleInvoice = ({ lotSaleData }) => {
 
   const expenseItems = [...fixedExpenses, ...customExpenses].filter(item => (item.value || 0) > 0)
 
-  // Calculate column count for empty state
+
   // Calculate column count for empty state
   const columnCount = 2 + (hasKg ? 1 : 0) + (hasBox ? 1 : 0) + (hasPiece ? 1 : 0) + (hasBag ? 1 : 0) + (hasDiscount ? 1 : 0) + (hasCrate ? 1 : 0)
 
