@@ -226,7 +226,7 @@ export async function getSupplierPayments({ supplierId, page = 1, limit = 10, fr
   }
 }
 
-export async function getSupplierDueList({ page = 1, limit = 10 } = {}) {
+export async function getSupplierDueList({ page = 1, limit = 10, search = '' } = {}) {
   try {
     if (page < 1 || limit < 1) {
       return {
@@ -239,6 +239,8 @@ export async function getSupplierDueList({ page = 1, limit = 10 } = {}) {
       page: page.toString(),
       limit: limit.toString()
     })
+
+    if (search) params.append('search', search)
 
     const response = await api.get(`/suppliers/due-list?${params.toString()}`)
 

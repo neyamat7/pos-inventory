@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import DueList from '@/views/apps/dueList'
-import { getSupplierDueList } from '@/actions/supplierAction'
 import { getCustomerDueList } from '@/actions/customerActions'
+import { getSupplierDueList } from '@/actions/supplierAction'
+import DueList from '@/views/apps/dueList'
 
 const DueListPage = () => {
   // states for currently active data type
@@ -52,7 +52,8 @@ const DueListPage = () => {
             total: result.data.total,
             totalPages: result.data.totalPages,
             currentPage: result.data.page,
-            limit: result.data.limit
+            limit: result.data.limit,
+            total_due: result.data.total_due || 0
           })
         }
       } catch (error) {

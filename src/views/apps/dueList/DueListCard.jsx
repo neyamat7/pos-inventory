@@ -3,10 +3,8 @@
 // MUI Imports
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import Divider from '@mui/material/Divider'
 import Grid from '@mui/material/Grid2'
 import Typography from '@mui/material/Typography'
-import useMediaQuery from '@mui/material/useMediaQuery'
 
 // Third-party Imports
 import classnames from 'classnames'
@@ -14,14 +12,10 @@ import classnames from 'classnames'
 // Component Imports
 import CustomAvatar from '@core/components/mui/Avatar'
 
-const DueListCard = ({ tableData, selectedType }) => {
-  // Calculate total due from current table data using the nested structure
-  const totalDue =
-    tableData?.reduce((acc, item) => {
-      const dueAmount = item?.account_info?.due || 0
-
-      return acc + dueAmount
-    }, 0) || 0
+const DueListCard = ({ paginationData, selectedType }) => {
+  // Use total_due from API (sum of ALL customers/suppliers due, not just current page)
+  const totalDue = paginationData?.total_due || 0
+  const totalCount = paginationData?.total || 0
 
   // Vars
   const data = [
@@ -47,7 +41,7 @@ const DueListCard = ({ tableData, selectedType }) => {
                   {item.title}
                 </Typography>
                 <Typography variant='caption' color='text.disabled'>
-                  {tableData?.length || 0} {selectedType === 'suppliers' ? 'Suppliers' : 'Customers'}
+                  {totalCount} {selectedType === 'suppliers' ? 'Suppliers' : 'Customers'}
                 </Typography>
               </div>
               <CustomAvatar variant='rounded' size={48} skin='light' color={item.color}>
