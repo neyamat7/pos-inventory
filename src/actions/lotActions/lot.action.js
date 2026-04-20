@@ -254,3 +254,21 @@ export async function deleteLotReceipt(lotId, imageId) {
     }
   }
 }
+
+export async function getDailyCashSummary(date) {
+  try {
+    const response = await api.get(`/analysis/daily-cash-summary?date=${date}`)
+
+    return {
+      success: true,
+      data: response.data
+    }
+  } catch (error) {
+    console.error('Get daily cash summary error:', error)
+
+    return {
+      success: false,
+      data: null
+    }
+  }
+}

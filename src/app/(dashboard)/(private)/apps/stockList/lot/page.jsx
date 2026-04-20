@@ -1,8 +1,8 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
+import { getAllLots, getDailyCashSummary } from '@/actions/lotActions'
 import LotStockList from '@/views/apps/stockList/lot'
-import { getAllLots } from '@/actions/lotActions'
 
 const LotPage = () => {
   const [currentPage, setCurrentPage] = useState(1)
@@ -10,10 +10,9 @@ const LotPage = () => {
   const [data, setData] = useState([])
   const [paginationData, setPaginationData] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [cashSummary, setCashSummary] = useState(null)
 
   const [search, setSearch] = useState('')
-
-  // console.log('lot data in lot page', data)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,8 +20,6 @@ const LotPage = () => {
 
       try {
         const result = await getAllLots({ page: currentPage, limit: pageSize, search })
-
-        // console.log('result', result)
 
         setData(result?.lots?.lots || [])
         setPaginationData({
@@ -43,6 +40,25 @@ const LotPage = () => {
     fetchData()
   }, [currentPage, pageSize, search])
 
+  // Fetch daily cash summary once on mount with today's date
+  useEffect(() => {
+    const fetchCashSummary = async () => {
+      const today = new Date()
+      const yyyy = today.getFullYear()
+      const mm = String(today.getMonth() + 1).padStart(2, '0')
+      const dd = String(today.getDate()).padStart(2, '0')
+      const dateStr = `${yyyy}-${mm}-${dd}`
+
+      const result = await getDailyCashSummary(dateStr)
+
+      if (result.success) {
+        setCashSummary(result.data)
+      }
+    }
+
+    fetchCashSummary()
+  }, [])
+
   const handleSearchChange = value => {
     setSearch(value)
     setCurrentPage(1)
@@ -62,6 +78,7 @@ const LotPage = () => {
       lotData={data}
       paginationData={paginationData}
       loading={loading}
+      cashSummary={cashSummary}
       onPageChange={handlePageChange}
       onPageSizeChange={handlePageSizeChange}
       onSearchChange={handleSearchChange}

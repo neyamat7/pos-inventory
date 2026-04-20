@@ -1,11 +1,9 @@
 // MUI Imports
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import Divider from '@mui/material/Divider'
 import Grid from '@mui/material/Grid2'
-import Typography from '@mui/material/Typography'
-import useMediaQuery from '@mui/material/useMediaQuery'
 import Skeleton from '@mui/material/Skeleton'
+import Typography from '@mui/material/Typography'
 
 // Third-party Imports
 import classnames from 'classnames'
@@ -13,63 +11,97 @@ import classnames from 'classnames'
 // Component Imports
 import CustomAvatar from '@core/components/mui/Avatar'
 
-const AllLotCard = ({ lotData = [], loading = false }) => {
-  // console.log('lotData', lotData)
+const AllLotCard = ({ lotData = [], loading = false, cashSummary = null }) => {
+  // Total active lots — only "in stock" lots
+  const totalActiveLots = lotData.filter(item => item.status === 'in stock').length
 
-  // Calculate totals from lotData array
-  const totalLot = lotData.length
+  const bd = cashSummary?.breakdown || {}
+  const dc = cashSummary?.daily_cash || {}
 
-  const totalSoldAmount = lotData.reduce((acc, item) => acc + (item.sales?.totalSoldPrice || 0), 0)
-
-  const totalCarat = lotData.reduce((acc, item) => {
-    const carat1 = item.carat?.carat_Type_1 || 0
-    const carat2 = item.carat?.carat_Type_2 || 0
-
-    return acc + carat1 + carat2
-  }, 0)
-
-  const totalProfit = lotData.reduce((acc, item) => acc + (item.profits?.totalProfit || 0), 0)
-
-  // Vars
-  const data = [
+  const cards = [
     {
-      value: totalLot,
-      title: 'Total Lots',
+      value: totalActiveLots,
+      title: 'Total Active Lots',
       icon: 'tabler-package',
-      color: 'primary'
+      color: 'primary',
+      prefix: ''
     },
     {
-      value: totalCarat,
-      title: 'Total Carat',
-      icon: 'tabler-weight',
-      color: 'info'
+      value: cashSummary?.daily_net_amount ?? '—',
+      title: 'Daily Net Amount',
+      icon: 'tabler-cash',
+      color: 'success',
+      prefix: '৳'
     },
     {
-      value: totalSoldAmount,
-      title: 'Total Sold Amount',
-      icon: 'tabler-currency-taka',
-      color: 'success'
+      value: bd.today_total_sale ?? '—',
+      title: "Today's Total Sale",
+      icon: 'tabler-shopping-cart',
+      color: 'info',
+      prefix: '৳'
     },
     {
-      value: totalProfit,
-      title: 'Total Profit',
-      icon: 'tabler-chart-line',
-      color: 'warning'
+      value: bd.today_total_due ?? '—',
+      title: "Today's Total Due",
+      icon: 'tabler-clock-dollar',
+      color: 'warning',
+      prefix: '৳'
+    },
+    {
+      value: bd.today_total_received ?? '—',
+      title: "Today's Received",
+      icon: 'tabler-receipt',
+      color: 'success',
+      prefix: '৳'
+    },
+    {
+      value: bd.all_customer_previous_due ?? '—',
+      title: 'All Customer Due',
+      icon: 'tabler-users',
+      color: 'error',
+      prefix: '৳'
+    },
+    {
+      value: bd.today_add_balance_payments ?? '—',
+      title: 'Add Balance Today',
+      icon: 'tabler-wallet',
+      color: 'primary',
+      prefix: '৳'
+    },
+    {
+      value: bd.today_discounts_given ?? '—',
+      title: 'Discounts Given',
+      icon: 'tabler-discount',
+      color: 'warning',
+      prefix: '৳'
+    },
+    {
+      value: dc.closing_cash ?? '—',
+      title: 'Closing Cash',
+      icon: 'tabler-safe',
+      color: 'info',
+      prefix: '৳'
     }
   ]
 
+  const formatValue = (value, prefix) => {
+    if (value === '—') return '—'
+
+    return `${prefix}${Number(value).toLocaleString()}`
+  }
+
   return (
-    <Grid container spacing={6}>
-      {data.map((item, index) => (
-        <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
+    <Grid container spacing={4}>
+      {cards.map((item, index) => (
+        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={index}>
           <Card sx={{ borderBottom: 4, borderColor: `${item.color}.main` }}>
             <CardContent className='flex justify-between gap-4'>
               <div className='flex flex-col items-start'>
-                {loading ? (
-                  <Skeleton variant='text' width={80} height={40} />
+                {loading || (index > 0 && cashSummary === null) ? (
+                  <Skeleton variant='text' width={100} height={40} />
                 ) : (
-                  <Typography variant='h4' color={`${item.color}.main`} sx={{ fontWeight: 700 }}>
-                    {item.value.toLocaleString()}
+                  <Typography variant='h5' color={`${item.color}.main`} sx={{ fontWeight: 700 }}>
+                    {formatValue(item.value, item.prefix)}
                   </Typography>
                 )}
                 {loading ? (
