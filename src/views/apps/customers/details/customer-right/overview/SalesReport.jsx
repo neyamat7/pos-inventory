@@ -9,6 +9,7 @@ import { CreditCard, Package, ShoppingCart } from 'lucide-react'
 import { getBalanceHistory } from '@/actions/balanceActions'
 import { getCustomerCrateHistory, getSalesByCustomer } from '@/actions/customerActions'
 import CustomTextField from '@core/components/mui/TextField'
+import CustomerSaleSummaryCards from './CustomerSaleSummaryCards'
 import BalanceHistoryTable from './tables/BalanceHistoryTable'
 import CustomerCrateHistoryTable from './tables/CustomerCrateHistoryTable'
 import SalesTable from './tables/SalesTable'
@@ -20,7 +21,7 @@ const SalesReport = ({ customerId, initialSalesData, initialBalanceData, initial
   const [activeTab, setActiveTab] = useState('sales')
   const [searchValue, setSearchValue] = useState('')
   const [fromDate, setFromDate] = useState('')
-  const [toDate, setToDate] = useState('')
+  const [toDate, setToDate] = useState(() => new Date().toISOString().split('T')[0])
 
   // State for sales data
   const [salesData, setSalesData] = useState(initialSalesData)
@@ -142,13 +143,21 @@ const SalesReport = ({ customerId, initialSalesData, initialBalanceData, initial
     switch (activeTab) {
       case 'sales':
         return (
-          <SalesTable
-            data={salesData?.data?.data?.sales || []}
-            pagination={pagination}
-            total={salesData?.data?.data?.total || 0}
-            onPaginationChange={handlePaginationChange}
-            loading={loading}
-          />
+          <>
+            {fromDate && (
+              <CustomerSaleSummaryCards
+                summary={salesData?.data?.data?.summary}
+                loading={loading}
+              />
+            )}
+            <SalesTable
+              data={salesData?.data?.data?.sales || []}
+              pagination={pagination}
+              total={salesData?.data?.data?.total || 0}
+              onPaginationChange={handlePaginationChange}
+              loading={loading}
+            />
+          </>
         )
 
       case 'crateHistory':
