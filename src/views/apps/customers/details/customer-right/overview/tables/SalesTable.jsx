@@ -2,21 +2,19 @@
 
 import { useState } from 'react'
 
-import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from '@tanstack/react-table'
 import {
-  CircularProgress,
-  Box,
-  IconButton,
+  Card,
+  CardContent,
+  Chip,
   Dialog,
   DialogContent,
   DialogTitle,
-  Chip,
-  Grid,
-  Typography,
   Divider,
-  Card,
-  CardContent
+  Grid,
+  IconButton,
+  Typography
 } from '@mui/material'
+import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 import { Eye, X } from 'lucide-react'
 
 import TablePaginationComponent from '@components/TablePaginationComponent'
@@ -343,14 +341,6 @@ const SalesTable = ({ data, pagination, total, onPaginationChange, loading }) =>
     setSelectedSale(null)
   }
 
-  if (loading) {
-    return (
-      <Box className='flex justify-center items-center p-8'>
-        <CircularProgress />
-      </Box>
-    )
-  }
-
   return (
     <>
       <table className={tableStyles.table}>
@@ -364,7 +354,9 @@ const SalesTable = ({ data, pagination, total, onPaginationChange, loading }) =>
           ))}
         </thead>
         <tbody>
-          {table.getRowModel().rows.length === 0 ? (
+          {loading ? (
+            <TableSkeleton columns={salesColumns.length} />
+          ) : table.getRowModel().rows.length === 0 ? (
             <tr>
               <td colSpan={salesColumns.length} className='text-center p-4'>
                 No sales found for this customer

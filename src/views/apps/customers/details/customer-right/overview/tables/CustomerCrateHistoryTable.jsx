@@ -3,34 +3,29 @@
 import { useEffect, useState } from 'react'
 
 import {
-  useReactTable,
-  getCoreRowModel,
-  flexRender,
-  getPaginationRowModel,
-  createColumnHelper
-} from '@tanstack/react-table'
-import {
-  TablePagination,
-  Typography,
-  Box,
-  CircularProgress,
-  IconButton,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  Chip,
-  MenuItem
+    Box,
+    Chip,
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    Divider,
+    IconButton,
+    TablePagination,
+    Typography
 } from '@mui/material'
 import Grid from '@mui/material/Grid2'
+import {
+    createColumnHelper,
+    flexRender,
+    getCoreRowModel,
+    getPaginationRowModel,
+    useReactTable
+} from '@tanstack/react-table'
 import { Eye } from 'lucide-react'
 
-import CustomTextField from '@core/components/mui/TextField'
 
 import TablePaginationComponent from '@components/TablePaginationComponent'
 import tableStyles from '@core/styles/table.module.css'
-import { updateCrateStatus } from '@/actions/customerActions'
-import { showError, showSuccess } from '@/utils/toastUtils'
 
 // Crate History Detail Modal Component
 const CrateHistoryDetailModal = ({ open, onClose, history }) => {
@@ -339,14 +334,6 @@ const CustomerCrateHistoryTable = ({ data, pagination, total, onPaginationChange
     }
   })
 
-  if (loading) {
-    return (
-      <Box className='flex justify-center items-center p-8'>
-        <CircularProgress />
-      </Box>
-    )
-  }
-
   return (
     <>
       <table className={tableStyles.table}>
@@ -360,7 +347,9 @@ const CustomerCrateHistoryTable = ({ data, pagination, total, onPaginationChange
           ))}
         </thead>
         <tbody>
-          {table.getRowModel().rows.length === 0 ? (
+          {loading ? (
+            <TableSkeleton columns={crateHistoryColumns.length} />
+          ) : table.getRowModel().rows.length === 0 ? (
             <tr>
               <td colSpan={crateHistoryColumns.length} className='text-center p-4'>
                 No crate history available
