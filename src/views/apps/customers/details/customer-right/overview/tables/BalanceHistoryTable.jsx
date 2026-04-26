@@ -23,6 +23,7 @@ import {
 } from '@tanstack/react-table'
 import { Eye } from 'lucide-react'
 
+import TableSkeleton from '@/components/TableSkeleton'
 import { getImageUrl } from '@/utils/getImageUrl'
 import TablePaginationComponent from '@components/TablePaginationComponent'
 import tableStyles from '@core/styles/table.module.css'

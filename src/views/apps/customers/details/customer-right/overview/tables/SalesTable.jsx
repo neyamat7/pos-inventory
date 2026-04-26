@@ -17,6 +17,7 @@ import {
 import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 import { Eye, X } from 'lucide-react'
 
+import TableSkeleton from '@/components/TableSkeleton'
 import TablePaginationComponent from '@components/TablePaginationComponent'
 import tableStyles from '@core/styles/table.module.css'
 
