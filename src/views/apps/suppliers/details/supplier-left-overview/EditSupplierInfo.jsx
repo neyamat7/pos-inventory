@@ -51,7 +51,11 @@ const EditSupplierInfo = ({ open, handleClose, supplierData }) => {
       // Account Info
       accountNumber: '',
       balance: '',
-      due: ''
+      due: '',
+
+      // Crate Prices
+      crate1Price: '',
+      crate2Price: ''
     }
   })
 
@@ -71,7 +75,11 @@ const EditSupplierInfo = ({ open, handleClose, supplierData }) => {
         // Account Info
         accountNumber: supplierData.account_info?.accountNumber || '',
         balance: supplierData.account_info?.balance || '',
-        due: supplierData.account_info?.due || ''
+        due: supplierData.account_info?.due || '',
+
+        // Crate Prices
+        crate1Price: supplierData.crate_info?.crate1Price || '',
+        crate2Price: supplierData.crate_info?.crate2Price || ''
       })
     }
   }, [supplierData, reset])
@@ -104,12 +112,14 @@ const EditSupplierInfo = ({ open, handleClose, supplierData }) => {
           due: Number(data.due || 0)
         },
 
-        // Crate Information (preserve existing data from backend)
-        crate_info: supplierData.crate_info || {
-          crate1Price: 0,
-          remainingCrate1: 0,
-          crate2Price: 0,
-          remainingCrate2: 0
+        // Crate Information — update prices only, preserve all quantities
+        crate_info: {
+          crate1: Number(supplierData.crate_info?.crate1 || 0),
+          crate1Price: Number(data.crate1Price || 0),
+          needToGiveCrate1: Number(supplierData.crate_info?.needToGiveCrate1 || 0),
+          crate2: Number(supplierData.crate_info?.crate2 || 0),
+          crate2Price: Number(data.crate2Price || 0),
+          needToGiveCrate2: Number(supplierData.crate_info?.needToGiveCrate2 || 0)
         }
       }
 
@@ -313,7 +323,6 @@ const EditSupplierInfo = ({ open, handleClose, supplierData }) => {
                       <Controller
                         name='email'
                         control={control}
-                        rules={{ required: true }}
                         render={({ field }) => (
                           <CustomTextField
                             {...field}
@@ -321,8 +330,6 @@ const EditSupplierInfo = ({ open, handleClose, supplierData }) => {
                             type='email'
                             label='Email'
                             placeholder='supplier.update@example.com'
-                            error={!!errors.email}
-                            helperText={errors.email && 'Required'}
                             sx={{
                               '& .MuiOutlinedInput-root': {
                                 borderRadius: 2,
@@ -471,6 +478,76 @@ const EditSupplierInfo = ({ open, handleClose, supplierData }) => {
                             type='number'
                             label='Due Amount'
                             placeholder='2000'
+                            onWheel={e => e.target.blur()}
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                borderRadius: 2,
+                                backgroundColor: '#f8fafc'
+                              }
+                            }}
+                          />
+                        )}
+                      />
+                    </Grid>
+                  </Grid>
+
+                  <Typography
+                    variant='h6'
+                    sx={{
+                      mt: 4,
+                      mb: 3,
+                      color: 'primary.main',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 4,
+                        height: 20,
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        borderRadius: 2
+                      }}
+                    />
+                    Crate Prices
+                  </Typography>
+
+                  <Grid container spacing={3}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <Controller
+                        name='crate1Price'
+                        control={control}
+                        render={({ field }) => (
+                          <CustomTextField
+                            {...field}
+                            fullWidth
+                            type='number'
+                            label='Crate 1 Price'
+                            placeholder='55'
+                            onWheel={e => e.target.blur()}
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                borderRadius: 2,
+                                backgroundColor: '#f8fafc'
+                              }
+                            }}
+                          />
+                        )}
+                      />
+                    </Grid>
+
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <Controller
+                        name='crate2Price'
+                        control={control}
+                        render={({ field }) => (
+                          <CustomTextField
+                            {...field}
+                            fullWidth
+                            type='number'
+                            label='Crate 2 Price'
+                            placeholder='80'
                             onWheel={e => e.target.blur()}
                             sx={{
                               '& .MuiOutlinedInput-root': {

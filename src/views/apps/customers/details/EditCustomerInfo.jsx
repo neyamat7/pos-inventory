@@ -4,25 +4,25 @@
 import { useEffect, useState } from 'react'
 
 // MUI Imports
-import Dialog from '@mui/material/Dialog'
-import DialogTitle from '@mui/material/DialogTitle'
-import DialogContent from '@mui/material/DialogContent'
-import DialogActions from '@mui/material/DialogActions'
-import Button from '@mui/material/Button'
-import Typography from '@mui/material/Typography'
-import Grid from '@mui/material/Grid2'
 import Alert from '@mui/material/Alert'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import Box from '@mui/material/Box'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogTitle from '@mui/material/DialogTitle'
+import Grid from '@mui/material/Grid2'
+import Typography from '@mui/material/Typography'
 
 // Third-party Imports
-import { useForm, Controller } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 
 // Component Imports
-import CustomTextField from '@core/components/mui/TextField'
 import { updateCustomer } from '@/actions/customerActions'
 import { showSuccess } from '@/utils/toastUtils'
+import CustomTextField from '@core/components/mui/TextField'
 
 // Action Imports
 // import { updateCustomer } from '@/app/actions/customer-actions'
@@ -320,7 +320,6 @@ const EditCustomerInfo = ({ open, handleClose, customerData, onSave }) => {
                       <Controller
                         name='email'
                         control={control}
-                        rules={{ required: true }}
                         render={({ field }) => (
                           <CustomTextField
                             {...field}
@@ -328,8 +327,6 @@ const EditCustomerInfo = ({ open, handleClose, customerData, onSave }) => {
                             type='email'
                             label='Email'
                             placeholder='ahmed.update@example.com'
-                            error={!!errors.email}
-                            helperText={errors.email && 'Required'}
                             sx={{
                               '& .MuiOutlinedInput-root': {
                                 borderRadius: 2,

@@ -697,6 +697,24 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
       })
     }
 
+    // Dynamic custom expense columns — one per unique expense name after Distribute is clicked
+    const customExpenseNames = [
+      ...new Set(
+        cartProducts.flatMap(item => (item.custom_expenses || []).map(e => e.name).filter(Boolean))
+      )
+    ]
+
+    customExpenseNames.forEach(expName => {
+      baseColumns.push({
+        id: `custom_exp_${expName}`,
+        header: expName,
+        cell: ({ row }) => {
+          const match = (row.original.custom_expenses || []).find(e => e.name === expName)
+          return <span>{match ? match.amount : 0}</span>
+        }
+      })
+    })
+
     baseColumns.push({
       id: 'actions',
       header: 'Action',
@@ -715,7 +733,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
     })
 
     return baseColumns
-  }, [showPieceQuantity, showBoxQuantity, showBagQuantity, showTotalKg, showCrated, showDiscount, showCommission])
+  }, [showPieceQuantity, showBoxQuantity, showBagQuantity, showTotalKg, showCrated, showDiscount, showCommission, cartProducts])
 
   const tableData = useMemo(() => cartProducts, [cartProducts])
 

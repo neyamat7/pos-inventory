@@ -4,44 +4,70 @@ import { convertToBanglaNumber } from '@/utils/convert-to-bangla'
 
 const SaleInvoice = ({ saleData, customerData }) => {
   // DATA CALCULATIONS
-  const allProductSummary =
-    saleData?.items?.map(item => {
-      const totalKg = item.selected_lots.reduce((sum, lot) => sum + (lot.kg || 0), 0)
-      const totalDiscountKg = item.selected_lots.reduce(
-        (sum, lot) => sum + (Number(lot.discount_Kg) || Number(lot.discount_kg) || 0),
-        0
-      )
-      const netKg = totalKg - totalDiscountKg
-      const totalBox = item.selected_lots.reduce((sum, lot) => sum + (lot.box_quantity || 0), 0)
-      const totalPiece = item.selected_lots.reduce((sum, lot) => sum + (lot.piece_quantity || 0), 0)
-      const totalDiscountAmount = item.selected_lots.reduce((sum, lot) => sum + (lot.discount_amount || 0), 0)
-      const totalCrate1 = item.selected_lots.reduce((sum, lot) => sum + (lot.crate_type1 || 0), 0)
-      const totalCrate2 = item.selected_lots.reduce((sum, lot) => sum + (lot.crate_type2 || 0), 0)
-      const commissionAmount = item.selected_lots.reduce((sum, lot) => sum + (lot.customer_commission_amount || 0), 0)
-      const firstLot = item.selected_lots[0] || {}
-      const unitPrice = firstLot.unit_price || 0
-      const isCrated = firstLot.isCrated || false
+  // For non-crated products: expand each selected_lot into its own row
+  // so that same product sold at different prices shows as separate rows
+  const allProductSummary = []
 
-      return {
-        product_name:
-          item.productId?.productNameBn ||
-          item.product_name_bn ||
-          item.productId?.productName ||
-          item.product_name ||
-          'N/A',
-        isCrated,
-        netKg,
-        totalBox,
-        totalPiece,
-        unit_price: unitPrice,
-        finalProductBase: isCrated
-          ? netKg * unitPrice
-          : Math.max(0, (netKg || totalBox || totalPiece) * unitPrice - totalDiscountAmount),
-        commissionAmount,
-        totalCrate1,
-        totalCrate2
+  saleData?.items?.forEach(item => {
+    const productName =
+      item.productId?.productNameBn ||
+      item.product_name_bn ||
+      item.productId?.productName ||
+      item.product_name ||
+      'N/A'
+
+    item.selected_lots?.forEach(lot => {
+      const isCrated = lot.isCrated || false
+      const isBoxed = lot.isBoxed || false
+      const isPieced = lot.isPieced || false
+      const isBagged = lot.isBagged || false
+
+      const kg = Number(lot.kg) || 0
+      const discountKg = Number(lot.discount_Kg || lot.discount_kg) || 0
+      const netKg = kg - discountKg
+      const boxQty = Number(lot.box_quantity) || 0
+      const pieceQty = Number(lot.piece_quantity) || 0
+      const discountAmount = Number(lot.discount_amount) || 0
+      const unitPrice = Number(lot.unit_price) || 0
+      const commissionAmount = Number(lot.customer_commission_amount) || 0
+      const crate1 = Number(lot.crate_type1) || 0
+      const crate2 = Number(lot.crate_type2) || 0
+
+      // Calculate base amount for this lot row
+      let finalProductBase = 0
+      if (isCrated) {
+        finalProductBase = netKg * unitPrice
+      } else if (isBoxed) {
+        finalProductBase = Math.max(0, boxQty * unitPrice - discountAmount)
+      } else if (isPieced) {
+        finalProductBase = Math.max(0, pieceQty * unitPrice - discountAmount)
+      } else if (isBagged) {
+        finalProductBase = Math.max(0, netKg * unitPrice - discountAmount)
+      } else {
+        finalProductBase = Math.max(0, netKg * unitPrice - discountAmount)
       }
-    }) || []
+
+      allProductSummary.push({
+        product_name: productName,
+        isCrated,
+        isBoxed,
+        isPieced,
+        isBagged,
+        netKg,
+        totalBox: boxQty,
+        totalPiece: pieceQty,
+        unit_price: unitPrice,
+        finalProductBase,
+        commissionAmount,
+        totalCrate1: crate1,
+        totalCrate2: crate2,
+        discountAmount,
+        // keep full lot for crated section rendering
+        _lot: lot,
+        _item: item
+      })
+    })
+  })
 
   const otherSummary = allProductSummary.filter(p => !p.isCrated)
   const hasOtherProducts = otherSummary.length > 0
@@ -59,6 +85,11 @@ const SaleInvoice = ({ saleData, customerData }) => {
   const currentBill = paymentDetails.payable_amount || 0
   const totalDue = previousDue + currentBill
   const netPayable = Math.max(0, totalDue - previousBalance)
+
+  // Total discount given across all lot rows (non-crated only, crated use kg discount)
+  const totalDiscountAmount = allProductSummary
+    .filter(p => !p.isCrated)
+    .reduce((sum, p) => sum + (p.discountAmount || 0), 0)
 
   // MATH ROW (PERFECT EQUALITY ALIGNMENT - COMPACTED)
   const RightAlignedMathRow = ({ left, middle = '=', right, bold = false }) => (
@@ -257,19 +288,29 @@ const SaleInvoice = ({ saleData, customerData }) => {
       {/* 3. OTHER PRODUCTS */}
       {hasOtherProducts && (
         <div style={{ marginBottom: '3px', borderTop: '1px solid #ccc', paddingTop: '0px' }}>
-          {otherSummary.map((product, idx) => (
-            <div
-              key={idx}
-              style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px', padding: '0 10px' }}
-            >
-              <span>{product.product_name}</span>
-              <span>
-                {convertToBanglaNumber(product.netKg || product.totalBox || product.totalPiece)} *{' '}
-                {convertToBanglaNumber(product.unit_price)} ={' '}
-                {convertToBanglaNumber(product.finalProductBase.toFixed(0))}
-              </span>
+          {otherSummary.map((product, idx) => {
+            // Determine display qty and label
+            const qty = product.totalBox || product.totalPiece || product.netKg
+            return (
+              <div
+                key={idx}
+                style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px', padding: '0 10px' }}
+              >
+                <span>{product.product_name}</span>
+                <span>
+                  {convertToBanglaNumber(qty)} *{' '}
+                  {convertToBanglaNumber(product.unit_price)} ={' '}
+                  {convertToBanglaNumber(product.finalProductBase.toFixed(0))}
+                </span>
+              </div>
+            )
+          })}
+          {totalDiscountAmount > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 10px', color: '#006400' }}>
+              <span>ছাড়:</span>
+              <span>{convertToBanglaNumber(totalDiscountAmount.toFixed(0))}</span>
             </div>
-          ))}
+          )}
         </div>
       )}
 
