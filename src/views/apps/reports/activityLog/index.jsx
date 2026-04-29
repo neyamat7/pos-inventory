@@ -1,38 +1,39 @@
 'use client'
 
 // React Imports
-import { useState, useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 // MUI Imports
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import Typography from '@mui/material/Typography'
 import Checkbox from '@mui/material/Checkbox'
-import TablePagination from '@mui/material/TablePagination'
-import MenuItem from '@mui/material/MenuItem'
 import Chip from '@mui/material/Chip'
+import IconButton from '@mui/material/IconButton'
+import MenuItem from '@mui/material/MenuItem'
+import TablePagination from '@mui/material/TablePagination'
 import Tooltip from '@mui/material/Tooltip'
+import Typography from '@mui/material/Typography'
 
 // Third-party 
-import classnames from 'classnames'
 import { rankItem } from '@tanstack/match-sorter-utils'
 import {
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  getFilteredRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFacetedMinMaxValues,
-  getSortedRowModel
+    flexRender,
+    getCoreRowModel,
+    getFacetedMinMaxValues,
+    getFacetedRowModel,
+    getFacetedUniqueValues,
+    getFilteredRowModel,
+    getSortedRowModel,
+    useReactTable
 } from '@tanstack/react-table'
+import classnames from 'classnames'
 
 // Component Imports
-import CustomTextField from '@core/components/mui/TextField'
-import TablePaginationComponent from '@components/TablePaginationComponent'
 import TableSkeleton from '@/components/TableSkeleton'
+import TablePaginationComponent from '@components/TablePaginationComponent'
 import CustomAvatar from '@core/components/mui/Avatar'
+import CustomTextField from '@core/components/mui/TextField'
+import ActivityLogDetailModal from './ActivityLogDetailModal'
 
 // Util Imports
 import { getInitials } from '@/utils/getInitials'
@@ -72,11 +73,15 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
   return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
 }
 
-const ActivityLogs = ({ activityLogsData = [], paginationData, loading, onPageChange, onPageSizeChange }) => {
+const ActivityLogs = ({ activityLogsData = [], paginationData, loading, onPageChange, onPageSizeChange, onModelNameChange }) => {
   // States
   const [rowSelection, setRowSelection] = useState({})
   const [data, setData] = useState([])
   const [globalFilter, setGlobalFilter] = useState('')
+  const [selectedLogId, setSelectedLogId] = useState(null)
+  const [modelNameFilter, setModelNameFilter] = useState('')
+
+  const handleViewDetails = (id) => setSelectedLogId(id)
 
   // Sync data with props
   useEffect(() => {
@@ -224,6 +229,19 @@ const ActivityLogs = ({ activityLogsData = [], paginationData, loading, onPageCh
             {row.original.ipAddress || '-'}
           </Typography>
         )
+      },
+
+      // View Details action
+      {
+        id: 'actions',
+        header: 'Details',
+        cell: ({ row }) => (
+          <Tooltip title='View Details' arrow>
+            <IconButton size='small' onClick={() => handleViewDetails(row.original._id)}>
+              <i className='tabler-eye' />
+            </IconButton>
+          </Tooltip>
+        )
       }
     ],
     []
@@ -274,6 +292,28 @@ const ActivityLogs = ({ activityLogsData = [], paginationData, loading, onPageCh
             <MenuItem value='25'>25</MenuItem>
             <MenuItem value='50'>50</MenuItem>
             <MenuItem value='100'>100</MenuItem>
+          </CustomTextField>
+          <CustomTextField
+            select
+            value={modelNameFilter}
+            onChange={e => {
+              setModelNameFilter(e.target.value)
+              if (onModelNameChange) onModelNameChange(e.target.value)
+            }}
+            className='max-sm:is-full sm:is-[160px]'
+          >
+            <MenuItem value=''>All Models</MenuItem>
+            <MenuItem value='Sale'>Sale</MenuItem>
+            <MenuItem value='Purchase'>Purchase</MenuItem>
+            <MenuItem value='Balance'>Balance</MenuItem>
+            <MenuItem value='Payment'>Payment</MenuItem>
+            <MenuItem value='InventoryCrate'>InventoryCrate</MenuItem>
+            <MenuItem value='Expense'>Expense</MenuItem>
+            <MenuItem value='Customer'>Customer</MenuItem>
+            <MenuItem value='Supplier'>Supplier</MenuItem>
+            <MenuItem value='Product'>Product</MenuItem>
+            <MenuItem value='Category'>Category</MenuItem>
+            <MenuItem value='Account'>Account</MenuItem>
           </CustomTextField>
         </div>
       </CardContent>
@@ -341,6 +381,12 @@ const ActivityLogs = ({ activityLogsData = [], paginationData, loading, onPageCh
         onPageChange={(_, page) => {
           onPageChange(page + 1)
         }}
+      />
+
+      <ActivityLogDetailModal
+        open={!!selectedLogId}
+        logId={selectedLogId}
+        onClose={() => setSelectedLogId(null)}
       />
     </Card>
   )

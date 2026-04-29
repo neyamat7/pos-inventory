@@ -212,7 +212,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
                     <RightAlignedMathRow
                       left={
                         <>
-                          {convertToBanglaNumber(netKg)} * {convertToBanglaNumber(lot.unit_price)}
+                          {convertToBanglaNumber(netKg)} x {convertToBanglaNumber(lot.unit_price)}
                         </>
                       }
                       right={convertToBanglaNumber(subtotal.toFixed(0))}
@@ -244,7 +244,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
                       <RightAlignedMathRow
                         left={
                           <>
-                            A {convertToBanglaNumber(lot.crate_type1)} * {convertToBanglaNumber(crate1Rate.toFixed(0))}
+                            A {convertToBanglaNumber(lot.crate_type1)} x {convertToBanglaNumber(crate1Rate.toFixed(0))}
                           </>
                         }
                         right={convertToBanglaNumber(crate1Total.toFixed(0))}
@@ -254,7 +254,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
                       <RightAlignedMathRow
                         left={
                           <>
-                            B {convertToBanglaNumber(lot.crate_type2)} * {convertToBanglaNumber(crate2Rate.toFixed(0))}
+                            B {convertToBanglaNumber(lot.crate_type2)} x {convertToBanglaNumber(crate2Rate.toFixed(0))}
                           </>
                         }
                         right={convertToBanglaNumber(crate2Total.toFixed(0))}
@@ -298,7 +298,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
               >
                 <span>{product.product_name}</span>
                 <span>
-                  {convertToBanglaNumber(qty)} *{' '}
+                  {convertToBanglaNumber(qty)} x{' '}
                   {convertToBanglaNumber(product.unit_price)} ={' '}
                   {convertToBanglaNumber(product.finalProductBase.toFixed(0))}
                 </span>
@@ -307,7 +307,7 @@ const SaleInvoice = ({ saleData, customerData }) => {
           })}
           {totalDiscountAmount > 0 && (
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 10px', color: '#006400' }}>
-              <span>ছাড়:</span>
+              <span>ডিসকাউন্ট</span>
               <span>{convertToBanglaNumber(totalDiscountAmount.toFixed(0))}</span>
             </div>
           )}

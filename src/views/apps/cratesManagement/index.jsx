@@ -38,6 +38,7 @@ import {
 import TableSkeleton from '@/components/TableSkeleton'
 import { showError, showSuccess } from '@/utils/toastUtils'
 import tableStyles from '@core/styles/table.module.css'
+import { Autocomplete, TextField } from '@mui/material'
 
 const CrateManagementTable = ({
   supplierData,
@@ -1127,10 +1128,10 @@ const CrateManagementTable = ({
                   <CustomTextField
                     fullWidth
                     type='number'
-                    value={modalForm.type1Price || selectedSupplier?.crate_info?.crate1Price}
+                    value={modalForm.type1Price === '' ? '' : modalForm.type1Price}
                     onChange={e => setModalForm({ ...modalForm, type1Price: e.target.value })}
                     onWheel={e => e.target.blur()}
-                    placeholder='Enter Type 1 price'
+                    placeholder={String(selectedSupplier?.crate_info?.crate1Price ?? 0)}
                   />
                 </Box>
 
@@ -1160,10 +1161,10 @@ const CrateManagementTable = ({
                   <CustomTextField
                     fullWidth
                     type='number'
-                    value={modalForm.type2Price || selectedSupplier?.crate_info?.crate2Price}
+                    value={modalForm.type2Price === '' ? '' : modalForm.type2Price}
                     onChange={e => setModalForm({ ...modalForm, type2Price: e.target.value })}
                     onWheel={e => e.target.blur()}
-                    placeholder='Enter Type 2 price'
+                    placeholder={String(selectedSupplier?.crate_info?.crate2Price ?? 0)}
                   />
                 </Box>
 
@@ -1317,29 +1318,50 @@ const CrateManagementTable = ({
                 <Typography variant='body2' sx={{ fontWeight: 500, mb: 1 }}>
                   Select Customer
                 </Typography>
-                <CustomTextField
-                  select
+                <Autocomplete
                   fullWidth
-                  value={modalForm.customerId}
-                  onChange={e => {
-                    const customerId = e.target.value
-                    const selectedCustomer = customerData?.find(c => c._id === customerId)
+                  options={customerData || []}
+                  getOptionLabel={option =>
+                    `${option.basic_info?.name || 'Unknown'}${option.contact_info?.phone ? ` — ${option.contact_info.phone}` : ''}`
+                  }
+                  value={customerData?.find(c => c._id === modalForm.customerId) || null}
+                  onChange={(_, selected) => {
+                    const customerId = selected?._id || ''
                     setModalForm({
                       ...modalForm,
                       customerId,
-                      type1Price: selectedCustomer?.crate_info?.type_1_price?.toString() || '',
-                      type2Price: selectedCustomer?.crate_info?.type_2_price?.toString() || ''
+                      type1Price: selected?.crate_info?.type_1_price?.toString() || '',
+                      type2Price: selected?.crate_info?.type_2_price?.toString() || ''
                     })
                   }}
-                  placeholder='Select customer'
-                >
-                  <MenuItem value=''>Select a customer</MenuItem>
-                  {customerData?.map(customer => (
-                    <MenuItem key={customer._id} value={customer._id}>
-                      {customer.basic_info?.name || 'Unknown'}
-                    </MenuItem>
-                  ))}
-                </CustomTextField>
+                  filterOptions={(options, { inputValue }) => {
+                    const lower = inputValue.toLowerCase()
+                    return options.filter(
+                      o =>
+                        o.basic_info?.name?.toLowerCase().includes(lower) ||
+                        o.contact_info?.phone?.includes(inputValue)
+                    )
+                  }}
+                  renderInput={params => (
+                    <TextField {...params} placeholder='Search by name or phone...' size='small' />
+                  )}
+                  renderOption={(props, option) => (
+                    <li {...props} key={option._id}>
+                      <Box>
+                        <Typography variant='body2' fontWeight={600}>
+                          {option.basic_info?.name || 'Unknown'}
+                        </Typography>
+                        {option.contact_info?.phone && (
+                          <Typography variant='caption' color='text.secondary'>
+                            {option.contact_info.phone}
+                          </Typography>
+                        )}
+                      </Box>
+                    </li>
+                  )}
+                  noOptionsText='No customers found'
+                  isOptionEqualToValue={(option, value) => option._id === value._id}
+                />
                 {modalForm.customerId && (
                   <Box
                     sx={{

@@ -2,7 +2,7 @@
 
 import api from '@/libs/api'
 
-export async function getAllActivityLogs({ page = 1, limit = 10, action, by } = {}) {
+export async function getAllActivityLogs({ page = 1, limit = 10, action, by, model_name } = {}) {
   try {
     const params = new URLSearchParams({
       page: page.toString(),
@@ -11,6 +11,7 @@ export async function getAllActivityLogs({ page = 1, limit = 10, action, by } = 
 
     if (action) params.append('action', action)
     if (by) params.append('by', by)
+    if (model_name) params.append('model_name', model_name)
 
     const data = await api.get(`/activity/all?${params.toString()}`)
 
@@ -32,5 +33,15 @@ export async function getAllActivityLogs({ page = 1, limit = 10, action, by } = 
       totalPages: 1,
       logs: []
     }
+  }
+}
+
+export async function getActivityLogDetails(id) {
+  try {
+    const data = await api.get(`/activity/details/${id}`)
+    return { success: true, data }
+  } catch (error) {
+    console.error('Error fetching activity log details:', error)
+    return { success: false, data: null, error: error.message }
   }
 }
