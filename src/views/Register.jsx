@@ -18,7 +18,7 @@ import Button from '@mui/material/Button'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Divider from '@mui/material/Divider'
 
-// Third-party Imports
+// Third-party
 import classnames from 'classnames'
 
 // Component Imports
