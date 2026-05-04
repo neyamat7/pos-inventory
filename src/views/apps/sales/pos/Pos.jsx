@@ -324,7 +324,9 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   const showKg = cartProducts.some(p => (!p.isBoxed && !p.sell_by_piece) || p.isBagged)
   const showDiscountKg = cartProducts.some(p => (!p.isBoxed && !p.sell_by_piece) || p.isBagged)
   const showBagQuantity = cartProducts.some(p => p.isBagged)
-  const showDiscountAmount = cartProducts.some(p => (p.isBoxed || p.sell_by_piece || p.isBagged || p.is_discountable) && !p.isCrated)
+  const showDiscountAmount = cartProducts.some(
+    p => (p.isBoxed || p.sell_by_piece || p.isBagged || p.is_discountable) && !p.isCrated
+  )
 
   const columns = useMemo(() => {
     // --- Base Columns (always shown) ---
@@ -583,7 +585,11 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         cell: ({ row }) => {
           const product = row.original
 
-          if (product.isCrated || (!product.isBoxed && !product.sell_by_piece && !product.isBagged && !product.is_discountable)) return null
+          if (
+            product.isCrated ||
+            (!product.isBoxed && !product.sell_by_piece && !product.isBagged && !product.is_discountable)
+          )
+            return null
 
           return (
             <input
@@ -1094,8 +1100,6 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       }
     }
 
-    // console.log('Sales payload:', JSON.stringify(payload, null, 2))
-
     try {
       const result = await createSale(payload)
 
@@ -1161,7 +1165,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
               supplier_id: lot.supplierId?._id || lot.supplier_id,
               supplier_name: lot.supplierId?.basic_info?.name || lot.supplier_name,
               product_id: lot.productsId?._id || lot.product_id,
-              product_name: (lot.productsId?.productName) || lot.product_name,
+              product_name: lot.productsId?.productName || lot.product_name,
               unit_cost: lot.costs?.unitCost || lot.unit_cost || 0,
               commission_rate: lot.costs?.commissionRate || lot.commission_rate || 0,
               has_commission: lot.hasCommission ?? lot.has_commission,
@@ -1184,7 +1188,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
             },
 
             kg: isBoxed || isPieced ? 0 : sellQty,
-            kg_measurements: item.isCrated ? (lotModal.kg_measurements || []) : [],
+            kg_measurements: item.isCrated ? lotModal.kg_measurements || [] : [],
             box_quantity: isBoxed ? sellQty : 0,
             piece_quantity: isPieced ? sellQty : 0,
             bag_quantity: isBagged ? sellBagQty : 0,
@@ -1684,7 +1688,8 @@ export default function POSSystem({ productsData = [], customersData = [], categ
 
                         if (item?.isBoxed) return ` ${sold.totalBoxSold || 0} boxes`
                         if (item?.sell_by_piece) return ` ${sold.totalPieceSold || 0} pieces`
-                        if (item?.isCrated) return ` ${sold.totalCrateType1Sold || 0}/${sold.totalCrateType2Sold || 0} crates (${sold.totalKgSold || 0} kg)`
+                        if (item?.isCrated)
+                          return ` ${sold.totalCrateType1Sold || 0}/${sold.totalCrateType2Sold || 0} crates (${sold.totalKgSold || 0} kg)`
                         return ` ${sold.totalKgSold || 0} kg`
                       })()}
                     </p>
@@ -1699,11 +1704,18 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                         else if (item?.sell_by_piece) res.push(` ${lot.remaining_pieces ?? 0} pieces`)
                         else if (item?.isBagged) res.push(` ${lot.remaining_bags ?? 0} bags`)
                         else if (item?.isCrated) {
-                          res.push(` ${lot.carat?.remaining_crate_Type_1 || 0}/${lot.carat?.remaining_crate_Type_2 || 0} crates`)
+                          res.push(
+                            ` ${lot.carat?.remaining_crate_Type_1 || 0}/${lot.carat?.remaining_crate_Type_2 || 0} crates`
+                          )
                         } else res.push(` ${lot.remaining_kg ?? 0} kg`)
 
-                        if (!item?.isCrated && (lot.carat?.remaining_crate_Type_1 > 0 || lot.carat?.remaining_crate_Type_2 > 0)) {
-                          res.push(` | ${lot.carat?.remaining_crate_Type_1 || 0}/${lot.carat?.remaining_crate_Type_2 || 0} crates`)
+                        if (
+                          !item?.isCrated &&
+                          (lot.carat?.remaining_crate_Type_1 > 0 || lot.carat?.remaining_crate_Type_2 > 0)
+                        ) {
+                          res.push(
+                            ` | ${lot.carat?.remaining_crate_Type_1 || 0}/${lot.carat?.remaining_crate_Type_2 || 0} crates`
+                          )
                         }
 
                         return res.join('')
@@ -1750,7 +1762,10 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                                         ...prev,
                                         kg_measurements: updated,
                                         currentMeasurement: '',
-                                        selectedLot: { ...prev.selectedLot, sell_qty: updated.reduce((s, m) => s + m, 0) }
+                                        selectedLot: {
+                                          ...prev.selectedLot,
+                                          sell_qty: updated.reduce((s, m) => s + m, 0)
+                                        }
                                       }))
                                     }
                                   }
@@ -1793,7 +1808,10 @@ export default function POSSystem({ productsData = [], customersData = [], categ
                                         setLotModal(prev => ({
                                           ...prev,
                                           kg_measurements: updated,
-                                          selectedLot: { ...prev.selectedLot, sell_qty: updated.reduce((s, v) => s + v, 0) }
+                                          selectedLot: {
+                                            ...prev.selectedLot,
+                                            sell_qty: updated.reduce((s, v) => s + v, 0)
+                                          }
                                         }))
                                       }}
                                       className='text-indigo-500 hover:text-red-500 font-bold cursor-pointer'
