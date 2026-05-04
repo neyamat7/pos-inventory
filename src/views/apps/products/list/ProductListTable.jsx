@@ -39,6 +39,7 @@ import ProductViewModal from './ProductViewModal'
 // Style Imports
 import { deleteProduct } from '@/actions/productActions'
 import { getImageUrl } from '@/utils/getImageUrl'
+import { useAdmin } from '@/hooks/useAdmin'
 import tableStyles from '@core/styles/table.module.css'
 import Swal from 'sweetalert2'
 
@@ -70,6 +71,7 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 const columnHelper = createColumnHelper()
 
 const ProductListTable = ({ productData, paginationData, loading, onPageChange, onPageSizeChange, onSearchChange }) => {
+  const { isAdmin } = useAdmin()
   const [rowSelection, setRowSelection] = useState({})
   const [data, setData] = useState([])
   const [filteredData, setFilteredData] = useState([])
@@ -234,9 +236,11 @@ const ProductListTable = ({ productData, paginationData, loading, onPageChange, 
                 <i className='tabler-edit text-textSecondary' />
               </IconButton>
             </Link>
-            <IconButton aria-label='Delete' color='error' onClick={() => handleDeleteProduct(row.original._id)}>
-              <i className='tabler-trash' />
-            </IconButton>
+            {isAdmin && (
+              <IconButton aria-label='Delete' color='error' onClick={() => handleDeleteProduct(row.original._id)}>
+                <i className='tabler-trash' />
+              </IconButton>
+            )}
           </div>
         ),
         enableSorting: false

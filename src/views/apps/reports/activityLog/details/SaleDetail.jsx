@@ -92,16 +92,50 @@ const SaleDetail = ({ details }) => {
                           {lot.lotId?.lot_name || '—'}
                         </TableCell>
                       </TableRow>
-                      <TableRow>
-                        <TableCell sx={{ color: 'text.secondary', border: 0, pl: 0, py: 0.25 }}>Qty (kg)</TableCell>
-                        <TableCell sx={{ border: 0, py: 0.25 }}>{lot.kg ?? '—'}</TableCell>
-                      </TableRow>
+
+                      {/* Dynamic Quantities */}
+                      {lot.isBoxed && (
+                        <TableRow>
+                          <TableCell sx={{ color: 'text.secondary', border: 0, pl: 0, py: 0.25 }}>Boxes</TableCell>
+                          <TableCell sx={{ border: 0, py: 0.25 }}>{lot.box_quantity || 0}</TableCell>
+                        </TableRow>
+                      )}
+                      {lot.isPieced && (
+                        <TableRow>
+                          <TableCell sx={{ color: 'text.secondary', border: 0, pl: 0, py: 0.25 }}>Pieces</TableCell>
+                          <TableCell sx={{ border: 0, py: 0.25 }}>{lot.piece_quantity || 0}</TableCell>
+                        </TableRow>
+                      )}
+                      {lot.isBagged && (
+                        <TableRow>
+                          <TableCell sx={{ color: 'text.secondary', border: 0, pl: 0, py: 0.25 }}>Bags</TableCell>
+                          <TableCell sx={{ border: 0, py: 0.25 }}>{lot.bag_quantity || 0}</TableCell>
+                        </TableRow>
+                      )}
+                      {(lot.crate_type1 > 0 || lot.crate_type2 > 0) && (
+                        <TableRow>
+                          <TableCell sx={{ color: 'text.secondary', border: 0, pl: 0, py: 0.25 }}>Crates</TableCell>
+                          <TableCell sx={{ border: 0, py: 0.25 }}>
+                            {lot.crate_type1 > 0 && `T1: ${lot.crate_type1}`}
+                            {lot.crate_type1 > 0 && lot.crate_type2 > 0 && ' | '}
+                            {lot.crate_type2 > 0 && `T2: ${lot.crate_type2}`}
+                          </TableCell>
+                        </TableRow>
+                      )}
+
+                      {(lot.kg > 0 || (!lot.isBoxed && !lot.isPieced && !lot.isBagged)) && (
+                        <TableRow>
+                          <TableCell sx={{ color: 'text.secondary', border: 0, pl: 0, py: 0.25 }}>Weight</TableCell>
+                          <TableCell sx={{ border: 0, py: 0.25 }}>{lot.kg ?? '—'} kg</TableCell>
+                        </TableRow>
+                      )}
+
                       <TableRow>
                         <TableCell sx={{ color: 'text.secondary', border: 0, pl: 0, py: 0.25 }}>Unit Price</TableCell>
                         <TableCell sx={{ border: 0, py: 0.25 }}>৳{lot.unit_price ?? '—'}</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell sx={{ color: 'text.secondary', border: 0, pl: 0, py: 0.25 }}>Selling Price</TableCell>
+                        <TableCell sx={{ color: 'text.secondary', border: 0, pl: 0, py: 0.25 }}>Total Price</TableCell>
                         <TableCell sx={{ border: 0, py: 0.25 }}>৳{lot.selling_price ?? '—'}</TableCell>
                       </TableRow>
                     </TableBody>

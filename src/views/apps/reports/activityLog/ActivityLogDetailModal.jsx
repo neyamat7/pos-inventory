@@ -85,7 +85,7 @@ const ActivityLogDetailModal = ({ open, onClose, logId }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth>
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
+      <DialogTitle component='div' sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
         <Typography variant='h6'>Activity Log Details</Typography>
         <IconButton onClick={onClose} size='small' aria-label='close'>
           <i className='tabler-x' />

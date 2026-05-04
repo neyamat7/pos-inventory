@@ -173,6 +173,7 @@ const AddUserDrawer = props => {
                 fullWidth
                 label='Full Name'
                 placeholder='John Doe'
+                autoComplete='off'
                 {...(errors.name && { error: true, helperText: 'This field is required.' })}
               />
             )}
@@ -190,6 +191,7 @@ const AddUserDrawer = props => {
                 type='email'
                 label='Email'
                 placeholder='johndoe@gmail.com'
+                autoComplete='off'
                 {...(errors.email && { error: true, helperText: 'This field is required.' })}
               />
             )}
@@ -206,6 +208,7 @@ const AddUserDrawer = props => {
                 fullWidth
                 label='Phone Number'
                 placeholder='+1 234 567 8900'
+                autoComplete='off'
                 {...(errors.phone && { error: true, helperText: 'This field is required.' })}
               />
             )}
@@ -223,6 +226,7 @@ const AddUserDrawer = props => {
                 type={showPassword ? 'text' : 'password'}
                 label='Password'
                 placeholder='Enter password'
+                autoComplete='new-password'
                 InputProps={{
                   endAdornment: (
                     <IconButton
@@ -273,6 +277,7 @@ const AddUserDrawer = props => {
                 type='number'
                 label='Salary'
                 placeholder='e.g., 25000'
+                autoComplete='off'
                 {...(errors.salary && { error: true, helperText: 'This field is required.' })}
               />
             )}

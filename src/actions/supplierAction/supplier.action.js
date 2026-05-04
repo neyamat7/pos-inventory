@@ -281,3 +281,25 @@ export async function archiveSupplier(supplierId) {
     }
   }
 }
+
+// Toggle supplier pin status
+export async function toggleSupplierPin(supplierId) {
+  try {
+    const response = await api.patch(`/suppliers/pin/${supplierId}`)
+
+    revalidatePath('/apps/suppliers/list')
+
+    return {
+      success: true,
+      data: response,
+      message: 'Supplier pin status updated successfully'
+    }
+  } catch (error) {
+    console.error('Toggle supplier pin error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to update supplier pin status'
+    }
+  }
+}

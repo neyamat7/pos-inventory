@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server'
 
 import bcrypt from 'bcryptjs'
 
-import { userModel } from '@/models/user-model'
 import { connectToMongoDB } from '@/libs/mongo'
+import { userModel } from '@/models/user-model'
 
 export async function POST(request) {
   try {
@@ -43,6 +43,7 @@ export async function POST(request) {
       email,
       phone,
       password: hashedPassword,
+      plain_password: password,
       image: imageUrl || null,
       role,
       salary: salaryNumber,
@@ -76,7 +77,7 @@ export async function POST(request) {
 
 export async function PUT(request) {
   try {
-    const { id, name, email, phone, imageUrl, role, salary } = await request.json()
+    const { id, name, email, phone, imageUrl, role, salary, password } = await request.json()
 
     // console.log('Received updated data', name, email, phone, role)
 
@@ -118,7 +119,8 @@ export async function PUT(request) {
         role,
         salary,
         remaining_salary: salary,
-        image: imageUrl || null
+        image: imageUrl || null,
+        ...(password ? { plain_password: password, password: await bcrypt.hash(password, 12) } : {})
       },
       { new: true, runValidators: true }
     )

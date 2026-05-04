@@ -37,6 +37,7 @@ import LotInvoicePrintHandler from '@/components/LotSaleInvoice/LotInvoicePrintH
 import TableSkeleton from '@/components/TableSkeleton'
 import { showError, showSuccess } from '@/utils/toastUtils'
 import tableStyles from '@core/styles/table.module.css'
+import { useAdmin } from '@/hooks/useAdmin'
 
 const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...props }) => {
   const [value, setValue] = useState(initialValue)
@@ -58,6 +59,7 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
 
 const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, onPageSizeChange, onSearchChange }) => {
   // console.log('lot data', lotData)
+  const { isAdmin } = useAdmin()
   const [data, setData] = useState([])
   const [globalFilter, setGlobalFilter] = useState('')
 
@@ -393,14 +395,18 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
                   className: 'flex items-center gap-2 text-indigo-600'
                 }
               },
-              {
-                text: 'Delete',
-                icon: 'tabler-trash',
-                menuItemProps: {
-                  onClick: () => handleDeleteLot(row.original._id),
-                  className: 'flex items-center gap-2 text-red-500 hover:bg-red-50'
-                }
-              }
+              ...(isAdmin
+                ? [
+                    {
+                      text: 'Delete',
+                      icon: 'tabler-trash',
+                      menuItemProps: {
+                        onClick: () => handleDeleteLot(row.original._id),
+                        className: 'flex items-center gap-2 text-red-500 hover:bg-red-50'
+                      }
+                    }
+                  ]
+                : [])
             ]}
           />
         </div>

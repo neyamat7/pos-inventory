@@ -372,6 +372,10 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
   const showDiscount = cartProducts.some(p => p.is_discountable)
   const showCommission = cartProducts.some(p => p.allowCommission)
 
+  const customExpenseNamesStr = JSON.stringify([
+    ...new Set(cartProducts.flatMap(item => (item.custom_expenses || []).map(e => e.name).filter(Boolean)))
+  ].sort())
+
   const columns = useMemo(() => {
     const baseColumns = [
       {
@@ -666,11 +670,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
     )
 
     // Dynamic custom expense columns — one per unique expense name after Distribute is clicked
-    const customExpenseNames = [
-      ...new Set(
-        cartProducts.flatMap(item => (item.custom_expenses || []).map(e => e.name).filter(Boolean))
-      )
-    ]
+    const customExpenseNames = JSON.parse(customExpenseNamesStr)
 
     customExpenseNames.forEach(expName => {
       baseColumns.push({
@@ -733,7 +733,8 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
     })
 
     return baseColumns
-  }, [showPieceQuantity, showBoxQuantity, showBagQuantity, showTotalKg, showCrated, showDiscount, showCommission, cartProducts])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showPieceQuantity, showBoxQuantity, showBagQuantity, showTotalKg, showCrated, showDiscount, showCommission, customExpenseNamesStr])
 
   const tableData = useMemo(() => cartProducts, [cartProducts])
 

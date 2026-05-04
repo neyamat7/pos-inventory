@@ -135,10 +135,12 @@ const VerticalMenu = ({ scrollMenu }) => {
           </SubMenu>
         )}
 
+       {
+      isAdmin && (
             <MenuItem href='/apps/income' icon={<i className='tabler-currency-taka' />}>
               Income
-            </MenuItem>
-
+            </MenuItem>)
+        }
             <MenuItem href='/apps/accounts/list' icon={<i className='tabler-building-bank' />}>
               Accounts
             </MenuItem>

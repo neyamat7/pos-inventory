@@ -2,39 +2,40 @@
 
 import { useEffect, useState } from 'react'
 
+import CloseIcon from '@mui/icons-material/Close'
 import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Stack,
-  Button,
-  TextField,
-  Typography,
-  MenuItem,
-  Alert,
-  CircularProgress,
-  Box
+    Alert,
+    Button,
+    CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    IconButton,
+    MenuItem,
+    Stack,
+    TextField,
+    Typography
 } from '@mui/material'
 import Grid from '@mui/material/Grid2'
-import CloseIcon from '@mui/icons-material/Close'
 
 import { showSuccess } from '@/utils/toastUtils'
 
 const ROLE_OPTIONS = ['admin', 'manager', 'operator', 'staff']
 
-export default function EditUserModal({ open, user, onClose, setFilteredData, setData }) {
+export default function EditUserModal({ open, user, onClose, setFilteredData, setData, onRefresh }) {
   const [form, setForm] = useState({
     name: '',
     role: '',
     phone: '',
     email: '',
-    salary: ''
+    salary: '',
+    password: ''
   })
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -43,7 +44,8 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
         role: user.role || '',
         phone: user.phone || '',
         email: user.email || '',
-        salary: user.salary || ''
+        salary: user.salary || '',
+        password: ''
       })
     }
 
@@ -74,7 +76,8 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
           email: form.email.trim(),
           phone: form.phone.trim(),
           role: form.role,
-          salary: form.salary
+          salary: form.salary,
+          ...(form.password.trim() ? { password: form.password.trim() } : {})
         })
       })
 
@@ -97,6 +100,10 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
 
         onClose()
         showSuccess('User updated successfully!')
+        
+        if (onRefresh) {
+          onRefresh()
+        }
       } else {
         setError(result.message || 'Failed to update user')
       }
@@ -137,6 +144,7 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
               onChange={handleChange('name')}
               disabled={loading}
               required
+              autoComplete='off'
             />
           </Grid>
 
@@ -166,6 +174,7 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
               onChange={handleChange('phone')}
               disabled={loading}
               required
+              autoComplete='off'
             />
           </Grid>
 
@@ -178,6 +187,7 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
               onChange={handleChange('email')}
               disabled={loading}
               required
+              autoComplete='off'
             />
           </Grid>
 
@@ -190,6 +200,32 @@ export default function EditUserModal({ open, user, onClose, setFilteredData, se
               onChange={handleChange('salary')}
               disabled={loading}
               required
+              autoComplete='off'
+            />
+          </Grid>
+
+          <Grid size={12}>
+            <TextField
+              label='New Password'
+              type={showPassword ? 'text' : 'password'}
+              fullWidth
+              value={form.password}
+              onChange={handleChange('password')}
+              disabled={loading}
+              placeholder='Leave blank to keep current password'
+              autoComplete='new-password'
+              InputProps={{
+                endAdornment: (
+                  <IconButton
+                    size='small'
+                    onClick={() => setShowPassword(prev => !prev)}
+                    edge='end'
+                    aria-label='toggle password visibility'
+                  >
+                    <i className={showPassword ? 'tabler-eye-off' : 'tabler-eye'} />
+                  </IconButton>
+                )
+              }}
             />
           </Grid>
         </Grid>

@@ -17,14 +17,14 @@ import Typography from '@mui/material/Typography'
 // Third-party 
 import { rankItem } from '@tanstack/match-sorter-utils'
 import {
-    flexRender,
-    getCoreRowModel,
-    getFacetedMinMaxValues,
-    getFacetedRowModel,
-    getFacetedUniqueValues,
-    getFilteredRowModel,
-    getSortedRowModel,
-    useReactTable
+  flexRender,
+  getCoreRowModel,
+  getFacetedMinMaxValues,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
+  getFilteredRowModel,
+  getSortedRowModel,
+  useReactTable
 } from '@tanstack/react-table'
 import classnames from 'classnames'
 
@@ -218,17 +218,6 @@ const ActivityLogs = ({ activityLogsData = [], paginationData, loading, onPageCh
             </Tooltip>
           )
         }
-      },
-
-      // IP Address (if available)
-      {
-        accessorKey: 'ipAddress',
-        header: 'IP Address',
-        cell: ({ row }) => (
-          <Typography variant='body2' color='text.secondary'>
-            {row.original.ipAddress || '-'}
-          </Typography>
-        )
       },
 
       // View Details action

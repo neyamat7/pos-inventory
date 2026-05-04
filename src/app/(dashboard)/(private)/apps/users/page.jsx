@@ -1,8 +1,8 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
-import UserList from '@/views/apps/users/list'
 import { getAllUsers } from '@/actions/authActions'
+import UserList from '@/views/apps/users/list'
 
 import { useAdmin } from '@/hooks/useAdmin'
 

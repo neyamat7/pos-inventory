@@ -71,7 +71,7 @@ const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...prop
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])
 
-  return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
+  return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} autoComplete='off' />
 }
 
 // Column Definitions
@@ -183,6 +183,7 @@ const UserListTable = ({ userData, paginationData, loading, onPageChange, onPage
   const table = useReactTable({
     data: filteredData,
     columns,
+    getRowId: row => row._id,
     filterFns: {
       fuzzy: fuzzyFilter
     },
@@ -326,6 +327,7 @@ const UserListTable = ({ userData, paginationData, loading, onPageChange, onPage
         onClose={() => setEditModal(false)}
         setFilteredData={setFilteredData}
         setData={setData}
+        onRefresh={onRefresh}
       />
     </>
   )

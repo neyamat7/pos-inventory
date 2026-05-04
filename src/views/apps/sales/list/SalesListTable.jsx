@@ -27,6 +27,7 @@ import CustomTextField from '@core/components/mui/TextField'
 import { deleteSale } from '@/actions/saleActions'
 import TableSkeleton from '@/components/TableSkeleton'
 import { showError, showSuccess } from '@/utils/toastUtils'
+import { useAdmin } from '@/hooks/useAdmin'
 import tableStyles from '@core/styles/table.module.css'
 import { normalizeSaleForInvoice } from '@/utils/normalizeSaleForInvoice'
 
@@ -40,6 +41,7 @@ const SalesListTable = ({
   searchTerm,
   onRefresh
 }) => {
+  const { isAdmin } = useAdmin()
   const [rowSelection, setRowSelection] = useState({})
   const [openModal, setOpenModal] = useState(false)
   const [selectedSale, setSelectedSale] = useState(null)
@@ -213,9 +215,11 @@ const SalesListTable = ({
             <i className='tabler-printer text-textPrimary' />
           </IconButton>
 
-          <IconButton onClick={() => handleDeleteSale(row.original._id)} color='error' title='Delete Sale'>
-            <i className='tabler-trash text-error' />
-          </IconButton>
+          {isAdmin && (
+            <IconButton onClick={() => handleDeleteSale(row.original._id)} color='error' title='Delete Sale'>
+              <i className='tabler-trash text-error' />
+            </IconButton>
+          )}
         </div>
       ),
       enableSorting: false

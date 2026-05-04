@@ -1,17 +1,18 @@
 'use client'
 
+import { useState } from 'react'
+
 import {
-  Avatar,
-  Box,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  IconButton,
-  Button,
-  Typography
+    Avatar,
+    Box,
+    Button,
+    Chip,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    IconButton,
+    Typography
 } from '@mui/material'
 
 import Grid from '@mui/material/Grid2'
@@ -21,6 +22,8 @@ import CloseIcon from '@mui/icons-material/Close'
 import { getImageUrl } from '@/utils/getImageUrl'
 
 export default function ViewUserModal({ open, user, onClose, onEdit }) {
+  const [showPassword, setShowPassword] = useState(false)
+
   if (!user) return null
 
   // Helper function to get proper image URL
@@ -160,6 +163,43 @@ export default function ViewUserModal({ open, user, onClose, onEdit }) {
                     </Typography>
                     <Typography variant='body1' fontWeight='500'>
                       {user.phone || '—'}
+                    </Typography>
+                  </Box>
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Typography variant='body2' color='text.secondary' fontWeight='medium'>
+                      Password
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant='body1' fontWeight='500' fontFamily={showPassword ? 'inherit' : 'monospace'}>
+                        {user.plain_password
+                          ? showPassword
+                            ? user.plain_password
+                            : '••••••••'
+                          : '—'}
+                      </Typography>
+                      {user.plain_password && (
+                        <IconButton
+                          size='small'
+                          onClick={() => setShowPassword(prev => !prev)}
+                          aria-label='toggle password visibility'
+                        >
+                          <i className={showPassword ? 'tabler-eye-off' : 'tabler-eye'} style={{ fontSize: 16 }} />
+                        </IconButton>
+                      )}
+                    </Box>
+                  </Box>
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Typography variant='body2' color='text.secondary' fontWeight='medium'>
+                      Salary
+                    </Typography>
+                    <Typography variant='body1' fontWeight='500'>
+                      {user.salary ? `৳${Number(user.salary).toLocaleString()}` : '—'}
                     </Typography>
                   </Box>
                 </Grid>

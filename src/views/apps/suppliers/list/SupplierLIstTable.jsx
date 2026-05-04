@@ -46,7 +46,8 @@ import tableStyles from '@core/styles/table.module.css'
 
 import OptionMenu from '@/@core/components/option-menu'
 import { uploadImage } from '@/actions/imageActions'
-import { addBalance, archiveSupplier } from '@/actions/supplierAction'
+import { addBalance, archiveSupplier, toggleSupplierPin } from '@/actions/supplierAction'
+import { useAdmin } from '@/hooks/useAdmin'
 import TableSkeleton from '@/components/TableSkeleton'
 import { getImageUrl } from '@/utils/getImageUrl'
 import { showError, showInfo, showSuccess } from '@/utils/toastUtils'
@@ -135,9 +136,11 @@ const SupplierListTable = ({
     return summary.length > 0 ? summary.join(' | ') : 'No crates'
   }
 
+  const { isAdmin } = useAdmin()
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
+  const [selectedFullRows, setSelectedFullRows] = useState({})
   const [data, setData] = useState(supplierData)
   const [globalFilter, setGlobalFilter] = useState('')
   const [printData, setPrintData] = useState([])
@@ -162,6 +165,29 @@ const SupplierListTable = ({
   useEffect(() => {
     setData(supplierData)
   }, [supplierData])
+
+  // Maintain full row objects for selection across pages
+  useEffect(() => {
+    setSelectedFullRows(prev => {
+      const newSelected = { ...prev }
+      
+      // Remove unselected IDs
+      Object.keys(newSelected).forEach(id => {
+        if (!rowSelection[id]) {
+          delete newSelected[id]
+        }
+      })
+      
+      // Add newly selected objects from the current data
+      data.forEach(row => {
+        if (rowSelection[row._id]) {
+          newSelected[row._id] = row
+        }
+      })
+      
+      return newSelected
+    })
+  }, [rowSelection, data])
 
   const handlePageSizeChange = newSize => {
     if (onPageSizeChange) {
@@ -220,14 +246,19 @@ const SupplierListTable = ({
               )}
 
               <div className='flex flex-col items-start'>
-                <Typography
-                  component={Link}
-                  color='text.primary'
-                  href={`/apps/suppliers/details/${row.original._id}`}
-                  className='font-medium hover:text-primary'
-                >
-                  {name || 'No Name'}
-                </Typography>
+                <div className='flex items-center gap-1'>
+                  <Typography
+                    component={Link}
+                    color='text.primary'
+                    href={`/apps/suppliers/details/${row.original._id}`}
+                    className='font-medium hover:text-primary'
+                  >
+                    {name || 'No Name'}
+                  </Typography>
+                  {row.original.isPinned && (
+                    <i className='tabler-pin text-primary text-[16px]' title='Pinned' />
+                  )}
+                </div>
                 {email && <Typography variant='body2'>{email}</Typography>}
               </div>
             </div>
@@ -297,51 +328,71 @@ const SupplierListTable = ({
                   }
                 },
                 {
-                  text: 'Delete',
-                  icon: 'tabler-trash',
+                  text: row.original.isPinned ? 'Unpin' : 'Pin to Top',
+                  icon: row.original.isPinned ? 'tabler-pin-off' : 'tabler-pin',
                   menuItemProps: {
                     onClick: async () => {
-                      const supplier = row.original
-                      const result = await Swal.fire({
-                        title: 'Delete Supplier?',
-                        html: `<p>Are you sure you want to delete <strong>${supplier.basic_info?.name || supplier.name}</strong>?</p><p class="text-sm text-gray-500 mt-2">This supplier will be moved to deleted list and won't appear in active suppliers.</p>`,
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Yes, Delete',
-                        cancelButtonText: 'Cancel'
-                      })
-
-                      if (result.isConfirmed) {
-                        Swal.fire({
-                          title: 'Deleting...',
-                          allowOutsideClick: false,
-                          didOpen: () => Swal.showLoading()
-                        })
-
-                        const response = await archiveSupplier(supplier._id)
-
-                        if (response.success) {
-                          Swal.fire({
-                            title: 'Deleted!',
-                            text: response.message,
-                            icon: 'success',
-                            timer: 2000
-                          })
-                          refreshData()
-                        } else {
-                          Swal.fire({
-                            title: 'Error!',
-                            text: response.error,
-                            icon: 'error'
-                          })
-                        }
+                      const response = await toggleSupplierPin(row.original._id)
+                      if (response.success) {
+                        showSuccess(response.message)
+                        refreshData()
+                      } else {
+                        showError(response.error)
                       }
                     },
-                    className: 'flex items-center text-error'
+                    className: 'flex items-center text-primary'
                   }
-                }
+                },
+                ...(isAdmin
+                  ? [
+                      {
+                        text: 'Delete',
+                        icon: 'tabler-trash',
+                        menuItemProps: {
+                          onClick: async () => {
+                            const supplier = row.original
+                            const result = await Swal.fire({
+                              title: 'Delete Supplier?',
+                              html: `<p>Are you sure you want to delete <strong>${supplier.basic_info?.name || supplier.name}</strong>?</p><p class="text-sm text-gray-500 mt-2">This supplier will be moved to deleted list and won't appear in active suppliers.</p>`,
+                              icon: 'warning',
+                              showCancelButton: true,
+                              confirmButtonColor: '#d33',
+                              cancelButtonColor: '#3085d6',
+                              confirmButtonText: 'Yes, Delete',
+                              cancelButtonText: 'Cancel'
+                            })
+
+                            if (result.isConfirmed) {
+                              Swal.fire({
+                                title: 'Deleting...',
+                                allowOutsideClick: false,
+                                didOpen: () => Swal.showLoading()
+                              })
+
+                              const response = await archiveSupplier(supplier._id)
+
+                              if (response.success) {
+                                Swal.fire({
+                                  title: 'Deleted!',
+                                  text: response.message,
+                                  icon: 'success',
+                                  timer: 2000
+                                })
+                                refreshData()
+                              } else {
+                                Swal.fire({
+                                  title: 'Error!',
+                                  text: response.error,
+                                  icon: 'error'
+                                })
+                              }
+                            }
+                          },
+                          className: 'flex items-center text-error'
+                        }
+                      }
+                    ]
+                  : [])
               ]}
             />
           </div>
@@ -349,12 +400,13 @@ const SupplierListTable = ({
         enableSorting: false
       }
     ],
-    []
+    [isAdmin, refreshData]
   )
 
   const table = useReactTable({
     data: data,
     columns,
+    getRowId: row => row._id,
     filterFns: {
       fuzzy: fuzzyFilter
     },
@@ -502,7 +554,7 @@ const SupplierListTable = ({
               startIcon={<i className='tabler-printer' />}
               disabled={Object.keys(rowSelection).length === 0 || isLoading}
               onClick={() => {
-                const selectedRows = table.getSelectedRowModel().rows.map(row => row.original)
+                const selectedRows = Object.values(selectedFullRows)
                 setPrintData(selectedRows)
                 setTriggerPrint(true)
               }}

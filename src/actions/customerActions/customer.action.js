@@ -238,6 +238,7 @@ export async function toggleCustomerPin(customerId) {
 
     // Revalidate the POS page or customer list if needed
     revalidatePath('/apps/sales/pos')
+    revalidatePath('/apps/customers/list')
 
     return {
       success: true,

@@ -31,6 +31,7 @@ import {
 import classnames from 'classnames'
 
 import { uploadImage } from '@/actions/imageActions'
+import { useAdmin } from '@/hooks/useAdmin'
 import { showError, showInfo, showSuccess } from '@/utils/toastUtils'
 import Swal from 'sweetalert2'
 
@@ -48,7 +49,7 @@ import OptionMenu from '@core/components/option-menu'
 import { getInitials } from '@/utils/getInitials'
 
 // Style Imports
-import { addCustomerBalance, archiveCustomer, updateCustomer } from '@/actions/customerActions'
+import { addCustomerBalance, archiveCustomer, toggleCustomerPin, updateCustomer } from '@/actions/customerActions'
 import tableStyles from '@core/styles/table.module.css'
 
 import { getImageUrl } from '@/utils/getImageUrl'
@@ -101,9 +102,11 @@ const CustomerListTable = ({
   refreshData,
   searchValue = ''
 }) => {
+  const { isAdmin } = useAdmin()
   // States
   const [customerUserOpen, setCustomerUserOpen] = useState(false)
   const [rowSelection, setRowSelection] = useState({})
+  const [selectedFullRows, setSelectedFullRows] = useState({})
   const [data, setData] = useState([])
   const [globalFilter, setGlobalFilter] = useState('')
   const [printData, setPrintData] = useState([])
@@ -132,6 +135,29 @@ const CustomerListTable = ({
 
   // Use customerData directly - no need to sync to local state
   const tableData = Array.isArray(customerData) ? customerData : customerData?.customers || []
+
+  // Maintain full row objects for selection across pages
+  useEffect(() => {
+    setSelectedFullRows(prev => {
+      const newSelected = { ...prev }
+      
+      // Remove unselected IDs
+      Object.keys(newSelected).forEach(id => {
+        if (!rowSelection[id]) {
+          delete newSelected[id]
+        }
+      })
+      
+      // Add newly selected objects from the current tableData
+      tableData.forEach(row => {
+        if (rowSelection[row._id]) {
+          newSelected[row._id] = row
+        }
+      })
+      
+      return newSelected
+    })
+  }, [rowSelection, tableData])
 
   const getCrateSummary = crateInfo => {
     if (!crateInfo) return '—'
@@ -195,14 +221,19 @@ const CustomerListTable = ({
               )}
 
               <div className='flex flex-col items-start'>
-                <Typography
-                  component={Link}
-                  color='text.primary'
-                  href={`/apps/customers/details/${id}`}
-                  className='font-medium hover:text-primary'
-                >
-                  {name || 'No Name'}
-                </Typography>
+                <div className='flex items-center gap-1'>
+                  <Typography
+                    component={Link}
+                    color='text.primary'
+                    href={`/apps/customers/details/${id}`}
+                    className='font-medium hover:text-primary'
+                  >
+                    {name || 'No Name'}
+                  </Typography>
+                  {row.original.isPinned && (
+                    <i className='tabler-pin text-primary text-[16px]' title='Pinned' />
+                  )}
+                </div>
                 {email && <Typography variant='body2'>{email}</Typography>}
               </div>
             </div>
@@ -285,51 +316,75 @@ const CustomerListTable = ({
                   }
                 },
                 {
-                  text: 'Delete',
-                  icon: 'tabler-trash',
+                  text: row.original.isPinned ? 'Unpin' : 'Pin to Top',
+                  icon: row.original.isPinned ? 'tabler-pin-off' : 'tabler-pin',
                   menuItemProps: {
                     onClick: async () => {
-                      const customer = row.original
-                      const result = await Swal.fire({
-                        title: 'Delete Customer?',
-                        html: `<p>Are you sure you want to delete <strong>${customer.basic_info?.name}</strong>?</p><p class="text-sm text-gray-500 mt-2">This customer will be moved to deleted list and won't appear in active customers.</p>`,
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Yes, Delete',
-                        cancelButtonText: 'Cancel'
-                      })
-
-                      if (result.isConfirmed) {
-                        Swal.fire({
-                          title: 'Deleting...',
-                          allowOutsideClick: false,
-                          didOpen: () => Swal.showLoading()
-                        })
-
-                        const response = await archiveCustomer(customer._id)
-
-                        if (response.success) {
-                          Swal.fire({
-                            title: 'Deleted!',
-                            text: response.message,
-                            icon: 'success',
-                            timer: 2000
-                          })
+                      const response = await toggleCustomerPin(row.original._id)
+                      if (response.success) {
+                        showSuccess(response.message)
+                        if (typeof refreshData === 'function') {
                           refreshData()
-                        } else {
-                          Swal.fire({
-                            title: 'Error!',
-                            text: response.error,
-                            icon: 'error'
-                          })
+                        } else if (typeof onSearchChange === 'function') {
+                          onSearchChange(globalFilter)
                         }
+                      } else {
+                        showError(response.error)
                       }
                     },
-                    className: 'flex items-center text-error'
+                    className: 'flex items-center text-primary'
                   }
-                }
+                },
+                ...(isAdmin
+                  ? [
+                      {
+                        text: 'Delete',
+                        icon: 'tabler-trash',
+                        menuItemProps: {
+                          onClick: async () => {
+                            const customer = row.original
+                            const result = await Swal.fire({
+                              title: 'Delete Customer?',
+                              html: `<p>Are you sure you want to delete <strong>${customer.basic_info?.name}</strong>?</p><p class="text-sm text-gray-500 mt-2">This customer will be moved to deleted list and won't appear in active customers.</p>`,
+                              icon: 'warning',
+                              showCancelButton: true,
+                              confirmButtonColor: '#d33',
+                              cancelButtonColor: '#3085d6',
+                              confirmButtonText: 'Yes, Delete',
+                              cancelButtonText: 'Cancel'
+                            })
+
+                            if (result.isConfirmed) {
+                              Swal.fire({
+                                title: 'Deleting...',
+                                allowOutsideClick: false,
+                                didOpen: () => Swal.showLoading()
+                              })
+
+                              const response = await archiveCustomer(customer._id)
+
+                              if (response.success) {
+                                Swal.fire({
+                                  title: 'Deleted!',
+                                  text: response.message,
+                                  icon: 'success',
+                                  timer: 2000
+                                })
+                                refreshData()
+                              } else {
+                                Swal.fire({
+                                  title: 'Error!',
+                                  text: response.error,
+                                  icon: 'error'
+                                })
+                              }
+                            }
+                          },
+                          className: 'flex items-center text-error'
+                        }
+                      }
+                    ]
+                  : [])
                 // {
                 //   text: 'Update Crate',
                 //   icon: 'tabler-box',
@@ -448,6 +503,7 @@ const CustomerListTable = ({
   const table = useReactTable({
     data: tableData,
     columns,
+    getRowId: row => row._id,
     filterFns: { fuzzy: fuzzyFilter },
     state: {
       rowSelection,
@@ -511,7 +567,7 @@ const CustomerListTable = ({
               startIcon={<i className='tabler-printer' />}
               disabled={Object.keys(rowSelection).length === 0 || isLoading}
               onClick={() => {
-                const selectedRows = table.getSelectedRowModel().rows.map(row => row.original)
+                const selectedRows = Object.values(selectedFullRows)
                 setPrintData(selectedRows)
                 setTriggerPrint(true)
               }}
