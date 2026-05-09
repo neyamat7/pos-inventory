@@ -40,6 +40,15 @@ const LotSaleInvoice = ({ lotSaleData }) => {
 
   // Filter expenses to show only non-zero values
   const expenses = lotSaleData.lot_expenses
+
+  // Calculate total lot commission from all sales
+  const totalLotCommission = sales.reduce((sum, sale) => sum + (sale.lot_commission_amount || 0), 0)
+
+  // Total expenses including commission
+  const totalExpensesWithCommission = (lotSaleData.lot_expenses?.total_expenses || 0) + totalLotCommission
+
+  // Supplier due added (accurate only after stock out — zero before)
+  const supplierDueAdded = lotSaleData.supplier_due_added || 0
   
   const fixedExpenses = expenses ? [
     { label: 'পরিবহন', value: expenses.transportation, key: 'transportation' },
@@ -57,7 +66,12 @@ const LotSaleInvoice = ({ lotSaleData }) => {
     key: `custom_${index}`
   })) || []
 
-  const expenseItems = [...fixedExpenses, ...customExpenses].filter(item => (item.value || 0) > 0)
+  // Add commission to expense list if > 0
+  const commissionExpense = totalLotCommission > 0
+    ? [{ label: 'কমিশন', value: totalLotCommission, key: 'lot_commission' }]
+    : []
+
+  const expenseItems = [...fixedExpenses, ...customExpenses, ...commissionExpense].filter(item => (item.value || 0) > 0)
 
 
   // Calculate column count for empty state
@@ -237,7 +251,25 @@ const LotSaleInvoice = ({ lotSaleData }) => {
                 }}
               >
                 <span>মোট খরচ:</span>
-                <span>{lotSaleData.lot_expenses.total_expenses || 0}</span>
+                <span>{totalExpensesWithCommission}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Supplier Amount — only show when > 0 (after stock out) */}
+          {supplierDueAdded > 0 && (
+            <div
+              style={{
+                border: '0.5px solid #000',
+                padding: '4px',
+                marginTop: '6px',
+                // fontSize: '9px',
+                backgroundColor: '#f9f9f9'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>সাপ্লায়ার পাবেন:</span>
+                <span>{supplierDueAdded}</span>
               </div>
             </div>
           )}

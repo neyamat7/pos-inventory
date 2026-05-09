@@ -74,6 +74,9 @@ const CrateManagementTable = ({
   const [selectedSupplier, setSelectedSupplier] = useState(null)
 
   const [showUpdateModal, setShowUpdateModal] = useState(false)
+  const [showResetConfirmModal, setShowResetConfirmModal] = useState(false)
+  const [transactionToReset, setTransactionToReset] = useState(null)
+  const [resetLoading, setResetLoading] = useState(false)
   const [addTotalCrateLoading, setAddTotalCrateLoading] = useState(false)
   const [addSupplierCrateLoading, setAddSupplierCrateLoading] = useState(false)
   const [updateLoading, setUpdateLoading] = useState(false)
@@ -327,6 +330,33 @@ const CrateManagementTable = ({
     }
   }
 
+  // Reset a crate transaction — sets all quantities to 0, reverting all calculations
+  const handleResetCrate = async () => {
+    if (!transactionToReset) return
+    setResetLoading(true)
+
+    try {
+      const query = { inventoryCratesId: transactionToReset._id }
+      const crateInfo = { crate1: 0, crate2: 0 }
+
+      const result = await updateCrates(query, crateInfo)
+
+      if (result.success) {
+        showSuccess('Transaction reset successfully!')
+        if (onRefresh) onRefresh()
+      } else {
+        showError(result.error || 'Failed to reset transaction!')
+      }
+    } catch (error) {
+      console.error('Error resetting crate transaction:', error)
+      showError('Error resetting transaction!')
+    } finally {
+      setResetLoading(false)
+      setShowResetConfirmModal(false)
+      setTransactionToReset(null)
+    }
+  }
+
   // Supplier table columns
   const supplierColumns = useMemo(
     () => [
@@ -455,7 +485,14 @@ const CrateManagementTable = ({
         header: 'Status',
         cell: info => {
           const isReStock = info.row.original.stockType === 're-stock'
-          const statusValue = isReStock ? 'Re Stock' : info.getValue()
+          const actualStatus = info.getValue()
+
+          // CANCELLED always takes priority regardless of stockType
+          if (actualStatus === 'CANCELLED') {
+            return <Chip label='Cancelled' color='error' variant='tonal' size='small' />
+          }
+
+          const statusValue = isReStock ? 'Re Stock' : actualStatus
 
           return (
             <Chip
@@ -490,7 +527,7 @@ const CrateManagementTable = ({
 
           return (
             <div className='flex gap-2'>
-              {(!isOut || supplier) && (
+              {(!isOut || supplier) && transaction.status !== 'CANCELLED' && (
                 <Button
                   variant='outlined'
                   onClick={() => {
@@ -527,6 +564,29 @@ const CrateManagementTable = ({
                   startIcon={<i className='tabler-edit' style={{ fontSize: '16px' }} />}
                 >
                   Update
+                </Button>
+              )}
+
+              {/* Reset button — only for non-cancelled, non-OUT transactions */}
+              {transaction.status !== 'CANCELLED' && !isOut && (
+                <Button
+                  variant='outlined'
+                  color='error'
+                  onClick={() => {
+                    setTransactionToReset(transaction)
+                    setShowResetConfirmModal(true)
+                  }}
+                  sx={{
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    padding: '6px 12px',
+                    minWidth: 'auto',
+                    textTransform: 'none',
+                    borderRadius: '6px'
+                  }}
+                  startIcon={<i className='tabler-x' style={{ fontSize: '16px' }} />}
+                >
+                  Reset
                 </Button>
               )}
 
@@ -1823,6 +1883,81 @@ const CrateManagementTable = ({
           showError('Failed to print invoice')
         }}
       />
+
+      {/* Reset Confirmation Modal */}
+      <Dialog
+        open={showResetConfirmModal}
+        onClose={() => {
+          if (!resetLoading) {
+            setShowResetConfirmModal(false)
+            setTransactionToReset(null)
+          }
+        }}
+        maxWidth='xs'
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 3 } }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box sx={{ p: 1, bgcolor: 'error.lighter', borderRadius: 2 }}>
+              <i className='tabler-alert-triangle' style={{ fontSize: '1.5rem', color: '#d32f2f' }} />
+            </Box>
+            <Typography variant='h6' fontWeight='bold'>Reset Crate Transaction</Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant='body1' sx={{ mb: 1 }}>
+            Are you sure you want to reset this transaction?
+          </Typography>
+          {transactionToReset && (
+            <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 2, mt: 1 }}>
+              <Typography variant='body2' color='text.secondary'>
+                Type 1: <strong>{transactionToReset.crate_type_1_qty || 0}</strong> crates
+              </Typography>
+              <Typography variant='body2' color='text.secondary'>
+                Type 2: <strong>{transactionToReset.crate_type_2_qty || 0}</strong> crates
+              </Typography>
+              {(transactionToReset.customerId?.basic_info?.name || transactionToReset.customerId?.name) && (
+                <Typography variant='body2' color='text.secondary'>
+                  Customer: <strong>
+                    {transactionToReset.customerId?.basic_info?.name || transactionToReset.customerId?.name}
+                  </strong>
+                </Typography>
+              )}
+              {transactionToReset.note && (
+                <Typography variant='body2' color='text.secondary'>
+                  Note: {transactionToReset.note}
+                </Typography>
+              )}
+            </Box>
+          )}
+          <Typography variant='body2' color='error.main' sx={{ mt: 2 }}>
+            This will set all crate quantities to zero and reverse all related calculations (customer crate count, DailyCash, customer due). This cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5, gap: 1 }}>
+          <Button
+            variant='outlined'
+            color='secondary'
+            onClick={() => {
+              setShowResetConfirmModal(false)
+              setTransactionToReset(null)
+            }}
+            disabled={resetLoading}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant='contained'
+            color='error'
+            onClick={handleResetCrate}
+            disabled={resetLoading}
+            startIcon={resetLoading ? <CircularProgress size={16} color='inherit' /> : <i className='tabler-x' />}
+          >
+            {resetLoading ? 'Resetting...' : 'Yes, Reset'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   )
 }

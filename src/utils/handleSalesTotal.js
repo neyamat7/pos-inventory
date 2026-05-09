@@ -9,7 +9,10 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer, globalCrateP
       const typeOneQty = item.crate_type_one || 0
       const typeTwoQty = item.crate_type_two || 0
 
-      const cratePrice = Number((typeOneQty * typeOnePrice + typeTwoQty * typeTwoPrice).toFixed(2))
+      // Free crate: no charge — crate price is 0
+      const cratePrice = item.free_crate
+        ? 0
+        : Number((typeOneQty * typeOnePrice + typeTwoQty * typeTwoPrice).toFixed(2))
 
       // console.log('cratePrice', cratePrice)
 

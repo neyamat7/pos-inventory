@@ -123,7 +123,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     return cartProducts
       .map(
         item =>
-          `${item.cart_item_id}-${item.kg}-${item.discount_kg}-${item.discount_amount}-${item.box_quantity}-${item.piece_quantity}-${item.selling_price}-${item.crate_type_one}-${item.crate_type_two}-${item.commission_rate}`
+          `${item.cart_item_id}-${item.kg}-${item.discount_kg}-${item.discount_amount}-${item.box_quantity}-${item.piece_quantity}-${item.selling_price}-${item.crate_type_one}-${item.crate_type_two}-${item.commission_rate}-${item.free_crate}`
       )
       .join('|')
   }, [cartProducts])
@@ -179,6 +179,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         crate_type_two: 0,
         crate_type_two_price: 0,
         cratePrice: 0,
+        free_crate: false,
         kg: 0,
         box_quantity: 0,
         bag_quantity: 0,
@@ -225,7 +226,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
       }
     }
 
-    // Calculate total crates sold
+    // Calculate total crates sold (all crates for display)
     const totalCrateType1Sold = cartProducts.reduce((sum, item) => sum + (Number(item.crate_type_one) || 0), 0)
     const totalCrateType2Sold = cartProducts.reduce((sum, item) => sum + (Number(item.crate_type_two) || 0), 0)
 
@@ -233,9 +234,13 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     const type1Price = selectedCustomer.crate_info?.type_1_price || globalCratePrices.type1 || 0
     const type2Price = selectedCustomer.crate_info?.type_2_price || globalCratePrices.type2 || 0
 
-    // Calculate total crate prices
-    const totalType1Price = Number((totalCrateType1Sold * type1Price).toFixed(2))
-    const totalType2Price = Number((totalCrateType2Sold * type2Price).toFixed(2))
+    // Only charge for non-free crates
+    const chargeableCrateType1 = cartProducts.reduce((sum, item) => sum + (item.free_crate ? 0 : (Number(item.crate_type_one) || 0)), 0)
+    const chargeableCrateType2 = cartProducts.reduce((sum, item) => sum + (item.free_crate ? 0 : (Number(item.crate_type_two) || 0)), 0)
+
+    // Calculate total crate prices (only chargeable crates)
+    const totalType1Price = Number((chargeableCrateType1 * type1Price).toFixed(2))
+    const totalType2Price = Number((chargeableCrateType2 * type2Price).toFixed(2))
 
     return {
       totalCrateType1Price: totalType1Price,
@@ -774,11 +779,39 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     // Insert Crate Columns if needed
     if (showCrated) {
       const insertIndex = finalColumns.findIndex(c => c.accessorKey === 'selling_price') + 1
-      finalColumns.splice(insertIndex, 0, ...crateColumns)
+      // Add crate type columns + free crate checkbox
+      const freeCrateColumn = {
+        id: 'free_crate',
+        header: 'Free Crate',
+        cell: ({ row }) => {
+          const product = row.original
+          if (!product.isCrated) return null
+          return (
+            <label className='flex items-center gap-1 cursor-pointer select-none'>
+              <input
+                type='checkbox'
+                checked={product.free_crate || false}
+                onChange={e => {
+                  setCartProducts(prev =>
+                    prev.map(item =>
+                      item.cart_item_id === product.cart_item_id
+                        ? { ...item, free_crate: e.target.checked }
+                        : item
+                    )
+                  )
+                }}
+                className='w-4 h-4 accent-indigo-600 cursor-pointer'
+              />
+              <span className='text-xs text-gray-600'>Free</span>
+            </label>
+          )
+        }
+      }
+      finalColumns.splice(insertIndex, 0, ...crateColumns, freeCrateColumn)
     }
 
     return finalColumns
-  }, [showPieceQuantity, showBoxQuantity, showCrated, showKg, showDiscountKg, showDiscountAmount, showTooltip])
+  }, [showPieceQuantity, showBoxQuantity, showCrated, showKg, showDiscountKg, showDiscountAmount, showTooltip, cartProducts])
 
   const tableData = useMemo(() => cartProducts, [cartProducts])
 
@@ -989,6 +1022,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
         total_price: totalPrice,
         crate_type1: Number(item.crate_type_one) || 0,
         crate_type2: Number(item.crate_type_two) || 0,
+        free_crate: item.free_crate || false,
 
         // ========== LOT COMMISSION ==========
         lot_commission_rate: lotCommissionRate,
