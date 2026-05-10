@@ -381,6 +381,11 @@ const CrateManagementTable = ({
           </div>
         )
       },
+       {
+        accessorKey: 'crate_info.crate1Price',
+        header: 'Type 1 Price',
+        cell: info => <div className=''>৳{info.getValue()}</div>
+      },
       {
         accessorKey: 'crate_info.crate2',
         header: 'Crate Type 2',
@@ -393,11 +398,7 @@ const CrateManagementTable = ({
           </div>
         )
       },
-      {
-        accessorKey: 'crate_info.crate1Price',
-        header: 'Type 1 Price',
-        cell: info => <div className=''>৳{info.getValue()}</div>
-      },
+     
       {
         accessorKey: 'crate_info.crate2Price',
         header: 'Type 2 Price',

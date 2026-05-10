@@ -48,6 +48,31 @@ export async function getSuppliers(page = 1, limit = 100, search = '') {
   }
 }
 
+export async function getSuppliersForCrateManagement(page = 1, limit = 10, search = '') {
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString()
+    })
+
+    if (search) params.append('search', search)
+
+    const response = await api.get(`/suppliers/crate-list?${params.toString()}`)
+
+    return {
+      success: true,
+      data: response
+    }
+  } catch (error) {
+    console.error('Get suppliers for crate management error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch suppliers for crate management'
+    }
+  }
+}
+
 export async function getSupplierById(supplierId) {
   try {
     const response = await api.get(`/suppliers/details/${supplierId}`)

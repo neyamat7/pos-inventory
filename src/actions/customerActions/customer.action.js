@@ -54,6 +54,27 @@ export async function getCustomers(page, limit, search = '') {
   }
 }
 
+export async function getCustomersForCrateManagement(page = 1, limit = 10, search = '') {
+  try {
+    const response = await api.get(
+      `/customer/crate-list?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`,
+      { cache: 'no-store' }
+    )
+
+    return {
+      success: true,
+      data: response
+    }
+  } catch (error) {
+    console.error('Get customers for crate management error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch customers for crate management'
+    }
+  }
+}
+
 export async function getCustomerById(customerId) {
   try {
     const response = await api.get(`/customer/details/${customerId}`)

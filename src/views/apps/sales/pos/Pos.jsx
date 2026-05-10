@@ -811,7 +811,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
     }
 
     return finalColumns
-  }, [showPieceQuantity, showBoxQuantity, showCrated, showKg, showDiscountKg, showDiscountAmount, showTooltip, cartProducts])
+  }, [showPieceQuantity, showBoxQuantity, showCrated, showKg, showDiscountKg, showDiscountAmount, showTooltip])
 
   const tableData = useMemo(() => cartProducts, [cartProducts])
 

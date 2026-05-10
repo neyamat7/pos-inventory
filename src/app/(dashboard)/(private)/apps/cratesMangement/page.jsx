@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 
 import { getAllCrateTransactions, getCrateTotals } from '@/actions/crateActions'
-import { getCustomers } from '@/actions/customerActions'
-import { getSuppliers } from '@/actions/supplierAction'
+import { getCustomersForCrateManagement } from '@/actions/customerActions'
+import { getSuppliersForCrateManagement } from '@/actions/supplierAction'
 import CrateManagement from '@/views/apps/cratesManagement'
 
 const CratesMangementPage = () => {
@@ -57,7 +57,7 @@ const CratesMangementPage = () => {
       setIsLoading(true)
 
       try {
-        const result = await getSuppliers(supplierCurrentPage, supplierPageSize, supplierSearchTerm)
+        const result = await getSuppliersForCrateManagement(supplierCurrentPage, supplierPageSize, supplierSearchTerm)
 
         if (result.success) {
           setSupplierData(result.data.suppliers || [])
@@ -147,7 +147,7 @@ const CratesMangementPage = () => {
       setIsCustomerLoading(true)
 
       try {
-        const result = await getCustomers(customerCurrentPage, customerPageSize, customerSearchTerm)
+        const result = await getCustomersForCrateManagement(customerCurrentPage, customerPageSize, customerSearchTerm)
 
         if (result.success) {
           setCustomerData(result.data.customers || [])
