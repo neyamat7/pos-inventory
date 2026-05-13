@@ -88,20 +88,8 @@ export const handleSalesTotal = (setCartProducts, selectedCustomer, globalCrateP
         ? Number((productBase * (1 + commissionRate)).toFixed(2))
         : productBase
 
-      // const subtotal = Number(productBase.toFixed(2))
-      let subtotal = 0
-
-      if (item.isBoxed) {
-        const boxQty = Number(item.box_quantity) || 0
-
-        subtotal = Number((boxQty * sellingPrice).toFixed(2))
-      } else if (item.sell_by_piece) {
-        const pieceQty = Number(item.piece_quantity) || 0
-
-        subtotal = Number((pieceQty * sellingPrice).toFixed(2))
-      } else {
-        subtotal = Number((kg * sellingPrice).toFixed(2))
-      }
+      // subtotal = amount after discount (before crate price and commission)
+      const subtotal = Number(productBase.toFixed(2))
 
       // Final total = productAfterCommission + cratePrice
       const total = Math.max(0, Number((productAfterCommission + cratePrice).toFixed(2)))
