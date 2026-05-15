@@ -156,7 +156,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
   const refreshSuppliers = async (search = '') => {
     setLoadingSuppliers(true)
     try {
-      const res = await getSuppliers(1, 100, search)
+      const res = await getSuppliers(1, 5000, search)
       if (res.success && res.data?.data?.suppliers) {
         // Verify data structure matches API response
         setSupplierOptions(res.data.data.suppliers)
@@ -809,23 +809,8 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
 
     //  generate lot_name for each cart item
     const updatedCartProducts = cartProducts.map(item => {
-      const supplierName = item.supplier_name?.trim() || ''
-      const supplierParts = supplierName.split(' ').filter(Boolean)
-      const firstLetter = supplierParts[0]?.[0]?.toUpperCase() || ''
-      const lastLetter = supplierParts.length > 1 ? supplierParts[supplierParts.length - 1][0]?.toUpperCase() : ''
-      const initials = `${firstLetter}${lastLetter}`
-
-      const formattedDate = date.split('-').reverse().join('').slice(0, 6)
-
-      // Get current time in HHMM format
-      const now = new Date()
-      const hours = String(now.getHours()).padStart(2, '0')
-      const minutes = String(now.getMinutes()).padStart(2, '0')
-      const formattedTime = `${hours}${minutes}`
-
       const cleanProductName = item.product_name?.replace(/\s+/g, '_').toUpperCase() || 'ITEM'
 
-      // const totalCrates = (item.crate_type_one || 0) + (item.crate_type_two || 0)
       let totalUnits = 0
 
       if (item.sell_by_piece) {
@@ -838,7 +823,7 @@ export default function AddPurchase({ productsData = [], suppliersData = [], cat
         totalUnits = (item.crate_type_one || 0) + (item.crate_type_two || 0)
       }
 
-      const lot_name = `${initials}-${formattedDate}-${formattedTime}-${cleanProductName}-${totalUnits}`
+      const lot_name = `${cleanProductName}-${totalUnits}`
 
       return { ...item, lot_name }
     })

@@ -272,3 +272,49 @@ export async function getDailyCashSummary(date) {
     }
   }
 }
+
+export async function updateLotInfo(lotId, { lot_name }) {
+  try {
+    const response = await api.patch(`/inventoryLots/${lotId}/info`, { lot_name })
+
+    try {
+      revalidatePath('/apps/stockList/lot')
+    } catch (_) {}
+
+    return {
+      success: true,
+      data: response.lot,
+      message: 'Lot info updated successfully'
+    }
+  } catch (error) {
+    console.error('Update lot info error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to update lot info'
+    }
+  }
+}
+
+export async function updateAllLotExpenses(lotId, expenseData) {
+  try {
+    const response = await api.patch(`/inventoryLots/${lotId}/expenses`, expenseData)
+
+    try {
+      revalidatePath('/apps/stockList/lot')
+    } catch (_) {}
+
+    return {
+      success: true,
+      data: response.lot,
+      message: 'Lot expenses updated successfully'
+    }
+  } catch (error) {
+    console.error('Update all lot expenses error:', error)
+
+    return {
+      success: false,
+      error: error.message || 'Failed to update lot expenses'
+    }
+  }
+}

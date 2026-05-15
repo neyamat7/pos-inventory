@@ -35,6 +35,7 @@ import {
   updateCrates,
   updateGlobalCratePrices
 } from '@/actions/crateActions'
+import { getCustomers } from '@/actions/customerActions'
 import TableSkeleton from '@/components/TableSkeleton'
 import { showError, showSuccess } from '@/utils/toastUtils'
 import tableStyles from '@core/styles/table.module.css'
@@ -72,6 +73,30 @@ const CrateManagementTable = ({
   const [showAddTotalModal, setShowAddTotalModal] = useState(false)
   const [showGlobalSettingsModal, setShowGlobalSettingsModal] = useState(false)
   const [selectedSupplier, setSelectedSupplier] = useState(null)
+
+  // Independent customer search for the re-stock modal (not tied to table pagination)
+  const [restockCustomerOptions, setRestockCustomerOptions] = useState([])
+  const [restockCustomerSearch, setRestockCustomerSearch] = useState('')
+  const [restockCustomerLoading, setRestockCustomerLoading] = useState(false)
+
+  useEffect(() => {
+    const fetchRestockCustomers = async () => {
+      setRestockCustomerLoading(true)
+      try {
+        const res = await getCustomers(1, 5000, restockCustomerSearch)
+        if (res.success && res.data?.customers) {
+          setRestockCustomerOptions(res.data.customers)
+        }
+      } catch (err) {
+        console.error('Failed to fetch restock customers:', err)
+      } finally {
+        setRestockCustomerLoading(false)
+      }
+    }
+
+    const debounce = setTimeout(fetchRestockCustomers, 400)
+    return () => clearTimeout(debounce)
+  }, [restockCustomerSearch])
 
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [showResetConfirmModal, setShowResetConfirmModal] = useState(false)
@@ -1381,11 +1406,15 @@ const CrateManagementTable = ({
                 </Typography>
                 <Autocomplete
                   fullWidth
-                  options={customerData || []}
+                  options={restockCustomerOptions}
+                  loading={restockCustomerLoading}
                   getOptionLabel={option =>
                     `${option.basic_info?.name || 'Unknown'}${option.contact_info?.phone ? ` — ${option.contact_info.phone}` : ''}`
                   }
-                  value={customerData?.find(c => c._id === modalForm.customerId) || null}
+                  value={restockCustomerOptions.find(c => c._id === modalForm.customerId) || null}
+                  onInputChange={(_, value, reason) => {
+                    if (reason === 'input') setRestockCustomerSearch(value)
+                  }}
                   onChange={(_, selected) => {
                     const customerId = selected?._id || ''
                     setModalForm({
@@ -1435,7 +1464,7 @@ const CrateManagementTable = ({
                     }}
                   >
                     {(() => {
-                      const selectedCustomer = customerData?.find(c => c._id === modalForm.customerId)
+                      const selectedCustomer = restockCustomerOptions.find(c => c._id === modalForm.customerId)
                       if (!selectedCustomer) return null
                       return (
                         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-around' }}>

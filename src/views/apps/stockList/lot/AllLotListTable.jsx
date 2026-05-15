@@ -25,19 +25,22 @@ import CustomTextField from '@core/components/mui/TextField'
 
 // Util Imports
 import {
-  adjustStock,
-  deleteLot,
-  deleteLotReceipt,
-  getLotSaleSummary,
-  updateLotCost,
-  updateLotStatus,
-  uploadLotReceipt
+    adjustStock,
+    deleteLot,
+    deleteLotReceipt,
+    getLotSaleSummary,
+    updateAllLotExpenses,
+    updateLotCost,
+    updateLotInfo,
+    updateLotStatus,
+    uploadLotReceipt
 } from '@/actions/lotActions'
+import { updateSupplier } from '@/actions/supplierAction'
 import LotInvoicePrintHandler from '@/components/LotSaleInvoice/LotInvoicePrintHandler'
 import TableSkeleton from '@/components/TableSkeleton'
+import { useAdmin } from '@/hooks/useAdmin'
 import { showError, showSuccess } from '@/utils/toastUtils'
 import tableStyles from '@core/styles/table.module.css'
-import { useAdmin } from '@/hooks/useAdmin'
 
 const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...props }) => {
   const [value, setValue] = useState(initialValue)
@@ -74,6 +77,10 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
   const [lotSaleData, setLotSaleData] = useState(null)
   const [loadingSaleData, setLoadingSaleData] = useState(false)
   const [printTrigger, setPrintTrigger] = useState(false)
+
+  // Manage Expenses modal state
+  const [expensesOpen, setExpensesOpen] = useState(false)
+  const [expensesLot, setExpensesLot] = useState(null)
 
   // console.log('lot sale data', lotSaleData)
 
@@ -395,6 +402,17 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
                   className: 'flex items-center gap-2 text-indigo-600'
                 }
               },
+              {
+                text: 'Manage Expenses',
+                icon: 'tabler-coin',
+                menuItemProps: {
+                  onClick: () => {
+                    setExpensesLot(row.original)
+                    setExpensesOpen(true)
+                  },
+                  className: 'flex items-center gap-2 text-orange-600'
+                }
+              },
               ...(isAdmin
                 ? [
                     {
@@ -425,6 +443,62 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
   })
 
   const ViewDetailsModal = () => {
+    const [editLotName, setEditLotName] = useState(selectedLot?.lot_name || '')
+    const [editSupplierName, setEditSupplierName] = useState(selectedLot?.supplierId?.basic_info?.name || '')
+    const [saveLoading, setSaveLoading] = useState(false)
+
+    // Sync when lotSaleData loads (may have more up-to-date name)
+    useEffect(() => {
+      if (lotSaleData) {
+        setEditLotName(lotSaleData.lot_name || selectedLot?.lot_name || '')
+        setEditSupplierName(lotSaleData.supplier_name || selectedLot?.supplierId?.basic_info?.name || '')
+      }
+    }, [lotSaleData?.lot_name, lotSaleData?.supplier_name])
+
+    const handleSaveInfo = async () => {
+      if (!selectedLot?._id) return
+      setSaveLoading(true)
+      try {
+        const promises = []
+
+        if (editLotName.trim() && editLotName.trim() !== lotSaleData?.lot_name) {
+          promises.push(updateLotInfo(selectedLot._id, { lot_name: editLotName.trim() }))
+        }
+
+        if (editSupplierName.trim() && editSupplierName.trim() !== lotSaleData?.supplier_name) {
+          const supplierId = selectedLot?.supplierId?._id || selectedLot?.supplierId
+          if (supplierId) {
+            // Use $set with dot notation to only update the name field, not replace the whole basic_info object
+            promises.push(updateSupplier(supplierId, { $set: { 'basic_info.name': editSupplierName.trim() } }))
+          }
+        }
+
+        if (promises.length === 0) {
+          showSuccess('No changes to save')
+          setSaveLoading(false)
+          return
+        }
+
+        const results = await Promise.all(promises)
+        const hasError = results.some(r => r && r.success === false)
+
+        if (hasError) {
+          showError('Failed to save some changes')
+        } else {
+          setLotSaleData(prev => prev ? { ...prev, lot_name: editLotName.trim(), supplier_name: editSupplierName.trim() } : prev)
+          setData(prev => prev.map(item =>
+            item._id === selectedLot._id ? { ...item, lot_name: editLotName.trim() } : item
+          ))
+          showSuccess('Saved successfully')
+        }
+      } catch (err) {
+        console.error('Save info error:', err)
+        showError(err?.message || 'Failed to save changes')
+      } finally {
+        setSaveLoading(false)
+      }
+    }
+
     // Determine which columns to show based on sale data
     const hasDiscount = lotSaleData?.sales?.some(sale => (sale.discount_Kg || 0) > 0) || false
     const hasCrate =
@@ -499,6 +573,55 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
         {/* NO TABS - Direct display of sales data      */}
         {/* ============================================ */}
         <DialogContent sx={{ p: 3, bgcolor: '#fafbfc', minHeight: 400 }}>
+          {/* Edit lot name + supplier name — always visible */}
+          <Card
+            elevation={0}
+            sx={{
+              mb: 2,
+              border: '1px solid #e0e0e0',
+              borderRadius: 2,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white'
+            }}
+          >
+            <CardContent>
+              <div className='flex items-start justify-between flex-wrap gap-4'>
+                <div className='flex flex-col gap-2' style={{ width: '48%', minWidth: '200px' }}>
+                  <div>
+                    <p className='text-xs opacity-80 mb-1 text-white'>Lot Name</p>
+                    <input
+                      value={editLotName}
+                      onChange={e => setEditLotName(e.target.value)}
+                      className='w-full bg-white/20 text-white placeholder-white/60 border border-white/40 rounded px-2 py-1 text-base font-bold outline-none focus:bg-white/30'
+                      placeholder='Lot name...'
+                    />
+                  </div>
+                  <div>
+                    <p className='text-xs opacity-80 mb-1 text-white'>Supplier</p>
+                    <input
+                      value={editSupplierName}
+                      onChange={e => setEditSupplierName(e.target.value)}
+                      className='w-full bg-white/20 text-white placeholder-white/60 border border-white/40 rounded px-2 py-1 text-sm outline-none focus:bg-white/30'
+                      placeholder='Supplier name...'
+                    />
+                  </div>
+                  <button
+                    onClick={handleSaveInfo}
+                    disabled={saveLoading}
+                    className='self-start mt-1 px-3 py-1 bg-white text-indigo-700 text-xs font-semibold rounded hover:bg-indigo-50 disabled:opacity-60 flex items-center gap-1'
+                  >
+                    {saveLoading ? <CircularProgress size={12} sx={{ color: '#4f46e5' }} /> : <i className='tabler-device-floppy text-sm' />}
+                    Save
+                  </button>
+                </div>
+                <div className='text-right'>
+                  <p className='text-sm opacity-90 mb-1 text-white'>Total Transactions</p>
+                  <p className='text-4xl font-bold text-white'>{lotSaleData?.sales?.length || 0}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Loading State */}
           {loadingSaleData ? (
             <div className='flex flex-col items-center justify-center py-12'>
@@ -512,30 +635,6 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
             </div>
           ) : (
             <div className='flex flex-col gap-4'>
-              {/* Sale Summary Header Card */}
-              <Card
-                elevation={0}
-                sx={{
-                  border: '1px solid #e0e0e0',
-                  borderRadius: 2,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: 'white'
-                }}
-              >
-                <CardContent>
-                  <div className='flex items-center justify-between'>
-                    <div>
-                      <p className='text-sm opacity-90 mb-1 text-white'>Lot Name</p>
-                      <h3 className='text-2xl font-bold mb-2 text-white'>{lotSaleData.lot_name}</h3>
-                      <p className='text-sm opacity-90 text-white'>Supplier: {lotSaleData.supplier_name}</p>
-                    </div>
-                    <div className='text-right'>
-                      <p className='text-sm opacity-90 mb-1 text-white'>Total Transactions</p>
-                      <p className='text-4xl font-bold text-white'>{lotSaleData.sales?.length || 0}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
 
               {/* Sales Transactions Table */}
               <Card elevation={0} sx={{ border: '1px solid #e0e0e0', borderRadius: 2 }}>
@@ -1002,6 +1101,7 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
   }
 
   return (
+    <>
     <Card>
       <CardContent className='flex justify-between max-sm:flex-col sm:items-center gap-4'>
         <DebouncedInput
@@ -1213,6 +1313,20 @@ const AllLotListTable = ({ lotData = [], paginationData, loading, onPageChange, 
         </Dialog>
       )}
     </Card>
+
+      <ManageExpensesModal
+        open={expensesOpen}
+        onClose={() => { setExpensesOpen(false); setExpensesLot(null) }}
+        lot={expensesLot}
+        onSuccess={updatedLot => {
+          if (updatedLot?._id) {
+            setData(prev => prev.map(item => item._id === updatedLot._id ? { ...item, expenses: updatedLot.expenses } : item))
+          }
+          setExpensesOpen(false)
+          setExpensesLot(null)
+        }}
+      />
+    </>
   )
 }
 
@@ -1349,6 +1463,193 @@ const ReceiptModal = ({ open, onClose, selectedLot, uploadLoading, onUpload, onD
           </div>
         </div>
       </DialogContent>
+    </Dialog>
+  )
+}
+
+const ManageExpensesModal = ({ open, onClose, lot, onSuccess }) => {
+  const [form, setForm] = useState({
+    labour: '',
+    transportation: '',
+    van_vara: '',
+    moshjid: '',
+    trading_post: '',
+    extra_expense: '',
+    extra_expense_note: '',
+    custom_expenses: []
+  })
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (open && lot) {
+      setForm({
+        labour: lot.expenses?.labour ?? '',
+        transportation: lot.expenses?.transportation ?? '',
+        van_vara: lot.expenses?.van_vara ?? '',
+        moshjid: lot.expenses?.moshjid ?? '',
+        trading_post: lot.expenses?.trading_post ?? '',
+        extra_expense: lot.expenses?.extra_expense ?? '',
+        extra_expense_note: lot.expenses?.extra_expense_note ?? '',
+        custom_expenses: (lot.expenses?.custom_expenses || []).map(e => ({ name: e.name, amount: e.amount }))
+      })
+    }
+  }, [open, lot])
+
+  const handleField = (field, value) => setForm(prev => ({ ...prev, [field]: value }))
+
+  const handleCustomChange = (index, field, value) => {
+    setForm(prev => {
+      const updated = [...prev.custom_expenses]
+      updated[index] = { ...updated[index], [field]: value }
+      return { ...prev, custom_expenses: updated }
+    })
+  }
+
+  const handleAddCustomRow = () => {
+    setForm(prev => ({ ...prev, custom_expenses: [...prev.custom_expenses, { name: '', amount: '' }] }))
+  }
+
+  const handleRemoveCustomRow = index => {
+    setForm(prev => ({ ...prev, custom_expenses: prev.custom_expenses.filter((_, i) => i !== index) }))
+  }
+
+  const handleSave = async () => {
+    setLoading(true)
+    try {
+      const result = await updateAllLotExpenses(lot._id, {
+        labour: Number(form.labour) || 0,
+        transportation: Number(form.transportation) || 0,
+        van_vara: Number(form.van_vara) || 0,
+        moshjid: Number(form.moshjid) || 0,
+        trading_post: Number(form.trading_post) || 0,
+        custom_expenses: form.custom_expenses.filter(e => e.name?.trim()),
+        extra_expense: Number(form.extra_expense) || 0,
+        extra_expense_note: form.extra_expense_note || ''
+      })
+
+      if (result.success) {
+        showSuccess('Expenses updated successfully')
+        if (onSuccess) onSuccess(result.data?.lot || result.data)
+      } else {
+        showError(result.error || 'Failed to update expenses')
+      }
+    } catch (err) {
+      showError('Failed to update expenses')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fixedFields = [
+    { key: 'labour', label: 'Labour' },
+    { key: 'transportation', label: 'Transportation' },
+    { key: 'van_vara', label: 'Van Vara' },
+    { key: 'moshjid', label: 'Moshjid' },
+    { key: 'trading_post', label: 'Trading Post' }
+  ]
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
+      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span className='font-bold'>Manage Expenses — {lot?.lot_name}</span>
+        <IconButton size='small' onClick={onClose}><i className='tabler-x' /></IconButton>
+      </DialogTitle>
+
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+        <div className='grid grid-cols-2 gap-3'>
+          {fixedFields.map(({ key, label }) => (
+            <div key={key}>
+              <label className='text-xs font-medium text-gray-600 mb-1 block'>{label}</label>
+              <input
+                type='number'
+                min='0'
+                onWheel={e => e.currentTarget.blur()}
+                value={form[key]}
+                onChange={e => handleField(key, e.target.value)}
+                placeholder='0'
+                className='w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-indigo-400'
+              />
+            </div>
+          ))}
+        </div>
+
+        <div>
+          <div className='flex items-center justify-between mb-2'>
+            <label className='text-xs font-semibold text-gray-700 uppercase tracking-wide'>Custom Expenses</label>
+            <button
+              type='button'
+              onClick={handleAddCustomRow}
+              className='text-xs text-indigo-600 hover:text-indigo-800 flex items-center gap-1 font-medium'
+            >
+              <i className='tabler-plus text-sm' /> Add Row
+            </button>
+          </div>
+          {form.custom_expenses.length === 0 && (
+            <p className='text-xs text-gray-400 italic'>No custom expenses. Click "Add Row" to add one.</p>
+          )}
+          {form.custom_expenses.map((exp, index) => (
+            <div key={index} className='flex gap-2 mb-2 items-center'>
+              <input
+                type='text'
+                value={exp.name}
+                onChange={e => handleCustomChange(index, 'name', e.target.value)}
+                placeholder='Name'
+                className='flex-1 px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-indigo-400'
+              />
+              <input
+                type='number'
+                min='0'
+                onWheel={e => e.currentTarget.blur()}
+                value={exp.amount}
+                onChange={e => handleCustomChange(index, 'amount', e.target.value)}
+                placeholder='Amount'
+                className='w-28 px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-indigo-400'
+              />
+              <button
+                type='button'
+                onClick={() => handleRemoveCustomRow(index)}
+                className='text-red-500 hover:text-red-700 p-1'
+              >
+                <i className='tabler-trash text-base' />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className='border-t pt-3'>
+          <label className='text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2 block'>Extra Expense</label>
+          <div className='flex flex-col gap-2'>
+            <input
+              type='number'
+              min='0'
+              onWheel={e => e.currentTarget.blur()}
+              value={form.extra_expense}
+              onChange={e => handleField('extra_expense', e.target.value)}
+              placeholder='Amount'
+              className='w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-indigo-400'
+            />
+            <textarea
+              value={form.extra_expense_note}
+              onChange={e => handleField('extra_expense_note', e.target.value)}
+              placeholder='Note (reason for extra expense)...'
+              rows={2}
+              className='w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-indigo-400 resize-none'
+            />
+          </div>
+        </div>
+      </DialogContent>
+
+      <DialogActions sx={{ px: 3, py: 2 }}>
+        <Button onClick={onClose} color='secondary' disabled={loading}>Cancel</Button>
+        <Button
+          onClick={handleSave}
+          variant='contained'
+          disabled={loading}
+          sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+        >
+          {loading ? <CircularProgress size={20} sx={{ color: 'white' }} /> : 'Save Expenses'}
+        </Button>
+      </DialogActions>
     </Dialog>
   )
 }

@@ -79,7 +79,7 @@ export default function POSSystem({ productsData = [], customersData = [], categ
   const refreshCustomers = async (searchTerm = '') => {
     setLoadingCustomers(true)
     try {
-      const res = await getCustomers(1, 100, searchTerm)
+      const res = await getCustomers(1, 5000, searchTerm)
 
       if (res.success && res.data?.customers) {
         setCustomerOptions(res.data.customers) // Update the options list
