@@ -25,15 +25,15 @@ import CustomTextField from '@core/components/mui/TextField'
 
 // Util Imports
 import {
-    adjustStock,
-    deleteLot,
-    deleteLotReceipt,
-    getLotSaleSummary,
-    updateAllLotExpenses,
-    updateLotCost,
-    updateLotInfo,
-    updateLotStatus,
-    uploadLotReceipt
+  adjustStock,
+  deleteLot,
+  deleteLotReceipt,
+  getLotSaleSummary,
+  updateAllLotExpenses,
+  updateLotCost,
+  updateLotInfo,
+  updateLotStatus,
+  uploadLotReceipt
 } from '@/actions/lotActions'
 import { updateSupplier } from '@/actions/supplierAction'
 import LotInvoicePrintHandler from '@/components/LotSaleInvoice/LotInvoicePrintHandler'
@@ -1575,7 +1575,7 @@ const ManageExpensesModal = ({ open, onClose, lot, onSuccess }) => {
 
         <div>
           <div className='flex items-center justify-between mb-2'>
-            <label className='text-xs font-semibold text-gray-700 uppercase tracking-wide'>Custom Expenses</label>
+            <label className='text-xs font-semibold text-gray-700 uppercase tracking-wide'>Add New Expenses</label>
             <button
               type='button'
               onClick={handleAddCustomRow}
@@ -1585,7 +1585,7 @@ const ManageExpensesModal = ({ open, onClose, lot, onSuccess }) => {
             </button>
           </div>
           {form.custom_expenses.length === 0 && (
-            <p className='text-xs text-gray-400 italic'>No custom expenses. Click "Add Row" to add one.</p>
+            <p className='text-xs text-gray-400 italic'>Click "Add Row" to add one.</p>
           )}
           {form.custom_expenses.map((exp, index) => (
             <div key={index} className='flex gap-2 mb-2 items-center'>
